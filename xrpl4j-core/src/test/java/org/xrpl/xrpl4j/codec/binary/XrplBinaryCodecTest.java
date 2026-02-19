@@ -627,7 +627,8 @@ class XrplBinaryCodecTest {
 
   ///////////////////
   // encodeForBatchInnerMultiSigning
-  ///////////////////
+
+  /// ////////////////
 
   @Test
   void encodeForBatchInnerMultiSigningWithNullBatch() {
@@ -670,7 +671,8 @@ class XrplBinaryCodecTest {
     // Verify the result starts with the batch signature prefix "BCH\0" = 0x42434800
     assertThat(result.hexValue()).startsWith("42434800");
 
-    // Verify the structure: prefix (4 bytes) + flags (4 bytes) + count (4 bytes) + tx IDs (32 bytes * 2) + account ID (20 bytes)
+    // Verify the structure:
+    //    prefix (4 bytes) + flags (4 bytes) + count (4 bytes) + tx IDs (32 bytes * 2) + account ID (20 bytes)
     // Total: 4 + 4 + 4 + (32 * 2) + 20 = 96 bytes = 192 hex chars
     assertThat(result.hexValue()).hasSize(192);
 
@@ -707,7 +709,8 @@ class XrplBinaryCodecTest {
 
   ///////////////////
   // encodeForSigningClaim
-  ///////////////////
+
+  /// ////////////////
 
   @Test
   void encodeForSigningClaimWithNonObjectJson() {

@@ -274,12 +274,13 @@ public class BatchTest {
 
   @Test
   void testBatchWithRawTransactionMultiSignedBySubmitterAccount() {
-    // Create inner transactions where both are from the same account (the outer signer)
+    // Create inner transactions where one is from a different account
     Address outerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
     PublicKey pubKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
     final List<RawTransactionWrapper> innerTransactions = Lists.newArrayList(
-      RawTransactionWrapper.of(createInnerPayment(outerAccount, UnsignedInteger.ONE)),
-      RawTransactionWrapper.of(createInnerPayment(outerAccount, UnsignedInteger.valueOf(2)))
+      RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.ONE)),
+      RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.valueOf(2)))
     );
 
     // The test checks that the outer signer cannot be in BatchSigners (even via multi-sig)
@@ -292,7 +293,7 @@ public class BatchTest {
       .batchSigners(Lists.newArrayList(
         BatchSignerWrapper.of(
           BatchSigner.builder()
-            .account(ACCOUNT_OTHER) // Different account for the BatchSigner
+            .account(innerAccount) // BatchSigner for the inner account
             .signers(Lists.newArrayList(
               SignerWrapper.of(Signer.builder()
                 .account(outerAccount) // <-- Outer signer in nested Signers
@@ -500,9 +501,8 @@ public class BatchTest {
       RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.valueOf(2)))
     );
 
-    // Should succeed even though BatchSigners contains an extra account that has no inner transactions.
-    // The validation only checks that all required accounts have signatures, not that all signers are required.
-    Batch batch = Batch.builder()
+    // Should fail because BatchSigners contains an account that has no inner transactions
+    assertThatThrownBy(() -> Batch.builder()
       .account(ACCOUNT)
       .fee(XrpCurrencyAmount.ofDrops(100))
       .sequence(UnsignedInteger.ONE)
@@ -515,16 +515,15 @@ public class BatchTest {
           .transactionSignature(Signature.fromBase16("00112233"))
           .build()
         ),
-        // This can occur in cases where a regular key has been changed.
         BatchSignerWrapper.of(BatchSigner.builder()
           .account(extraAccount) // Extra signer not in any inner transaction
           .signingPublicKey(pubKey2)
           .transactionSignature(Signature.fromBase16("44556677"))
           .build()
         )))
-      .build();
-
-    assertThat(batch.batchSigners()).hasSize(2);
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("BatchSigners must only contain signatures from accounts that have inner transactions");
   }
 
   @Test
@@ -648,6 +647,173 @@ public class BatchTest {
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("Each inner transaction in a Batch must have no signers");
+  }
+
+  @Test
+  void testBatchWithDuplicateTransactions() {
+    // Create the same transaction twice
+    Payment innerPayment = createInnerPayment(ACCOUNT, UnsignedInteger.ONE);
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(innerPayment),
+      RawTransactionWrapper.of(innerPayment) // Duplicate
+    );
+
+    assertThatThrownBy(() -> Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("RawTransactions must not contain duplicate transactions");
+  }
+
+  @Test
+  void testBatchWithTooManyBatchSigners() {
+    // Create 2 inner transactions but 3 BatchSigners
+    // Note: Having more BatchSigners than RawTransactions means at least one BatchSigner
+    // has no inner transaction, so validateBatchSignersHaveInnerTransactions catches this
+    // before validateBatchSignersSize. Both validations are logically equivalent in practice.
+    Address innerAccount1 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address innerAccount2 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address innerAccount3 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    PublicKey pubKey1 = Seed.ed25519Seed().deriveKeyPair().publicKey();
+    PublicKey pubKey2 = Seed.ed25519Seed().deriveKeyPair().publicKey();
+    PublicKey pubKey3 = Seed.ed25519Seed().deriveKeyPair().publicKey();
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(createInnerPayment(innerAccount1, UnsignedInteger.ONE)),
+      RawTransactionWrapper.of(createInnerPayment(innerAccount2, UnsignedInteger.valueOf(2)))
+    );
+
+    assertThatThrownBy(() -> Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(innerAccount1)
+          .signingPublicKey(pubKey1)
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build()
+        ),
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(innerAccount2)
+          .signingPublicKey(pubKey2)
+          .transactionSignature(Signature.fromBase16("44556677"))
+          .build()
+        ),
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(innerAccount3)
+          .signingPublicKey(pubKey3)
+          .transactionSignature(Signature.fromBase16("8899AABB"))
+          .build()
+        )))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("BatchSigners must only contain signatures from accounts that have inner transactions");
+  }
+
+  @Test
+  void testBatchWithDuplicateBatchSigners() {
+    // Create 2 inner transactions with duplicate BatchSigners
+    Address innerAccount1 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address innerAccount2 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    PublicKey pubKey1 = Seed.ed25519Seed().deriveKeyPair().publicKey();
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(createInnerPayment(innerAccount1, UnsignedInteger.ONE)),
+      RawTransactionWrapper.of(createInnerPayment(innerAccount2, UnsignedInteger.valueOf(2)))
+    );
+
+    assertThatThrownBy(() -> Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(innerAccount1)
+          .signingPublicKey(pubKey1)
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build()
+        ),
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(innerAccount1) // Duplicate account
+          .signingPublicKey(pubKey1)
+          .transactionSignature(Signature.fromBase16("44556677"))
+          .build()
+        )))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("BatchSigners must not contain duplicate signers");
+  }
+
+  @Test
+  void testBatchWithValidBatchSigners() {
+    // Create a valid Batch with BatchSigners for accounts that have inner transactions
+    Address innerAccount1 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address innerAccount2 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    PublicKey pubKey1 = Seed.ed25519Seed().deriveKeyPair().publicKey();
+    PublicKey pubKey2 = Seed.ed25519Seed().deriveKeyPair().publicKey();
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(createInnerPayment(innerAccount1, UnsignedInteger.ONE)),
+      RawTransactionWrapper.of(createInnerPayment(innerAccount2, UnsignedInteger.valueOf(2)))
+    );
+
+    Batch batch = Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(innerAccount1)
+          .signingPublicKey(pubKey1)
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build()
+        ),
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(innerAccount2)
+          .signingPublicKey(pubKey2)
+          .transactionSignature(Signature.fromBase16("44556677"))
+          .build()
+        )))
+      .build();
+
+    assertThat(batch.batchSigners()).hasSize(2);
+    assertThat(batch.rawTransactions()).hasSize(2);
+  }
+
+  @Test
+  void testBatchWithNoDuplicateTransactions() {
+    // Create a valid Batch with unique transactions
+    Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.ONE)),
+      RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.valueOf(2)))
+    );
+
+    Batch batch = Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .build();
+
+    assertThat(batch.rawTransactions()).hasSize(2);
+    // Verify transactions are different
+    assertThat(batch.rawTransactions().get(0).rawTransaction())
+      .isNotEqualTo(batch.rawTransactions().get(1).rawTransaction());
   }
 
   // ///////////////

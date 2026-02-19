@@ -657,7 +657,7 @@ public class SignatureUtilsTest {
     Payment payment = createPayment1();
     AccountSet accountSet = AccountSet.builder()
       .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(10))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.valueOf(3))
       .flags(AccountSetTransactionFlags.INNER_BATCH_TXN)
       .build();
@@ -2376,10 +2376,10 @@ public class SignatureUtilsTest {
       .account(signer1KeyPair.publicKey().deriveAddress())
       .destination(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
       .amount(XrpCurrencyAmount.ofDrops(1000))
-      .fee(XrpCurrencyAmount.ofDrops(10))
+      .fee(XrpCurrencyAmount.ofDrops(0)) // <-- Must be set to 0
       .sequence(UnsignedInteger.valueOf(1))
       .flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
-      .signingPublicKey(signer1KeyPair.publicKey())
+      // .signingPublicKey(...) // <-- Must be unset for an inner batch
       .build();
   }
 
@@ -2388,10 +2388,10 @@ public class SignatureUtilsTest {
       .account(signer2KeyPair.publicKey().deriveAddress())
       .destination(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
       .amount(XrpCurrencyAmount.ofDrops(2000))
-      .fee(XrpCurrencyAmount.ofDrops(10))
+      .fee(XrpCurrencyAmount.ofDrops(0)) // <-- Must be set to 0
       .sequence(UnsignedInteger.valueOf(2))
       .flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
-      .signingPublicKey(signer2KeyPair.publicKey())
+      // .signingPublicKey(...) // <-- Must be unset for an inner batch
       .build();
   }
 

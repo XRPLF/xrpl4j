@@ -138,7 +138,8 @@ public interface Batch extends Transaction {
 
     Preconditions.checkArgument(
       !firstTransactionWithNonEmptyPublicKey.isPresent(),
-      "Each inner transaction in a Batch must have an empty SigningPublicKey. Found transaction with non-empty SigningPublicKey: %s",
+      "Each inner transaction in a Batch must have an empty SigningPublicKey. " +
+        "Found transaction with non-empty SigningPublicKey: %s",
       firstTransactionWithNonEmptyPublicKey.orElse(null)
     );
   }
@@ -252,7 +253,8 @@ public interface Batch extends Transaction {
 
     Preconditions.checkArgument(
       !firstSignerMatchingOuterAccount.isPresent(),
-      "The Account submitting a Batch transaction must not sign any inner transactions. Found BatchSigner matching outer account: %s",
+      "The Account submitting a Batch transaction must not sign any inner transactions. " +
+        "Found BatchSigner matching outer account: %s",
       firstSignerMatchingOuterAccount.orElse(null)
     );
   }
@@ -315,7 +317,8 @@ public interface Batch extends Transaction {
 
     Preconditions.checkArgument(
       uniqueTransactionCount == this.rawTransactions().size(),
-      "RawTransactions must not contain duplicate transactions. Found %s unique transactions out of %s total.",
+      "RawTransactions must not contain duplicate transactions. " +
+        "Found %s unique transactions out of %s total.",
       uniqueTransactionCount,
       this.rawTransactions().size()
     );
@@ -328,7 +331,8 @@ public interface Batch extends Transaction {
   default void validateBatchSignersSize() {
     Preconditions.checkArgument(
       this.batchSigners().size() <= this.rawTransactions().size(),
-      "BatchSigners must not contain more entries than RawTransactions. Found %s BatchSigners but only %s RawTransactions.",
+      "BatchSigners must not contain more entries than RawTransactions. " +
+        "Found %s BatchSigners but only %s RawTransactions.",
       this.batchSigners().size(),
       this.rawTransactions().size()
     );
@@ -374,7 +378,8 @@ public interface Batch extends Transaction {
 
       Preconditions.checkArgument(
         !firstInvalidSigner.isPresent(),
-        "BatchSigners must only contain signatures from accounts that have inner transactions. Found BatchSigner with no inner transactions: %s",
+        "BatchSigners must only contain signatures from accounts that have inner transactions. " +
+          "Found BatchSigner with no inner transactions: %s",
         firstInvalidSigner.orElse(null)
       );
     }

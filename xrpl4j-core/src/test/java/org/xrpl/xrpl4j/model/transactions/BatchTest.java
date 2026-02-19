@@ -527,6 +527,129 @@ public class BatchTest {
     assertThat(batch.batchSigners()).hasSize(2);
   }
 
+  @Test
+  void testBatchWithInnerTransactionNonZeroFee() {
+    // Create an inner transaction with non-zero fee
+    Payment invalidInnerTransaction = Payment.builder()
+      .account(ACCOUNT)
+      .destination(DESTINATION)
+      .fee(XrpCurrencyAmount.ofDrops(10)) // Non-zero fee (should be 0)
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .flags(PaymentFlags.INNER_BATCH_TXN)
+      .build();
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(invalidInnerTransaction),
+      RawTransactionWrapper.of(createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2)))
+    );
+
+    assertThatThrownBy(() -> Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Each inner transaction in a Batch must have a fee of 0");
+  }
+
+  @Test
+  void testBatchWithInnerTransactionNonEmptySigningPublicKey() {
+    // Create an inner transaction with non-empty SigningPublicKey
+    PublicKey nonEmptyPublicKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
+    Payment invalidInnerTransaction = Payment.builder()
+      .account(ACCOUNT)
+      .destination(DESTINATION)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .flags(PaymentFlags.INNER_BATCH_TXN)
+      .signingPublicKey(nonEmptyPublicKey) // Should be empty
+      .build();
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(invalidInnerTransaction),
+      RawTransactionWrapper.of(createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2)))
+    );
+
+    assertThatThrownBy(() -> Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Each inner transaction in a Batch must have an empty SigningPublicKey");
+  }
+
+  @Test
+  void testBatchWithInnerTransactionWithSignature() {
+    // Create an inner transaction with a signature
+    Payment invalidInnerTransaction = Payment.builder()
+      .account(ACCOUNT)
+      .destination(DESTINATION)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .flags(PaymentFlags.INNER_BATCH_TXN)
+      .transactionSignature(Signature.fromBase16("00112233")) // Should not have signature
+      .build();
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(invalidInnerTransaction),
+      RawTransactionWrapper.of(createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2)))
+    );
+
+    assertThatThrownBy(() -> Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Each inner transaction in a Batch must have no signature");
+  }
+
+  @Test
+  void testBatchWithInnerTransactionWithSigners() {
+    // Create an inner transaction with signers
+    Payment invalidInnerTransaction = Payment.builder()
+      .account(ACCOUNT)
+      .destination(DESTINATION)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .flags(PaymentFlags.INNER_BATCH_TXN)
+      .signers(Lists.newArrayList(
+        SignerWrapper.of(Signer.builder()
+          .account(ACCOUNT_OTHER)
+          .signingPublicKey(Seed.ed25519Seed().deriveKeyPair().publicKey())
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build()
+        )
+      )) // Should not have signers
+      .build();
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(invalidInnerTransaction),
+      RawTransactionWrapper.of(createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2)))
+    );
+
+    assertThatThrownBy(() -> Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Each inner transaction in a Batch must have no signers");
+  }
+
   // ///////////////
   // Private Helpers
   // ///////////////
@@ -561,14 +684,6 @@ public class BatchTest {
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .flags(PaymentFlags.INNER_BATCH_TXN)
       .build();
-  }
-
-  private List<RawTransactionWrapper> createInnerTransactions(int count) {
-    return IntStream.range(0, count)
-      .mapToObj(i -> RawTransactionWrapper.of(
-        innerTransaction(UnsignedInteger.valueOf(i + 1))
-      ))
-      .collect(Collectors.toList());
   }
 
   private List<RawTransactionWrapper> createInnerTransactionsFromOuterSigner(int count) {

@@ -440,6 +440,29 @@ class XrplBinaryCodecTest {
   }
 
   @Test
+  void encodeForMultiSigningWithNonObjectJsonThrowsException() {
+    String signerAccountId = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
+
+    // Test with JSON array
+    String jsonArray = "[\"value1\", \"value2\"]";
+    Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigning(jsonArray, signerAccountId))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("JSON object required for signing");
+
+    // Test with JSON primitive (string)
+    String jsonString = "\"just a string\"";
+    Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigning(jsonString, signerAccountId))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("JSON object required for signing");
+
+    // Test with JSON primitive (number)
+    String jsonNumber = "12345";
+    Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigning(jsonNumber, signerAccountId))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("JSON object required for signing");
+  }
+
+  @Test
   public void encodePaymentWithSigners() throws JsonProcessingException {
     String json = "{\"Account\":\"rGs8cFHMfJanAXVtn6e8Lz2iH8FtnGdexw\",\"Fee\":\"30\"," +
       "\"Sequence\":6," +
@@ -600,6 +623,158 @@ class XrplBinaryCodecTest {
   void encodeForBatchSigningNullBatchInnerThrowsException() {
     Assertions.assertThatThrownBy(() -> encoder.encodeForBatchInnerSigning(null))
       .isInstanceOf(NullPointerException.class);
+  }
+
+  ///////////////////
+  // encodeForBatchInnerMultiSigning
+  ///////////////////
+
+  @Test
+  void encodeForBatchInnerMultiSigningWithNullBatch() {
+    Address signerAddress = Address.of("rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN");
+    Assertions.assertThatThrownBy(() -> encoder.encodeForBatchInnerMultiSigning(null, signerAddress))
+      .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  void encodeForBatchInnerMultiSigningWithNullSignerAddress() throws JsonProcessingException {
+    List<RawTransactionWrapper> innerTransactions = createInnerPayments(2);
+    Batch batch = createBatch(BatchFlags.ALL_OR_NOTHING, innerTransactions);
+
+    Assertions.assertThatThrownBy(() -> encoder.encodeForBatchInnerMultiSigning(batch, null))
+      .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  void encodeForBatchInnerMultiSigningWithValidBatch() throws JsonProcessingException {
+    // Create two inner payment transactions
+    Payment innerPayment1 = createInnerPayment(XrpCurrencyAmount.ofDrops(1000), UnsignedInteger.ONE);
+    Payment innerPayment2 = createInnerPayment(XrpCurrencyAmount.ofDrops(2000), UnsignedInteger.valueOf(2));
+
+    // Create a Batch transaction
+    Batch batch = Batch.builder()
+      .account(BATCH_ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .signingPublicKey(BATCH_ACCOUNT_SIGNING_PUB_KEY)
+      .addRawTransactions(
+        RawTransactionWrapper.of(innerPayment1),
+        RawTransactionWrapper.of(innerPayment2)
+      )
+      .build();
+
+    Address signerAddress = Address.of("rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN");
+    UnsignedByteArray result = encoder.encodeForBatchInnerMultiSigning(batch, signerAddress);
+
+    // Verify the result starts with the batch signature prefix "BCH\0" = 0x42434800
+    assertThat(result.hexValue()).startsWith("42434800");
+
+    // Verify the structure: prefix (4 bytes) + flags (4 bytes) + count (4 bytes) + tx IDs (32 bytes * 2) + account ID (20 bytes)
+    // Total: 4 + 4 + 4 + (32 * 2) + 20 = 96 bytes = 192 hex chars
+    assertThat(result.hexValue()).hasSize(192);
+
+    // Verify flags are encoded correctly (ALL_OR_NOTHING = 0x00010000)
+    String flagsHex = result.hexValue().substring(8, 16);
+    assertThat(flagsHex).isEqualTo("00010000");
+
+    // Verify count is 2
+    String countHex = result.hexValue().substring(16, 24);
+    assertThat(countHex).isEqualTo("00000002");
+
+    // Verify the account ID suffix is appended (last 40 hex chars = 20 bytes)
+    String accountIdSuffix = result.hexValue().substring(152, 192);
+    assertThat(accountIdSuffix).hasSize(40);
+  }
+
+  @Test
+  void encodeForBatchInnerMultiSigningWithDifferentSigners() throws JsonProcessingException {
+    List<RawTransactionWrapper> innerTransactions = createInnerPayments(2);
+    Batch batch = createBatch(BatchFlags.ALL_OR_NOTHING, innerTransactions);
+
+    Address signer1 = Address.of("rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN");
+    Address signer2 = Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw");
+
+    UnsignedByteArray result1 = encoder.encodeForBatchInnerMultiSigning(batch, signer1);
+    UnsignedByteArray result2 = encoder.encodeForBatchInnerMultiSigning(batch, signer2);
+
+    // The batch serialization part should be the same (first 152 hex chars)
+    assertThat(result1.hexValue().substring(0, 152)).isEqualTo(result2.hexValue().substring(0, 152));
+
+    // But the account ID suffix should be different (last 40 hex chars)
+    assertThat(result1.hexValue().substring(152)).isNotEqualTo(result2.hexValue().substring(152));
+  }
+
+  ///////////////////
+  // encodeForSigningClaim
+  ///////////////////
+
+  @Test
+  void encodeForSigningClaimWithNonObjectJson() {
+    // Test with JSON array
+    String jsonArray = "[\"value1\", \"value2\"]";
+    Assertions.assertThatThrownBy(() -> encoder.encodeForSigningClaim(jsonArray))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("JSON object required for signing");
+
+    // Test with JSON primitive
+    String jsonString = "\"just a string\"";
+    Assertions.assertThatThrownBy(() -> encoder.encodeForSigningClaim(jsonString))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("JSON object required for signing");
+  }
+
+  @Test
+  void encodeForSigningClaimWithMissingChannel() {
+    String jsonMissingChannel = "{\"Amount\":\"1000\"}";
+    Assertions.assertThatThrownBy(() -> encoder.encodeForSigningClaim(jsonMissingChannel))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("Unsigned claims must have Channel and Amount fields.");
+  }
+
+  @Test
+  void encodeForSigningClaimWithMissingAmount() {
+    String jsonMissingAmount = "{\"Channel\":\"5DB01B7FFED6B67E6B0414DED11E051D2EE2B7619CE0EAA6286D67A3A4D5BDB3\"}";
+    Assertions.assertThatThrownBy(() -> encoder.encodeForSigningClaim(jsonMissingAmount))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("Unsigned claims must have Channel and Amount fields.");
+  }
+
+  @Test
+  void encodeForSigningClaimWithValidData() throws JsonProcessingException {
+    String channel = "5DB01B7FFED6B67E6B0414DED11E051D2EE2B7619CE0EAA6286D67A3A4D5BDB3";
+    String amount = "1000";
+    String json = "{\"Channel\":\"" + channel + "\",\"Amount\":\"" + amount + "\"}";
+
+    String result = encoder.encodeForSigningClaim(json);
+
+    // Verify the result starts with the payment channel claim signature prefix "CLM\0" = 0x434C4D00
+    assertThat(result).startsWith("434C4D00");
+
+    // Verify the structure: prefix (4 bytes) + channel (32 bytes) + amount (8 bytes)
+    // Total: 4 + 32 + 8 = 44 bytes = 88 hex chars (prefix is included in the total)
+    assertThat(result).hasSize(88);
+
+    // Verify the channel is encoded correctly (after the prefix)
+    String encodedChannel = result.substring(8, 72);
+    assertThat(encodedChannel).isEqualTo(channel);
+  }
+
+  @Test
+  void encodeForSigningClaimWithDifferentAmounts() throws JsonProcessingException {
+    String channel = "5DB01B7FFED6B67E6B0414DED11E051D2EE2B7619CE0EAA6286D67A3A4D5BDB3";
+
+    String json1 = "{\"Channel\":\"" + channel + "\",\"Amount\":\"1000\"}";
+    String json2 = "{\"Channel\":\"" + channel + "\",\"Amount\":\"2000\"}";
+
+    String result1 = encoder.encodeForSigningClaim(json1);
+    String result2 = encoder.encodeForSigningClaim(json2);
+
+    // The prefix and channel should be the same
+    assertThat(result1.substring(0, 72)).isEqualTo(result2.substring(0, 72));
+
+    // But the amount should be different
+    assertThat(result1.substring(72)).isNotEqualTo(result2.substring(72));
   }
 
   // Helper method to create inner payment transactions

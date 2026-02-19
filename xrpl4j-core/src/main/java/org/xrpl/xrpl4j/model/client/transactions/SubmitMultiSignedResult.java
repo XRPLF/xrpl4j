@@ -27,8 +27,6 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
-import java.util.Optional;
-
 /**
  * The result of a "submit_multisigned" rippled API call.
  *

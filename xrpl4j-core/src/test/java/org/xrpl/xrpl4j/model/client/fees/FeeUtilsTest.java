@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.client.fees;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeBatchFee;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeMultisigNetworkFees;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeNetworkFees;
 import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP;
@@ -438,15 +439,10 @@ public class FeeUtilsTest {
 
   @Test
   void testMin() {
-    assertThrows(
-      NullPointerException.class,
-      () -> FeeUtils.min(null)
-    );
-
-    assertThrows(
-      NullPointerException.class,
-      () -> FeeUtils.min(BigInteger.ZERO, (BigInteger) null)
-    );
+    // Null checks
+    assertThrows(NullPointerException.class, () -> FeeUtils.min(null));
+    assertThrows(NullPointerException.class, () -> FeeUtils.max(BigInteger.ZERO, (BigInteger[]) null));
+    assertThrows(NullPointerException.class, () -> FeeUtils.max(BigInteger.ZERO, (BigInteger) null));
 
     assertThat(FeeUtils.min(BigInteger.valueOf(-1), BigInteger.ZERO)).isEqualTo(BigInteger.valueOf(-1));
     assertThat(FeeUtils.min(BigInteger.ZERO, BigInteger.ZERO)).isEqualTo(BigInteger.ZERO);
@@ -460,15 +456,10 @@ public class FeeUtilsTest {
 
   @Test
   void testMax() {
-    assertThrows(
-      NullPointerException.class,
-      () -> FeeUtils.max(null)
-    );
-
-    assertThrows(
-      NullPointerException.class,
-      () -> FeeUtils.max(BigInteger.ZERO, (BigInteger) null)
-    );
+    // Null checks
+    assertThrows(NullPointerException.class, () -> FeeUtils.max(null));
+    assertThrows(NullPointerException.class, () -> FeeUtils.max(BigInteger.ZERO, (BigInteger[]) null));
+    assertThrows(NullPointerException.class, () -> FeeUtils.max(BigInteger.ZERO, (BigInteger) null));
 
     assertThat(FeeUtils.max(BigInteger.valueOf(-1), BigInteger.ZERO)).isEqualTo(BigInteger.ZERO);
     assertThat(FeeUtils.max(BigInteger.ZERO, BigInteger.ZERO)).isEqualTo(BigInteger.ZERO);
@@ -564,6 +555,216 @@ public class FeeUtilsTest {
       UnsignedLong.MAX_VALUE.bigIntegerValue(),
       new BigDecimal(UnsignedLong.MAX_VALUE.bigIntegerValue())
     )).isEqualTo(new BigInteger("340282366920938463426481119284349108225"));
+  }
+
+  @Test
+  void testComputeBatchFeeNullBaseFee() {
+    assertThrows(NullPointerException.class,
+      () -> computeBatchFee(null, UnsignedInteger.ZERO, XrpCurrencyAmount.ofDrops(0)));
+    assertThrows(NullPointerException.class,
+      () -> computeBatchFee(XrpCurrencyAmount.ofDrops(10), null, XrpCurrencyAmount.ofDrops(0)));
+    assertThrows(NullPointerException.class,
+      () -> computeBatchFee(XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ZERO, null));
+  }
+
+  @Test
+  void testComputeBatchFeeNullInnerFeeSum() {
+    assertThrows(NullPointerException.class, () ->
+      computeBatchFee(XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ZERO, null)
+    );
+  }
+
+  @Test
+  void testComputeBatchFeeSingleAccountNoInnerFees() {
+    // (0+2)*10 + 0 = 20
+    XrpCurrencyAmount result = computeBatchFee(
+      XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ZERO, XrpCurrencyAmount.ofDrops(0)
+    );
+    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(20));
+  }
+
+  @Test
+  void testComputeBatchFeeOneBatchSigner() {
+    // (1+2)*10 + 0 = 30
+    XrpCurrencyAmount result = computeBatchFee(
+      XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ONE, XrpCurrencyAmount.ofDrops(0)
+    );
+    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(30));
+  }
+
+  @Test
+  void testComputeBatchFeeWithInnerFees() {
+    // (0+2)*10 + 20 = 40
+    XrpCurrencyAmount result = computeBatchFee(
+      XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ZERO, XrpCurrencyAmount.ofDrops(20)
+    );
+    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(40));
+  }
+
+  @Test
+  void testComputeBatchFeeCombined() {
+    // (2+2)*10 + 50 = 90
+    XrpCurrencyAmount result = computeBatchFee(
+      XrpCurrencyAmount.ofDrops(10), UnsignedInteger.valueOf(2), XrpCurrencyAmount.ofDrops(50)
+    );
+    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(90));
+  }
+
+  // /////////////////
+  // computeBatchFee(FeeResult, UnsignedInteger) - Public method tests
+  // /////////////////
+
+  @Test
+  void testComputeBatchFeeWithFeeResultNullFeeResult() {
+    assertThrows(NullPointerException.class,
+      () -> FeeUtils.computeBatchFee(null, UnsignedInteger.ZERO));
+  }
+
+  @Test
+  void testComputeBatchFeeWithFeeResultNullNumBatchSigners() {
+    FeeResult feeResult = feeResultBuilder().build();
+    assertThrows(NullPointerException.class,
+      () -> FeeUtils.computeBatchFee(feeResult, null));
+  }
+
+  @Test
+  void testComputeBatchFeeWithFeeResultZeroBatchSigners() {
+    // Test with empty queue (recommendedFee = feeLow = 1000 drops)
+    FeeResult feeResult = FeeResult.builder()
+      .currentLedgerSize(UnsignedInteger.valueOf(56))
+      .currentQueueSize(UnsignedInteger.valueOf(0))
+      .drops(
+        FeeDrops.builder()
+          .baseFee(XrpCurrencyAmount.ofDrops(10))
+          .medianFee(XrpCurrencyAmount.ofDrops(100))
+          .minimumFee(XrpCurrencyAmount.ofDrops(10))
+          .openLedgerFee(XrpCurrencyAmount.ofDrops(2657))
+          .build()
+      )
+      .expectedLedgerSize(UnsignedInteger.valueOf(55))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(26575101)))
+      .levels(
+        FeeLevels.builder()
+          .medianLevel(XrpCurrencyAmount.ofDrops(256000))
+          .minimumLevel(XrpCurrencyAmount.ofDrops(256))
+          .openLedgerLevel(XrpCurrencyAmount.ofDrops(67940792))
+          .referenceLevel(XrpCurrencyAmount.ofDrops(256))
+          .build()
+      )
+      .maxQueueSize(UnsignedInteger.valueOf(110))
+      .status("success")
+      .build();
+
+    // recommendedFee = 15 drops (from computeNetworkFeesForEmptyQueue test)
+    // numBatchSigners = 0
+    // Formula: (0 + 2) * 15 + 0 = 30 drops
+    XrpCurrencyAmount result = FeeUtils.computeBatchFee(feeResult, UnsignedInteger.ZERO);
+    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(30));
+  }
+
+  @Test
+  void testComputeBatchFeeWithFeeResultOneBatchSigner() {
+    // Test with empty queue
+    FeeResult feeResult = FeeResult.builder()
+      .currentLedgerSize(UnsignedInteger.valueOf(56))
+      .currentQueueSize(UnsignedInteger.valueOf(0))
+      .drops(
+        FeeDrops.builder()
+          .baseFee(XrpCurrencyAmount.ofDrops(10))
+          .medianFee(XrpCurrencyAmount.ofDrops(100))
+          .minimumFee(XrpCurrencyAmount.ofDrops(10))
+          .openLedgerFee(XrpCurrencyAmount.ofDrops(2657))
+          .build()
+      )
+      .expectedLedgerSize(UnsignedInteger.valueOf(55))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(26575101)))
+      .levels(
+        FeeLevels.builder()
+          .medianLevel(XrpCurrencyAmount.ofDrops(256000))
+          .minimumLevel(XrpCurrencyAmount.ofDrops(256))
+          .openLedgerLevel(XrpCurrencyAmount.ofDrops(67940792))
+          .referenceLevel(XrpCurrencyAmount.ofDrops(256))
+          .build()
+      )
+      .maxQueueSize(UnsignedInteger.valueOf(110))
+      .status("success")
+      .build();
+
+    // recommendedFee = 15 drops
+    // numBatchSigners = 1
+    // Formula: (1 + 2) * 15 + 15 = 60 drops
+    XrpCurrencyAmount result = FeeUtils.computeBatchFee(feeResult, UnsignedInteger.ONE);
+    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(60));
+  }
+
+  @Test
+  void testComputeBatchFeeWithFeeResultMultipleBatchSigners() {
+    // Test with moderately filled queue
+    FeeResult feeResult = FeeResult.builder()
+      .currentLedgerSize(UnsignedInteger.valueOf(56))
+      .currentQueueSize(UnsignedInteger.valueOf(220))
+      .drops(
+        FeeDrops.builder()
+          .baseFee(XrpCurrencyAmount.ofDrops(10))
+          .medianFee(XrpCurrencyAmount.ofDrops(10000))
+          .minimumFee(XrpCurrencyAmount.ofDrops(10))
+          .openLedgerFee(XrpCurrencyAmount.ofDrops(2653937))
+          .build()
+      )
+      .expectedLedgerSize(UnsignedInteger.valueOf(55))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(26575101)))
+      .levels(
+        FeeLevels.builder()
+          .medianLevel(XrpCurrencyAmount.ofDrops(256000))
+          .minimumLevel(XrpCurrencyAmount.ofDrops(256))
+          .openLedgerLevel(XrpCurrencyAmount.ofDrops(67940792))
+          .referenceLevel(XrpCurrencyAmount.ofDrops(256))
+          .build()
+      )
+      .maxQueueSize(UnsignedInteger.valueOf(1100))
+      .status("success")
+      .build();
+
+    // recommendedFee = 10000 drops (from computeNetworkFeesForModeratelyFilledQueue test)
+    // numBatchSigners = 3
+    // Formula: (3 + 2) * 10000 + (3 * 10000) = 50000 + 30000 = 80000 drops
+    XrpCurrencyAmount result = FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(3));
+    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(80000));
+  }
+
+  @Test
+  void testComputeBatchFeeWithFeeResultHighTraffic() {
+    // Test with completely filled queue
+    FeeResult feeResult = FeeResult.builder()
+      .currentLedgerSize(UnsignedInteger.valueOf(56))
+      .currentQueueSize(UnsignedInteger.valueOf(110))
+      .drops(
+        FeeDrops.builder()
+          .baseFee(XrpCurrencyAmount.ofDrops(10))
+          .medianFee(XrpCurrencyAmount.ofDrops(100))
+          .minimumFee(XrpCurrencyAmount.ofDrops(10))
+          .openLedgerFee(XrpCurrencyAmount.ofDrops(2657))
+          .build()
+      )
+      .expectedLedgerSize(UnsignedInteger.valueOf(55))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(26575101)))
+      .levels(
+        FeeLevels.builder()
+          .medianLevel(XrpCurrencyAmount.ofDrops(256000))
+          .minimumLevel(XrpCurrencyAmount.ofDrops(256))
+          .openLedgerLevel(XrpCurrencyAmount.ofDrops(67940792))
+          .referenceLevel(XrpCurrencyAmount.ofDrops(256))
+          .build()
+      )
+      .maxQueueSize(UnsignedInteger.valueOf(110))
+      .status("success")
+      .build();
+
+    // recommendedFee = 2923 drops (from computeNetworkFeesForCompletelyFilledQueue test)
+    // numBatchSigners = 5
+    // Formula: (5 + 2) * 2923 + (5 * 2923) = 20461 + 14615 = 35076 drops
+    XrpCurrencyAmount result = FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(5));
+    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(35076));
   }
 
   private ImmutableFeeResult.Builder feeResultBuilder() {

@@ -46,12 +46,19 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.crypto.keys.Base58EncodedSecret;
+import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.model.AddressConstants;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
+import org.xrpl.xrpl4j.model.flags.BatchFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
 import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
@@ -68,6 +75,9 @@ import org.xrpl.xrpl4j.model.transactions.AmmDelete;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
 import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
+import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.BatchSigner;
+import org.xrpl.xrpl4j.model.transactions.BatchSignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -86,6 +96,8 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.ImmutableBatch.Builder;
+import org.xrpl.xrpl4j.model.transactions.ImmutablePayment;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainBridge;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
@@ -110,7 +122,9 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.PermissionedDomainDelete;
 import org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet;
+import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
@@ -177,6 +191,9 @@ public class SignatureUtilsTest {
 
   SignatureUtils signatureUtils;
 
+  KeyPair signer1KeyPair;
+  KeyPair signer2KeyPair;
+
   @BeforeEach
   public void setUp() throws JsonProcessingException {
     openMocks(this);
@@ -188,12 +205,24 @@ public class SignatureUtilsTest {
     when(xrplBinaryCodecMock.encodeForMultiSigning(any(), anyString())).thenReturn("ED");
     when(xrplBinaryCodecMock.encode(anyString())).thenReturn("0123456789"); // <-- Unused HEX value.
     this.signatureUtils = new SignatureUtils(objectMapperMock, xrplBinaryCodecMock);
+
+    this.signer1KeyPair = Seed.secp256k1Seed().deriveKeyPair();
+    this.signer2KeyPair = Seed.secp256k1Seed().deriveKeyPair();
   }
 
-  //////////////////
-  // toSignableBytes (Transaction)
+  @Test
+  void constructorWithNullObjectMapper() {
+    assertThrows(NullPointerException.class, () -> new SignatureUtils(null, XrplBinaryCodec.getInstance()));
+  }
 
-  /// ///////////////
+  @Test
+  void constructorWithNullBinaryCodec() {
+    assertThrows(NullPointerException.class, () -> new SignatureUtils(new ObjectMapper(), null));
+  }
+
+  // ////////////////
+  // toSignableBytes (Transaction)
+  // ////////////////
 
   @Test
   public void toSignableBytesWithNullTransaction() {
@@ -240,10 +269,9 @@ public class SignatureUtilsTest {
     verifyNoMoreInteractions(xrplBinaryCodecMock);
   }
 
-  //////////////////
+  // ////////////////
   // toSignableBytes (UnsignedClaim)
-
-  /// ///////////////
+  // ////////////////
 
   @Test
   void unsignedClaimToSignableBytesWhenNull() {
@@ -286,10 +314,9 @@ public class SignatureUtilsTest {
       .isEqualTo("434C4D00ABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCD0000000000000001");
   }
 
-  //////////////////
+  // ////////////////
   // toSignableBytes (AttestationClaim)
-
-  /// ///////////////
+  // ////////////////
 
   @Test
   void attestationClaimToSignableBytesWhenNull() {
@@ -371,10 +398,9 @@ public class SignatureUtilsTest {
         "A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000000");
   }
 
-  //////////////////
+  // ////////////////
   // toSignableBytes (AttestationCreateAccount)
-
-  /// ///////////////
+  // ////////////////
 
   @Test
   void attestationCreateAccountToSignableBytesWhenNull() {
@@ -462,11 +488,278 @@ public class SignatureUtilsTest {
         "00014B5F762798A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000000");
   }
 
-  //////////////////
+  // ////////////////
+  // toSignableBytes (Batch)
+  // ////////////////
+
+  @Test
+  void batchToSignableBytesWhenNull() {
+    assertThrows(NullPointerException.class, () -> signatureUtils.toSignableBytes((Batch) null));
+  }
+
+  @Test
+  void batchToSignableBytes() throws JsonProcessingException {
+    Payment payment1 = createPayment1();
+    Payment payment2 = createPayment2();
+
+    Batch batch = createBatchTransaction(payment1, payment2);
+
+    when(xrplBinaryCodecMock.encodeForBatchInnerSigning(any(Batch.class)))
+      .thenReturn(UnsignedByteArray.fromHex("ABCD1234"));
+
+    when(xrplBinaryCodecMock.encodeForSigning(anyString()))
+      .thenReturn("4321DCBA");
+
+    UnsignedByteArray innerBytes = signatureUtils.toSignableInnerBytes(batch);
+    assertThat(innerBytes.hexValue()).isEqualTo("ABCD1234");
+
+    UnsignedByteArray outerBytes = signatureUtils.toSignableBytes(batch);
+    assertThat(outerBytes.hexValue()).isEqualTo("4321DCBA");
+
+    verify(xrplBinaryCodecMock).encodeForBatchInnerSigning(batch);
+    verify(xrplBinaryCodecMock).encodeForSigning(anyString());
+    verifyNoMoreInteractions(xrplBinaryCodecMock);
+    verify(objectMapperMock).writeValueAsString(batch);
+    verifyNoMoreInteractions(objectMapperMock);
+  }
+
+  @Test
+  void batchToSignableBytesWithJsonException() throws JsonProcessingException {
+    Payment payment1 = createPayment1();
+    Payment payment2 = createPayment2();
+
+    Batch batch = createBatchTransaction(payment1, payment2);
+
+    when(xrplBinaryCodecMock.encodeForBatchInnerSigning(any(Batch.class)))
+      .thenThrow(new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)));
+    assertThrows(RuntimeException.class, () -> signatureUtils.toSignableInnerBytes(batch));
+
+    when(xrplBinaryCodecMock.encodeForBatchInnerMultiSigning(any(Batch.class), any(Address.class)))
+      .thenThrow(new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)));
+    assertThrows(RuntimeException.class,
+      () -> signatureUtils.toMultiSignableInnerBytes(batch, sourcePublicKey.deriveAddress())
+    );
+
+    when(xrplBinaryCodecMock.encodeForSigning(anyString()))
+      .thenThrow(new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)));
+    assertThrows(RuntimeException.class, () -> signatureUtils.toSignableBytes(batch));
+  }
+
+  @Test
+  void toSignableInnerBytesWithNullBatch() {
+    assertThrows(NullPointerException.class, () -> signatureUtils.toSignableInnerBytes((Batch) null));
+  }
+
+  @Test
+  void toMultiSignableInnerBytesWithNullBatch() {
+    assertThrows(NullPointerException.class,
+      () -> signatureUtils.toMultiSignableInnerBytes(null, sourcePublicKey.deriveAddress())
+    );
+  }
+
+  @Test
+  void toMultiSignableInnerBytesWithNullAddress() {
+    Batch batch = createBatchTransaction(createPayment1(), createPayment2());
+    assertThrows(NullPointerException.class, () -> signatureUtils.toMultiSignableInnerBytes(batch, null));
+  }
+
+  @Test
+  void batchToMultiSignableInnerBytes() throws JsonProcessingException {
+    Payment payment1 = createPayment1();
+    Payment payment2 = createPayment2();
+
+    Batch batch = createBatchTransaction(payment1, payment2);
+
+    when(xrplBinaryCodecMock.encodeForBatchInnerMultiSigning(any(Batch.class), any(Address.class)))
+      .thenReturn(UnsignedByteArray.fromHex("DEADBEEF"));
+
+    UnsignedByteArray innerBytes = signatureUtils.toMultiSignableInnerBytes(batch, sourcePublicKey.deriveAddress());
+    assertThat(innerBytes.hexValue()).isEqualTo("DEADBEEF");
+
+    verify(xrplBinaryCodecMock).encodeForBatchInnerMultiSigning(batch, sourcePublicKey.deriveAddress());
+    verifyNoMoreInteractions(xrplBinaryCodecMock);
+  }
+
+  // ////////////////
+  // Actual encoding tests (using SignatureUtils.getInstance())
+  // ////////////////
+
+  @Test
+  void toSignableBytesActual() {
+    Payment payment = createPayment1();
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableBytes(payment);
+    assertThat(bytes).isNotNull();
+    assertThat(bytes.hexValue()).isNotEmpty();
+  }
+
+  @Test
+  void toMultiSignableBytesActual() {
+    Payment payment = createPayment1();
+    UnsignedByteArray bytes = SignatureUtils.getInstance()
+      .toMultiSignableBytes(payment, sourcePublicKey.deriveAddress());
+    assertThat(bytes).isNotNull();
+    assertThat(bytes.hexValue()).isNotEmpty();
+  }
+
+  @Test
+  void batchToSignableInnerBytesActual() {
+    Batch batch = createBatchTransaction(createPayment1(), createPayment2());
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
+    assertThat(bytes).isNotNull();
+    assertThat(bytes.hexValue()).isNotEmpty();
+  }
+
+  @Test
+  void batchToMultiSignableInnerBytesActual() {
+    Batch batch = createBatchTransaction(createPayment1(), createPayment2());
+    UnsignedByteArray bytes = SignatureUtils.getInstance()
+      .toMultiSignableInnerBytes(batch, sourcePublicKey.deriveAddress());
+    assertThat(bytes).isNotNull();
+    assertThat(bytes.hexValue()).isNotEmpty();
+  }
+
+  // ////////////////
+  // Batch edge cases
+  // ////////////////
+
+  @Test
+  void batchToSignableBytesWithSingleInnerTransaction() {
+    assertThrows(IllegalArgumentException.class, () -> {
+      Batch.builder()
+        .account(sourcePublicKey.deriveAddress())
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .sequence(UnsignedInteger.valueOf(6))
+        .flags(BatchFlags.ALL_OR_NOTHING)
+        .addRawTransactions(RawTransactionWrapper.of(createPayment1()))
+        .signingPublicKey(sourcePublicKey)
+        .build();
+    });
+  }
+
+  @Test
+  void batchToSignableBytesWithManyWellKnownInnerTransactions() {
+    Builder batchBuilder = Batch.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .flags(BatchFlags.ALL_OR_NOTHING);
+
+    // We use deterministic seeds so that the destination addresses are deterministic, so we can generate the same
+    // signature each test-run.
+    final List<Seed> deterministicSeeds = IntStream.rangeClosed(1, 8)
+      .mapToObj(i -> Seed.ed25519SeedFromPassphrase(Passphrase.of("shh" + i)))
+      .collect(Collectors.toList());
+
+    for (int i = 0; i < 8; i++) {
+      final Seed seed = deterministicSeeds.get(i);
+      batchBuilder.addRawTransactions(RawTransactionWrapper.of(createInnerPaymentHelper(
+        seed.deriveKeyPair().publicKey().deriveAddress(),
+        seed.deriveKeyPair().publicKey().deriveAddress()
+      )));
+    }
+
+    Batch batch = batchBuilder.signingPublicKey(sourcePublicKey).build();
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
+    assertThat(bytes).isNotNull();
+    assertThat(bytes.hexValue()).isNotEmpty();
+
+    // Regression Guard: This value reflects current stable behavior captured from a known-good run. It ensures that
+    // future refactors do not inadvertently change the output of this established implementation.
+    assertThat(bytes.hexValue()).isEqualTo(
+      "4243480000010000000000086AE6957F40DE369AD007F1C7DCABE1B80E415857E317990E0116A9381649E91BC05EF8A5D" +
+        "B6C5767176E74B2436782FE806CF27BA5889BE8885964EC53DC5EA4CA771E2F9EC90459E4FD192069270CF1CA111CECB2E576BC51" +
+        "EA9BE8DEEF21F68877A84706E711E8929EE53008E7A684BB94FAF4038179375DF7DA2800465671E00067040F059E0ED0260A27350" +
+        "5948A101188DD35DEABC476A7ED403B5DE587649A49BAAC5A101938AB3AF6546C0BBF65AA9EC33EF30E4EF9B5D116568077407E10" +
+        "EFAC96EABBC2ED1A14759617E6881942EC8C137B4974B1D83E07B47C2EB82358840E4B6B237493029D7297933216EA16BC3EDEF3F" +
+        "10478577A1BE98055BE"
+    );
+  }
+
+  @Test
+  void batchToSignableBytesWithManyRandomInnerTransactions() {
+    Builder batchBuilder = Batch.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .flags(BatchFlags.ALL_OR_NOTHING);
+
+    for (int i = 0; i < 8; i++) {
+      final Address sourceAddress = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+      final Address destinationAddress = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+      batchBuilder.addRawTransactions(RawTransactionWrapper.of(createInnerPaymentHelper(
+        sourceAddress,
+        destinationAddress
+      )));
+    }
+
+    Batch batch = batchBuilder.signingPublicKey(sourcePublicKey).build();
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
+    assertThat(bytes).isNotNull();
+    assertThat(bytes.hexValue()).isNotEmpty();
+  }
+
+  @Test
+  void batchToSignableBytesWithWellKnownMixedTransactionTypes() {
+    final Seed deterministicSenderSeed = Seed.ed25519SeedFromPassphrase(Passphrase.of("sender"));
+    final Seed deterministicDestinationSeed = Seed.ed25519SeedFromPassphrase(Passphrase.of("destination"));
+
+    final Payment payment = this.createInnerPaymentHelper(
+      deterministicSenderSeed.deriveKeyPair().publicKey().deriveAddress(),
+      deterministicDestinationSeed.deriveKeyPair().publicKey().deriveAddress()
+    );
+
+    final AccountSet accountSet = AccountSet.builder()
+      .account(deterministicSenderSeed.deriveKeyPair().publicKey().deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.valueOf(3))
+      .flags(AccountSetTransactionFlags.INNER_BATCH_TXN)
+      .build();
+
+    final Batch batch = Batch.builder()
+      .account(deterministicSenderSeed.deriveKeyPair().publicKey().deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .addRawTransactions(RawTransactionWrapper.of(payment), RawTransactionWrapper.of(accountSet))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
+
+    assertThat(bytes).isNotNull();
+    assertThat(bytes.hexValue()).isNotEmpty();
+    assertThat(bytes.hexValue()).isEqualTo(
+      "4243480000010000000000022ECA1C69512AB1846736340F2622CF324660B09F3D6C1724B74326E917C7207F2E0010DA9D" +
+        "B4F815BC8743C63D3B9BFC0A1E548B08A624B617A22B1B39112ABB")
+    ;
+  }
+
+  @Test
+  void batchToSignableBytesWithRandomMixedTransactionTypes() {
+    Payment payment = createPayment1();
+    AccountSet accountSet = AccountSet.builder()
+      .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.valueOf(3))
+      .flags(AccountSetTransactionFlags.INNER_BATCH_TXN)
+      .build();
+
+    Batch batch = Batch.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .addRawTransactions(RawTransactionWrapper.of(payment), RawTransactionWrapper.of(accountSet))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
+    assertThat(bytes).isNotNull();
+    assertThat(bytes.hexValue()).isNotEmpty();
+  }
+
+  // ////////////////
   // toMultiSignableBytes
-
-  /// ///////////////
-
+  // ////////////////
 
   @Test
   public void toMultiSignableBytes() throws JsonProcessingException {
@@ -489,10 +782,9 @@ public class SignatureUtilsTest {
     );
   }
 
-  ////////////////////////////
+  // //////////////////////////
   // addSignatureToTransaction
-
-  /// /////////////////////////
+  // //////////////////////////
 
   @Test
   public void addSignatureToTransactionWithNullTransaction() {
@@ -912,6 +1204,32 @@ public class SignatureUtilsTest {
       .build();
 
     addMultiSignatureToTransactionHelper(ammClawback);
+  }
+
+  @Test
+  void addSignatureToBatch() {
+    Payment payment1 = createPayment1();
+    Payment payment2 = createPayment2();
+
+    Batch batch = createBatchTransaction(payment1, payment2);
+
+    addSignatureToTransactionHelper(batch);
+  }
+
+  @Test
+  void addMultiSignaturesToBatch() {
+    Payment payment1 = createPayment1();
+    Payment payment2 = createPayment2();
+
+    Batch batch = Batch.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .addRawTransactions(RawTransactionWrapper.of(payment1), RawTransactionWrapper.of(payment2))
+      .build();
+
+    addMultiSignatureToTransactionHelper(batch);
   }
 
   @Test
@@ -2133,5 +2451,62 @@ public class SignatureUtilsTest {
 
     assertThat(signedTransaction).usingRecursiveComparison().ignoringFields("signers").isEqualTo(transaction);
     assertThat(signedTransaction.signers()).asList().containsExactly(signer1, signer2);
+  }
+
+  private ImmutablePayment createPayment1() {
+    return createInnerPaymentHelper(
+      signer1KeyPair.publicKey().deriveAddress(),
+      Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress() // <-- Use a random seed for a random destination
+    );
+  }
+
+  private ImmutablePayment createPayment2() {
+    return createInnerPaymentHelper(
+      signer2KeyPair.publicKey().deriveAddress(),
+      Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress() // <-- Use a random seed for a random destination
+    );
+  }
+
+  private ImmutablePayment createInnerPaymentHelper(
+    final Address sourceAddress,
+    final Address destinationAddress
+  ) {
+    Objects.requireNonNull(sourceAddress);
+    Objects.requireNonNull(destinationAddress);
+
+    return Payment.builder()
+      .account(sourceAddress)
+      .destination(destinationAddress)
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(0)) // <-- Must be set to 0
+      .sequence(UnsignedInteger.valueOf(1))
+      .flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
+      // .signingPublicKey(...) // <-- Must be unset for an inner batch
+      .build();
+  }
+
+  private Batch createBatchTransaction(Payment payment1, Payment payment2) {
+    return Batch.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .addRawTransactions(RawTransactionWrapper.of(payment1), RawTransactionWrapper.of(payment2))
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(payment1.account())
+          .signingPublicKey(payment1.signingPublicKey())
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build()
+        ),
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(payment2.account())
+          .signingPublicKey(payment2.signingPublicKey())
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build()
+        )
+      ))
+      .signingPublicKey(sourcePublicKey)
+      .build();
   }
 }

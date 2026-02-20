@@ -116,7 +116,9 @@ public class DelegateSetJsonTest extends AbstractJsonTest {
             .sequence(UnsignedInteger.valueOf(2))
             .fee(XrpCurrencyAmount.ofDrops(10))
             .signingPublicKey(
-                    PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
+                    PublicKey.fromBase16EncodedPublicKey(
+                      "ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84"
+                    )
             )
             .build();
 

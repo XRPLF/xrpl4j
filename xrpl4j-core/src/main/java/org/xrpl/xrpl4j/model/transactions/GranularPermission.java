@@ -21,15 +21,20 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.Beta;
 
 /**
  * Enumeration of granular permission types for delegated credentials.
  * These permissions support control over specific portions of transactions,
  * rather than entire transaction types.
- * 
+ *
  * <p>Granular permission values are always greater than 65536 (UINT16_MAX)
  * to avoid conflicts with transaction type permission values.</p>
+ *
+ * <p>This enum will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
+ * Its API is subject to change.</p>
  */
+@Beta
 public enum GranularPermission {
 
   /**

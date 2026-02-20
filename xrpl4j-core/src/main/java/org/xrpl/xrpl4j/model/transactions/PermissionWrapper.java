@@ -23,15 +23,20 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 
 /**
  * Wrapper object for a {@link Permission}, so that the JSON representation of a list of {@link Permission}s is correct,
  * according to the XRPL binary serialization specification.
+ *
+ * <p>This class will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
+ * Its API is subject to change.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutablePermissionWrapper.class)
 @JsonDeserialize(as = ImmutablePermissionWrapper.class)
+@Beta
 public interface PermissionWrapper {
 
   /**

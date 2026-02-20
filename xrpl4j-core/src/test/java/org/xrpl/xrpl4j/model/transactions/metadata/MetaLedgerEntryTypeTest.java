@@ -40,6 +40,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.MP_TOKEN.value()).isEqualTo("MPToken");
     assertThat(MetaLedgerEntryType.MP_TOKEN_ISSUANCE.value()).isEqualTo("MPTokenIssuance");
     assertThat(MetaLedgerEntryType.PERMISSIONED_DOMAIN.value()).isEqualTo("PermissionedDomain");
+    assertThat(MetaLedgerEntryType.DELEGATE.value()).isEqualTo("Delegate");
   }
 
   @Test
@@ -74,6 +75,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.MP_TOKEN_ISSUANCE.ledgerObjectType()).isEqualTo(MetaMpTokenIssuanceObject.class);
     assertThat(MetaLedgerEntryType.PERMISSIONED_DOMAIN.ledgerObjectType()).isEqualTo(
       MetaPermissionedDomainObject.class);
+    assertThat(MetaLedgerEntryType.DELEGATE.ledgerObjectType()).isEqualTo(MetaDelegateObject.class);
   }
 
   @Test

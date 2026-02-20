@@ -75,7 +75,11 @@ public enum TransactionType {
 
   /**
    * The {@link TransactionType} for the {@link DelegateSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
    */
+  @Beta
   DELEGATE_SET("DelegateSet"),
 
   /**

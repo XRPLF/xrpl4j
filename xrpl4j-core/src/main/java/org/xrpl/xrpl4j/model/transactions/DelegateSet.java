@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import org.immutables.value.Value;
@@ -36,10 +37,14 @@ import java.util.Set;
 /**
  * A {@link DelegateSet} transaction allows an account to delegate a set of permissions to another account.
  * This enables the authorized account to send certain types of transactions on behalf of the delegating account.
+ *
+ * <p>This class will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
+ * Its API is subject to change.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableDelegateSet.class)
 @JsonDeserialize(as = ImmutableDelegateSet.class)
+@Beta
 public interface DelegateSet extends Transaction {
 
   /**

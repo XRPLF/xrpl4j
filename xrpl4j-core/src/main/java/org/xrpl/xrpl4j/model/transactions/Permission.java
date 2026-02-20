@@ -23,14 +23,19 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 
 /**
  * {@link Permission} inner object with PermissionValue details.
+ *
+ * <p>This class will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
+ * Its API is subject to change.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutablePermission.class)
 @JsonDeserialize(as = ImmutablePermission.class)
+@Beta
 public interface Permission {
 
   /**

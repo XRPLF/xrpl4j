@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.ledger;
+package org.xrpl.xrpl4j.model.transactions.metadata;
 
 /*-
  * ========================LICENSE_START=================================
@@ -26,70 +26,51 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.DelegateSet;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.PermissionWrapper;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * This object represents a set of permissions that an account has delegated to another account.
- * {@link DelegateSet} transactions create these objects.
+ * Represents a Delegate ledger object in transaction metadata, which describes a set of permissions
+ * that an account has delegated to another account.
  *
  * <p>This class will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
  * Its API is subject to change.</p>
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableDelegateObject.class)
-@JsonDeserialize(as = ImmutableDelegateObject.class)
+@JsonSerialize(as = ImmutableMetaDelegateObject.class)
+@JsonDeserialize(as = ImmutableMetaDelegateObject.class)
 @Beta
-public interface DelegateObject extends LedgerObject {
-
-  /**
-   * Construct a builder for this class.
-   *
-   * @return An {@link ImmutableDelegateObject.Builder}.
-   */
-  static ImmutableDelegateObject.Builder builder() {
-    return ImmutableDelegateObject.builder();
-  }
-
-  /**
-   * The type of ledger object, which will always be "Delegate" in this case.
-   *
-   * @return Always {@link LedgerEntryType#DELEGATE}.
-   */
-  @JsonProperty("LedgerEntryType")
-  @Value.Derived
-  default LedgerEntryType ledgerEntryType() {
-    return LedgerEntryType.DELEGATE;
-  }
+public interface MetaDelegateObject extends MetaLedgerObject {
 
   /**
    * The account that wants to authorize another account.
    *
-   * @return The {@link Address} of the account.
+   * @return An {@link Optional} {@link Address} of the account.
    */
   @JsonProperty("Account")
-  Address account();
+  Optional<Address> account();
 
   /**
    * The authorized account.
    *
-   * @return The {@link Address} of the authorized account.
+   * @return An {@link Optional} {@link Address} of the authorized account.
    */
   @JsonProperty("Authorize")
-  Address authorize();
+  Optional<Address> authorize();
 
   /**
    * The transaction permissions that the account has access to.
    *
-   * @return A {@link List} of {@link PermissionWrapper}s.
+   * @return An {@link Optional} {@link List} of {@link PermissionWrapper}s.
    */
   @JsonProperty("Permissions")
-  List<PermissionWrapper> permissions();
+  Optional<List<PermissionWrapper>> permissions();
 
   /**
    * A hint indicating which page of the sender's owner directory links to this object,
@@ -98,43 +79,35 @@ public interface DelegateObject extends LedgerObject {
    * <p>Note: The object does not contain a direct link to the owner directory containing it, since that value can be
    * derived from the Account.
    *
-   * @return A {@link String} containing the owner node hint.
+   * @return An {@link Optional} {@link String} containing the owner node hint.
    */
   @JsonProperty("OwnerNode")
-  String ownerNode();
+  Optional<String> ownerNode();
 
   /**
    * A bit-map of boolean flags. No flags are defined for the Delegate object
    * type, so this value is always 0.
    *
-   * @return Always {@link Flags#UNSET}.
+   * @return An {@link Optional} {@link Flags}.
    */
   @JsonProperty("Flags")
-  @Value.Derived
-  default Flags flags() {
-    return Flags.UNSET;
-  }
+  Optional<Flags> flags();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.
    *
-   * @return A {@link Hash256} containing the previous transaction hash.
+   * @return An {@link Optional} {@link Hash256} containing the previous transaction hash.
    */
   @JsonProperty("PreviousTxnID")
-  Hash256 previousTransactionId();
+  Optional<Hash256> previousTransactionId();
 
   /**
    * The index of the ledger that contains the transaction that most recently modified this object.
    *
-   * @return An {@link UnsignedInteger} representing the previous transaction ledger sequence.
+   * @return An {@link Optional} {@link LedgerIndex} representing the previous transaction ledger sequence.
    */
   @JsonProperty("PreviousTxnLgrSeq")
-  UnsignedInteger previousTransactionLedgerSequence();
+  Optional<LedgerIndex> previousTransactionLedgerSequence();
 
-  /**
-   * The unique ID of the {@link DelegateObject}.
-   *
-   * @return A {@link Hash256} containing the ID.
-   */
-  Hash256 index();
 }
+

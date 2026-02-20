@@ -168,7 +168,7 @@ public class BatchTest {
 
         @Override
         public XrpCurrencyAmount fee() {
-          return batch.fee();
+          return XrpCurrencyAmount.ofDrops(0);
         }
 
         @Override
@@ -234,7 +234,7 @@ public class BatchTest {
 
     assertThatThrownBy(() -> Batch.builder()
       .account(ACCOUNT)
-      .fee(XrpCurrencyAmount.ofDrops(100))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .flags(BatchFlags.ALL_OR_NOTHING)
       .rawTransactions(transactions)
@@ -268,8 +268,9 @@ public class BatchTest {
           .build()
         )))
       .build()
-    ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("The Account submitting a Batch transaction must not sign any inner transactions.");
+    ).isInstanceOf(IllegalArgumentException.class).hasMessageContaining(
+      "The Account submitting a Batch transaction must not sign any inner transactions. " +
+        "Found BatchSigner matching outer account:");
   }
 
   @Test
@@ -486,44 +487,6 @@ public class BatchTest {
 
     assertThat(batch.batchSigners().isEmpty()).isTrue();
     assertThat(batch.transactionSignature().isPresent()).isFalse();
-  }
-
-  @Test
-  void testBatchWithExtraBatchSignerNotInInnerTransactions() {
-    // Create inner transactions from one account (not the outer signer)
-    Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
-    Address extraAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
-    PublicKey pubKey1 = Seed.ed25519Seed().deriveKeyPair().publicKey();
-    PublicKey pubKey2 = Seed.ed25519Seed().deriveKeyPair().publicKey();
-
-    List<RawTransactionWrapper> transactions = Lists.newArrayList(
-      RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.ONE)),
-      RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.valueOf(2)))
-    );
-
-    // Should fail because BatchSigners contains an account that has no inner transactions
-    assertThatThrownBy(() -> Batch.builder()
-      .account(ACCOUNT)
-      .fee(XrpCurrencyAmount.ofDrops(100))
-      .sequence(UnsignedInteger.ONE)
-      .flags(BatchFlags.ALL_OR_NOTHING)
-      .rawTransactions(transactions)
-      .batchSigners(Lists.newArrayList(
-        BatchSignerWrapper.of(BatchSigner.builder()
-          .account(innerAccount)
-          .signingPublicKey(pubKey1)
-          .transactionSignature(Signature.fromBase16("00112233"))
-          .build()
-        ),
-        BatchSignerWrapper.of(BatchSigner.builder()
-          .account(extraAccount) // Extra signer not in any inner transaction
-          .signingPublicKey(pubKey2)
-          .transactionSignature(Signature.fromBase16("44556677"))
-          .build()
-        )))
-      .build()
-    ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("BatchSigners must only contain signatures from accounts that have inner transactions");
   }
 
   @Test
@@ -816,6 +779,45 @@ public class BatchTest {
       .isNotEqualTo(batch.rawTransactions().get(1).rawTransaction());
   }
 
+  @Test
+  void testBatchWithOuterSignerAsMultiSigSignerInBatchSigner() {
+    // Create accounts
+    Address outerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    PublicKey outerPubKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
+    PublicKey innerPubKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
+
+    // Create inner transactions from innerAccount
+    List<RawTransactionWrapper> innerTransactions = Lists.newArrayList(
+      RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.ONE)),
+      RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.valueOf(2)))
+    );
+
+    // The test checks that the outer signer cannot be in BatchSigners (even via multi-sig)
+    assertThatThrownBy(() -> Batch.builder()
+      .account(outerAccount) // <-- The crux of the test
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(innerTransactions)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(
+          BatchSigner.builder()
+            .account(innerAccount) // BatchSigner for the inner account
+            .signers(Lists.newArrayList(
+              SignerWrapper.of(Signer.builder()
+                .account(outerAccount) // <-- Outer signer in nested Signers
+                .signingPublicKey(outerPubKey)
+                .transactionSignature(Signature.fromBase16("00112233"))
+                .build()
+              )
+            )).build()
+        )))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("The Account submitting a Batch transaction must not sign any inner transactions.");
+  }
+
   // ///////////////
   // Private Helpers
   // ///////////////
@@ -850,6 +852,14 @@ public class BatchTest {
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .flags(PaymentFlags.INNER_BATCH_TXN)
       .build();
+  }
+
+  private List<RawTransactionWrapper> createInnerTransactions(int count) {
+    return IntStream.range(0, count)
+      .mapToObj(i -> RawTransactionWrapper.of(
+        innerTransaction(UnsignedInteger.valueOf(i + 1))
+      ))
+      .collect(Collectors.toList());
   }
 
   private List<RawTransactionWrapper> createInnerTransactionsFromOuterSigner(int count) {

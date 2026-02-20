@@ -625,10 +625,9 @@ class XrplBinaryCodecTest {
       .isInstanceOf(NullPointerException.class);
   }
 
-  ///////////////////
+  // /////////////////
   // encodeForBatchInnerMultiSigning
-
-  /// ////////////////
+  // /////////////////
 
   @Test
   void encodeForBatchInnerMultiSigningWithNullBatch() {
@@ -707,10 +706,9 @@ class XrplBinaryCodecTest {
     assertThat(result1.hexValue().substring(152)).isNotEqualTo(result2.hexValue().substring(152));
   }
 
-  ///////////////////
+  // /////////////////
   // encodeForSigningClaim
-
-  /// ////////////////
+  // /////////////////
 
   @Test
   void encodeForSigningClaimWithNonObjectJson() {

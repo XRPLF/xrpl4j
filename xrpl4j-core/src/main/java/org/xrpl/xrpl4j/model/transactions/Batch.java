@@ -108,95 +108,87 @@ public interface Batch extends Transaction {
   List<BatchSignerWrapper> batchSigners();
 
   /**
-   * Validates that all inner transactions have a fee of 0.
+   * Validates all properties of inner transactions in a single pass for efficiency. This combines multiple validations
+   * to avoid iterating over rawTransactions multiple times.
    */
   @Value.Check
-  default void validateInnerTransactionFees() {
-    final Optional<Transaction> firstTransactionWithNonZeroFee = this.rawTransactions().stream()
-      .map(RawTransactionWrapper::rawTransaction)
-      .filter(innerTransaction -> !innerTransaction.fee().equals(XrpCurrencyAmount.ofDrops(0)))
-      .findFirst();
-
-    Preconditions.checkArgument(
-      !firstTransactionWithNonZeroFee.isPresent(),
-      "Each inner transaction in a Batch must have a fee of 0. Found transaction with non-zero fee: %s",
-      firstTransactionWithNonZeroFee.orElse(null)
-    );
-  }
-
-  /**
-   * Validates that all inner transactions have an empty SigningPublicKey.
-   */
-  @Value.Check
-  default void validateInnerTransactionPublicKeys() {
+  default void checkRawTransactions() {
     // TODO: Replace with constant once https://github.com/XRPLF/xrpl4j/issues/683 is merged.
     final PublicKey emptyPublicKey = PublicKey.builder().value(UnsignedByteArray.empty()).build();
-    final Optional<Transaction> firstTransactionWithNonEmptyPublicKey = this.rawTransactions().stream()
-      .map(RawTransactionWrapper::rawTransaction)
-      .filter(innerTransaction -> !innerTransaction.signingPublicKey().equals(emptyPublicKey))
-      .findFirst();
+    final XrpCurrencyAmount zeroFee = XrpCurrencyAmount.ofDrops(0);
 
-    Preconditions.checkArgument(
-      !firstTransactionWithNonEmptyPublicKey.isPresent(),
-      "Each inner transaction in a Batch must have an empty SigningPublicKey. " +
-        "Found transaction with non-empty SigningPublicKey: %s",
-      firstTransactionWithNonEmptyPublicKey.orElse(null)
-    );
-  }
-
-  /**
-   * Validates that all inner transactions have no transaction signature.
-   */
-  @Value.Check
-  default void validateNoInnerTransactionSignature() {
-    final Optional<Transaction> firstTransactionWithSignature = this.rawTransactions().stream()
-      .map(RawTransactionWrapper::rawTransaction)
-      .filter(innerTransaction -> innerTransaction.transactionSignature().isPresent())
-      .findFirst();
-
-    Preconditions.checkArgument(
-      !firstTransactionWithSignature.isPresent(),
-      "Each inner transaction in a Batch must have no signature. Found transaction with signature: %s",
-      firstTransactionWithSignature.orElse(null)
-    );
-  }
-
-  /**
-   * Validates that all inner transactions have no signers.
-   */
-  @Value.Check
-  default void validateNoInnerTransactionSigners() {
-    final Optional<Transaction> firstTransactionWithSigners = this.rawTransactions().stream()
-      .map(RawTransactionWrapper::rawTransaction)
-      .filter(innerTransaction -> !innerTransaction.signers().isEmpty())
-      .findFirst();
-
-    Preconditions.checkArgument(
-      !firstTransactionWithSigners.isPresent(),
-      "Each inner transaction in a Batch must have no signers. Found transaction with signers: %s",
-      firstTransactionWithSigners.orElse(null)
-    );
-  }
-
-  /**
-   * Validates that the batch contains between 2 and 8 inner transactions.
-   */
-  @Value.Check
-  default void validateRawTransactionsCount() {
+    // Check 1: Validate transaction count (must be between 2 and 8 inclusive)
     final int rawTransactionsSize = this.rawTransactions().size();
     Preconditions.checkArgument(
       rawTransactionsSize >= 2 && rawTransactionsSize <= 8,
       "RawTransactions must contain between 2 and 8 transactions, but contained %s.",
       rawTransactionsSize
     );
+
+    // Check 2: Validate no duplicate transactions
+    final long uniqueTransactionCount = this.rawTransactions().stream()
+      .map(RawTransactionWrapper::rawTransaction)
+      .distinct()
+      .count();
+
+    Preconditions.checkArgument(
+      uniqueTransactionCount == rawTransactionsSize,
+      "RawTransactions must not contain duplicate transactions. " +
+        "Found %s unique transactions out of %s total.",
+      uniqueTransactionCount,
+      rawTransactionsSize
+    );
+
+    // Check 3-8: Validate each inner transaction's properties in a single iteration
+    for (RawTransactionWrapper wrapper : this.rawTransactions()) {
+      final Transaction innerTransaction = wrapper.rawTransaction();
+
+      // Check 3: Each inner transaction must have a fee of 0
+      Preconditions.checkArgument(
+        innerTransaction.fee().equals(zeroFee),
+        "Each inner transaction in a Batch must have a fee of 0. Found transaction with non-zero fee: %s",
+        innerTransaction
+      );
+
+      // Check 4: Each inner transaction must have an empty SigningPublicKey
+      Preconditions.checkArgument(
+        innerTransaction.signingPublicKey().equals(emptyPublicKey),
+        "Each inner transaction in a Batch must have an empty SigningPublicKey. " +
+          "Found transaction with non-empty SigningPublicKey: %s",
+        innerTransaction
+      );
+
+      // Check 5: Each inner transaction must have no transaction signature
+      Preconditions.checkArgument(
+        !innerTransaction.transactionSignature().isPresent(),
+        "Each inner transaction in a Batch must have no signature. Found transaction with signature: %s",
+        innerTransaction
+      );
+
+      // Check 6: Each inner transaction must have no signers
+      Preconditions.checkArgument(
+        innerTransaction.signers().isEmpty(),
+        "Each inner transaction in a Batch must have no signers. Found transaction with signers: %s",
+        innerTransaction
+      );
+
+      // Check 7: Inner transactions cannot be Batch transactions (no nesting)
+      Preconditions.checkArgument(
+        !(innerTransaction instanceof Batch),
+        "Batch transactions cannot be nested inside other Batch transactions. Found nested Batch: %s",
+        innerTransaction
+      );
+    }
   }
 
   /**
    * Validates that exactly one batch mode flag is set.
    */
   @Value.Check
-  default void validateBatchModeFlag() {
+  default void checkBatchModeFlag() {
     final BatchFlags flags = this.flags();
+
+    // Count how many batch mode flags are set
     int modeCount = 0;
     if (flags.tfAllOrNothing()) {
       modeCount++;
@@ -210,6 +202,8 @@ public interface Batch extends Transaction {
     if (flags.tfIndependent()) {
       modeCount++;
     }
+
+    // Exactly one mode must be set
     Preconditions.checkArgument(
       modeCount == 1,
       "Exactly one batch mode flag must be set (AllOrNothing, OnlyOne, UntilFailure, or Independent)."
@@ -217,132 +211,12 @@ public interface Batch extends Transaction {
   }
 
   /**
-   * Validates that inner transactions are not Batch transactions (no nesting).
+   * Validates all BatchSigners-related constraints in a single pass for efficiency. This combines multiple validations
+   * to avoid iterating over batchSigners and computing account sets multiple times.
    */
   @Value.Check
-  default void validateNoNestedBatches() {
-    final Optional<Transaction> firstNestedBatch = this.rawTransactions().stream()
-      .map(RawTransactionWrapper::rawTransaction)
-      .filter(innerTransaction -> innerTransaction instanceof Batch)
-      .findFirst();
-
-    Preconditions.checkArgument(
-      !firstNestedBatch.isPresent(),
-      "Batch transactions cannot be nested inside other Batch transactions. Found nested Batch: %s",
-      firstNestedBatch.orElse(null)
-    );
-  }
-
-  /**
-   * Validates that the `Batch.Account` is not included as a signer in `BatchSigners`.
-   */
-  @Value.Check
-  default void validateOuterSigner() {
-    final Optional<BatchSigner> firstSignerMatchingOuterAccount = this.batchSigners().stream()
-      .map(BatchSignerWrapper::batchSigner)
-      .filter(batchSigner -> {
-        // Check single-sig
-        if (batchSigner.account().equals(this.account())) {
-          return true;
-        }
-        // Check multi-sig
-        return batchSigner.signers().stream()
-          .anyMatch(signerWrapper -> signerWrapper.signer().account().equals(this.account()));
-      })
-      .findFirst();
-
-    Preconditions.checkArgument(
-      !firstSignerMatchingOuterAccount.isPresent(),
-      "The Account submitting a Batch transaction must not sign any inner transactions. " +
-        "Found BatchSigner matching outer account: %s",
-      firstSignerMatchingOuterAccount.orElse(null)
-    );
-  }
-
-  /**
-   * Validates that BatchSigners contains signatures from all accounts whose inner transactions are included, excluding
-   * the account signing the outer transaction.
-   *
-   * <p>If more than one account has inner transactions in the Batch, BatchSigners must be provided and must
-   * contain signatures from all such accounts (except the outer transaction signer).</p>
-   */
-  @Value.Check
-  default void validateBatchSigners() {
-    // We only enforce this check if the `batchSigners` object is non-empty. This is because it _is_ valid to construct
-    // an unsigned batch, in which case `batchSigners` will be empty. However, in the case that `batchSigners` is
-    // not empty, then these rules should be enforced.
-    if (!this.batchSigners().isEmpty()) {
-      // Collect all unique accounts from inner transactions
-      final Set<Address> innerTransactionAccounts = this.rawTransactions().stream()
-        .map(wrapper -> wrapper.rawTransaction().account())
-        .collect(Collectors.toSet());
-
-      // Determine which accounts need to provide BatchSigners (all inner tx accounts except the outer signer)
-      final Set<Address> accountsRequiringSignatures = innerTransactionAccounts.stream()
-        .filter(innerAccount -> !innerAccount.equals(this.account()))
-        .collect(Collectors.toSet());
-
-      // If there are accounts other than the outer signer that have inner transactions,
-      // BatchSigners must contain signatures from all of them
-      if (!accountsRequiringSignatures.isEmpty()) {
-        // Collect all accounts that have provided BatchSigners
-        final Set<Address> batchSignerAccounts = this.batchSigners().stream()
-          .map(wrapper -> wrapper.batchSigner().account())
-          .collect(Collectors.toSet());
-
-        // Verify all required accounts have provided signatures
-        final Set<Address> missingSigners = accountsRequiringSignatures.stream()
-          .filter(requiredAccount -> !batchSignerAccounts.contains(requiredAccount))
-          .collect(Collectors.toSet());
-
-        Preconditions.checkArgument(
-          missingSigners.isEmpty(),
-          "BatchSigners must contain signatures from all accounts with inner transactions " +
-            "(excluding the outer transaction signer). Missing signatures from: %s",
-          missingSigners
-        );
-      }
-    }
-  }
-
-  /**
-   * Validates that there are no duplicate transactions in RawTransactions.
-   */
-  @Value.Check
-  default void validateNoDuplicateTransactions() {
-    final long uniqueTransactionCount = this.rawTransactions().stream()
-      .map(RawTransactionWrapper::rawTransaction)
-      .distinct()
-      .count();
-
-    Preconditions.checkArgument(
-      uniqueTransactionCount == this.rawTransactions().size(),
-      "RawTransactions must not contain duplicate transactions. " +
-        "Found %s unique transactions out of %s total.",
-      uniqueTransactionCount,
-      this.rawTransactions().size()
-    );
-  }
-
-  /**
-   * Validates that BatchSigners does not exceed the number of transactions in RawTransactions.
-   */
-  @Value.Check
-  default void validateBatchSignersSize() {
-    Preconditions.checkArgument(
-      this.batchSigners().size() <= this.rawTransactions().size(),
-      "BatchSigners must not contain more entries than RawTransactions. " +
-        "Found %s BatchSigners but only %s RawTransactions.",
-      this.batchSigners().size(),
-      this.rawTransactions().size()
-    );
-  }
-
-  /**
-   * Validates that there are no duplicate signers in BatchSigners.
-   */
-  @Value.Check
-  default void validateNoDuplicateBatchSigners() {
+  default void checkBatchSigners() {
+    // Check 1: Validate no duplicate batch signers
     final long uniqueSignerCount = this.batchSigners().stream()
       .map(wrapper -> wrapper.batchSigner().account())
       .distinct()
@@ -354,33 +228,67 @@ public interface Batch extends Transaction {
       uniqueSignerCount,
       this.batchSigners().size()
     );
-  }
 
-  /**
-   * Validates that all BatchSigners correspond to accounts that have inner transactions (excluding the outer signer).
-   * Note: The outer signer is validated separately by validateOuterSigner().
-   */
-  @Value.Check
-  default void validateBatchSignersHaveInnerTransactions() {
+    // Check 2: Validate that the outer account is not included as a signer in BatchSigners
+    // This applies to both single-sig and multi-sig scenarios
+    final Optional<BatchSigner> firstSignerMatchingOuterAccount = this.batchSigners().stream()
+      .map(BatchSignerWrapper::batchSigner)
+      .filter(batchSigner -> {
+        // Check single-sig: BatchSigner.Account matches outer account
+        if (batchSigner.account().equals(this.account())) {
+          return true;
+        }
+        // Check multi-sig: Any nested Signer.Account matches outer account
+        return batchSigner.signers().stream()
+          .anyMatch(signerWrapper -> signerWrapper.signer().account().equals(this.account()));
+      })
+      .findFirst();
+
+    Preconditions.checkArgument(
+      !firstSignerMatchingOuterAccount.isPresent(),
+      "The Account submitting a Batch transaction must not sign any inner transactions. " +
+        "Found BatchSigner matching outer account: %s",
+      firstSignerMatchingOuterAccount.orElse(null)
+    );
+
+    // Checks 3-4: Validate BatchSigners completeness (no missing, no extra)
+    // Only perform these checks if BatchSigners is non-empty
     if (!this.batchSigners().isEmpty()) {
-      // Collect all unique accounts from inner transactions
-      final Set<Address> innerTransactionAccounts = this.rawTransactions().stream()
+      // Compute the set of accounts that require signatures (all inner transaction accounts except outer account)
+      final Set<Address> requiredSignerAccounts = this.rawTransactions().stream()
         .map(wrapper -> wrapper.rawTransaction().account())
+        .filter(account -> !account.equals(this.account()))
         .collect(Collectors.toSet());
 
-      // Find any BatchSigner that doesn't have a corresponding inner transaction
-      // (excluding the outer account, which is validated by validateOuterSigner)
-      final Optional<Address> firstInvalidSigner = this.batchSigners().stream()
+      // Compute the set of accounts that actually provided signatures
+      final Set<Address> actualSignerAccounts = this.batchSigners().stream()
         .map(wrapper -> wrapper.batchSigner().account())
-        .filter(signerAccount -> !signerAccount.equals(this.account())) // Exclude outer account
-        .filter(signerAccount -> !innerTransactionAccounts.contains(signerAccount))
+        .collect(Collectors.toSet());
+
+      // Check 3: Validate no missing BatchSigners
+      // Every required account must have a corresponding BatchSigner
+      final Optional<Address> missingSignerAccount = requiredSignerAccounts.stream()
+        .filter(account -> !actualSignerAccounts.contains(account))
         .findFirst();
 
       Preconditions.checkArgument(
-        !firstInvalidSigner.isPresent(),
+        !missingSignerAccount.isPresent(),
+        "BatchSigners must contain signatures from all accounts with inner transactions " +
+          "(excluding outer signer). Missing BatchSigner for account: %s",
+        missingSignerAccount.orElse(null)
+      );
+
+      // Check 4: Validate no extra BatchSigners
+      // Every BatchSigner must correspond to an inner transaction account
+      final Optional<Address> extraSignerAccount = actualSignerAccounts.stream()
+        .filter(signerAccount -> !requiredSignerAccounts.contains(signerAccount))
+        .findFirst();
+
+      Preconditions.checkArgument(
+        !extraSignerAccount.isPresent(),
         "BatchSigners must only contain signatures from accounts that have inner transactions. " +
           "Found BatchSigner with no inner transactions: %s",
-        firstInvalidSigner.orElse(null)
+        extraSignerAccount.orElse(null)
       );
     }
   }

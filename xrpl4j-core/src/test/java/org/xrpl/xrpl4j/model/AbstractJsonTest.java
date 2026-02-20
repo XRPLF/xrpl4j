@@ -106,7 +106,7 @@ public class AbstractJsonTest {
   }
 
   /**
-   * In JSON tests, parsing a date-time string directlry using {@link ZonedDateTime} doesn't, by default, parse
+   * In JSON tests, parsing a date-time string directly using {@link ZonedDateTime} doesn't, by default, parse
    * correctly. This helper function ensures that date-time parsing is done correctly for JSON testing.
    * <p/>
    * This is necessary because xrpld uses different precision for different fields, for example:

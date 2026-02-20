@@ -44,10 +44,12 @@ class AmmInfoResultTest extends AbstractJsonTest {
                 AmmInfoAuthAccount.of(Address.of("rNzgpEGUyEmQ1YGDMAiGGBvwtzbk78tcCG"))
               )
               .discountedFee(TradingFee.of(UnsignedInteger.ZERO))
-              .expiration(ZonedDateTime.parse(
-                "2023-07-20T15:17:31+0000",
-                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US)
-              ))
+              .expiration(
+                ZonedDateTime.parse(
+                  "2023-07-20T15:17:31+0000",
+                  DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US)
+                )
+              )
               .price(
                 IssuedCurrencyAmount.builder()
                   .currency("03930D02208264E2E40EC1B0C09E4DB96EE197B1")

@@ -43,6 +43,7 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
+import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -67,6 +68,8 @@ public class AbstractTransactionSignerTest {
   Transaction transactionMock;
   @Mock
   Signer signerMock;
+  @Mock
+  Batch batchMock;
 
   private AtomicBoolean ed25519VerifyCalled;
   private AtomicBoolean secp256k1VerifyCalled;
@@ -84,6 +87,8 @@ public class AbstractTransactionSignerTest {
 
     when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toSignableInnerBytes(any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toMultiSignableInnerBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
     when(signerMock.signingPublicKey()).thenReturn(publicKeyMock);
     when(signerMock.transactionSignature()).thenReturn(ed25519SignatureMock);
@@ -304,6 +309,78 @@ public class AbstractTransactionSignerTest {
 
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.EC_ADDRESS);
     verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  // /////////////////
+  // SignInner
+  // /////////////////
+
+  @Test
+  void signInnerWithNullMetadata() {
+    assertThrows(NullPointerException.class, () -> transactionSigner.signInner(null, batchMock));
+  }
+
+  @Test
+  void signInnerWithNullBatch() {
+    assertThrows(NullPointerException.class, () -> transactionSigner.signInner(privateKeyableMock, null));
+  }
+
+  @Test
+  void signInnerEd25519() {
+    keyType = KeyType.ED25519;
+
+    Signature signature = transactionSigner.signInner(privateKeyableMock, batchMock);
+    assertThat(signature).isEqualTo(ed25519SignatureMock);
+
+    verify(signatureUtilsMock).toSignableInnerBytes(batchMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  @Test
+  void signInnerSecp256k1() {
+    keyType = KeyType.SECP256K1;
+
+    Signature signature = transactionSigner.signInner(privateKeyableMock, batchMock);
+    assertThat(signature).isEqualTo(secp256k1SignatureMock);
+
+    verify(signatureUtilsMock).toSignableInnerBytes(batchMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  // /////////////////
+  // MultiSignInner
+  // /////////////////
+
+  @Test
+  void multiSignInnerWithNullMetadata() {
+    assertThrows(NullPointerException.class, () -> transactionSigner.multiSignInner(null, batchMock));
+  }
+
+  @Test
+  void multiSignInnerWithNullBatch() {
+    assertThrows(NullPointerException.class, () -> transactionSigner.multiSignInner(privateKeyableMock, null));
+  }
+
+  @Test
+  void multiSignInnerEd25519() {
+    keyType = KeyType.ED25519;
+
+    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock);
+    assertThat(signature).isEqualTo(ed25519SignatureMock);
+
+    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.ED_ADDRESS);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  @Test
+  void multiSignInnerSecp256k1() {
+    keyType = KeyType.SECP256K1;
+
+    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock);
+    assertThat(signature).isEqualTo(secp256k1SignatureMock);
+
+    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 

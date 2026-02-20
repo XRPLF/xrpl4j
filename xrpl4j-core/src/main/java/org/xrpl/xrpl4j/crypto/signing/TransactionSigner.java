@@ -169,7 +169,12 @@ public interface TransactionSigner<P extends PrivateKeyable> {
 
     // Compute this only once, just in case public-key derivation is expensive (e.g., a remote HSM).
     final PublicKey signingPublicKey = this.derivePublicKey(privateKeyable);
-    return Signer.builder().signingPublicKey(signingPublicKey)
-      .transactionSignature(multiSign(privateKeyable, transaction)).build();
+    return Signer.builder()
+      // Note: .account is derived by default from `signingPublicKey`
+      .signingPublicKey(signingPublicKey)
+      .transactionSignature(
+        this.multiSign(privateKeyable, transaction)
+      )
+      .build();
   }
 }

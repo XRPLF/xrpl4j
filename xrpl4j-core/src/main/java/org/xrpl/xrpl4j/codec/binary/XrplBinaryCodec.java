@@ -170,6 +170,10 @@ public class XrplBinaryCodec {
 
       return signableBytes;
     } catch (JsonProcessingException e) {
+      // Test Coverage Note: this catch block is for defensive error handling and is otherwise challenging to test
+      // in a unit test without mocking static fields or using reflection to create malformed objects, which would
+      // not be representative of real usage scenarios. In practice, JsonProcessingException should never be thrown
+      // during normal operation with valid objects, which immutables typically will enforce.
       throw new RuntimeException(e.getMessage(), e);
     }
   }

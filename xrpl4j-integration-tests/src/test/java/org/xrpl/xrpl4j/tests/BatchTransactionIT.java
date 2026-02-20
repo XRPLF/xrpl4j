@@ -27,6 +27,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
+import org.testcontainers.shaded.com.github.dockerjava.core.dockerfile.DockerfileStatement.Add;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -49,6 +50,7 @@ import org.xrpl.xrpl4j.model.transactions.BatchSigner;
 import org.xrpl.xrpl4j.model.transactions.BatchSignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
+import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
@@ -987,6 +989,7 @@ public class BatchTransactionIT extends AbstractIT {
     );
   }
 
+
   /**
    * Test a batch transaction with Independent mode where two different single-sig accounts contribute inner
    * transactions and a third account signs the outer batch transaction.
@@ -1097,6 +1100,121 @@ public class BatchTransactionIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress())
     );
     assertThat(destInfo.accountData().balance()).isNotNull();
+  }
+
+  // //////////////////////
+  // 8. This section tests a Batch transaction with an inner signer whose regular key has changed.
+  // //////////////////////
+
+  @Test
+  void batchWithRegularKeyChange() throws JsonRpcClientErrorException, JsonProcessingException {
+    // Create accounts
+    KeyPair account1KeyPair = createRandomAccountEd25519();
+    KeyPair account1RegularKeyPair = createRandomAccountEd25519();
+    KeyPair outerSignerKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    // Set regular key for account1
+    AccountInfoResult account1Info = this.scanForResult(
+      () -> this.getValidatedAccountInfo(account1KeyPair.publicKey().deriveAddress())
+    );
+
+    SetRegularKey setRegularKey = SetRegularKey.builder()
+      .account(account1KeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(account1Info.accountData().sequence())
+      .regularKey(account1RegularKeyPair.publicKey().deriveAddress())
+      .signingPublicKey(account1KeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
+      account1KeyPair.privateKey(), setRegularKey
+    );
+    SubmitResult<SetRegularKey> setRegularKeyResult = xrplClient.submit(signedSetRegularKey);
+    assertTesSuccess(setRegularKeyResult);
+
+    this.scanForResult(
+      () -> this.getValidatedTransaction(setRegularKeyResult.transactionResult().hash(), SetRegularKey.class)
+    );
+
+    // Create inner payments from account1
+    AccountInfoResult account1InfoFinal = this.scanForResult(
+      () -> this.getValidatedAccountInfo(account1KeyPair.publicKey().deriveAddress())
+    );
+    AccountInfoResult outerSignerInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(outerSignerKeyPair.publicKey().deriveAddress())
+    );
+
+    Payment innerPayment1 = createInnerPayment(
+      account1KeyPair.publicKey().deriveAddress(),
+      account1InfoFinal.accountData().sequence().plus(UnsignedInteger.ONE),
+      destinationKeyPair.publicKey().deriveAddress(),
+      10000
+    );
+
+    Payment innerPayment2 = createInnerPayment(
+      outerSignerKeyPair.publicKey().deriveAddress(),
+      outerSignerInfo.accountData().sequence(),
+      destinationKeyPair.publicKey().deriveAddress(),
+      10000
+    );
+
+    // Build Batch
+    Batch unsignedBatch = Batch.builder()
+      .account(outerSignerKeyPair.publicKey().deriveAddress())
+      .signingPublicKey(outerSignerKeyPair.publicKey())
+      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(1L)))
+      .sequence(outerSignerInfo.accountData().sequence())
+      .flags(BatchFlags.ofAllOrNothing())
+      .addRawTransactions(RawTransactionWrapper.of(innerPayment1), RawTransactionWrapper.of(innerPayment2))
+      .build();
+
+    // Sign inner with regular key - BatchSigner.account will be derived from regular key
+    List<BatchSignerWrapper> signerWrappers = Lists.newArrayList(
+      BatchSignerWrapper.of(BatchSigner.builder()
+        .account(account1KeyPair.publicKey().deriveAddress()) // Must specify real XRP Address via account1KeyPair
+        .signingPublicKey(account1RegularKeyPair.publicKey()) // <-- Must specify regular public key.
+        .transactionSignature(
+          signatureService.signInner(account1RegularKeyPair.privateKey(), unsignedBatch)
+        )
+        .build()
+      )
+    );
+
+    // Sign outer
+    SingleSignedTransaction<Batch> signedBatch = signatureService.sign(
+      outerSignerKeyPair.privateKey(),
+      Batch.builder().from(unsignedBatch).batchSigners(signerWrappers).build()
+    );
+
+    // Submit and verify
+    SubmitResult<Batch> result = xrplClient.submit(signedBatch);
+    assertTesSuccess(result);
+    TransactionResult<Batch> validatedBatch = this.scanForResult(
+      () -> this.getValidatedTransaction(result.transactionResult().hash(), Batch.class)
+    );
+    assertTesSuccess(validatedBatch);
+
+    final Address account1Address = account1KeyPair.publicKey().deriveAddress();
+    final Address account1RegaulrAddress = account1RegularKeyPair.publicKey().deriveAddress();
+
+    // Verify BatchSigner account doesn't match the inner transaction address
+    final Address actualBatchSignerAccount = validatedBatch.transaction().batchSigners().get(0).batchSigner().account();
+    assertThat(actualBatchSignerAccount).isNotEqualTo(account1RegaulrAddress);
+    assertThat(actualBatchSignerAccount).isEqualTo(account1Address);
+
+    // Validate Signing PublicKeys
+    assertThat(validatedBatch.transaction().signingPublicKey()).isEqualTo(outerSignerKeyPair.publicKey());
+    validatedBatch.transaction().batchSigners().get(0).batchSigner().signingPublicKey()
+      .map(publicKey -> {
+        assertThat(publicKey).isEqualTo(account1RegularKeyPair.publicKey());
+        return publicKey;
+      })
+      .orElseThrow(() -> new RuntimeException("Signing public key is missing."));
+
+    verifyBatchMetadata(validatedBatch);
   }
 
   // //////////////////////

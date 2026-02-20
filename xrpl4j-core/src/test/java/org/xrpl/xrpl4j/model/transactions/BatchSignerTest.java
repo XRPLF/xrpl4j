@@ -177,6 +177,25 @@ class BatchSignerTest {
   }
 
   @Test
+  void testDirectSigningValidationPasses() {
+    // This test ensures that when both SigningPubKey and TxnSignature are present,
+    // the validation at line 131 passes (the defensive check inside the hasDirectSigning block)
+    BatchSigner batchSigner = BatchSigner.builder()
+      .account(ACCOUNT1)
+      .signingPublicKey(PUBLIC_KEY1)
+      .transactionSignature(SIGNATURE1)
+      .build();
+
+    // Verify that the BatchSigner was created successfully with direct signing
+    assertThat(batchSigner.account()).isEqualTo(ACCOUNT1);
+    assertThat(batchSigner.signingPublicKey()).isPresent();
+    assertThat(batchSigner.signingPublicKey().get()).isEqualTo(PUBLIC_KEY1);
+    assertThat(batchSigner.transactionSignature()).isPresent();
+    assertThat(batchSigner.transactionSignature().get()).isEqualTo(SIGNATURE1);
+    assertThat(batchSigner.signers()).isEmpty();
+  }
+
+  @Test
   void testSignersSortedByAccountAddress() {
     // Create signers in intentionally unsorted order to verify sorting by decoded account ID
 

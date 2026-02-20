@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.fees;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,6 +30,8 @@ import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.ledger.SignerListObject;
+import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
@@ -38,6 +40,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Utils relating to XRPL fees.
@@ -61,7 +64,6 @@ public class FeeUtils {
   private static final BigInteger TEN_THOUSAND = BigInteger.valueOf(10000);
 
   private static final BigInteger ONE_THOUSAND = BigInteger.valueOf(1000);
-
 
   /**
    * Computes the fee necessary for a multisigned transaction.
@@ -116,6 +118,70 @@ public class FeeUtils {
       .feeHigh(computeFeeHigh(decomposedFees))
       .queuePercentage(decomposedFees.queuePercentage())
       .build();
+  }
+
+  /**
+   * Calculate a suggested fee to be used for submitting a transaction to the XRPL. The calculated value depends on the
+   * current size of the job queue as compared to its total capacity.
+   *
+   * @param feeResult {@link FeeResult} object obtained by querying the ledger (e.g., via an `XrplClient#fee()` call).
+   *
+   * @return {@link ComputedNetworkFees} with low, medium and high fee levels to choose from for the transaction.
+   *
+   * @see "https://xrpl.org/fee.html"
+   * @see "https://github.com/XRPL-Labs/XUMM-App/blob/master/src/services/LedgerService.ts#L244"
+   */
+  public static XrpCurrencyAmount computeBatchFee(
+    final FeeResult feeResult,
+    final UnsignedInteger numBatchSigners
+  ) {
+    Objects.requireNonNull(feeResult);
+    Objects.requireNonNull(numBatchSigners);
+
+    final XrpCurrencyAmount recommendedFee = computeNetworkFees(feeResult).recommendedFee();
+    final UnsignedLong allInnerTransactionFees = recommendedFee.value()
+      .times(UnsignedLong.valueOf(numBatchSigners.longValue()));
+
+    return computeBatchFee(recommendedFee, numBatchSigners, XrpCurrencyAmount.of(allInnerTransactionFees));
+  }
+
+  /**
+   * Computes the fee necessary for a Batch transaction per XLS-0056 section 2.2.
+   *
+   * <p>The formula is: {@code (n + 2) * baseFee + sum(innerTransactionFees)} where {@code n} is the number of
+   * additional signatures from BatchSigners (0 for single-account batches).
+   *
+   * <p>In other words, the fee is twice the base fee (a total of 20 drops when there is no fee escalation), plus
+   * the sum of the transaction fees of all the inner transactions, plus an additional base fee amount for each
+   * additional signature in the transaction (e.g. from BatchSigners).
+   *
+   * @param baseFee                The base transaction fee (e.g., from {@link FeeDrops#baseFee()}).
+   * @param numBatchSigners        The number of BatchSigners (additional signatures beyond the outer transaction
+   *                               signer). Use 0 for single-account batches.
+   * @param innerTransactionFeeSum The sum of all inner transaction fees.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the computed batch transaction fee.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0056-batch"
+   */
+  @VisibleForTesting
+  protected static XrpCurrencyAmount computeBatchFee(
+    final XrpCurrencyAmount baseFee,
+    final UnsignedInteger numBatchSigners,
+    final XrpCurrencyAmount innerTransactionFeeSum
+  ) {
+    Objects.requireNonNull(baseFee);
+    Objects.requireNonNull(innerTransactionFeeSum);
+
+    // Formula: (n + 2) * base_fee + sum(innerTxn.Fee)
+    final UnsignedLong nPlusTwo = UnsignedLong.valueOf(numBatchSigners.intValue()).plus(UnsignedLong.valueOf(2L));
+    final UnsignedLong baseFeeDrops = baseFee.value();
+    final UnsignedLong innerTransactionFeeSumDrops = innerTransactionFeeSum.value();
+
+    final UnsignedLong batchFeeDrops = nPlusTwo.times(baseFeeDrops)
+      .plus(innerTransactionFeeSumDrops);
+
+    return XrpCurrencyAmount.ofDrops(batchFeeDrops);
   }
 
   /**

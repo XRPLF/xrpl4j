@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.io.Resources;
+import org.xrpl.xrpl4j.model.transactions.GranularPermission;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -74,19 +75,10 @@ public class DefaultDefinitionsProvider implements DefinitionsProvider {
   private Map<String, Integer> generatePermissionValues(Definitions definitions) {
     Map<String, Integer> permissionValues = new HashMap<>();
 
-    // Add granular permissions (starting at 65537)
-    permissionValues.put("TrustlineAuthorize", 65537);
-    permissionValues.put("TrustlineFreeze", 65538);
-    permissionValues.put("TrustlineUnfreeze", 65539);
-    permissionValues.put("AccountDomainSet", 65540);
-    permissionValues.put("AccountEmailHashSet", 65541);
-    permissionValues.put("AccountMessageKeySet", 65542);
-    permissionValues.put("AccountTransferRateSet", 65543);
-    permissionValues.put("AccountTickSizeSet", 65544);
-    permissionValues.put("PaymentMint", 65545);
-    permissionValues.put("PaymentBurn", 65546);
-    permissionValues.put("MPTokenIssuanceLock", 65547);
-    permissionValues.put("MPTokenIssuanceUnlock", 65548);
+    // Add granular permissions from GranularPermission enum
+    for (GranularPermission permission : GranularPermission.values()) {
+      permissionValues.put(permission.value(), permission.numericValue());
+    }
 
     // Add transaction type permissions (transaction type code + 1)
     // Exclude Invalid (-1) only

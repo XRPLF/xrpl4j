@@ -1,6 +1,5 @@
 package org.xrpl.xrpl4j.crypto.mpt.bulletproofs;
 
-import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
 import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPrivateKeyable;
 import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPublicKey;
@@ -44,14 +43,12 @@ public interface SecretKeyProofGenerator<P extends ElGamalPrivateKeyable> {
    * @param privateKey The private key (scalar).
    * @param context    The context for domain separation (e.g., from {@link ConfidentialMPTConvertContext#generate}).
    *                   Can be null for no context.
-   * @param nonce      The random nonce (k) used for the commitment (must be a valid scalar). If null, a random nonce
-   *                   will be generated.
    *
    * @return A {@link SecretKeyProof} containing the 65-byte proof.
    *
    * @throws NullPointerException if privateKey is null.
    */
-  SecretKeyProof generateProof(P privateKey, ConfidentialMPTConvertContext context, BlindingFactor nonce);
+  SecretKeyProof generateProof(P privateKey, ConfidentialMPTConvertContext context);
 
   /**
    * Verifies a Schnorr Proof of Knowledge.

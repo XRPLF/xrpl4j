@@ -94,10 +94,6 @@ public final class ElGamalPublicKey {
     return UnsignedByteArray.of(reversed);
   }
 
-  public String toReversedHex64() {
-    return uncompressedValueReversed().hexValue();
-  }
-
   public String toCompressedHex() {
     return value.hexValue();
   }

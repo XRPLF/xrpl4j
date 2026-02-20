@@ -39,14 +39,12 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator<ElGa
   @Override
   public SecretKeyProof generateProof(
     final ElGamalPrivateKey privateKey,
-    final ConfidentialMPTConvertContext context,
-    final BlindingFactor nonce
+    final ConfidentialMPTConvertContext context
   ) {
     Objects.requireNonNull(privateKey, "privateKey must not be null");
     Objects.requireNonNull(context, "context must not be null");
-    Objects.requireNonNull(nonce, "nonce must not be null");
 
-    // Get context bytes (null-safe)
+    // Get context bytes
     byte[] contextId = context.toBytes();
 
     // Get private key bytes
@@ -61,11 +59,12 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator<ElGa
     // Derive public key from private key: P = sk * G
     ECPoint publicKey = Secp256k1Operations.multiplyG(skInt);
 
-    // 1. Use provided nonce or generate random k, then compute T = k * G
-    // BlindingFactor is already validated as a valid scalar
+    // 1. Generate random nonce k (matching C implementation behavior)
+    BlindingFactor nonce = BlindingFactor.generate();
     byte[] k = nonce.toBytes();
     BigInteger kInt = new BigInteger(1, k);
 
+    // Compute T = k * G
     ECPoint T = Secp256k1Operations.multiplyG(kInt);
 
     // 2. Compute challenge e = reduce(SHA256(domainSeparator || PublicKey || T || contextId)) mod n

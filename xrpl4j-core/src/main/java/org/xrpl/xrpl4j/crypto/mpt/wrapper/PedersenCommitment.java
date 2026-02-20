@@ -110,14 +110,6 @@ public final class PedersenCommitment {
     return result;
   }
 
-  /**
-   * Returns the commitment as hex string in the 64-byte reversed format used in transactions.
-   *
-   * @return The hex string of the 64-byte reversed format.
-   */
-  public String toReversedHex64() {
-    return BaseEncoding.base16().encode(toReversedBytes64());
-  }
 
   @Override
   public boolean equals(Object o) {

@@ -40,12 +40,10 @@ ConfidentialMPTConvertContext context = ConfidentialMPTConvertContext.generate(
 
 ```java
 JavaSecretKeyProofGenerator proofGenerator = new JavaSecretKeyProofGenerator();
-BlindingFactor nonce = BlindingFactor.generate();
 
 SecretKeyProof zkProof = proofGenerator.generateProof(
   holderElGamalKeyPair.privateKey(),  // ElGamalPrivateKey
-  context,                             // ConfidentialMPTConvertContext
-  nonce                                // BlindingFactor
+  context                              // ConfidentialMPTConvertContext
 );
 
 String zkProofHex = zkProof.hexValue();

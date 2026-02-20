@@ -59,11 +59,6 @@ class PedersenCommitmentGeneratorTest {
     // Verify output matches expected value
     String expectedCommitmentHex = "02FD5403A3B2339D2D364B621D2A148D309656A80503F9DEE9DB8AB0132C53DEEC";
     assertThat(commitmentHex).isEqualTo(expectedCommitmentHex);
-
-    // Test the reversed hex format for transactions
-    String reversedHex = commitment.toReversedHex64();
-    System.out.println("Commitment (64-byte reversed): " + reversedHex);
-    assertThat(reversedHex).hasSize(128); // 64 bytes = 128 hex chars
   }
 }
 

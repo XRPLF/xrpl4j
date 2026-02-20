@@ -162,8 +162,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     //////////////////////
     // Generate Issuer ElGamal key pair and submit MpTokenIssuanceSet to register it
     ElGamalKeyPair issuerElGamalKeyPair = ElGamalKeyPair.generate();
-    String issuerElGamalPublicKey = issuerElGamalKeyPair.publicKey()
-      .toReversedHex64();  // 64 bytes, reversed for C compatibility
 
     // Get updated issuer account info for the next transaction
     AccountInfoResult issuerAccountInfoForSet = this.scanForResult(
@@ -179,7 +177,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
         issuerAccountInfoForSet.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
       )
       .mpTokenIssuanceId(mpTokenIssuanceId)
-      .issuerElGamalPublicKey(issuerElGamalPublicKey)
+      .issuerElGamalPublicKey(issuerElGamalKeyPair.publicKey()
+        .toCompressedHex())
       .build();
 
     SingleSignedTransaction<MpTokenIssuanceSet> signedIssuanceSet = signatureService.sign(
@@ -293,7 +292,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Generate Holder ElGamal key pair
     ElGamalKeyPair holderElGamalKeyPair = ElGamalKeyPair.generate();
     String holderElGamalPublicKey = holderElGamalKeyPair.publicKey()
-      .toReversedHex64();  // 64 bytes, reversed for C compatibility
+      .toCompressedHex();
 
     //////////////////////
     // Prepare encryption utilities
@@ -366,9 +365,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       amountToConvert  // amount
     );
 
-    // Generate nonce for proof
-    BlindingFactor nonce = BlindingFactor.generate();
-    SecretKeyProof zkProof = proofGenerator.generateProof(holderElGamalKeyPair.privateKey(), context, nonce);
+    // Generate proof
+    SecretKeyProof zkProof = proofGenerator.generateProof(holderElGamalKeyPair.privateKey(), context);
     String zkProofHex = zkProof.hexValue();
 
     // Verify the proof locally before submitting
@@ -487,7 +485,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     //////////////////////
     // Generate Holder 2 ElGamal key pair
     ElGamalKeyPair holder2ElGamalKeyPair = ElGamalKeyPair.generate();
-    String holder2ElGamalPublicKey = holder2ElGamalKeyPair.publicKey().toReversedHex64();
+    String holder2ElGamalPublicKey = holder2ElGamalKeyPair.publicKey().toCompressedHex();
 
     //////////////////////
     // Prepare encryption for Holder 2 (0 amount conversion to register public key)
@@ -524,9 +522,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holder2AmountToConvert
     );
 
-    BlindingFactor holder2Nonce = BlindingFactor.generate();
-    SecretKeyProof holder2ZkProof = proofGenerator.generateProof(holder2ElGamalKeyPair.privateKey(), holder2Context,
-      holder2Nonce);
+    // Generate proof (nonce is generated internally)
+    SecretKeyProof holder2ZkProof = proofGenerator.generateProof(holder2ElGamalKeyPair.privateKey(), holder2Context);
     String holder2ZkProofHex = holder2ZkProof.hexValue();
 
     // Verify the proof locally
@@ -791,8 +788,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .destinationEncryptedAmount(destinationEncryptedAmount)
       .issuerEncryptedAmount(issuerEncryptedAmountForSend)
       .zkProof(fullZkProofHex)
-      .amountCommitment(amountCommitment.toReversedHex64())
-      .balanceCommitment(balanceCommitment.toReversedHex64())
+      .amountCommitment(amountCommitment.hexValue())
+      .balanceCommitment(balanceCommitment.hexValue())
       .build();
 
     SingleSignedTransaction<ConfidentialMPTSend> signedConfidentialSend = signatureService.sign(
@@ -940,7 +937,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .holderEncryptedAmount(holderConvertBackEncryptedAmount)
       .issuerEncryptedAmount(issuerConvertBackEncryptedAmount)
       .blindingFactor(convertBackBlindingFactor.hexValue())
-      .balanceCommitment(convertBackCommitment.toReversedHex64())
+      .balanceCommitment(convertBackCommitment.hexValue())
       .zkProof(convertBackBalanceLinkageProof.hexValue())
       .build();
 

@@ -36,7 +36,7 @@ import java.util.Objects;
  * providing {@link Definitions} data from a JSON file, while also programmatically generating additional permission
  * values based on the loaded data.
  *
- * The definitions file is expected to be located at '/definitions.json' as a resource, and is parsed using the
+ * <p>The definitions file is expected to be located at '/definitions.json' as a resource, and is parsed using the
  * specified {@link ObjectMapper}. Lazily initializes and memoizes the loaded {@link Definitions} data for improved
  * performance.
  */
@@ -74,9 +74,12 @@ public class DefaultDefinitionsProvider implements DefinitionsProvider {
 
   /**
    * Generate PERMISSION_VALUES mapping from TRANSACTION_TYPES.
-   * This follows the same logic as xrpl.js:
-   * - Granular permissions start at 65537
-   * - Transaction type permissions are transaction type code + 1
+   *
+   * <p>This follows the same logic as xrpl.js:
+   * <ul>
+   *   <li>Granular permissions start at 65537</li>
+   *   <li>Transaction type permissions are transaction type code + 1</li>
+   * </ul>
    *
    * @param definitions The base {@link Definitions} loaded from definitions.json
    * @return A {@link Map} of permission names to their numeric values

@@ -168,8 +168,8 @@ public interface LedgerObject {
     /**
      * The {@link LedgerEntryType} for {@code Delegate} ledger objects.
      *
-     * <p>This constant will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
-     * Its API is subject to change.</p>
+     * <p>This constant will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on
+     * mainnet. Its API is subject to change.</p>
      */
     @Beta
     DELEGATE("Delegate"),

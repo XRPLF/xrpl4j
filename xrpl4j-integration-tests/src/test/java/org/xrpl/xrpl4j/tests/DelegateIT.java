@@ -641,4 +641,108 @@ public class DelegateIT extends AbstractIT {
 
     logger.info("Delegate object permissions updated successfully");
   }
+
+  @Test
+  public void testLedgerEntryDelegate() throws JsonRpcClientErrorException, JsonProcessingException {
+    /////////////////////////
+    // Create random delegator and delegate accounts
+    KeyPair delegatorKeyPair = createRandomAccountEd25519();
+    KeyPair delegateKeyPair = createRandomAccountEd25519();
+
+    AccountInfoResult delegatorAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(delegatorKeyPair.publicKey().deriveAddress())
+    );
+
+    /////////////////////////
+    // Create a delegation
+    List<PermissionWrapper> permissions = Arrays.asList(
+      PermissionWrapper.builder()
+        .permission(Permission.builder().permissionValue("Payment").build())
+        .build(),
+      PermissionWrapper.builder()
+        .permission(Permission.builder().permissionValue("TrustSet").build())
+        .build()
+    );
+
+    FeeResult feeResult = xrplClient.fee();
+    DelegateSet delegateSet = DelegateSet.builder()
+      .account(delegatorKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(delegatorAccountInfo.accountData().sequence())
+      .signingPublicKey(delegatorKeyPair.publicKey())
+      .authorize(delegateKeyPair.publicKey().deriveAddress())
+      .permissions(permissions)
+      .networkId(networkId)
+      .build();
+
+    SingleSignedTransaction<DelegateSet> signedDelegateSet = this.signatureService.sign(
+      delegatorKeyPair.privateKey(), delegateSet
+    );
+
+    SubmitResult<DelegateSet> result = xrplClient.submit(signedDelegateSet);
+    assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
+
+    /////////////////////////
+    // Wait for the transaction to be validated
+    this.scanForResult(
+      () -> this.getValidatedTransaction(result.transactionResult().hash(), DelegateSet.class)
+    );
+
+    /////////////////////////
+    // Get the Delegate object via account_objects to verify it exists
+    AccountObjectsResult accountObjects = this.scanForResult(
+      () -> getValidatedAccountObjects(delegatorKeyPair.publicKey().deriveAddress())
+    );
+
+    Optional<DelegateObject> delegateObjectFromAccountObjects = accountObjects.accountObjects().stream()
+      .filter(obj -> DelegateObject.class.isAssignableFrom(obj.getClass()))
+      .map(obj -> (DelegateObject) obj)
+      .filter(obj -> obj.authorize().equals(delegateKeyPair.publicKey().deriveAddress()))
+      .findFirst();
+
+    assertThat(delegateObjectFromAccountObjects).isPresent();
+    DelegateObject expectedDelegateObject = delegateObjectFromAccountObjects.get();
+
+    /////////////////////////
+    // Query the Delegate object via ledger_entry using DelegateLedgerEntryParams
+    org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult<DelegateObject> delegateEntry = xrplClient.ledgerEntry(
+      org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams.delegate(
+        org.xrpl.xrpl4j.model.client.ledger.DelegateLedgerEntryParams.builder()
+          .account(delegatorKeyPair.publicKey().deriveAddress())
+          .authorize(delegateKeyPair.publicKey().deriveAddress())
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    );
+
+    assertThat(delegateEntry.node()).isEqualTo(expectedDelegateObject);
+    assertThat(delegateEntry.node().account()).isEqualTo(delegatorKeyPair.publicKey().deriveAddress());
+    assertThat(delegateEntry.node().authorize()).isEqualTo(delegateKeyPair.publicKey().deriveAddress());
+    assertThat(delegateEntry.node().permissions()).hasSize(2);
+
+    /////////////////////////
+    // Also query by index to verify both methods return the same object
+    org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult<DelegateObject> entryByIndex = xrplClient.ledgerEntry(
+      org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams.index(
+        expectedDelegateObject.index(),
+        DelegateObject.class,
+        LedgerSpecifier.VALIDATED
+      )
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(delegateEntry.node());
+
+    /////////////////////////
+    // Query by index without type parameter
+    org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams.index(
+        expectedDelegateObject.index(),
+        LedgerSpecifier.VALIDATED
+      )
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
+
+    logger.info("Delegate object successfully queried via ledger_entry");
+  }
 }

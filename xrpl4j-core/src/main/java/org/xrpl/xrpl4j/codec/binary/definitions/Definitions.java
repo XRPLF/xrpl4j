@@ -24,8 +24,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.ImmutableMap;
-import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Immutable;
 
 import java.util.List;
@@ -87,8 +85,5 @@ public interface Definitions {
    * @return {@link Map} keyed by {@link String} with {@link Integer} values for all permission values.
    */
   @JsonProperty("PERMISSION_VALUES")
-  @Default
-  default Map<String, Integer> permissionValues() {
-    return ImmutableMap.of();
-  }
+  Map<String, Integer> permissionValues();
 }

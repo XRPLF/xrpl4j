@@ -23,6 +23,9 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.Beta;
 
+import java.util.Objects;
+import java.util.Optional;
+
 /**
  * Enumeration of granular permission types for delegated credentials.
  * These permissions support control over specific portions of transactions,
@@ -110,15 +113,17 @@ public enum GranularPermission {
    *
    * @param value The {@link String} value corresponding to a {@link GranularPermission}.
    *
-   * @return The {@link GranularPermission} with the corresponding value, or null if not found.
+   * @return An {@link Optional} containing the {@link GranularPermission} with the corresponding value,
+   *         or {@link Optional#empty()} if not found.
    */
-  public static GranularPermission forValue(String value) {
+  public static Optional<GranularPermission> forValue(final String value) {
+    Objects.requireNonNull(value);
     for (GranularPermission permission : GranularPermission.values()) {
       if (permission.value.equals(value)) {
-        return permission;
+        return Optional.of(permission);
       }
     }
-    return null;
+    return Optional.empty();
   }
 
   /**

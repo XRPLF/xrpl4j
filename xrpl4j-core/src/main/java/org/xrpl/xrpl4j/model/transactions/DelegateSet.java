@@ -78,8 +78,8 @@ public interface DelegateSet extends Transaction {
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link DelegateSet}, which only allows the {@code tfFullyCanonicalSig}
-   * flag, which is deprecated.
+   * Set of {@link TransactionFlags}s for this {@link DelegateSet}. Note that {@link DelegateSet} transactions
+   * do not support any transaction-specific flags, only universal flags.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
@@ -173,8 +173,7 @@ public interface DelegateSet extends Transaction {
       boolean isValidTransactionType = transactionType != TransactionType.UNKNOWN;
 
       // Check if it's a valid GranularPermission
-      GranularPermission granularPermission = GranularPermission.forValue(permissionValue);
-      boolean isValidGranularPermission = granularPermission != null;
+      boolean isValidGranularPermission = GranularPermission.forValue(permissionValue).isPresent();
 
       Preconditions.checkArgument(
         isValidTransactionType || isValidGranularPermission,

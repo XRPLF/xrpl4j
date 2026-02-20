@@ -107,5 +107,30 @@ public class DelegateSetJsonTest extends AbstractJsonTest {
 
     assertCanSerializeAndDeserialize(delegateSet, json);
   }
+
+  @Test
+  public void testDelegateSetJsonWithNoPermissions() throws JsonProcessingException, JSONException {
+    DelegateSet delegateSet = DelegateSet.builder()
+            .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+            .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
+            .sequence(UnsignedInteger.valueOf(2))
+            .fee(XrpCurrencyAmount.ofDrops(10))
+            .signingPublicKey(
+                    PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
+            )
+            .build();
+
+    String json = "{" +
+            "  \"Account\":\"rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8\"," +
+            "  \"Authorize\":\"rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de\"," +
+            "  \"Permissions\":[]," +
+            "  \"Fee\":\"10\"," +
+            "  \"Sequence\":2," +
+            "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+            "  \"TransactionType\":\"DelegateSet\"" +
+            "}";
+
+    assertCanSerializeAndDeserialize(delegateSet, json);
+  }
 }
 

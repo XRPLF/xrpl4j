@@ -31,7 +31,6 @@ import org.xrpl.xrpl4j.model.transactions.Permission;
 import org.xrpl.xrpl4j.model.transactions.PermissionWrapper;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Unit tests for {@link DelegateObject}.

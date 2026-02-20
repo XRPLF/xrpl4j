@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -263,5 +265,29 @@ class AmmWithdrawTest extends AbstractJsonTest {
           .currency("TST")
           .build()
       ).asset2(Issue.XRP);
+  }
+
+  @Test
+  void transactionFlagsReturnsCorrectFlagsWhenFlagsSet() {
+    AmmWithdraw ammWithdraw = baseBuilder()
+      .flags(AmmWithdrawFlags.LP_TOKEN)
+      .lpTokensIn(lpTokensIn())
+      .build();
+
+    assertThat(ammWithdraw.transactionFlags()).isEqualTo(ammWithdraw.flags());
+    assertThat(((AmmWithdrawFlags) ammWithdraw.transactionFlags()).tfLpToken()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    AmmWithdraw original = baseBuilder()
+      .flags(AmmWithdrawFlags.WITHDRAW_ALL)
+      .build();
+
+    AmmWithdraw copied = AmmWithdraw.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+    assertThat(((AmmWithdrawFlags) copied.transactionFlags()).tfWithdrawAll()).isTrue();
   }
 }

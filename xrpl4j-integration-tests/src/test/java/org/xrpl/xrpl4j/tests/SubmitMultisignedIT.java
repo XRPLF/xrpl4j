@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -51,7 +52,7 @@ import java.util.stream.Collectors;
 
 public class SubmitMultisignedIT extends AbstractIT {
 
-  /////////////////////////////
+  /// //////////////////////////
   // Create four accounts, one for the multisign account owner, one for their two friends,
   // and one to send a Payment to.
   KeyPair sourceKeyPair = createRandomAccountEd25519();
@@ -66,7 +67,6 @@ public class SubmitMultisignedIT extends AbstractIT {
   @BeforeEach
   public void setUp() throws JsonRpcClientErrorException, JsonProcessingException {
 
-    /////////////////////////////
     // Wait for all of the accounts to show up in a validated ledger
     final AccountInfoResult sourceAccountInfo = scanForResult(
       () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
@@ -75,11 +75,9 @@ public class SubmitMultisignedIT extends AbstractIT {
     scanForResult(() -> this.getValidatedAccountInfo(bobKeyPair.publicKey().deriveAddress()));
     scanForResult(() -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress()));
 
-    /////////////////////////////
     // And validate that the source account has not set up any signer lists
     assertThat(sourceAccountInfo.accountData().signerLists()).isEmpty();
 
-    /////////////////////////////
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
     feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
@@ -104,7 +102,6 @@ public class SubmitMultisignedIT extends AbstractIT {
       .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
-    /////////////////////////////
     // Validate that the transaction was submitted successfully
     SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
       sourceKeyPair.privateKey(), signerListSet
@@ -117,7 +114,6 @@ public class SubmitMultisignedIT extends AbstractIT {
       signerListSetResult.transactionResult().hash()
     );
 
-    /////////////////////////////
     // Then wait until the transaction enters a validated ledger and the source account's signer list
     // exists
     sourceAccountInfoAfterSignerListSet = scanForResult(
@@ -138,7 +134,6 @@ public class SubmitMultisignedIT extends AbstractIT {
   @Test
   public void submitMultisignedAndVerifyHash() throws JsonRpcClientErrorException, JsonProcessingException {
 
-    /////////////////////////////
     // Construct an unsigned Payment transaction to be multisigned
     Payment unsignedPayment = Payment.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
@@ -153,13 +148,20 @@ public class SubmitMultisignedIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .build();
 
-    /////////////////////////////
     // Alice and Bob sign the transaction with their private keys
     List<Signer> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
-      .map(keyPair -> signatureService.multiSignToSigner(keyPair.privateKey(), unsignedPayment))
+      .map(keyPair -> {
+        // Below is the same as the now-deprecated:
+        // return signatureService.multiSignToSigner(keyPair.privateKey(), unsignedPayment);
+        final PublicKey signingPublicKey = signatureService.derivePublicKey(keyPair.privateKey());
+        final Signature signature = signatureService.multiSign(keyPair.privateKey(), unsignedPayment);
+        return Signer.builder()
+          .signingPublicKey(signingPublicKey)
+          .transactionSignature(signature)
+          .build();
+      })
       .collect(Collectors.toList());
 
-    /////////////////////////////
     // Then we add the signatures to the Payment object and submit it
     MultiSignedTransaction<Payment> signedTransaction = MultiSignedTransaction.<Payment>builder()
       .unsignedTransaction(unsignedPayment)
@@ -180,7 +182,6 @@ public class SubmitMultisignedIT extends AbstractIT {
   @Test
   public void submitMultisignedWithSignersInDescOrderAndVerifyHash() throws JsonRpcClientErrorException {
 
-    /////////////////////////////
     // Construct an unsigned Payment transaction to be multisigned
     Payment unsignedPayment = Payment.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
@@ -195,13 +196,20 @@ public class SubmitMultisignedIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .build();
 
-    /////////////////////////////
     // Alice and Bob sign the transaction with their private keys
     List<Signer> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
-      .map(keyPair -> signatureService.multiSignToSigner(keyPair.privateKey(), unsignedPayment))
+      .map(keyPair -> {
+        // Below is the same as the now-deprecated:
+        // return signatureService.multiSignToSigner(keyPair.privateKey(), unsignedPayment);
+        final PublicKey signingPublicKey = signatureService.derivePublicKey(keyPair.privateKey());
+        final Signature signature = signatureService.multiSign(keyPair.privateKey(), unsignedPayment);
+        return Signer.builder()
+          .signingPublicKey(signingPublicKey)
+          .transactionSignature(signature)
+          .build();
+      })
       .collect(Collectors.toList());
 
-    /////////////////////////////
     // Then we add the signatures to the Payment object and submit it
     MultiSignedTransaction<Payment> signedTransaction = MultiSignedTransaction.<Payment>builder()
       .unsignedTransaction(unsignedPayment)

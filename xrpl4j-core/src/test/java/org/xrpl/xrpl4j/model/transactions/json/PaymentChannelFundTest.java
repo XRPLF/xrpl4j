@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.model.transactions.json;
  * =========================LICENSE_END==================================
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -156,5 +158,37 @@ public class PaymentChannelFundTest extends AbstractJsonTest {
       "}";
 
     assertCanSerializeAndDeserialize(fund, json);
+  }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    PaymentChannelFund fund = PaymentChannelFund.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
+      .amount(XrpCurrencyAmount.ofDrops(200000))
+      .build();
+
+    assertThat(fund.transactionFlags()).isEqualTo(fund.flags());
+    assertThat(fund.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    PaymentChannelFund original = PaymentChannelFund.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
+      .amount(XrpCurrencyAmount.ofDrops(200000))
+      .build();
+
+    PaymentChannelFund copied = PaymentChannelFund.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
   }
 }

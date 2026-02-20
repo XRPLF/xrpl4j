@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,13 +24,13 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.path.BookOffersOffer;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
+
+import java.time.ZonedDateTime;
 
 /**
  * Jackson module for the xrpl4j-model project.
@@ -63,12 +63,15 @@ public class Xrpl4jModule extends SimpleModule {
     addDeserializer(Transaction.class, new TransactionDeserializer());
 
     addDeserializer(ServerInfo.class, new ServerInfoDeserializer());
-    
+
     addSerializer(UnsignedByteArray.class, new UnsignedByteArraySerializer());
     addDeserializer(UnsignedByteArray.class, new UnsignedByteArrayDeserializer());
 
     addSerializer(Flags.class, new FlagsSerializer());
 
     addDeserializer(AffectedNode.class, new AffectedNodeDeserializer());
+
+    addSerializer(ZonedDateTime.class, new ZonedDateTimeSerializer());
+    addDeserializer(ZonedDateTime.class, new ZonedDateTimeDeserializer());
   }
 }

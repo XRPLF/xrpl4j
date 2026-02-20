@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -178,6 +179,26 @@ class XChainCommitTest extends AbstractJsonTest {
       "}", ED_PUBLIC_KEY.base16Value());
 
     assertCanSerializeAndDeserialize(commit, json);
+  }
+
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    XChainCommit commit = baseBuilder().build();
+
+    assertThat(commit.transactionFlags()).isEqualTo(commit.flags());
+    assertThat(commit.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    XChainCommit original = baseBuilder()
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    XChainCommit copied = XChainCommit.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
   }
 
   private ImmutableXChainCommit.Builder baseBuilder() {

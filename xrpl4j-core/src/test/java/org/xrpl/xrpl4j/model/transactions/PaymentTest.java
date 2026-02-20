@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 
 import java.util.Collections;
 import java.util.List;
@@ -64,6 +65,56 @@ public class PaymentTest {
   @Test
   public void flagsForIssuedCurrency() {
     assertThat(issuedCurrencyPayment().flags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlagsWhenNoFlagsSet() {
+    Payment payment = xrpPayment();
+    assertThat(payment.transactionFlags()).isEqualTo(payment.flags());
+    assertThat(payment.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void transactionFlagsReturnsCorrectFlagsWhenFlagsSet() {
+    Payment payment = Payment.builder()
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .flags(PaymentFlags.builder().tfPartialPayment(true).build())
+      .build();
+
+    assertThat(payment.transactionFlags()).isEqualTo(payment.flags());
+    assertThat(payment.transactionFlags().tfFullyCanonicalSig()).isTrue();
+    assertThat(((PaymentFlags) payment.transactionFlags()).tfPartialPayment()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    PaymentFlags originalFlags = PaymentFlags.builder()
+      .tfPartialPayment(true)
+      .tfNoDirectRipple(true)
+      .build();
+
+    Payment originalPayment = Payment.builder()
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .flags(originalFlags)
+      .build();
+
+    // Use .from() to copy the payment and verify flags are preserved
+    Payment copiedPayment = Payment.builder()
+      .from(originalPayment)
+      .build();
+
+    assertThat(copiedPayment.flags()).isEqualTo(originalPayment.flags());
+    assertThat(copiedPayment.transactionFlags()).isEqualTo(originalPayment.transactionFlags());
+    assertThat(((PaymentFlags) copiedPayment.transactionFlags()).tfPartialPayment()).isTrue();
+    assertThat(((PaymentFlags) copiedPayment.transactionFlags()).tfNoDirectRipple()).isTrue();
   }
 
   @Test

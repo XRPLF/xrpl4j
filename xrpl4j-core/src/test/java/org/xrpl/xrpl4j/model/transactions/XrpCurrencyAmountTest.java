@@ -26,8 +26,17 @@ import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.MAX
 import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.MAX_XRP_IN_DROPS;
 import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.ONE_XRP_IN_DROPS;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
+import org.immutables.value.Value;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.math.BigDecimal;
 
@@ -36,10 +45,24 @@ import java.math.BigDecimal;
  */
 public class XrpCurrencyAmountTest {
 
+  private final ObjectMapper objectMapper = ObjectMapperFactory.create();
+
   private static final long NEGATIVE_HALF_XRP_IN_DROPS = -500_000L;
   private static final long HALF_XRP_IN_DROPS = 500_000L;
-  private static final long NEGATIVE_TWO_XRP_IN_DROPS = -2_000_000L;
   private static final long TWO_XRP_IN_DROPS = 2_000_000L;
+
+  @Test
+  void testNull() {
+    assertThrows(NullPointerException.class, () -> XrpCurrencyAmount.ofDrops(null));
+    assertThrows(NullPointerException.class, () -> XrpCurrencyAmount.ofDrops(null, false));
+    assertThrows(NullPointerException.class, () -> XrpCurrencyAmount.ofXrp(null));
+
+    XrpCurrencyAmount xrpCurrencyAmount = XrpCurrencyAmount.ofDrops(1L);
+    assertThrows(NullPointerException.class, () -> xrpCurrencyAmount.plus(null));
+    assertThrows(NullPointerException.class, () -> xrpCurrencyAmount.minus(null));
+    assertThrows(NullPointerException.class, () -> xrpCurrencyAmount.times(null));
+    assertThat(xrpCurrencyAmount.equals(null)).isFalse();
+  }
 
   @Test
   public void ofDropsLong() {
@@ -424,5 +447,46 @@ public class XrpCurrencyAmountTest {
     assertThat(XrpCurrencyAmount.ofDrops(1L).toString()).isEqualTo("1");
     assertThat(XrpCurrencyAmount.ofXrp(new BigDecimal("1")).toString()).isEqualTo("1000000");
     assertThat(XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(123456789L)).toString()).isEqualTo("123456789");
+  }
+
+  @Test
+  public void testHashCode() {
+    XrpCurrencyAmount amount1 = XrpCurrencyAmount.ofDrops(1000000);
+    XrpCurrencyAmount amount2 = XrpCurrencyAmount.ofDrops(1000000);
+    XrpCurrencyAmount amount3 = XrpCurrencyAmount.ofDrops(2000000);
+
+    // Same value should have same hashCode
+    assertThat(amount1.hashCode()).isEqualTo(amount2.hashCode());
+
+    // Different values should have different hashCodes
+    assertThat(amount1.hashCode()).isNotEqualTo(amount3.hashCode());
+  }
+
+  @Test
+  public void testJsonSerialization() throws JsonProcessingException, JSONException {
+    XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(1000000);
+    XrpCurrencyAmountWrapper wrapper = ImmutableXrpCurrencyAmountWrapper.builder()
+      .value(amount)
+      .build();
+    assertSerializesAndDeserializes(wrapper, "{\"value\":\"1000000\"}");
+  }
+
+  private void assertSerializesAndDeserializes(XrpCurrencyAmountWrapper wrapper, String json)
+    throws JsonProcessingException, JSONException {
+    String serialized = objectMapper.writeValueAsString(wrapper);
+    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+    XrpCurrencyAmountWrapper deserialized = objectMapper.readValue(
+      serialized,
+      XrpCurrencyAmountWrapper.class
+    );
+    assertThat(deserialized).isEqualTo(wrapper);
+  }
+
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableXrpCurrencyAmountWrapper.class)
+  @JsonDeserialize(as = ImmutableXrpCurrencyAmountWrapper.class)
+  interface XrpCurrencyAmountWrapper {
+
+    XrpCurrencyAmount value();
   }
 }

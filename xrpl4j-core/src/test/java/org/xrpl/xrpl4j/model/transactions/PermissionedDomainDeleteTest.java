@@ -23,4 +23,32 @@ public class PermissionedDomainDeleteTest {
     assertThat(permissionedDomainDelete.domainId()).isEqualTo(
       Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"));
   }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    PermissionedDomainDelete permissionedDomainDelete = PermissionedDomainDelete.builder()
+      .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .domainId(Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"))
+      .build();
+
+    assertThat(permissionedDomainDelete.transactionFlags()).isEqualTo(permissionedDomainDelete.flags());
+    assertThat(permissionedDomainDelete.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    PermissionedDomainDelete original = PermissionedDomainDelete.builder()
+      .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .domainId(Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"))
+      .build();
+
+    PermissionedDomainDelete copied = PermissionedDomainDelete.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
 }

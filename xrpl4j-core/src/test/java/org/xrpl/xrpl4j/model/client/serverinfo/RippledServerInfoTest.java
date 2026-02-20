@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.serverinfo;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,9 +36,6 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -226,8 +223,7 @@ public class RippledServerInfoTest extends AbstractJsonTest {
       .publicKeyNode("n9MmdUoYxpTMPhD8Fxky48wXnmr3zu5hqG1httdLrD8JY66GbdTq")
       .serverState("full")
       .serverStateDurationUs("20369650238475")
-      .time(ZonedDateTime.parse("2022-Jul-26 19:14:02.337455 UTC",
-        DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z", Locale.US)).withZoneSameLocal(ZoneId.of("UTC")))
+      .time(parseRippledTime("2022-Jul-26 19:14:02.337455 UTC"))
       .upTime(UnsignedLong.valueOf(20369659))
       .validatedLedger(ValidatedLedger.builder()
         .age(UnsignedInteger.ONE)
@@ -321,8 +317,7 @@ public class RippledServerInfoTest extends AbstractJsonTest {
       .publicKeyValidator("nHBk5DPexBjinXV8qHn7SEKzoxh2W92FxSbNTPgGtQYBzEF4msn9")
       .serverState("proposing")
       .serverStateDurationUs("1850969666")
-      .time(ZonedDateTime.parse("2020-Mar-24 01:27:42.147330 UTC",
-        DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z", Locale.US)).withZoneSameLocal(ZoneId.of("UTC")))
+      .time(parseRippledTime("2020-Mar-24 01:27:42.147330 UTC"))
       .upTime(UnsignedLong.valueOf(1984))
       .validatedLedger(ValidatedLedger.builder()
         .age(UnsignedInteger.valueOf(2))

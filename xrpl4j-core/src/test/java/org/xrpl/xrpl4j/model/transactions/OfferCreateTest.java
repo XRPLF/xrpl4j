@@ -60,4 +60,61 @@ class OfferCreateTest {
       .isInstanceOf(IllegalStateException.class)
       .hasMessage("tfHybrid flag cannot be set if the offer doesn't have a DomainID.");
   }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlagsWhenNoFlagsSet() {
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .takerPays(XrpCurrencyAmount.ofDrops(14))
+      .takerGets(XrpCurrencyAmount.ofDrops(15))
+      .build();
+
+    assertThat(offerCreate.transactionFlags()).isEqualTo(offerCreate.flags());
+    assertThat(offerCreate.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void transactionFlagsReturnsCorrectFlagsWhenFlagsSet() {
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .takerPays(XrpCurrencyAmount.ofDrops(14))
+      .takerGets(XrpCurrencyAmount.ofDrops(15))
+      .flags(OfferCreateFlags.builder().tfPassive(true).tfSell(true).build())
+      .build();
+
+    assertThat(offerCreate.transactionFlags()).isEqualTo(offerCreate.flags());
+    assertThat(offerCreate.transactionFlags().tfFullyCanonicalSig()).isTrue();
+    assertThat(((OfferCreateFlags) offerCreate.transactionFlags()).tfPassive()).isTrue();
+    assertThat(((OfferCreateFlags) offerCreate.transactionFlags()).tfSell()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    OfferCreateFlags originalFlags = OfferCreateFlags.builder()
+      .tfPassive(true)
+      .tfSell(true)
+      .build();
+
+    OfferCreate original = OfferCreate.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .takerPays(XrpCurrencyAmount.ofDrops(14))
+      .takerGets(XrpCurrencyAmount.ofDrops(15))
+      .flags(originalFlags)
+      .build();
+
+    OfferCreate copied = OfferCreate.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+    assertThat(((OfferCreateFlags) copied.transactionFlags()).tfPassive()).isTrue();
+    assertThat(((OfferCreateFlags) copied.transactionFlags()).tfSell()).isTrue();
+  }
 }

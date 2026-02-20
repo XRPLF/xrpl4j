@@ -139,4 +139,58 @@ public class NfTokenMintTest {
     assertThat(nfTokenMint.uri()).isEqualTo(Optional.of(NfTokenUri.of(expected)));
   }
 
+  @Test
+  public void transactionFlagsReturnsEmptyFlagsWhenNoFlagsSet() {
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .tokenTaxon(UnsignedLong.valueOf(146999694L))
+      .build();
+
+    assertThat(nfTokenMint.transactionFlags()).isEqualTo(nfTokenMint.flags());
+    assertThat(nfTokenMint.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void transactionFlagsReturnsCorrectFlagsWhenFlagsSet() {
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .tokenTaxon(UnsignedLong.valueOf(146999694L))
+      .flags(NfTokenMintFlags.builder()
+        .tfTransferable(true)
+        .tfBurnable(true)
+        .build())
+      .build();
+
+    assertThat(nfTokenMint.transactionFlags()).isEqualTo(nfTokenMint.flags());
+    assertThat(nfTokenMint.transactionFlags().tfFullyCanonicalSig()).isTrue();
+    assertThat(((NfTokenMintFlags) nfTokenMint.transactionFlags()).tfTransferable()).isTrue();
+    assertThat(((NfTokenMintFlags) nfTokenMint.transactionFlags()).tfBurnable()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    NfTokenMintFlags originalFlags = NfTokenMintFlags.builder()
+      .tfTransferable(true)
+      .tfBurnable(true)
+      .build();
+
+    NfTokenMint original = NfTokenMint.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .tokenTaxon(UnsignedLong.valueOf(146999694L))
+      .flags(originalFlags)
+      .build();
+
+    NfTokenMint copied = NfTokenMint.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+    assertThat(((NfTokenMintFlags) copied.transactionFlags()).tfTransferable()).isTrue();
+    assertThat(((NfTokenMintFlags) copied.transactionFlags()).tfBurnable()).isTrue();
+  }
+
 }

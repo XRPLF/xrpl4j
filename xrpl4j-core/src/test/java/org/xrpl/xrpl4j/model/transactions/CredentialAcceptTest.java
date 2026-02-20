@@ -44,4 +44,34 @@ public class CredentialAcceptTest {
     assertThat(credentialAccept.fee()).isEqualTo(XrpCurrencyAmount.ofDrops(10));
     assertThat(credentialAccept.credentialType()).isEqualTo(CredentialType.of("AFDD"));
   }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    CredentialAccept credentialAccept = CredentialAccept.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .issuer(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .credentialType(CredentialType.of("AFDD"))
+      .build();
+
+    assertThat(credentialAccept.transactionFlags()).isEqualTo(credentialAccept.flags());
+    assertThat(credentialAccept.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    CredentialAccept original = CredentialAccept.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .issuer(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .credentialType(CredentialType.of("AFDD"))
+      .build();
+
+    CredentialAccept copied = CredentialAccept.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
 }

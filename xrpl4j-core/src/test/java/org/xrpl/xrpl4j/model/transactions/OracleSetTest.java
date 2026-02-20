@@ -102,6 +102,26 @@ class OracleSetTest extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(oracleSet, json);
   }
 
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    OracleSet oracleSet = baseBuilder().build();
+
+    assertThat(oracleSet.transactionFlags()).isEqualTo(oracleSet.flags());
+    assertThat(oracleSet.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    OracleSet original = baseBuilder()
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    OracleSet copied = OracleSet.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
+
   private static ImmutableOracleSet.Builder baseBuilder() {
     return OracleSet.builder()
       .account(Address.of("rp4pqYgrTAtdPHuZd1ZQWxrzx45jxYcZex"))

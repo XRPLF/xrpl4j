@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -78,6 +79,26 @@ class DidDeleteTest extends AbstractJsonTest {
       "}", ED_PUBLIC_KEY.base16Value());
 
     assertCanSerializeAndDeserialize(transaction, json);
+  }
+
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    DidDelete transaction = baseBuilder().build();
+
+    assertThat(transaction.transactionFlags()).isEqualTo(transaction.flags());
+    assertThat(transaction.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    DidDelete original = baseBuilder()
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    DidDelete copied = DidDelete.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
   }
 
   private ImmutableDidDelete.Builder baseBuilder() {

@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -49,5 +51,59 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(issuanceCreate, json);
   }
 
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(321))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
+      )
+      .build();
 
+    assertThat(issuanceCreate.transactionFlags()).isEqualTo(issuanceCreate.flags());
+    assertThat(issuanceCreate.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void transactionFlagsReturnsCorrectFlagsWhenSet() {
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(321))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
+      )
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptCanTransfer(true)
+        .build()
+      )
+      .build();
+
+    assertThat(issuanceCreate.transactionFlags()).isEqualTo(issuanceCreate.flags());
+    assertThat(((MpTokenIssuanceCreateFlags) issuanceCreate.transactionFlags()).tfMptCanTransfer()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    MpTokenIssuanceCreate original = MpTokenIssuanceCreate.builder()
+      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(321))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
+      )
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptCanTransfer(true)
+        .build()
+      )
+      .build();
+
+    MpTokenIssuanceCreate copied = MpTokenIssuanceCreate.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+    assertThat(((MpTokenIssuanceCreateFlags) copied.transactionFlags()).tfMptCanTransfer()).isTrue();
+  }
 }

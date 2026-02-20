@@ -70,6 +70,63 @@ public class AccountSetTests {
   }
 
   @Test
+  public void transactionFlagsReturnsEmptyFlagsWhenNoFlagsSet() {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .build();
+
+    assertThat(accountSet.transactionFlags()).isEqualTo(accountSet.flags());
+    assertThat(accountSet.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void transactionFlagsReturnsCorrectFlagsWhenFlagsSet() {
+    AccountSetTransactionFlags flags = AccountSetTransactionFlags.builder()
+      .tfRequireAuth()
+      .tfDisallowXrp()
+      .build();
+
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .flags(flags)
+      .build();
+
+    assertThat(accountSet.transactionFlags()).isEqualTo(accountSet.flags());
+    assertThat(((AccountSetTransactionFlags) accountSet.transactionFlags()).tfRequireAuth()).isTrue();
+    assertThat(((AccountSetTransactionFlags) accountSet.transactionFlags()).tfDisallowXrp()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    AccountSetTransactionFlags originalFlags = AccountSetTransactionFlags.builder()
+      .tfRequireAuth()
+      .tfRequireDestTag()
+      .tfDisallowXrp()
+      .build();
+
+    AccountSet originalAccountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .flags(originalFlags)
+      .build();
+
+    AccountSet copiedAccountSet = AccountSet.builder()
+      .from(originalAccountSet)
+      .build();
+
+    assertThat(copiedAccountSet.flags()).isEqualTo(originalAccountSet.flags());
+    assertThat(copiedAccountSet.transactionFlags()).isEqualTo(originalAccountSet.transactionFlags());
+    assertThat(((AccountSetTransactionFlags) copiedAccountSet.transactionFlags()).tfRequireAuth()).isTrue();
+    assertThat(((AccountSetTransactionFlags) copiedAccountSet.transactionFlags()).tfRequireDestTag()).isTrue();
+    assertThat(((AccountSetTransactionFlags) copiedAccountSet.transactionFlags()).tfDisallowXrp()).isTrue();
+  }
+
+  @Test
   void testWithEmptyClearFlagAndEmptyRawValue() {
     AccountSet accountSet = AccountSet.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))

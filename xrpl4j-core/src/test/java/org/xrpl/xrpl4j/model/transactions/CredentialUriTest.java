@@ -5,8 +5,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Strings;
+import org.immutables.value.Value;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.util.Locale;
 
@@ -14,6 +23,8 @@ import java.util.Locale;
  * Unit tests for {@link CredentialUri}.
  */
 public class CredentialUriTest {
+
+  private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
   public void testCredentialUriPlainText() {
@@ -78,6 +89,40 @@ public class CredentialUriTest {
 
     assertDoesNotThrow(() ->
       CredentialUri.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"));
+  }
+
+
+  @Test
+  public void testOfPlainTextWithNull() {
+    assertThatThrownBy(() -> CredentialUri.ofPlainText(null))
+      .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void testJsonSerialization() throws JsonProcessingException, JSONException {
+    CredentialUri credentialUri = CredentialUri.ofPlainText("https://sample-vc.pdf");
+    CredentialUriWrapper wrapper = ImmutableCredentialUriWrapper.builder()
+      .value(credentialUri)
+      .build();
+
+    assertSerializesAndDeserializes(wrapper, "{\"value\":\"68747470733A2F2F73616D706C652D76632E706466\"}");
+  }
+
+  private void assertSerializesAndDeserializes(
+    CredentialUriWrapper wrapper,
+    String json
+  ) throws JsonProcessingException, JSONException {
+    String serialized = objectMapper.writeValueAsString(wrapper);
+    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+    CredentialUriWrapper deserialized = objectMapper.readValue(serialized, CredentialUriWrapper.class);
+    assertThat(deserialized).isEqualTo(wrapper);
+  }
+
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableCredentialUriWrapper.class)
+  @JsonDeserialize(as = ImmutableCredentialUriWrapper.class)
+  interface CredentialUriWrapper {
+    CredentialUri value();
   }
 
 }

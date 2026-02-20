@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.accounts;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,8 +33,6 @@ import org.xrpl.xrpl4j.model.jackson.modules.AccountTransactionsTransactionDeser
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
-import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -50,7 +48,7 @@ import java.util.Optional;
   using = AccountTransactionsTransactionDeserializer.class
 )
 public interface AccountTransactionsTransaction<T extends Transaction> {
-  
+
   /**
    * Construct a builder for this class.
    *
@@ -86,8 +84,8 @@ public interface AccountTransactionsTransaction<T extends Transaction> {
   LedgerIndex ledgerIndex();
 
   /**
-   * The approximate close time (using Ripple Epoch) of the ledger containing this transaction.
-   * This is an undocumented field.
+   * The approximate close time (using Ripple Epoch) of the ledger containing this transaction. This is an undocumented
+   * field.
    *
    * @return An optionally-present {@link UnsignedLong}.
    */
@@ -95,8 +93,7 @@ public interface AccountTransactionsTransaction<T extends Transaction> {
   Optional<UnsignedLong> closeDate();
 
   /**
-   * The approximate close time in UTC offset.
-   * This is derived from undocumented field.
+   * The approximate close time in UTC offset. This is derived from undocumented field.
    *
    * @return An optionally-present {@link ZonedDateTime}.
    */
@@ -105,5 +102,5 @@ public interface AccountTransactionsTransaction<T extends Transaction> {
   default Optional<ZonedDateTime> closeDateHuman() {
     return closeDate().map(TimeUtils::xrplTimeToZonedDateTime);
   }
-  
+
 }

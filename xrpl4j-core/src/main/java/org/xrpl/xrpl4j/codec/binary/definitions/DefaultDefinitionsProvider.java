@@ -77,22 +77,22 @@ public class DefaultDefinitionsProvider implements DefinitionsProvider {
     // Add granular permissions (starting at 65537)
     permissionValues.put("TrustlineAuthorize", 65537);
     permissionValues.put("TrustlineFreeze", 65538);
-    permissionValues.put("PaymentMint", 65539);
-    permissionValues.put("PaymentBurn", 65540);
-    permissionValues.put("PaymentClawback", 65541);
-    permissionValues.put("MPTokenIssuanceCreate", 65542);
-    permissionValues.put("MPTokenIssuanceDestroy", 65543);
-    permissionValues.put("MPTokenIssuanceAuthorize", 65544);
-    permissionValues.put("MPTokenIssuanceUnlock", 65545);
-    permissionValues.put("MPTokenIssuanceLock", 65546);
-    permissionValues.put("MPTokenIssuanceTransfer", 65547);
-    permissionValues.put("MPTokenIssuanceClawback", 65548);
+    permissionValues.put("TrustlineUnfreeze", 65539);
+    permissionValues.put("AccountDomainSet", 65540);
+    permissionValues.put("AccountEmailHashSet", 65541);
+    permissionValues.put("AccountMessageKeySet", 65542);
+    permissionValues.put("AccountTransferRateSet", 65543);
+    permissionValues.put("AccountTickSizeSet", 65544);
+    permissionValues.put("PaymentMint", 65545);
+    permissionValues.put("PaymentBurn", 65546);
+    permissionValues.put("MPTokenIssuanceLock", 65547);
+    permissionValues.put("MPTokenIssuanceUnlock", 65548);
 
     // Add transaction type permissions (transaction type code + 1)
-    // Exclude pseudo-transactions and non-delegatable transactions
+    // Exclude Invalid (-1) only
     definitions.transactionTypes().forEach((txType, txCode) -> {
-      // Skip Invalid (-1) and pseudo-transactions (>= 100)
-      if (txCode >= 0 && txCode < 100) {
+      // Skip Invalid (-1)
+      if (txCode >= 0) {
         permissionValues.put(txType, txCode + 1);
       }
     });

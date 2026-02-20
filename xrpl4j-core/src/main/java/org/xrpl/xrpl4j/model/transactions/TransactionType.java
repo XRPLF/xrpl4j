@@ -369,15 +369,6 @@ public enum TransactionType {
    */
   AMM_CLAWBACK("AMMClawback"),
 
-  /**
-   * The {@link TransactionType} for the Batch transaction.
-   *
-   * <p>This constant will be marked {@link Beta} until the Batch amendment is enabled on mainnet. Its API is subject to
-   * change.</p>
-   */
-  @Beta
-  BATCH("Batch"),
-
   @Beta
   MPT_ISSUANCE_CREATE("MPTokenIssuanceCreate"),
   @Beta

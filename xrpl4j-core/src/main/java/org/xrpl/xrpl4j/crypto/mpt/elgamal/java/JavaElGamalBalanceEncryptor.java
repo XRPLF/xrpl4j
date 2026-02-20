@@ -86,52 +86,6 @@ public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
   }
 
   /**
-   * Generates a canonical encrypted zero for a given account and MPT issuance.
-   *
-   * <p>This produces a deterministic encryption of zero that can be used as a starting point
-   * for balance tracking.</p>
-   *
-   * @param publicKey     The ElGamal public key to encrypt to.
-   * @param accountId     The 20-byte account ID.
-   * @param mptIssuanceId The 24-byte MPT issuance ID.
-   *
-   * @return An {@link ElGamalCiphertext} encrypting zero.
-   */
-  @Override
-  public ElGamalCiphertext generateCanonicalEncryptedZero(
-    final ElGamalPublicKey publicKey,
-    final byte[] accountId,
-    final byte[] mptIssuanceId
-  ) {
-    Objects.requireNonNull(publicKey, "publicKey must not be null");
-    Objects.requireNonNull(accountId, "accountId must not be null");
-    Objects.requireNonNull(mptIssuanceId, "mptIssuanceId must not be null");
-    Preconditions.checkArgument(accountId.length == 20, "accountId must be 20 bytes");
-    Preconditions.checkArgument(mptIssuanceId.length == 24, "mptIssuanceId must be 24 bytes");
-
-    // Build hash input: "EncZero" || accountId || mptIssuanceId
-    byte[] hashInput = new byte[DOMAIN_SEPARATOR.length + 20 + 24];
-    System.arraycopy(DOMAIN_SEPARATOR, 0, hashInput, 0, DOMAIN_SEPARATOR.length);
-    System.arraycopy(accountId, 0, hashInput, DOMAIN_SEPARATOR.length, 20);
-    System.arraycopy(mptIssuanceId, 0, hashInput, DOMAIN_SEPARATOR.length + 20, 24);
-
-    // Hash to create deterministic scalar
-    // TODO: Limit this so that it doesn't produce a runaway while loop
-    byte[] deterministicScalar = new byte[32];
-    BigInteger scalar;
-    do {
-      SHA256Digest digest = new SHA256Digest();
-      digest.update(hashInput, 0, hashInput.length);
-      digest.doFinal(deterministicScalar, 0);
-      scalar = new BigInteger(1, deterministicScalar);
-    } while (!Secp256k1Operations.isValidPrivateKey(scalar));
-
-    // Encrypt amount 0 using the deterministic scalar
-    BlindingFactor blindingFactor = BlindingFactor.fromBytes(deterministicScalar);
-    return encrypt(UnsignedLong.ZERO, publicKey, blindingFactor);
-  }
-
-  /**
    * Verifies that a ciphertext is a valid encryption of the given amount.
    *
    * <p>This requires knowledge of the blinding factor used during encryption.</p>

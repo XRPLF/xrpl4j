@@ -46,23 +46,6 @@ public interface ElGamalBalanceEncryptor {
   ElGamalCiphertext encrypt(UnsignedLong amount, ElGamalPublicKey publicKey, BlindingFactor blindingFactor);
 
   /**
-   * Generates a canonical encrypted zero for a given account and MPT issuance.
-   *
-   * <p>This produces a deterministic encryption of zero that can be used for inbox reset
-   * after a merge operation. The deterministic nature ensures all validators compute the same ciphertext.</p>
-   *
-   * @param publicKey     The ElGamal public key to encrypt to.
-   * @param accountId     The 20-byte account ID.
-   * @param mptIssuanceId The 24-byte MPT issuance ID.
-   *
-   * @return An {@link ElGamalCiphertext} encrypting zero.
-   *
-   * @throws NullPointerException     if any parameter is null.
-   * @throws IllegalArgumentException if accountId or mptIssuanceId have incorrect lengths.
-   */
-  ElGamalCiphertext generateCanonicalEncryptedZero(ElGamalPublicKey publicKey, byte[] accountId, byte[] mptIssuanceId);
-
-  /**
    * Verifies that a ciphertext is a valid encryption of the given amount.
    *
    * <p>This requires knowledge of the blinding factor used during encryption.</p>

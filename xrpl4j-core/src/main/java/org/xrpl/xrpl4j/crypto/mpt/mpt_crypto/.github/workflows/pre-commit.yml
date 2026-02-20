@@ -1,0 +1,14 @@
+name: Run pre-commit hooks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  run-hooks:
+    uses: XRPLF/actions/.github/workflows/pre-commit.yml@320be44621ca2a080f05aeb15817c44b84518108
+    with:
+      runs_on: heavy
+      container: '{ "image": "ghcr.io/xrplf/clio-pre-commit:14342e087ceb8b593027198bf9ef06a43833c696" }'

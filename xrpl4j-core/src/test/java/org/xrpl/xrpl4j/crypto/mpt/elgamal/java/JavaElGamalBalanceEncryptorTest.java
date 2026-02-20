@@ -183,34 +183,6 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     assertThat(decryptedAmount).isEqualTo(originalAmount.longValue());
   }
 
-  @Test
-  void testCanonicalEncryptedZero() {
-    ElGamalPublicKey publicKey = toElGamalPublicKey(keyPair.publicKey());
-    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
-
-    // Use placeholder byte arrays for IDs (20 bytes for account, 24 for issuance)
-    byte[] accountId = new byte[20];
-    accountId[0] = 1;
-    byte[] issuanceId = new byte[24];
-    issuanceId[0] = 2;
-
-    // Generate it once
-    ElGamalCiphertext ciphertextA = elGamalBalanceEncryptor.generateCanonicalEncryptedZero(
-      publicKey, accountId, issuanceId
-    );
-
-    // Generate it a second time with the same inputs
-    ElGamalCiphertext ciphertextB = elGamalBalanceEncryptor.generateCanonicalEncryptedZero(
-      publicKey, accountId, issuanceId
-    );
-
-    // 1. Verify that it decrypts to zero
-    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertextA, privateKey);
-    assertThat(decryptedAmount).isEqualTo(0);
-
-    // 2. Verify that the output is deterministic (both ciphertexts are identical)
-    assertThat(ciphertextA).isEqualTo(ciphertextB);
-  }
 
   @Test
   void testVerifyEncryptionValidCase() {
@@ -274,29 +246,5 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     assertThat(decryptedAmount).isEqualTo(amount.longValue());
   }
 
-  @Test
-  void testCanonicalZeroDifferentInputsProduceDifferentOutputs() {
-    ElGamalPublicKey publicKey = toElGamalPublicKey(keyPair.publicKey());
-    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
 
-    byte[] accountId1 = new byte[20];
-    accountId1[0] = 1;
-    byte[] accountId2 = new byte[20];
-    accountId2[0] = 2;
-    byte[] issuanceId = new byte[24];
-
-    ElGamalCiphertext ciphertext1 = elGamalBalanceEncryptor.generateCanonicalEncryptedZero(
-      publicKey, accountId1, issuanceId
-    );
-    ElGamalCiphertext ciphertext2 = elGamalBalanceEncryptor.generateCanonicalEncryptedZero(
-      publicKey, accountId2, issuanceId
-    );
-
-    // Different inputs should produce different ciphertexts
-    assertThat(ciphertext1).isNotEqualTo(ciphertext2);
-
-    // But both should still decrypt to zero
-    assertThat(elGamalBalanceDecryptor.decrypt(ciphertext1, privateKey)).isEqualTo(0);
-    assertThat(elGamalBalanceDecryptor.decrypt(ciphertext2, privateKey)).isEqualTo(0);
-  }
 }

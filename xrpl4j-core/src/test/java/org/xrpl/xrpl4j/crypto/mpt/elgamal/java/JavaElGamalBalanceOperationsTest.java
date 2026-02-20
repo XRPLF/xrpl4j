@@ -82,34 +82,34 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
     assertThat(decryptedAmount).isEqualTo(originalAmount.longValue());
   }
 
-  @Test
-  void testCanonicalEncryptedZero() {
-    ElGamalPublicKey publicKey = toElGamalPublicKey(keyPair.publicKey());
-    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
-
-    // Use placeholder byte arrays for IDs (20 bytes for account, 24 for issuance)
-    byte[] accountId = new byte[20];
-    accountId[0] = 1;
-    byte[] issuanceId = new byte[24];
-    issuanceId[0] = 2;
-
-    // Generate it once
-    ElGamalCiphertext ciphertextA = elGamalBalanceEncryptor.generateCanonicalEncryptedZero(
-      publicKey, accountId, issuanceId
-    );
-
-    // Generate it a second time with the same inputs
-    ElGamalCiphertext ciphertextB = elGamalBalanceEncryptor.generateCanonicalEncryptedZero(
-      publicKey, accountId, issuanceId
-    );
-
-    // 1. Verify that it decrypts to zero
-    long decryptedAmount = javaElGamalBalanceDecryptor.decrypt(ciphertextA, privateKey);
-    assertThat(decryptedAmount).isEqualTo(0);
-
-    // 2. Verify that the output is deterministic (both ciphertexts are identical)
-    assertThat(ciphertextA).isEqualTo(ciphertextB);
-  }
+//  @Test
+//  void testCanonicalEncryptedZero() {
+//    ElGamalPublicKey publicKey = toElGamalPublicKey(keyPair.publicKey());
+//    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
+//
+//    // Use placeholder byte arrays for IDs (20 bytes for account, 24 for issuance)
+//    byte[] accountId = new byte[20];
+//    accountId[0] = 1;
+//    byte[] issuanceId = new byte[24];
+//    issuanceId[0] = 2;
+//
+//    // Generate it once
+//    ElGamalCiphertext ciphertextA = elGamalBalanceEncryptor.generateCanonicalEncryptedZero(
+//      publicKey, accountId, issuanceId
+//    );
+//
+//    // Generate it a second time with the same inputs
+//    ElGamalCiphertext ciphertextB = elGamalBalanceEncryptor.generateCanonicalEncryptedZero(
+//      publicKey, accountId, issuanceId
+//    );
+//
+//    // 1. Verify that it decrypts to zero
+//    long decryptedAmount = javaElGamalBalanceDecryptor.decrypt(ciphertextA, privateKey);
+//    assertThat(decryptedAmount).isEqualTo(0);
+//
+//    // 2. Verify that the output is deterministic (both ciphertexts are identical)
+//    assertThat(ciphertextA).isEqualTo(ciphertextB);
+//  }
 
   @Test
   void testMultipleHomomorphicOperations() {

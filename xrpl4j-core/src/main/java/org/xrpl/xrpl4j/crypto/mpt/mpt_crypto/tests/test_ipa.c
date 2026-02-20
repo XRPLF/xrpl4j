@@ -1,10 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <secp256k1.h>
-#include <openssl/rand.h>
-#include <openssl/sha.h>
 #include "secp256k1_mpt.h"
+#include "test_utils.h"
 
 #define N_BITS 64
 /* log2(64) = 6 rounds */
@@ -75,13 +74,6 @@ extern int secp256k1_bulletproof_ipa_dot(
         const unsigned char* b,
         size_t n
 );
-
-/* ---- Test Utils ---- */
-
-static void random_scalar(const secp256k1_context* ctx, unsigned char s[32]) {
-    do { RAND_bytes(s, 32); }
-    while (!secp256k1_ec_seckey_verify(ctx, s));
-}
 
 static int add_term(
         const secp256k1_context* ctx,
@@ -200,14 +192,15 @@ static int test_ipa_verify_explicit(
 int main(void) {
     secp256k1_context* ctx =
             secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
+    EXPECT(ctx != NULL);
 
     printf("[IPA TEST] Setup...\n");
 
     /* 1. Generators */
     secp256k1_pubkey G[N_BITS], H[N_BITS], U;
-    if (!secp256k1_mpt_get_generator_vector(ctx, G, N_BITS, (unsigned char*)"G", 1)) return 1;
-    if (!secp256k1_mpt_get_generator_vector(ctx, H, N_BITS, (unsigned char*)"H", 1)) return 1;
-    if (!secp256k1_mpt_get_generator_vector(ctx, &U, 1, (unsigned char*)"BP_U", 4)) return 1;
+    EXPECT(secp256k1_mpt_get_generator_vector(ctx, G, N_BITS, (unsigned char*)"G", 1) == 1);
+    EXPECT(secp256k1_mpt_get_generator_vector(ctx, H, N_BITS, (unsigned char*)"H", 1) == 1);
+    EXPECT(secp256k1_mpt_get_generator_vector(ctx, &U, 1, (unsigned char*)"BP_U", 4) == 1);
 
     /* Copy for verifier (since prover folds in-place) */
     secp256k1_pubkey G0[N_BITS], H0[N_BITS];
@@ -269,7 +262,7 @@ int main(void) {
         secp256k1_ec_pubkey_tweak_mul(ctx, &tmp, dot_ux);
         add_term(ctx, &P, &P_inited, &tmp);
     }
-    assert(P_inited);
+    EXPECT(P_inited);
 
     /* 6. Run Prover */
     printf("[IPA TEST] Running Prover...\n");
@@ -290,8 +283,8 @@ int main(void) {
             &rounds_out,
             a_final, b_final
     );
-    assert(res == 1);
-    assert(rounds_out == IPA_ROUNDS);
+    EXPECT(res == 1);
+    EXPECT(rounds_out == IPA_ROUNDS);
 
     /* 7. Run Verifier */
     printf("[IPA TEST] Running Verifier...\n");
@@ -308,7 +301,7 @@ int main(void) {
     );
 
     printf("[IPA TEST] Result: %s\n", ok ? "PASSED" : "FAILED");
-    assert(ok == 1);
+    EXPECT(ok == 1);
 
     secp256k1_context_destroy(ctx);
     return 0;

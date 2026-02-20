@@ -22,52 +22,49 @@ package org.xrpl.xrpl4j.crypto.mpt;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.SecureRandomUtils;
 
 import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * A cryptographic blinding factor used in ElGamal encryption and zero-knowledge proofs.
+ * A 32-byte random value used as a blinding factor in ElGamal encryption and zero-knowledge proofs.
  *
- * <p>A blinding factor is a 32-byte scalar value that must be valid for the secp256k1 curve
- * (0 &lt; value &lt; curve order). This class provides validation and convenient factory methods.</p>
+ * <p>A blinding factor must be a valid secp256k1 scalar (0 &lt; value &lt; curve order) because it is
+ * used as a scalar multiplier in elliptic curve operations.</p>
  *
  * <p>Use {@link #hexValue()} to get the hex string representation for use in transaction objects.</p>
  */
 public final class BlindingFactor {
 
-  public static final int SCALAR_LENGTH = 32;
+  public static final int LENGTH = 32;
 
-  private final UnsignedByteArray value;
+  private final byte[] value;
 
-  private BlindingFactor(final UnsignedByteArray value) {
-    this.value = UnsignedByteArray.of(value.toByteArray());
+  private BlindingFactor(final byte[] value) {
+    this.value = Arrays.copyOf(value, value.length);
   }
 
   /**
    * Generates a random blinding factor using secure random entropy.
    *
    * <p>The generated value is guaranteed to be a valid secp256k1 scalar
-   * (0 &lt; value &lt; curve order).</p>
+   * (0 &lt; value &lt; curve order) using rejection sampling.</p>
    *
    * @return A randomly generated {@link BlindingFactor}.
    */
   public static BlindingFactor generate() {
-    byte[] scalar = new byte[SCALAR_LENGTH];
+    byte[] bytes = new byte[LENGTH];
     do {
-      SecureRandomUtils.secureRandom().nextBytes(scalar);
-    } while (!Secp256k1Operations.isValidScalar(scalar));
-    return new BlindingFactor(UnsignedByteArray.of(scalar));
+      SecureRandomUtils.secureRandom().nextBytes(bytes);
+    } while (!Secp256k1Operations.isValidScalar(bytes));
+    return new BlindingFactor(bytes);
   }
 
   /**
    * Creates a blinding factor from 32 bytes.
    *
-   * <p>The bytes must represent a valid secp256k1 scalar (0 &lt; value &lt; curve order).</p>
-   *
-   * @param bytes The 32-byte scalar value.
+   * @param bytes The 32-byte value.
    *
    * @return A {@link BlindingFactor}.
    *
@@ -77,28 +74,26 @@ public final class BlindingFactor {
   public static BlindingFactor fromBytes(final byte[] bytes) {
     Objects.requireNonNull(bytes, "bytes must not be null");
     Preconditions.checkArgument(
-      bytes.length == SCALAR_LENGTH,
+      bytes.length == LENGTH,
       "Blinding factor must be %s bytes, but was %s bytes",
-      SCALAR_LENGTH, bytes.length
+      LENGTH, bytes.length
     );
     Preconditions.checkArgument(
       Secp256k1Operations.isValidScalar(bytes),
       "Blinding factor must be a valid scalar (0 < value < curve order)"
     );
-    return new BlindingFactor(UnsignedByteArray.of(bytes));
+    return new BlindingFactor(bytes);
   }
 
   /**
    * Creates a blinding factor from a hex string.
-   *
-   * <p>The hex string must represent a valid 32-byte secp256k1 scalar.</p>
    *
    * @param hex The 64-character hex string.
    *
    * @return A {@link BlindingFactor}.
    *
    * @throws NullPointerException     if hex is null.
-   * @throws IllegalArgumentException if hex is not valid or does not represent a valid scalar.
+   * @throws IllegalArgumentException if hex is not a valid 64-character hex string.
    */
   public static BlindingFactor fromHex(final String hex) {
     Objects.requireNonNull(hex, "hex must not be null");
@@ -109,10 +104,10 @@ public final class BlindingFactor {
   /**
    * Returns the blinding factor as a byte array.
    *
-   * @return A copy of the 32-byte scalar value.
+   * @return A copy of the 32-byte value.
    */
   public byte[] toBytes() {
-    return value.toByteArray();
+    return Arrays.copyOf(value, value.length);
   }
 
   /**
@@ -123,7 +118,7 @@ public final class BlindingFactor {
    * @return A 64-character uppercase hex string.
    */
   public String hexValue() {
-    return BaseEncoding.base16().encode(value.toByteArray());
+    return BaseEncoding.base16().encode(value);
   }
 
   @Override
@@ -135,12 +130,12 @@ public final class BlindingFactor {
       return false;
     }
     BlindingFactor that = (BlindingFactor) o;
-    return Arrays.equals(value.toByteArray(), that.value.toByteArray());
+    return Arrays.equals(value, that.value);
   }
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(value.toByteArray());
+    return Arrays.hashCode(value);
   }
 
   @Override

@@ -31,6 +31,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Default implementation of the {@link DefinitionsProvider} interface. This class is responsible for loading and
+ * providing {@link Definitions} data from a JSON file, while also programmatically generating additional permission
+ * values based on the loaded data.
+ *
+ * The definitions file is expected to be located at '/definitions.json' as a resource, and is parsed using the
+ * specified {@link ObjectMapper}. Lazily initializes and memoizes the loaded {@link Definitions} data for improved
+ * performance.
+ */
 public class DefaultDefinitionsProvider implements DefinitionsProvider {
 
   private final Supplier<Definitions> supplier;

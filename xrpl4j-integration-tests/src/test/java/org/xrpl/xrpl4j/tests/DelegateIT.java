@@ -184,8 +184,6 @@ public class DelegateIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(delegateKeyPair.publicKey().deriveAddress())
     );
 
-
-
     // Now send a Payment transaction with the Delegate field
     // The delegate signs the transaction, but the Account field is the delegating account
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);

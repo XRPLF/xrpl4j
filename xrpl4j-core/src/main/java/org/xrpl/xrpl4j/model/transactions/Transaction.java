@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.primitives.UnsignedInteger;
+import com.sun.org.apache.bcel.internal.util.BCELifier.FLAGS;
 import org.immutables.value.Value;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -117,19 +118,6 @@ public interface Transaction {
    */
   @JsonProperty("Account")
   Address account();
-
-  //  /**
-  //   * The transacation flags for this transaction. Currenntly only allows {@code tfFullyCanonicalSig} (deprecated)
-  //   and {@code tfInnerBatchTxn} flag.
-  //   *
-  //   * @return Always {@link TransactionFlags#EMPTY}.
-  //   */
-  //  @JsonProperty("Flags")
-  //  // TODO: Do we need this annotation?
-  // //  @Value.Default
-  //  default FLAGS flags() {
-  //    return (FLAGS) TransactionFlags.EMPTY;
-  //  }
 
   /**
    * The type of transaction.

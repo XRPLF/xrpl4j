@@ -5,7 +5,7 @@
   <parent>
     <artifactId>xrpl4j-parent</artifactId>
     <groupId>org.xrpl</groupId>
-    <version>6.1.0-rc.1-SNAPSHOT</version>
+    <version>HEAD-SNAPSOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 

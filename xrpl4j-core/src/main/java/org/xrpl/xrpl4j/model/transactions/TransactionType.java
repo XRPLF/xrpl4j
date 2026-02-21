@@ -74,6 +74,15 @@ public enum TransactionType {
   DEPOSIT_PRE_AUTH("DepositPreauth"),
 
   /**
+   * The {@link TransactionType} for the {@link DelegateSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   */
+  @Beta
+  DELEGATE_SET("DelegateSet"),
+
+  /**
    * The {@link TransactionType} for the {@link EnableAmendment} transaction.
    */
   ENABLE_AMENDMENT("EnableAmendment"),
@@ -363,6 +372,7 @@ public enum TransactionType {
    * The {@link TransactionType} for the {@link AmmClawback} transaction.
    */
   AMM_CLAWBACK("AMMClawback"),
+
   @Beta
   MPT_ISSUANCE_CREATE("MPTokenIssuanceCreate"),
   @Beta

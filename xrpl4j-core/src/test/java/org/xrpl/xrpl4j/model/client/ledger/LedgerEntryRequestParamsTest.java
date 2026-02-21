@@ -20,6 +20,7 @@ import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.BridgeObject;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.CredentialObject;
+import org.xrpl.xrpl4j.model.ledger.DelegateObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.DidObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
@@ -830,6 +831,50 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
 
     String json = "{" +
       "  \"permissioned_domain\" : " + objectMapper.writeValueAsString(permissionedDomainLedgerEntryParams) + "," +
+      "  \"binary\": false," +
+      "  \"ledger_index\": \"validated\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  void testDelegateParams() throws JSONException, JsonProcessingException {
+    DelegateLedgerEntryParams delegateParams = DelegateLedgerEntryParams.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMtthP4"))
+      .authorize(Address.of("rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8"))
+      .build();
+    LedgerEntryRequestParams<DelegateObject> params = LedgerEntryRequestParams.delegate(
+      delegateParams,
+      LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.delegate()).isNotEmpty().get().isEqualTo(delegateParams);
+    assertThat(params.ledgerObjectClass()).isEqualTo(DelegateObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.amm()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.rippleState()).isEmpty();
+    assertThat(params.check()).isEmpty();
+    assertThat(params.escrow()).isEmpty();
+    assertThat(params.paymentChannel()).isEmpty();
+    assertThat(params.ticket()).isEmpty();
+    assertThat(params.nftPage()).isEmpty();
+    assertThat(params.depositPreAuth()).isEmpty();
+    assertThat(params.did()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
+    assertThat(params.mptIssuance()).isEmpty();
+    assertThat(params.mpToken()).isEmpty();
+    assertThat(params.permissionedDomain()).isEmpty();
+
+    String json = "{" +
+      "  \"delegate\": {" +
+      "    \"account\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMtthP4\"," +
+      "    \"authorize\": \"rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8\"" +
+      "  }," +
       "  \"binary\": false," +
       "  \"ledger_index\": \"validated\"" +
       "}";

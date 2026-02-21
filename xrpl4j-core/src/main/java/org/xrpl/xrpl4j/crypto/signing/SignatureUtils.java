@@ -48,6 +48,7 @@ import org.xrpl.xrpl4j.model.transactions.Clawback;
 import org.xrpl.xrpl4j.model.transactions.CredentialAccept;
 import org.xrpl.xrpl4j.model.transactions.CredentialCreate;
 import org.xrpl.xrpl4j.model.transactions.CredentialDelete;
+import org.xrpl.xrpl4j.model.transactions.DelegateSet;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.DidDelete;
 import org.xrpl.xrpl4j.model.transactions.DidSet;
@@ -481,6 +482,10 @@ public class SignatureUtils {
       transactionWithSignature = CredentialDelete.builder().from((CredentialDelete) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (DelegateSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = DelegateSet.builder().from((DelegateSet) transaction)
+        .transactionSignature(signature)
+        .build();
     } else if (PermissionedDomainSet.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = PermissionedDomainSet.builder().from((PermissionedDomainSet) transaction)
         .transactionSignature(signature)
@@ -734,6 +739,10 @@ public class SignatureUtils {
         .build();
     } else if (CredentialDelete.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = CredentialDelete.builder().from((CredentialDelete) transaction)
+        .signers(signers)
+        .build();
+    } else if (DelegateSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = DelegateSet.builder().from((DelegateSet) transaction)
         .signers(signers)
         .build();
     } else if (PermissionedDomainSet.class.isAssignableFrom(transaction.getClass())) {

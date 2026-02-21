@@ -24,10 +24,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.io.Resources;
+import org.xrpl.xrpl4j.model.transactions.GranularPermission;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Default implementation of the {@link DefinitionsProvider} interface. This class is responsible for loading and
+ * providing {@link Definitions} data from a JSON file, while also programmatically generating additional permission
+ * values based on the loaded data.
+ *
+ * <p>The definitions file is expected to be located at '/definitions.json' as a resource, and is parsed using the
+ * specified {@link ObjectMapper}. Lazily initializes and memoizes the loaded {@link Definitions} data for improved
+ * performance.
+ */
 public class DefaultDefinitionsProvider implements DefinitionsProvider {
 
   private final Supplier<Definitions> supplier;
@@ -43,12 +55,53 @@ public class DefaultDefinitionsProvider implements DefinitionsProvider {
 
     this.supplier = Suppliers.memoize(() -> {
       try {
-        return objectMapper.readerFor(Definitions.class)
+        Definitions baseDefinitions = objectMapper.readerFor(Definitions.class)
           .readValue(Resources.getResource(DefaultDefinitionsProvider.class, "/definitions.json"));
+
+        // Generate PERMISSION_VALUES dynamically from TRANSACTION_TYPES
+        Map<String, Integer> permissionValues = generatePermissionValues(baseDefinitions);
+
+        // Return a new Definitions object with the generated PERMISSION_VALUES
+        return ImmutableDefinitions.builder()
+          .from(baseDefinitions)
+          .permissionValues(permissionValues)
+          .build();
       } catch (IOException e) {
         throw new IllegalStateException("Cannot read definition.json file", e);
       }
     });
+  }
+
+  /**
+   * Generate PERMISSION_VALUES mapping from TRANSACTION_TYPES.
+   *
+   * <p>This follows the same logic as xrpl.js:
+   * <ul>
+   *   <li>Granular permissions start at 65537</li>
+   *   <li>Transaction type permissions are transaction type code + 1</li>
+   * </ul>
+   *
+   * @param definitions The base {@link Definitions} loaded from definitions.json
+   * @return A {@link Map} of permission names to their numeric values
+   */
+  private Map<String, Integer> generatePermissionValues(Definitions definitions) {
+    Map<String, Integer> permissionValues = new HashMap<>();
+
+    // Add granular permissions from GranularPermission enum
+    for (GranularPermission permission : GranularPermission.values()) {
+      permissionValues.put(permission.value(), permission.numericValue());
+    }
+
+    // Add transaction type permissions (transaction type code + 1)
+    // Exclude Invalid (-1) only
+    definitions.transactionTypes().forEach((txType, txCode) -> {
+      // Skip Invalid (-1)
+      if (txCode >= 0) {
+        permissionValues.put(txType, txCode + 1);
+      }
+    });
+
+    return permissionValues;
   }
 
   @Override

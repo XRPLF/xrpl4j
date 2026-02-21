@@ -77,4 +77,13 @@ public interface Definitions {
   @JsonProperty("TRANSACTION_RESULTS")
   Map<String, Integer> transactionResults();
 
+  /**
+   * Permission values mappings (permission value to ordinal value).
+   * This field is not present in the generated definitions.json file and is populated
+   * programmatically by {@link DefaultDefinitionsProvider}.
+   *
+   * @return {@link Map} keyed by {@link String} with {@link Integer} values for all permission values.
+   */
+  @JsonProperty("PERMISSION_VALUES")
+  Map<String, Integer> permissionValues();
 }

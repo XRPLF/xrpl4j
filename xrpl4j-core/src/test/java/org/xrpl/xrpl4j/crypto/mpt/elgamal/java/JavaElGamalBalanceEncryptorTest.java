@@ -129,7 +129,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
 
     // 6. Verify decryption works
     ElGamalPrivateKey elGamalPrivateKey = ElGamalPrivateKey.of(keypair.privateKey().naturalBytes());
-    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertext, elGamalPrivateKey);
+    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertext, elGamalPrivateKey, 0, 1_000_000);
     System.out.println("=== Verification ===");
     System.out.println("Decrypted amount: " + decryptedAmount);
     System.out.println("Decryption matches: " + (decryptedAmount == amount.longValue()));
@@ -165,7 +165,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
 
     ElGamalCiphertext ciphertext = elGamalBalanceEncryptor.encrypt(originalAmount, publicKey, blindingFactor);
-    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertext, privateKey);
+    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertext, privateKey, 0, 1_000_000);
 
     assertThat(decryptedAmount).isEqualTo(originalAmount.longValue());
   }
@@ -180,7 +180,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     ElGamalCiphertext ciphertext = elGamalBalanceEncryptor.encrypt(
       originalAmount, publicKey, blindingFactor
     );
-    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertext, privateKey);
+    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertext, privateKey, 0, 1_000_000);
 
     assertThat(decryptedAmount).isEqualTo(originalAmount.longValue());
   }
@@ -244,7 +244,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     assertThat(deserialized).isEqualTo(original);
 
     // Verify the deserialized ciphertext still decrypts correctly
-    long decryptedAmount = elGamalBalanceDecryptor.decrypt(deserialized, privateKey);
+    long decryptedAmount = elGamalBalanceDecryptor.decrypt(deserialized, privateKey, 0, 1_000_000);
     assertThat(decryptedAmount).isEqualTo(amount.longValue());
   }
 

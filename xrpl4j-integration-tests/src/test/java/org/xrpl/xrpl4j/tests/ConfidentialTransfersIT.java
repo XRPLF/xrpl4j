@@ -322,10 +322,10 @@ public class ConfidentialTransfersIT extends AbstractIT {
     JavaElGamalBalanceDecryptor decryptor = new JavaElGamalBalanceDecryptor();
 
     // Decrypt holder ciphertext using holder's private key
-    long holderDecryptedAmount = decryptor.decrypt(holderCiphertext, holderElGamalKeyPair.privateKey());
+    long holderDecryptedAmount = decryptor.decrypt(holderCiphertext, holderElGamalKeyPair.privateKey(), 0, 1_000_000);
 
     // Decrypt issuer ciphertext using issuer's private key
-    long issuerDecryptedAmount = decryptor.decrypt(issuerCiphertext, issuerElGamalKeyPair.privateKey());
+    long issuerDecryptedAmount = decryptor.decrypt(issuerCiphertext, issuerElGamalKeyPair.privateKey(), 0, 1_000_000);
 
     // Verify both decrypt to the same amount
     assertThat(holderDecryptedAmount).isEqualTo(amountToConvert.longValue());
@@ -820,7 +820,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     JavaElGamalBalanceDecryptor balanceDecryptor = new JavaElGamalBalanceDecryptor();
     long senderBalanceAfterSend = balanceDecryptor.decrypt(
-      senderBalanceCiphertextAfterSend, holderElGamalKeyPair.privateKey()
+      senderBalanceCiphertextAfterSend, holderElGamalKeyPair.privateKey(), 0, 1_000_000
     );
 
     // Expected balance: 500 (initial) - 100 (sent) = 400
@@ -966,7 +966,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ElGamalCiphertext remainingBalanceCiphertext = ElGamalCiphertext.fromBytes(remainingBalanceBytes);
 
     long remainingConfidentialBalance = balanceDecryptor.decrypt(
-      remainingBalanceCiphertext, holderElGamalKeyPair.privateKey()
+      remainingBalanceCiphertext, holderElGamalKeyPair.privateKey(), 0, 1_000_000
     );
 
     // Expected remaining balance: 400 - 50 = 350
@@ -995,7 +995,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ElGamalCiphertext issuerBalanceCiphertext = ElGamalCiphertext.fromBytes(issuerEncryptedBalanceBytes);
 
     // Verify the issuer can decrypt this balance to 350
-    long issuerDecryptedBalance = balanceDecryptor.decrypt(issuerBalanceCiphertext, issuerElGamalKeyPair.privateKey());
+    long issuerDecryptedBalance = balanceDecryptor.decrypt(issuerBalanceCiphertext, issuerElGamalKeyPair.privateKey(), 0, 1_000_000);
     assertThat(issuerDecryptedBalance).isEqualTo(clawbackAmount.longValue());
 
     // Get updated issuer account info for the clawback transaction

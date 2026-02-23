@@ -42,7 +42,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
     ElGamalCiphertext ciphertextB = elGamalBalanceEncryptor.encrypt(amountB, publicKey, blindingFactorB);
 
     ElGamalCiphertext sumCiphertext = elGamalBalanceOperations.add(ciphertextA, ciphertextB);
-    long decryptedSum = javaElGamalBalanceDecryptor.decrypt(sumCiphertext, privateKey);
+    long decryptedSum = javaElGamalBalanceDecryptor.decrypt(sumCiphertext, privateKey, 0, 1_000_000);
 
     assertThat(decryptedSum).isEqualTo(amountA.plus(amountB).longValue());
   }
@@ -61,7 +61,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
     ElGamalCiphertext ciphertextB = elGamalBalanceEncryptor.encrypt(amountB, publicKey, blindingFactorB);
 
     ElGamalCiphertext diffCiphertext = elGamalBalanceOperations.subtract(ciphertextA, ciphertextB);
-    long decryptedDiff = javaElGamalBalanceDecryptor.decrypt(diffCiphertext, privateKey);
+    long decryptedDiff = javaElGamalBalanceDecryptor.decrypt(diffCiphertext, privateKey, 0, 1_000_000);
 
     assertThat(decryptedDiff).isEqualTo(amountA.minus(amountB).longValue());
   }
@@ -76,7 +76,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
     ElGamalCiphertext ciphertext = elGamalBalanceEncryptor.encrypt(
       originalAmount, publicKey, blindingFactor
     );
-    long decryptedAmount = javaElGamalBalanceDecryptor.decrypt(ciphertext, privateKey);
+    long decryptedAmount = javaElGamalBalanceDecryptor.decrypt(ciphertext, privateKey, 0, 1_000_000);
 
     assertThat(decryptedAmount).isEqualTo(originalAmount.longValue());
   }
@@ -102,7 +102,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
       sum = elGamalBalanceOperations.add(sum, ciphertexts[i]);
     }
 
-    long decryptedSum = javaElGamalBalanceDecryptor.decrypt(sum, privateKey);
+    long decryptedSum = javaElGamalBalanceDecryptor.decrypt(sum, privateKey, 0, 1_000_000);
     assertThat(decryptedSum).isEqualTo(100 + 200 + 300 + 50);
   }
 }

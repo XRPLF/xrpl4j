@@ -37,22 +37,23 @@ import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPrivateKeyable;
  */
 public interface ElGamalBalanceDecryptor<P extends ElGamalPrivateKeyable> {
 
-  public static final long MAX_DECRYPTABLE_AMOUNT = 1_000_000L;
-
-
   /**
-   * Decrypts an ElGamal ciphertext to recover the original amount.
+   * Decrypts an ElGamal ciphertext to recover the original amount within a specified range.
    *
-   * <p>This typically uses brute-force search over the discrete logarithm
-   * and is only practical for small amounts (e.g., up to 1,000,000).</p>
+   * <p>This uses brute-force search over the discrete logarithm within the specified range
+   * [minAmount, maxAmount]. This is useful when the expected amount is known to be within
+   * a specific range, allowing for faster decryption.</p>
    *
    * @param ciphertext The {@link ElGamalCiphertext} to decrypt.
    * @param privateKey The private key to use for decryption.
+   * @param minAmount  The minimum amount to search (inclusive).
+   * @param maxAmount  The maximum amount to search (inclusive).
    *
    * @return The decrypted amount as a long.
    *
-   * @throws IllegalArgumentException if the amount cannot be found within the search range.
+   * @throws IllegalArgumentException if the amount cannot be found within the search range,
+   *                                  or if minAmount is negative, or if minAmount > maxAmount.
    * @throws NullPointerException     if ciphertext or privateKey is null.
    */
-  long decrypt(ElGamalCiphertext ciphertext, P privateKey);
+  long decrypt(ElGamalCiphertext ciphertext, P privateKey, long minAmount, long maxAmount);
 }

@@ -40,6 +40,7 @@ import org.xrpl.xrpl4j.model.ledger.AuctionSlot;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
@@ -99,7 +100,7 @@ public class AmmIT extends AbstractIT {
       .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .signingPublicKey(traderKeyPair.publicKey())
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .currency(xrpl4jCoin)
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
@@ -186,7 +187,7 @@ public class AmmIT extends AbstractIT {
       .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .signingPublicKey(traderKeyPair.publicKey())
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .currency(xrpl4jCoin)
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
@@ -257,7 +258,7 @@ public class AmmIT extends AbstractIT {
       )
       .signingPublicKey(traderKeyPair.publicKey())
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .currency(xrpl4jCoin)
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
@@ -430,11 +431,11 @@ public class AmmIT extends AbstractIT {
     assertThat(submitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // create variables for issued currencies
-    Issue testCurrencyIssue = Issue.builder()
+    Issue testCurrencyIssue = CurrencyIssue.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .currency(usd)
       .build();
-    Issue xrpl4jCoinIssue = Issue.builder()
+    Issue xrpl4jCoinIssue = CurrencyIssue.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .currency(xrpl4jCoin)
       .build();
@@ -614,11 +615,11 @@ public class AmmIT extends AbstractIT {
     assertThat(submitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // create variables for issued currencies
-    Issue testCurrencyIssue = Issue.builder()
+    Issue testCurrencyIssue = CurrencyIssue.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .currency(usd)
       .build();
-    Issue xrpl4jCoinIssue = Issue.builder()
+    Issue xrpl4jCoinIssue = CurrencyIssue.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .currency(xrpl4jCoin)
       .build();
@@ -805,11 +806,11 @@ public class AmmIT extends AbstractIT {
     assertThat(submitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // create variables for issued currencies
-    Issue testCurrencyIssue = Issue.builder()
+    Issue testCurrencyIssue = CurrencyIssue.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .currency(usd)
       .build();
-    Issue xrpl4jCoinIssue = Issue.builder()
+    Issue xrpl4jCoinIssue = CurrencyIssue.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .currency(xrpl4jCoin)
       .build();
@@ -867,7 +868,7 @@ public class AmmIT extends AbstractIT {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(traderAccount.accountData().account())
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .currency(xrpl4jCoin)
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
@@ -968,7 +969,7 @@ public class AmmIT extends AbstractIT {
     AmmInfoResult ammInfoResult = xrplClient.ammInfo(
       AmmInfoRequestParams.from(
         Issue.XRP,
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .currency(xrpl4jCoin)
           .build()
@@ -991,7 +992,7 @@ public class AmmIT extends AbstractIT {
         AmmLedgerEntryParams.builder()
           .asset(Issue.XRP)
           .asset2(
-            Issue.builder()
+            CurrencyIssue.builder()
               .issuer(issuerKeyPair.publicKey().deriveAddress())
               .currency(xrpl4jCoin)
               .build()
@@ -1004,7 +1005,7 @@ public class AmmIT extends AbstractIT {
     assertThat(ammObject.node().account()).isEqualTo(ammInfoByAccount.amm().account());
     assertThat(ammObject.node().asset()).isEqualTo(Issue.XRP);
     assertThat(ammObject.node().asset2()).isEqualTo(
-      Issue.builder()
+      CurrencyIssue.builder()
         .issuer(((IssuedCurrencyAmount) ammInfoByAccount.amm().amount2()).issuer())
         .currency(((IssuedCurrencyAmount) ammInfoByAccount.amm().amount2()).currency())
         .build()

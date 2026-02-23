@@ -110,7 +110,7 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
-import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -953,9 +953,9 @@ public class XrplClientTest {
   void bookOffers() throws JsonRpcClientErrorException {
     BookOffersRequestParams params = BookOffersRequestParams.builder()
       .taker(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-      .takerGets(Issue.XRP)
+      .takerGets(CurrencyIssue.XRP)
       .takerPays(
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
           .currency("USD")
           .build()

@@ -63,6 +63,7 @@ import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
 import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
+import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
@@ -160,7 +161,7 @@ public class SignatureUtilsTest {
     .lockingChainIssue(Issue.XRP)
     .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
     .issuingChainIssue(
-      Issue.builder()
+      CurrencyIssue.builder()
         .currency("TST")
         .issuer(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
         .build()
@@ -1113,7 +1114,7 @@ public class SignatureUtilsTest {
       .account(sourcePublicKey.deriveAddress())
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -1165,7 +1166,7 @@ public class SignatureUtilsTest {
       )
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -1192,7 +1193,7 @@ public class SignatureUtilsTest {
       )
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -1238,7 +1239,7 @@ public class SignatureUtilsTest {
       .flags(AmmDepositFlags.LIMIT_LP_TOKEN)
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -1262,7 +1263,7 @@ public class SignatureUtilsTest {
       .account(sourcePublicKey.deriveAddress())
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
@@ -1282,7 +1283,7 @@ public class SignatureUtilsTest {
       .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(10))
       .asset(
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -1300,7 +1301,7 @@ public class SignatureUtilsTest {
     AmmDelete ammDelete = AmmDelete.builder()
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -1999,7 +2000,7 @@ public class SignatureUtilsTest {
       .account(sourcePublicKey.deriveAddress())
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -2043,7 +2044,7 @@ public class SignatureUtilsTest {
       .flags(AmmDepositFlags.LIMIT_LP_TOKEN)
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -2066,7 +2067,7 @@ public class SignatureUtilsTest {
       .account(sourcePublicKey.deriveAddress())
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
@@ -2085,7 +2086,7 @@ public class SignatureUtilsTest {
       .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(10))
       .asset(
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -2102,7 +2103,7 @@ public class SignatureUtilsTest {
     AmmDelete ammDelete = AmmDelete.builder()
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()

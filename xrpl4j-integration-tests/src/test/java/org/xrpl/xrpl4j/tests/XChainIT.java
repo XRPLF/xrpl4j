@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
 import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
 import org.xrpl.xrpl4j.model.ledger.BridgeObject;
+import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
@@ -391,14 +392,14 @@ public class XChainIT extends AbstractIT {
       XChainBridge.builder()
         .lockingChainDoor(lockingDoor.publicKey().deriveAddress())
         .lockingChainIssue(
-          Issue.builder()
+          CurrencyIssue.builder()
             .issuer(lockingChainIssuer.publicKey().deriveAddress())
             .currency("USD")
             .build()
         )
         .issuingChainDoor(lockingChainSource.publicKey().deriveAddress())
         .issuingChainIssue(
-          Issue.builder()
+          CurrencyIssue.builder()
             .issuer(lockingChainSource.publicKey().deriveAddress())
             .currency("USD")
             .build()
@@ -451,9 +452,16 @@ public class XChainIT extends AbstractIT {
       )
     );
 
+    Address issuer = iouBridge.bridge().issuingChainIssue().map(
+      currencyIssue -> currencyIssue.issuer().get(),
+      mptIssue -> {
+        throw new IllegalStateException("Expected CurrencyIssue but got MptIssue");
+      }
+    );
+
     BigDecimal initialBalance = new BigDecimal(this.getValidatedAccountLines(
       destination.publicKey().deriveAddress(),
-      iouBridge.bridge().issuingChainIssue().issuer().get()
+      issuer
     ).lines().get(0).balance());
 
     addClaimAttestation(
@@ -468,7 +476,7 @@ public class XChainIT extends AbstractIT {
 
     BigDecimal finalBalance = new BigDecimal(this.getValidatedAccountLines(
       destination.publicKey().deriveAddress(),
-      iouBridge.bridge().issuingChainIssue().issuer().get()
+      issuer
     ).lines().get(0).balance());
 
     assertThat(finalBalance).isEqualTo(
@@ -654,9 +662,9 @@ public class XChainIT extends AbstractIT {
       .xChainBridge(
         XChainBridge.builder()
           .lockingChainDoor(source.publicKey().deriveAddress())
-          .lockingChainIssue(Issue.XRP)
+          .lockingChainIssue(CurrencyIssue.XRP)
           .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
-          .issuingChainIssue(Issue.XRP)
+          .issuingChainIssue(CurrencyIssue.XRP)
           .build()
       )
       .signatureReward(XrpCurrencyAmount.ofDrops(200))
@@ -1001,9 +1009,9 @@ public class XChainIT extends AbstractIT {
       doorKeyPair,
       XChainBridge.builder()
         .lockingChainDoor(doorKeyPair.publicKey().deriveAddress())
-        .lockingChainIssue(Issue.XRP)
+        .lockingChainIssue(CurrencyIssue.XRP)
         .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
-        .issuingChainIssue(Issue.XRP)
+        .issuingChainIssue(CurrencyIssue.XRP)
         .build(),
       Optional.of(XrpCurrencyAmount.ofDrops(10000000))
     );

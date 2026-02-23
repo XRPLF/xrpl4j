@@ -43,7 +43,7 @@ import org.xrpl.xrpl4j.model.client.path.BookOffersResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
-import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
@@ -127,12 +127,12 @@ public class OfferIT extends AbstractIT {
       BookOffersRequestParams.builder()
         .taker(offerCreate.account())
         .takerGets(
-          Issue.builder()
+          CurrencyIssue.builder()
             .currency("USD")
             .issuer(offerCreate.account())
             .build()
         )
-        .takerPays(Issue.XRP)
+        .takerPays(CurrencyIssue.XRP)
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
     );
@@ -390,12 +390,12 @@ public class OfferIT extends AbstractIT {
       BookOffersRequestParams.builder()
         .taker(offerCreate.account())
         .takerGets(
-          Issue.builder()
+          CurrencyIssue.builder()
             .currency(CURRENCY)
             .issuer(offerCreate.account())
             .build()
         )
-        .takerPays(Issue.XRP)
+        .takerPays(CurrencyIssue.XRP)
         .domain(permissionedDomainObject.index())
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
@@ -724,12 +724,12 @@ public class OfferIT extends AbstractIT {
       BookOffersRequestParams.builder()
         .taker(offerCreate.account())
         .takerGets(
-          Issue.builder()
+          CurrencyIssue.builder()
             .currency(CURRENCY)
             .issuer(offerCreate.account())
             .build()
         )
-        .takerPays(Issue.XRP)
+        .takerPays(CurrencyIssue.XRP)
         .domain(permissionedDomainObject.index())
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()

@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -17,7 +18,7 @@ class BookOffersRequestParamsTest extends AbstractJsonTest {
     BookOffersRequestParams expected = BookOffersRequestParams.builder()
       .takerGets(Issue.XRP)
       .takerPays(
-        Issue.builder()
+        CurrencyIssue.builder()
           .currency("USD")
           .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
           .build()
@@ -43,7 +44,7 @@ class BookOffersRequestParamsTest extends AbstractJsonTest {
     BookOffersRequestParams expected = BookOffersRequestParams.builder()
       .takerGets(Issue.XRP)
       .takerPays(
-        Issue.builder()
+        CurrencyIssue.builder()
           .currency("USD")
           .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
           .build()

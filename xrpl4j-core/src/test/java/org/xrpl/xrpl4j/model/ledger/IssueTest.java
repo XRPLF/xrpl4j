@@ -12,15 +12,15 @@ class IssueTest extends AbstractJsonTest {
 
   @Test
   void testXrp() {
-    assertThat(Issue.XRP.currency()).isEqualTo("XRP");
-    assertThat(Issue.XRP.issuer()).isEmpty();
+    assertThat(((CurrencyIssue) Issue.XRP).currency()).isEqualTo("XRP");
+    assertThat(((CurrencyIssue) Issue.XRP).issuer()).isEmpty();
   }
 
   @Test
   void testNonXrp() {
     String usd = "USD";
     Address issuer = Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn");
-    Issue asset = Issue.builder()
+    CurrencyIssue asset = CurrencyIssue.builder()
       .currency(usd)
       .issuer(issuer)
       .build();
@@ -42,7 +42,7 @@ class IssueTest extends AbstractJsonTest {
   void testJsonForNonXrp() throws JSONException, JsonProcessingException {
     String usd = "USD";
     Address issuer = Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn");
-    Issue asset = Issue.builder()
+    CurrencyIssue asset = CurrencyIssue.builder()
       .currency(usd)
       .issuer(issuer)
       .build();

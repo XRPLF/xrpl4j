@@ -21,6 +21,7 @@ import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.AuctionSlot;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.CredentialObject;
+import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.ledger.Issue;
@@ -124,7 +125,7 @@ class LedgerEntryResultTest extends AbstractJsonTest {
           .account(Address.of("rNqXnvSYbjZeJQ6jWcf6T5mnNMRPzHXaZW"))
           .asset(Issue.XRP)
           .asset2(
-            Issue.builder()
+            CurrencyIssue.builder()
               .currency("7872706C346A436F696E00000000000000000000")
               .issuer(Address.of("rDeo7rDoYw6AUKGneWwfkHPsMJagxcGWy1"))
               .build()

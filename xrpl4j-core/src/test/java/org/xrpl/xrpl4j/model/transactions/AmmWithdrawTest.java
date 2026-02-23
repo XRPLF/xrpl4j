@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
+import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 
 class AmmWithdrawTest extends AbstractJsonTest {
@@ -260,7 +261,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       )
       .fee(XrpCurrencyAmount.ofDrops(10))
       .asset(
-        Issue.builder()
+        CurrencyIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()

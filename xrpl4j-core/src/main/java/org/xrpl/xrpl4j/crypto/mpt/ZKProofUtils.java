@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.crypto.mpt;
  */
 
 import com.google.common.io.BaseEncoding;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.BulletproofRangeProof;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.ElGamalPedersenLinkProof;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.SamePlaintextMultiProof;
 
@@ -36,6 +37,13 @@ import java.util.Objects;
  *   <li>Balance Linkage Proof (195 bytes) - proves the balance ciphertext matches the Pedersen commitment</li>
  * </ul>
  * Total: 749 bytes for a standard 3-participant send.</p>
+ *
+ * <p>For ConfidentialMPTConvertBack transactions, the ZK proof consists of two components:
+ * <ul>
+ *   <li>Balance Linkage Proof (195 bytes) - proves the balance ciphertext matches the Pedersen commitment</li>
+ *   <li>Bulletproof Range Proof (688 bytes) - proves the remaining balance is non-negative</li>
+ * </ul>
+ * Total: 883 bytes.</p>
  */
 public final class ZKProofUtils {
 
@@ -44,6 +52,12 @@ public final class ZKProofUtils {
    * SamePlaintextMultiProof (359) + Amount Linkage (195) + Balance Linkage (195) = 749 bytes.
    */
   public static final int SEND_PROOF_SIZE_3_PARTICIPANTS = 749;
+
+  /**
+   * Expected size of the combined ZK proof for a ConfidentialMPTConvertBack transaction.
+   * Balance Linkage Proof (195) + Single Bulletproof (688) = 883 bytes.
+   */
+  public static final int CONVERT_BACK_PROOF_SIZE = 195 + BulletproofRangeProof.SINGLE_PROOF_LENGTH;
 
   private ZKProofUtils() {
     // Utility class - prevent instantiation
@@ -109,6 +123,60 @@ public final class ZKProofUtils {
     ElGamalPedersenLinkProof balanceLinkageProof
   ) {
     return BaseEncoding.base16().encode(combineSendProofs(samePlaintextProof, amountLinkageProof, balanceLinkageProof));
+  }
+
+  /**
+   * Combines the two ZK proofs required for a ConfidentialMPTConvertBack transaction into a single byte array.
+   *
+   * <p>The proofs are concatenated in the following order:
+   * <ol>
+   *   <li>Balance Linkage Proof (195 bytes) - proves the balance ciphertext matches the Pedersen commitment</li>
+   *   <li>Bulletproof Range Proof (688 bytes) - proves the remaining balance is non-negative</li>
+   * </ol>
+   *
+   * @param balanceLinkageProof The balance linkage proof.
+   * @param bulletproof         The bulletproof range proof for the remaining balance.
+   *
+   * @return The combined ZK proof as a byte array.
+   *
+   * @throws NullPointerException if any parameter is null.
+   */
+  public static byte[] combineConvertBackProofs(
+    ElGamalPedersenLinkProof balanceLinkageProof,
+    BulletproofRangeProof bulletproof
+  ) {
+    Objects.requireNonNull(balanceLinkageProof, "balanceLinkageProof must not be null");
+    Objects.requireNonNull(bulletproof, "bulletproof must not be null");
+
+    byte[] balanceLinkageBytes = balanceLinkageProof.toBytes();
+    byte[] bulletproofBytes = bulletproof.toBytes();
+
+    byte[] combined = new byte[balanceLinkageBytes.length + bulletproofBytes.length];
+
+    System.arraycopy(balanceLinkageBytes, 0, combined, 0, balanceLinkageBytes.length);
+    System.arraycopy(bulletproofBytes, 0, combined, balanceLinkageBytes.length, bulletproofBytes.length);
+
+    return combined;
+  }
+
+  /**
+   * Combines the two ZK proofs required for a ConfidentialMPTConvertBack transaction and returns the result as a hex
+   * string.
+   *
+   * @param balanceLinkageProof The balance linkage proof.
+   * @param bulletproof         The bulletproof range proof for the remaining balance.
+   *
+   * @return The combined ZK proof as an uppercase hex string.
+   *
+   * @throws NullPointerException if any parameter is null.
+   *
+   * @see #combineConvertBackProofs(ElGamalPedersenLinkProof, BulletproofRangeProof)
+   */
+  public static String combineConvertBackProofsHex(
+    ElGamalPedersenLinkProof balanceLinkageProof,
+    BulletproofRangeProof bulletproof
+  ) {
+    return BaseEncoding.base16().encode(combineConvertBackProofs(balanceLinkageProof, bulletproof));
   }
 }
 

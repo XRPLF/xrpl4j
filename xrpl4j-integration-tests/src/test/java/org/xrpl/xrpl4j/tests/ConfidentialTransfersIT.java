@@ -48,6 +48,9 @@ import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaEqualityPlaintextProofGe
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.EqualityPlaintextProof;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSamePlaintextMultiProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSecretKeyProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.BulletproofRangeProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaBulletproofRangeProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.BulletproofRangeProof;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.java.JavaElGamalBalanceDecryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.java.JavaElGamalBalanceEncryptor;
@@ -820,6 +823,28 @@ public class ConfidentialTransfersIT extends AbstractIT {
       convertBackContext
     );
 
+    // Compute the remaining balance after conversion: currentBalance - convertBackAmount
+    UnsignedLong remainingBalanceValue = UnsignedLong.valueOf(
+      currentSpendingBalance.longValue() - convertBackAmount.longValue()
+    );
+
+    // Generate bulletproof range proof for the remaining balance
+    // This proves the remaining balance is non-negative (in range [0, 2^64))
+    // IMPORTANT: Use the SAME blinding factor as the Pedersen commitment for the current balance
+    // This matches the C++ implementation where pcParams.blindingFactor is reused
+    BulletproofRangeProofGenerator bulletproofGenerator = new JavaBulletproofRangeProofGenerator();
+    BulletproofRangeProof bulletproof = bulletproofGenerator.generateProof(
+      remainingBalanceValue,
+      convertBackBalanceBlindingFactor,  // Same blinding factor as used for balance commitment
+      convertBackContext
+    );
+
+    // Combine Pedersen linkage proof + bulletproof into zkProof using utility
+    // Format: pedersenProof (195 bytes) + bulletproof (688 bytes) = 883 bytes total
+    String combinedZkProofHex = ZKProofUtils.combineConvertBackProofsHex(
+      convertBackBalanceLinkageProof, bulletproof
+    );
+
     //////////////////////
     // Build and submit ConfidentialMPTConvertBack transaction
     ConfidentialMPTConvertBack convertBack = ConfidentialMPTConvertBack.builder()
@@ -836,7 +861,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .issuerEncryptedAmount(issuerConvertBackEncryptedAmount)
       .blindingFactor(convertBackBlindingFactor.hexValue())
       .balanceCommitment(convertBackCommitment.hexValue())
-      .zkProof(convertBackBalanceLinkageProof.hexValue())
+      .zkProof(combinedZkProofHex)
       .build();
 
     SingleSignedTransaction<ConfidentialMPTConvertBack> signedConvertBack = signatureService.sign(

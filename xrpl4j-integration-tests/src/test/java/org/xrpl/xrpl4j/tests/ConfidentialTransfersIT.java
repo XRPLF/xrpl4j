@@ -777,13 +777,11 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ElGamalCiphertext holderConvertBackCiphertext = encryptor.encrypt(
       convertBackAmount, holderElGamalKeyPair.publicKey(), convertBackBlindingFactor
     );
-    String holderConvertBackEncryptedAmount = holderConvertBackCiphertext.hexValue();
 
     // Encrypt the convert back amount for issuer (to be subtracted from issuer mirror balance)
     ElGamalCiphertext issuerConvertBackCiphertext = encryptor.encrypt(
       convertBackAmount, issuerElGamalKeyPair.publicKey(), convertBackBlindingFactor
     );
-    String issuerConvertBackEncryptedAmount = issuerConvertBackCiphertext.hexValue();
 
     // Generate context for ConfidentialMPTConvertBack
     ConfidentialMPTConvertBackContext convertBackContext = ConfidentialMPTConvertBackContext.generate(
@@ -794,13 +792,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holder1VersionForConvertBack
     );
 
-    // Generate Pedersen commitment for the current spending balance (400)
-    UnsignedLong currentSpendingBalance = UnsignedLong.valueOf(senderBalanceAfterSend);
-    BlindingFactor convertBackBalanceBlindingFactor = BlindingFactor.generate();
-    PedersenCommitment convertBackCommitment = pedersenGen.generateCommitment(currentSpendingBalance,
-      convertBackBalanceBlindingFactor);
-
-    // Get the current encrypted balance from the ledger for the balance linkage proof
+    // Get the current encrypted balance from the ledger
     String currentEncryptedBalanceForConvertBack = holder1MpTokenForConvertBack.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance"));
     byte[] currentBalanceBytesForConvertBack = BaseEncoding.base16().decode(
@@ -809,6 +801,17 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ElGamalCiphertext currentBalanceCiphertextForConvertBack = ElGamalCiphertext.fromBytes(
       currentBalanceBytesForConvertBack
     );
+
+    // Decrypt the current spending balance from the ledger
+    long decryptedCurrentBalance = balanceDecryptor.decrypt(
+      currentBalanceCiphertextForConvertBack, holderElGamalKeyPair.privateKey(), 0, 1_000_000
+    );
+    UnsignedLong currentSpendingBalance = UnsignedLong.valueOf(decryptedCurrentBalance);
+
+    // Generate Pedersen commitment for the current spending balance
+    BlindingFactor convertBackBalanceBlindingFactor = BlindingFactor.generate();
+    PedersenCommitment convertBackCommitment = pedersenGen.generateCommitment(currentSpendingBalance,
+      convertBackBalanceBlindingFactor);
 
     // Generate Balance Linkage Proof (nonces are generated internally)
     // This proves the Pedersen commitment matches the on-ledger encrypted balance
@@ -857,8 +860,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       )
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(convertBackAmount))
-      .holderEncryptedAmount(holderConvertBackEncryptedAmount)
-      .issuerEncryptedAmount(issuerConvertBackEncryptedAmount)
+      .holderEncryptedAmount(holderConvertBackCiphertext.hexValue())
+      .issuerEncryptedAmount(issuerConvertBackCiphertext.hexValue())
       .blindingFactor(convertBackBlindingFactor.hexValue())
       .balanceCommitment(convertBackCommitment.hexValue())
       .zkProof(combinedZkProofHex)

@@ -105,7 +105,7 @@ public class AmmIT extends AbstractIT {
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
       )
-      .asset(Issue.XRP)
+      .asset(CurrencyIssue.XRP)
       .tradingFee(newTradingFee)
       .build();
 
@@ -192,7 +192,7 @@ public class AmmIT extends AbstractIT {
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
       )
-      .asset(Issue.XRP)
+      .asset(CurrencyIssue.XRP)
       .addAuthAccounts(
         AuthAccountWrapper.of(AuthAccount.of(authAccount1.publicKey().deriveAddress()))
       )
@@ -263,7 +263,7 @@ public class AmmIT extends AbstractIT {
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
       )
-      .asset(Issue.XRP)
+      .asset(CurrencyIssue.XRP)
       .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(9)))
       .flags(AmmWithdrawFlags.SINGLE_ASSET)
       .build();
@@ -873,7 +873,7 @@ public class AmmIT extends AbstractIT {
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
       )
-      .asset(Issue.XRP)
+      .asset(CurrencyIssue.XRP)
       .flags(AmmDepositFlags.SINGLE_ASSET)
       .amount(depositAmount)
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -968,7 +968,7 @@ public class AmmIT extends AbstractIT {
   private AmmInfoResult getAmmInfo(KeyPair issuerKeyPair) throws JsonRpcClientErrorException {
     AmmInfoResult ammInfoResult = xrplClient.ammInfo(
       AmmInfoRequestParams.from(
-        Issue.XRP,
+        CurrencyIssue.XRP,
         CurrencyIssue.builder()
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .currency(xrpl4jCoin)
@@ -990,7 +990,7 @@ public class AmmIT extends AbstractIT {
     LedgerEntryResult<AmmObject> ammObject = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.amm(
         AmmLedgerEntryParams.builder()
-          .asset(Issue.XRP)
+          .asset(CurrencyIssue.XRP)
           .asset2(
             CurrencyIssue.builder()
               .issuer(issuerKeyPair.publicKey().deriveAddress())
@@ -1003,7 +1003,7 @@ public class AmmIT extends AbstractIT {
     );
 
     assertThat(ammObject.node().account()).isEqualTo(ammInfoByAccount.amm().account());
-    assertThat(ammObject.node().asset()).isEqualTo(Issue.XRP);
+    assertThat(ammObject.node().asset()).isEqualTo(CurrencyIssue.XRP);
     assertThat(ammObject.node().asset2()).isEqualTo(
       CurrencyIssue.builder()
         .issuer(((IssuedCurrencyAmount) ammInfoByAccount.amm().amount2()).issuer())

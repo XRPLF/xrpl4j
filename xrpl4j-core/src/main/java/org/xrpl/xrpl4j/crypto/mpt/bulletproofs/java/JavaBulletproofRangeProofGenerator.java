@@ -34,6 +34,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -71,82 +72,57 @@ public class JavaBulletproofRangeProofGenerator implements BulletproofRangeProof
 
   @Override
   public BulletproofRangeProof generateProof(
-    final UnsignedLong value,
-    final BlindingFactor blindingFactor,
+    final List<UnsignedLong> values,
+    final List<BlindingFactor> blindingFactors,
     final LinkProofContext context
   ) {
-    Objects.requireNonNull(value, "value must not be null");
-    Objects.requireNonNull(blindingFactor, "blindingFactor must not be null");
+    Objects.requireNonNull(values, "values must not be null");
+    Objects.requireNonNull(blindingFactors, "blindingFactors must not be null");
     Objects.requireNonNull(context, "context must not be null");
 
-    // Generate single-value bulletproof (688 bytes)
-    byte[] proof = generateBulletproofInternal(
-      new long[]{value.longValue()},
-      new byte[][]{blindingFactor.toBytes()},
-      context.toBytes()
-    );
+    if (values.isEmpty()) {
+      throw new IllegalArgumentException("values must not be empty");
+    }
+    if (values.size() != blindingFactors.size()) {
+      throw new IllegalArgumentException("values and blindingFactors must have the same size");
+    }
 
-    return BulletproofRangeProof.fromBytes(proof);
-  }
+    // Convert to arrays for internal method
+    long[] valuesArray = new long[values.size()];
+    byte[][] blindingsArray = new byte[blindingFactors.size()][];
 
-  @Override
-  public BulletproofRangeProof generateAggregatedProof(
-    final UnsignedLong value1,
-    final BlindingFactor blindingFactor1,
-    final UnsignedLong value2,
-    final BlindingFactor blindingFactor2,
-    final LinkProofContext context
-  ) {
-    Objects.requireNonNull(value1, "value1 must not be null");
-    Objects.requireNonNull(blindingFactor1, "blindingFactor1 must not be null");
-    Objects.requireNonNull(value2, "value2 must not be null");
-    Objects.requireNonNull(blindingFactor2, "blindingFactor2 must not be null");
-    Objects.requireNonNull(context, "context must not be null");
+    for (int i = 0; i < values.size(); i++) {
+      Objects.requireNonNull(values.get(i), "values[" + i + "] must not be null");
+      Objects.requireNonNull(blindingFactors.get(i), "blindingFactors[" + i + "] must not be null");
+      valuesArray[i] = values.get(i).longValue();
+      blindingsArray[i] = blindingFactors.get(i).toBytes();
+    }
 
-    // Generate aggregated bulletproof for 2 values (754 bytes)
-    byte[] proof = generateBulletproofInternal(
-      new long[]{value1.longValue(), value2.longValue()},
-      new byte[][]{blindingFactor1.toBytes(), blindingFactor2.toBytes()},
-      context.toBytes()
-    );
-
+    byte[] proof = generateBulletproofInternal(valuesArray, blindingsArray, context.toBytes());
     return BulletproofRangeProof.fromBytes(proof);
   }
 
   @Override
   public boolean verify(
     final BulletproofRangeProof proof,
-    final PedersenCommitment commitment,
+    final List<PedersenCommitment> commitments,
     final LinkProofContext context
   ) {
     Objects.requireNonNull(proof, "proof must not be null");
-    Objects.requireNonNull(commitment, "commitment must not be null");
+    Objects.requireNonNull(commitments, "commitments must not be null");
     Objects.requireNonNull(context, "context must not be null");
 
-    return verifyBulletproofInternal(
-      proof.toBytes(),
-      new byte[][]{commitment.toCompressedBytes()},
-      context.toBytes()
-    );
-  }
+    if (commitments.isEmpty()) {
+      throw new IllegalArgumentException("commitments must not be empty");
+    }
 
-  @Override
-  public boolean verifyAggregated(
-    final BulletproofRangeProof proof,
-    final PedersenCommitment commitment1,
-    final PedersenCommitment commitment2,
-    final LinkProofContext context
-  ) {
-    Objects.requireNonNull(proof, "proof must not be null");
-    Objects.requireNonNull(commitment1, "commitment1 must not be null");
-    Objects.requireNonNull(commitment2, "commitment2 must not be null");
-    Objects.requireNonNull(context, "context must not be null");
+    byte[][] commitmentsArray = new byte[commitments.size()][];
+    for (int i = 0; i < commitments.size(); i++) {
+      Objects.requireNonNull(commitments.get(i), "commitments[" + i + "] must not be null");
+      commitmentsArray[i] = commitments.get(i).toCompressedBytes();
+    }
 
-    return verifyBulletproofInternal(
-      proof.toBytes(),
-      new byte[][]{commitment1.toCompressedBytes(), commitment2.toCompressedBytes()},
-      context.toBytes()
-    );
+    return verifyBulletproofInternal(proof.toBytes(), commitmentsArray, context.toBytes());
   }
 
   /**

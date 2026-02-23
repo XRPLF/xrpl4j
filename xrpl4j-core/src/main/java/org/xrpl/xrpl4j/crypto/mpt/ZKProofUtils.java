@@ -30,13 +30,14 @@ import java.util.Objects;
 /**
  * Utility class for combining Zero-Knowledge proofs used in Confidential MPT transactions.
  *
- * <p>For ConfidentialMPTSend transactions, the ZK proof consists of three components:
+ * <p>For ConfidentialMPTSend transactions, the ZK proof consists of four components:
  * <ul>
  *   <li>SamePlaintextMultiProof (359 bytes for 3 participants) - proves all ciphertexts encrypt the same amount</li>
  *   <li>Amount Linkage Proof (195 bytes) - proves the amount ciphertext matches the Pedersen commitment</li>
  *   <li>Balance Linkage Proof (195 bytes) - proves the balance ciphertext matches the Pedersen commitment</li>
+ *   <li>Bulletproof Range Proof (754 bytes) - proves amount and remaining balance are non-negative</li>
  * </ul>
- * Total: 749 bytes for a standard 3-participant send.</p>
+ * Total: 1503 bytes for a standard 3-participant send.</p>
  *
  * <p>For ConfidentialMPTConvertBack transactions, the ZK proof consists of two components:
  * <ul>
@@ -46,23 +47,6 @@ import java.util.Objects;
  * Total: 883 bytes.</p>
  */
 public final class ZKProofUtils {
-
-  /**
-   * Expected size of the combined ZK proof for a 3-participant ConfidentialMPTSend transaction.
-   * SamePlaintextMultiProof (359) + Amount Linkage (195) + Balance Linkage (195) = 749 bytes.
-   */
-  public static final int SEND_PROOF_SIZE_3_PARTICIPANTS = 749;
-
-  /**
-   * Expected size of the combined ZK proof for a ConfidentialMPTConvertBack transaction.
-   * Balance Linkage Proof (195) + Single Bulletproof (688) = 883 bytes.
-   */
-  public static final int CONVERT_BACK_PROOF_SIZE = 195 + BulletproofRangeProof.SINGLE_PROOF_LENGTH;
-
-  private ZKProofUtils() {
-    // Utility class - prevent instantiation
-  }
-
   /**
    * Combines the three ZK proofs required for a ConfidentialMPTSend transaction into a single byte array.
    *
@@ -123,6 +107,83 @@ public final class ZKProofUtils {
     ElGamalPedersenLinkProof balanceLinkageProof
   ) {
     return BaseEncoding.base16().encode(combineSendProofs(samePlaintextProof, amountLinkageProof, balanceLinkageProof));
+  }
+
+  /**
+   * Combines the four ZK proofs required for a ConfidentialMPTSend transaction into a single byte array.
+   *
+   * <p>The proofs are concatenated in the following order:
+   * <ol>
+   *   <li>SamePlaintextMultiProof - proves all ciphertexts encrypt the same amount</li>
+   *   <li>Amount Linkage Proof - proves the sender's ciphertext matches the amount commitment</li>
+   *   <li>Balance Linkage Proof - proves the sender's balance ciphertext matches the balance commitment</li>
+   *   <li>Bulletproof Range Proof - proves amount and remaining balance are non-negative</li>
+   * </ol>
+   *
+   * @param samePlaintextProof  The same plaintext multi proof.
+   * @param amountLinkageProof  The amount linkage proof.
+   * @param balanceLinkageProof The balance linkage proof.
+   * @param bulletproof         The bulletproof range proof for amount and remaining balance.
+   *
+   * @return The combined ZK proof as a byte array.
+   *
+   * @throws NullPointerException if any parameter is null.
+   */
+  public static byte[] combineSendProofsWithBulletproof(
+    SamePlaintextMultiProof samePlaintextProof,
+    ElGamalPedersenLinkProof amountLinkageProof,
+    ElGamalPedersenLinkProof balanceLinkageProof,
+    BulletproofRangeProof bulletproof
+  ) {
+    Objects.requireNonNull(samePlaintextProof, "samePlaintextProof must not be null");
+    Objects.requireNonNull(amountLinkageProof, "amountLinkageProof must not be null");
+    Objects.requireNonNull(balanceLinkageProof, "balanceLinkageProof must not be null");
+    Objects.requireNonNull(bulletproof, "bulletproof must not be null");
+
+    byte[] samePlaintextBytes = samePlaintextProof.toBytes();
+    byte[] amountLinkageBytes = amountLinkageProof.toBytes();
+    byte[] balanceLinkageBytes = balanceLinkageProof.toBytes();
+    byte[] bulletproofBytes = bulletproof.toBytes();
+
+    byte[] combined = new byte[samePlaintextBytes.length + amountLinkageBytes.length
+      + balanceLinkageBytes.length + bulletproofBytes.length];
+
+    int offset = 0;
+    System.arraycopy(samePlaintextBytes, 0, combined, offset, samePlaintextBytes.length);
+    offset += samePlaintextBytes.length;
+    System.arraycopy(amountLinkageBytes, 0, combined, offset, amountLinkageBytes.length);
+    offset += amountLinkageBytes.length;
+    System.arraycopy(balanceLinkageBytes, 0, combined, offset, balanceLinkageBytes.length);
+    offset += balanceLinkageBytes.length;
+    System.arraycopy(bulletproofBytes, 0, combined, offset, bulletproofBytes.length);
+
+    return combined;
+  }
+
+  /**
+   * Combines the four ZK proofs required for a ConfidentialMPTSend transaction and returns the result as a hex string.
+   *
+   * @param samePlaintextProof  The same plaintext multi proof.
+   * @param amountLinkageProof  The amount linkage proof.
+   * @param balanceLinkageProof The balance linkage proof.
+   * @param bulletproof         The bulletproof range proof for amount and remaining balance.
+   *
+   * @return The combined ZK proof as an uppercase hex string.
+   *
+   * @throws NullPointerException if any parameter is null.
+   *
+   * @see #combineSendProofsWithBulletproof(SamePlaintextMultiProof, ElGamalPedersenLinkProof, ElGamalPedersenLinkProof,
+   *   BulletproofRangeProof)
+   */
+  public static String combineSendProofsWithBulletproofHex(
+    SamePlaintextMultiProof samePlaintextProof,
+    ElGamalPedersenLinkProof amountLinkageProof,
+    ElGamalPedersenLinkProof balanceLinkageProof,
+    BulletproofRangeProof bulletproof
+  ) {
+    return BaseEncoding.base16().encode(
+      combineSendProofsWithBulletproof(samePlaintextProof, amountLinkageProof, balanceLinkageProof, bulletproof)
+    );
   }
 
   /**

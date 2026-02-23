@@ -26,23 +26,30 @@ import org.xrpl.xrpl4j.crypto.mpt.context.LinkProofContext;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.BulletproofRangeProof;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.PedersenCommitment;
 
+import java.util.List;
+
 /**
  * Interface for generating and verifying Bulletproof range proofs.
  *
- * <p>Bulletproofs are zero-knowledge range proofs that prove a committed value
- * is within the range [0, 2^64 - 1] without revealing the actual value.</p>
+ * <p>Bulletproofs are zero-knowledge range proofs that prove committed values
+ * are within the range [0, 2^64 - 1] without revealing the actual values.</p>
  *
- * <p>Used in ConfidentialMPTConvertBack to prove that the remaining balance
- * after conversion is non-negative (i.e., the user is not converting more
- * than they have).</p>
+ * <p>This interface mimics the C implementation's {@code secp256k1_bulletproof_prove_agg}
+ * function, which handles both single and aggregated proofs based on the number of values.</p>
  *
- * <p>The proof is generated for a Pedersen commitment of the form:
+ * <p>Used in:
+ * <ul>
+ *   <li>ConfidentialMPTConvertBack - single value proof (688 bytes) for remaining balance</li>
+ *   <li>ConfidentialMPTSend - aggregated proof (754 bytes) for amount and remaining balance</li>
+ * </ul>
+ *
+ * <p>The proof is generated for Pedersen commitments of the form:
  * C = value * G + blindingFactor * H</p>
  *
- * <p>Proof sizes:
+ * <p>Proof sizes (formula: 292 + 66 * rounds, where rounds = log2(64 * m)):
  * <ul>
- *   <li>Single value: 688 bytes</li>
- *   <li>Double value (aggregated): 754 bytes</li>
+ *   <li>Single value (m=1): 688 bytes (6 rounds)</li>
+ *   <li>Double value (m=2): 754 bytes (7 rounds)</li>
  * </ul>
  *
  * @see BulletproofRangeProof
@@ -50,53 +57,36 @@ import org.xrpl.xrpl4j.crypto.mpt.wrapper.PedersenCommitment;
 public interface BulletproofRangeProofGenerator {
 
   /**
-   * Generates a bulletproof range proof for a single value.
+   * Generates a bulletproof range proof for one or more values.
    *
-   * <p>This proves that the value is in the range [0, 2^64 - 1].</p>
+   * <p>This proves that all values are in the range [0, 2^64 - 1].
+   * The number of values must be a power of 2 (1 or 2 for current use cases).</p>
    *
-   * @param value          The value to prove is in range.
-   * @param blindingFactor The blinding factor used in the Pedersen commitment.
-   * @param context        The context for domain separation.
+   * <p>This method mimics the C implementation's {@code secp256k1_bulletproof_prove_agg}.</p>
    *
-   * @return A {@link BulletproofRangeProof} containing the 688-byte proof.
-   *
-   * @throws NullPointerException if any required parameter is null.
-   */
-  BulletproofRangeProof generateProof(
-    UnsignedLong value,
-    BlindingFactor blindingFactor,
-    LinkProofContext context
-  );
-
-  /**
-   * Generates an aggregated bulletproof range proof for two values.
-   *
-   * <p>This proves that both values are in the range [0, 2^64 - 1].</p>
-   *
-   * @param value1          The first value to prove is in range.
-   * @param blindingFactor1 The blinding factor for the first value's commitment.
-   * @param value2          The second value to prove is in range.
-   * @param blindingFactor2 The blinding factor for the second value's commitment.
+   * @param values          The values to prove are in range. Must have same length as blindingFactors.
+   * @param blindingFactors The blinding factors used in the Pedersen commitments.
    * @param context         The context for domain separation.
    *
-   * @return A {@link BulletproofRangeProof} containing the 754-byte proof.
+   * @return A {@link BulletproofRangeProof} containing the proof.
+   *         Size is 688 bytes for 1 value, 754 bytes for 2 values.
    *
-   * @throws NullPointerException if any required parameter is null.
+   * @throws NullPointerException     if any required parameter is null.
+   * @throws IllegalArgumentException if values and blindingFactors have different lengths,
+   *                                  or if the number of values is not a power of 2.
    */
-  BulletproofRangeProof generateAggregatedProof(
-    UnsignedLong value1,
-    BlindingFactor blindingFactor1,
-    UnsignedLong value2,
-    BlindingFactor blindingFactor2,
+  BulletproofRangeProof generateProof(
+    List<UnsignedLong> values,
+    List<BlindingFactor> blindingFactors,
     LinkProofContext context
   );
 
   /**
-   * Verifies a bulletproof range proof for a single commitment.
+   * Verifies a bulletproof range proof for one or more commitments.
    *
-   * @param proof      The proof to verify.
-   * @param commitment The Pedersen commitment to verify against.
-   * @param context    The context for domain separation.
+   * @param proof       The proof to verify.
+   * @param commitments The Pedersen commitments to verify against.
+   * @param context     The context for domain separation.
    *
    * @return {@code true} if the proof is valid, {@code false} otherwise.
    *
@@ -104,26 +94,7 @@ public interface BulletproofRangeProofGenerator {
    */
   boolean verify(
     BulletproofRangeProof proof,
-    PedersenCommitment commitment,
-    LinkProofContext context
-  );
-
-  /**
-   * Verifies an aggregated bulletproof range proof for two commitments.
-   *
-   * @param proof       The proof to verify.
-   * @param commitment1 The first Pedersen commitment to verify against.
-   * @param commitment2 The second Pedersen commitment to verify against.
-   * @param context     The context for domain separation.
-   *
-   * @return {@code true} if the proof is valid, {@code false} otherwise.
-   *
-   * @throws NullPointerException if any required parameter is null.
-   */
-  boolean verifyAggregated(
-    BulletproofRangeProof proof,
-    PedersenCommitment commitment1,
-    PedersenCommitment commitment2,
+    List<PedersenCommitment> commitments,
     LinkProofContext context
   );
 }

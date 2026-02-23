@@ -58,11 +58,13 @@ public interface EqualityPlaintextProofGenerator {
    * <p>Callers should simply pass the actual IssuerEncryptedBalance ciphertext and issuer's
    * public key - the swapping is done internally.</p>
    *
+   * <p>The random nonce for the commitment is generated internally using a secure random
+   * number generator, following the same pattern as other proof generators.</p>
+   *
    * @param ciphertext The IssuerEncryptedBalance ciphertext from the MPToken.
    * @param publicKey  The issuer's ElGamal public key.
    * @param amount     The unsigned plaintext amount to clawback.
    * @param randomness The issuer's ElGamal private key (used as "randomness" in the proof).
-   * @param nonceT     The random nonce for the commitment.
    * @param context    The transaction context hash for clawback.
    *
    * @return An {@link EqualityPlaintextProof} (98 bytes: T1 || T2 || s).
@@ -74,7 +76,6 @@ public interface EqualityPlaintextProofGenerator {
     ElGamalPublicKey publicKey,
     UnsignedLong amount,
     BlindingFactor randomness,
-    BlindingFactor nonceT,
     ConfidentialMPTClawbackContext context
   );
 

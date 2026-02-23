@@ -982,17 +982,16 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
 
     // Generate the Equality Plaintext Proof (parameter swapping handled internally)
+    // The nonce is generated internally by the proof generator
     BlindingFactor issuerPrivateKeyAsBlindingFactor = BlindingFactor.fromBytes(
       issuerElGamalKeyPair.privateKey().naturalBytes().toByteArray()
     );
-    BlindingFactor clawbackNonce = BlindingFactor.generate();
 
     EqualityPlaintextProof clawbackProof = equalityProofGenerator.generateProof(
       issuerBalanceCiphertext,  // IssuerEncryptedBalance ciphertext
       issuerElGamalKeyPair.publicKey(),  // issuer's ElGamal public key
       clawbackAmount,
       issuerPrivateKeyAsBlindingFactor,  // issuer's private key as "randomness"
-      clawbackNonce,  // random nonce for commitment
       clawbackContext
     );
 

@@ -37,14 +37,12 @@ public class JavaEqualityPlaintextProofGenerator implements EqualityPlaintextPro
     ElGamalPublicKey publicKey,
     UnsignedLong amount,
     BlindingFactor randomness,
-    BlindingFactor nonceT,
     ConfidentialMPTClawbackContext context
   ) {
     Objects.requireNonNull(ciphertext, "ciphertext must not be null");
     Objects.requireNonNull(publicKey, "publicKey must not be null");
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(randomness, "randomness must not be null");
-    Objects.requireNonNull(nonceT, "nonceT must not be null");
     Objects.requireNonNull(context, "context must not be null");
 
     // Rippled calls secp256k1_equality_plaintext_prove with: (&pk, &c2, &c1, ...)
@@ -55,7 +53,8 @@ public class JavaEqualityPlaintextProofGenerator implements EqualityPlaintextPro
     ECPoint c2 = ciphertext.c2();          // balance.c2 stays as c2
     ECPoint pk = ciphertext.c1();          // balance.c1 becomes pk_recipient
 
-    // 1. Use provided nonce t
+    // 1. Generate random nonce t internally (matching C implementation pattern)
+    BlindingFactor nonceT = BlindingFactor.generate();
     BigInteger tInt = new BigInteger(1, nonceT.toBytes());
 
     // 2. Compute commitments T1 = t * G, T2 = t * Pk (where Pk = balance.c1)

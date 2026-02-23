@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.crypto.mpt.bulletproofs;
 
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.SamePlaintextMultiProof;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.SamePlaintextParticipant;
@@ -63,13 +62,15 @@ public interface SamePlaintextMultiProofGenerator {
    * Generates a proof that ciphertexts for sender, destination, issuer (and optionally auditor) all encrypt the same
    * plaintext amount.
    *
+   * <p>This method generates all required nonces internally, matching the behavior of the C implementation
+   * {@code secp256k1_mpt_prove_same_plaintext_multi}.</p>
+   *
    * @param amount      The plaintext amount (witness).
-   * @param sender      The sender participant (ciphertext, publicKey, blindingFactor, nonceKr).
+   * @param sender      The sender participant (ciphertext, publicKey, blindingFactor).
    * @param destination The destination participant.
    * @param issuer      The issuer participant.
    * @param auditor     Optional auditor participant.
    * @param context     The context hash for domain separation.
-   * @param nonceKm     The nonce for the amount commitment (k_m).
    *
    * @return A {@link SamePlaintextMultiProof}.
    */
@@ -79,8 +80,7 @@ public interface SamePlaintextMultiProofGenerator {
     SamePlaintextParticipant destination,
     SamePlaintextParticipant issuer,
     Optional<SamePlaintextParticipant> auditor,
-    ConfidentialMPTSendContext context,
-    BlindingFactor nonceKm
+    ConfidentialMPTSendContext context
   );
 
   /**

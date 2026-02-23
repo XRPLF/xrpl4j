@@ -49,9 +49,6 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
     UnsignedLong amount,
     BlindingFactor elGamalBlindingFactor,
     BlindingFactor pedersenBlindingFactor,
-    BlindingFactor nonceKm,
-    BlindingFactor nonceKr,
-    BlindingFactor nonceKrho,
     LinkProofContext context
   ) {
     Objects.requireNonNull(proofType, "proofType must not be null");
@@ -61,9 +58,6 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(elGamalBlindingFactor, "elGamalBlindingFactor must not be null");
     Objects.requireNonNull(pedersenBlindingFactor, "pedersenBlindingFactor must not be null");
-    Objects.requireNonNull(nonceKm, "nonceKm must not be null");
-    Objects.requireNonNull(nonceKr, "nonceKr must not be null");
-    Objects.requireNonNull(nonceKrho, "nonceKrho must not be null");
     Objects.requireNonNull(context, "context must not be null");
 
     // Order parameters based on proof type
@@ -84,6 +78,11 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
     byte[] rho = pedersenBlindingFactor.toBytes();
     ECPoint commitmentPoint = commitment.asEcPoint();
     byte[] contextHash = context.toBytes();
+
+    // Generate nonces internally (matching C implementation)
+    BlindingFactor nonceKm = BlindingFactor.generate();
+    BlindingFactor nonceKr = BlindingFactor.generate();
+    BlindingFactor nonceKrho = BlindingFactor.generate();
 
     BigInteger kmInt = new BigInteger(1, nonceKm.toBytes());
     BigInteger krInt = new BigInteger(1, nonceKr.toBytes());

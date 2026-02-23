@@ -34,8 +34,7 @@ import java.util.Objects;
  * <ul>
  *   <li>{@code ciphertext} - The ElGamal ciphertext encrypting the amount for this participant</li>
  *   <li>{@code publicKey} - The ElGamal public key of this participant</li>
- *   <li>{@code blindingFactor} - The blinding factor (r) used to encrypt the ciphertext</li>
- *   <li>{@code nonceKr} - The nonce (k_r) used for the randomness commitment in the proof</li>
+ *   <li>{@code blindingFactor} - The blinding factor (r) used to encrypt the ciphertext (for proof generation only)</li>
  * </ul>
  *
  * <p>For verification, only {@code ciphertext} and {@code publicKey} are required.</p>
@@ -45,41 +44,35 @@ public final class SamePlaintextParticipant {
   private final ElGamalCiphertext ciphertext;
   private final ElGamalPublicKey publicKey;
   private final BlindingFactor blindingFactor;
-  private final BlindingFactor nonceKr;
 
   private SamePlaintextParticipant(
     final ElGamalCiphertext ciphertext,
     final ElGamalPublicKey publicKey,
-    final BlindingFactor blindingFactor,
-    final BlindingFactor nonceKr
+    final BlindingFactor blindingFactor
   ) {
     this.ciphertext = ciphertext;
     this.publicKey = publicKey;
     this.blindingFactor = blindingFactor;
-    this.nonceKr = nonceKr;
   }
 
   /**
-   * Creates a participant for proof generation (requires all fields).
+   * Creates a participant for proof generation.
    *
    * @param ciphertext     The ElGamal ciphertext for this participant.
    * @param publicKey      The ElGamal public key of this participant.
    * @param blindingFactor The blinding factor used to create the ciphertext.
-   * @param nonceKr        The nonce for the randomness commitment.
    *
    * @return A new {@link SamePlaintextParticipant}.
    */
   public static SamePlaintextParticipant forProofGeneration(
     final ElGamalCiphertext ciphertext,
     final ElGamalPublicKey publicKey,
-    final BlindingFactor blindingFactor,
-    final BlindingFactor nonceKr
+    final BlindingFactor blindingFactor
   ) {
     Objects.requireNonNull(ciphertext, "ciphertext must not be null");
     Objects.requireNonNull(publicKey, "publicKey must not be null");
     Objects.requireNonNull(blindingFactor, "blindingFactor must not be null");
-    Objects.requireNonNull(nonceKr, "nonceKr must not be null");
-    return new SamePlaintextParticipant(ciphertext, publicKey, blindingFactor, nonceKr);
+    return new SamePlaintextParticipant(ciphertext, publicKey, blindingFactor);
   }
 
   /**
@@ -96,7 +89,7 @@ public final class SamePlaintextParticipant {
   ) {
     Objects.requireNonNull(ciphertext, "ciphertext must not be null");
     Objects.requireNonNull(publicKey, "publicKey must not be null");
-    return new SamePlaintextParticipant(ciphertext, publicKey, null, null);
+    return new SamePlaintextParticipant(ciphertext, publicKey, null);
   }
 
   /**
@@ -124,15 +117,6 @@ public final class SamePlaintextParticipant {
    */
   public BlindingFactor blindingFactor() {
     return blindingFactor;
-  }
-
-  /**
-   * Returns the nonce for the randomness commitment.
-   *
-   * @return The nonce, or null if this participant is for verification only.
-   */
-  public BlindingFactor nonceKr() {
-    return nonceKr;
   }
 
   @Override

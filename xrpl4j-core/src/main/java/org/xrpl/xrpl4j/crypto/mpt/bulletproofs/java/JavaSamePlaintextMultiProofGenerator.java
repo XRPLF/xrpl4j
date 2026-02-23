@@ -41,8 +41,7 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
     final SamePlaintextParticipant destination,
     final SamePlaintextParticipant issuer,
     final Optional<SamePlaintextParticipant> auditor,
-    final ConfidentialMPTSendContext context,
-    final BlindingFactor nonceKm
+    final ConfidentialMPTSendContext context
   ) {
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(sender, "sender must not be null");
@@ -50,7 +49,6 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
     Objects.requireNonNull(issuer, "issuer must not be null");
     Objects.requireNonNull(auditor, "auditor must not be null");
     Objects.requireNonNull(context, "context must not be null");
-    Objects.requireNonNull(nonceKm, "nonceKm must not be null");
 
     // Build participant list
     List<SamePlaintextParticipant> participants = new ArrayList<>();
@@ -61,17 +59,15 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
 
     int n = participants.size();
 
-    // Extract ciphertexts, public keys, blinding factors, and nonces
+    // Extract ciphertexts, public keys, and blinding factors
     List<ElGamalCiphertext> ciphertexts = new ArrayList<>(n);
     List<ECPoint> publicKeys = new ArrayList<>(n);
     List<byte[]> blindingFactors = new ArrayList<>(n);
-    List<byte[]> noncesKr = new ArrayList<>(n);
 
     for (SamePlaintextParticipant p : participants) {
       ciphertexts.add(p.ciphertext());
       publicKeys.add(p.publicKey().asEcPoint());
       blindingFactors.add(p.blindingFactor().toBytes());
-      noncesKr.add(p.nonceKr().toBytes());
     }
 
     // Extract R and S from ciphertexts
@@ -82,19 +78,24 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
       S.add(ct.c2());
     }
 
-    // 1. Generate Commitments
-    // Tm = km * G
+    // 1. Generate Randomness & Commitments (matching C implementation)
+
+    // Generate km and compute Tm = km * G
+    BlindingFactor nonceKm = BlindingFactor.generate();
     BigInteger kmInt = new BigInteger(1, nonceKm.toBytes());
     ECPoint Tm = Secp256k1Operations.multiplyG(kmInt);
 
+    // Generate nonces kr_i for each participant
+    List<byte[]> noncesKr = new ArrayList<>(n);
     List<ECPoint> TrG = new ArrayList<>(n);
     List<ECPoint> TrP = new ArrayList<>(n);
 
     for (int i = 0; i < n; i++) {
-      byte[] kri = noncesKr.get(i);
-      if (kri.length != 32) {
-        throw new IllegalArgumentException("Each nonce in noncesKr must be 32 bytes");
-      }
+      // Generate random nonce kr_i
+      BlindingFactor nonceKri = BlindingFactor.generate();
+      byte[] kri = nonceKri.toBytes();
+      noncesKr.add(kri);
+
       BigInteger kriInt = new BigInteger(1, kri);
 
       // TrG[i] = kri * G

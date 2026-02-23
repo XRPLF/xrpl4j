@@ -80,12 +80,7 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
       UnsignedInteger.valueOf(0)
     );
 
-    // 8. Generate random nonces
-    BlindingFactor nonceKm = BlindingFactor.generate();
-    BlindingFactor nonceKr = BlindingFactor.generate();
-    BlindingFactor nonceKrho = BlindingFactor.generate();
-
-    // 9. Generate proof
+    // 8. Generate proof (nonces are generated internally)
     ElGamalPedersenLinkProof proof = generator.generateProof(
       LinkageProofType.AMOUNT_COMMITMENT,
       ciphertext,
@@ -94,9 +89,6 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
       amount,
       r,
       rho,
-      nonceKm,
-      nonceKr,
-      nonceKrho,
       context
     );
 
@@ -171,12 +163,7 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
       UnsignedInteger.valueOf(0)
     );
 
-    // 8. Generate random nonces
-    BlindingFactor nonceKm = BlindingFactor.generate();
-    BlindingFactor nonceKr = BlindingFactor.generate();
-    BlindingFactor nonceKrho = BlindingFactor.generate();
-
-    // 9. Generate proof using BALANCE_COMMITMENT type
+    // 8. Generate proof using BALANCE_COMMITMENT type (nonces are generated internally)
     ElGamalPedersenLinkProof proof = generator.generateProof(
       LinkageProofType.BALANCE_COMMITMENT,
       ciphertext,
@@ -185,9 +172,6 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
       balance,
       privateKeyAsBlindingFactor,
       rho,
-      nonceKm,
-      nonceKr,
-      nonceKrho,
       context
     );
 

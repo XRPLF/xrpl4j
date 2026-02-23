@@ -553,19 +553,16 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ElGamalCiphertext senderCiphertext = encryptor.encrypt(
       sendAmount, holderElGamalKeyPair.publicKey(), sendBlindingFactorSender
     );
-    String senderEncryptedAmount = senderCiphertext.hexValue();
 
     // Encrypt for destination (holder 2)
     ElGamalCiphertext destinationCiphertext = encryptor.encrypt(
       sendAmount, holder2ElGamalKeyPair.publicKey(), sendBlindingFactorHolder2
     );
-    String destinationEncryptedAmount = destinationCiphertext.hexValue();
 
     // Encrypt for issuer
     ElGamalCiphertext issuerCiphertextForSend = encryptor.encrypt(
       sendAmount, issuerElGamalKeyPair.publicKey(), sendBlindingFactorIssuer
     );
-    String issuerEncryptedAmountForSend = issuerCiphertextForSend.hexValue();
 
     //////////////////////
     // Get holder 1 account info for the Send transaction
@@ -589,21 +586,15 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holder1Version  // version from MPToken
     );
 
-    // Generate nonces for the proof (one for amount, one for each of 3 participants)
-    BlindingFactor nonceKm = BlindingFactor.generate();
-    BlindingFactor nonceKrSender = BlindingFactor.generate();
-    BlindingFactor nonceKrDest = BlindingFactor.generate();
-    BlindingFactor nonceKrIssuer = BlindingFactor.generate();
-
     // Create participants for proof generation
     SamePlaintextParticipant senderParticipant = SamePlaintextParticipant.forProofGeneration(
-      senderCiphertext, holderElGamalKeyPair.publicKey(), sendBlindingFactorSender, nonceKrSender
+      senderCiphertext, holderElGamalKeyPair.publicKey(), sendBlindingFactorSender
     );
     SamePlaintextParticipant destParticipant = SamePlaintextParticipant.forProofGeneration(
-      destinationCiphertext, holder2ElGamalKeyPair.publicKey(), sendBlindingFactorHolder2, nonceKrDest
+      destinationCiphertext, holder2ElGamalKeyPair.publicKey(), sendBlindingFactorHolder2
     );
     SamePlaintextParticipant issuerParticipant = SamePlaintextParticipant.forProofGeneration(
-      issuerCiphertextForSend, issuerElGamalKeyPair.publicKey(), sendBlindingFactorIssuer, nonceKrIssuer
+      issuerCiphertextForSend, issuerElGamalKeyPair.publicKey(), sendBlindingFactorIssuer
     );
 
     // Generate the SamePlaintextMultiProof for all 3 participants: sender, destination, issuer
@@ -613,56 +604,40 @@ public class ConfidentialTransfersIT extends AbstractIT {
       destParticipant,
       issuerParticipant,
       Optional.empty(),
-      sendContext,
-      nonceKm
-    );
-
-    // Create participants for verification (only need ciphertext and publicKey)
-    SamePlaintextParticipant senderVerify = SamePlaintextParticipant.forVerification(
-      senderCiphertext, holderElGamalKeyPair.publicKey()
-    );
-    SamePlaintextParticipant destVerify = SamePlaintextParticipant.forVerification(
-      destinationCiphertext, holder2ElGamalKeyPair.publicKey()
-    );
-    SamePlaintextParticipant issuerVerify = SamePlaintextParticipant.forVerification(
-      issuerCiphertextForSend, issuerElGamalKeyPair.publicKey()
-    );
-
-    // Verify the proof locally
-    boolean sendProofValid = samePlaintextProofGenerator.verify(
-      samePlaintextProof,
-      senderVerify,
-      destVerify,
-      issuerVerify,
-      Optional.empty(),
       sendContext
     );
-    assertThat(sendProofValid).isTrue();
 
     //////////////////////
     // Generate Pedersen Commitments and Linkage Proofs
     PedersenCommitmentGenerator pedersenGen = new JavaPedersenCommitmentGenerator();
     JavaElGamalPedersenLinkProofGenerator linkProofGenerator = new JavaElGamalPedersenLinkProofGenerator();
+    JavaElGamalBalanceDecryptor balanceDecryptor = new JavaElGamalBalanceDecryptor();
 
     // Generate blinding factors for Pedersen commitments
-    BlindingFactor amountPedersenRho = BlindingFactor.generate();
-    BlindingFactor balancePedersenRho = BlindingFactor.generate();
+    BlindingFactor amountBlindingFactorForSend = BlindingFactor.generate();
+    BlindingFactor balanceBlindingFactorForSend = BlindingFactor.generate();
 
-    // Generate Amount Pedersen Commitment: PCm = sendAmount * G + amountPedersenRho * H
-    PedersenCommitment amountCommitment = pedersenGen.generateCommitment(sendAmount, amountPedersenRho);
+    // Generate Amount Pedersen Commitment: PCm = sendAmount * G + amountBlindingFactorForSend * H
+    PedersenCommitment amountCommitment = pedersenGen.generateCommitment(sendAmount, amountBlindingFactorForSend);
 
-    // For balance commitment, we need the sender's current balance (500)
-    // The balance commitment proves the sender has sufficient funds
-    UnsignedLong senderCurrentBalance = UnsignedLong.valueOf(500);
-    PedersenCommitment balanceCommitment = pedersenGen.generateCommitment(senderCurrentBalance, balancePedersenRho);
+    // Get the sender's current encrypted spending balance from the ledger and decrypt it
+    String currentEncryptedBalance = holder1MpToken.confidentialBalanceSpending()
+      .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance"));
+    byte[] currentBalanceBytes = BaseEncoding.base16().decode(currentEncryptedBalance);
+    ElGamalCiphertext currentBalanceCiphertext = ElGamalCiphertext.fromBytes(currentBalanceBytes);
+
+    // Decrypt the sender's current spending balance (this is what a real client would do)
+    long senderCurrentBalanceLong = balanceDecryptor.decrypt(
+      currentBalanceCiphertext, holderElGamalKeyPair.privateKey(), 0, 1_000_000
+    );
+    UnsignedLong senderCurrentBalance = UnsignedLong.valueOf(senderCurrentBalanceLong);
+
+    // Generate Balance Pedersen Commitment: PCb = senderCurrentBalance * G + balanceBlindingFactorForSend * H
+    PedersenCommitment balanceCommitment = pedersenGen.generateCommitment(senderCurrentBalance, balanceBlindingFactorForSend);
 
     //////////////////////
     // Generate Amount Linkage Proof
     // Proves: sender's encrypted amount (senderCiphertext) links to amountCommitment
-    BlindingFactor amountNonceKm = BlindingFactor.generate();
-    BlindingFactor amountNonceKr = BlindingFactor.generate();
-    BlindingFactor amountNonceKrho = BlindingFactor.generate();
-
     ElGamalPedersenLinkProof amountLinkageProof = linkProofGenerator.generateProof(
       LinkageProofType.AMOUNT_COMMITMENT,
       senderCiphertext,
@@ -670,45 +645,21 @@ public class ConfidentialTransfersIT extends AbstractIT {
       amountCommitment,
       sendAmount,
       sendBlindingFactorSender,
-      amountPedersenRho,
-      amountNonceKm,
-      amountNonceKr,
-      amountNonceKrho,
+      amountBlindingFactorForSend,
       sendContext
     );
-
-    // Verify the amount linkage proof locally
-    boolean amountLinkageValid = linkProofGenerator.verify(
-      LinkageProofType.AMOUNT_COMMITMENT,
-      amountLinkageProof,
-      senderCiphertext,
-      holderElGamalKeyPair.publicKey(),
-      amountCommitment,
-      sendContext
-    );
-    assertThat(amountLinkageValid).isTrue();
 
     //////////////////////
     // Generate Balance Linkage Proof
     // Proves: sender's current encrypted balance links to balanceCommitment
     // Uses the sender's private key as the "r" parameter (swapped parameters vs amount linkage)
 
-    // Get the sender's current encrypted balance from the MPToken object
-    String currentEncryptedBalance = holder1MpToken.confidentialBalanceSpending()
-      .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance"));
-    byte[] currentBalanceBytes = BaseEncoding.base16().decode(currentEncryptedBalance);
-    ElGamalCiphertext currentBalanceCiphertext = ElGamalCiphertext.fromBytes(currentBalanceBytes);
-
     // Get the holder's ElGamal private key as a BlindingFactor
     BlindingFactor holderPrivateKeyAsBlindingFactor = BlindingFactor.fromBytes(
       holderElGamalKeyPair.privateKey().naturalBytes().toByteArray()
     );
 
-    // Generate Balance Linkage Proof nonces
-    BlindingFactor balanceNonceKm = BlindingFactor.generate();
-    BlindingFactor balanceNonceKr = BlindingFactor.generate();
-    BlindingFactor balanceNonceKrho = BlindingFactor.generate();
-
+    // Generate Balance Linkage Proof (nonces are generated internally)
     ElGamalPedersenLinkProof balanceLinkageProof = linkProofGenerator.generateProof(
       LinkageProofType.BALANCE_COMMITMENT,
       currentBalanceCiphertext,
@@ -716,10 +667,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       balanceCommitment,
       senderCurrentBalance,
       holderPrivateKeyAsBlindingFactor,
-      balancePedersenRho,
-      balanceNonceKm,
-      balanceNonceKr,
-      balanceNonceKrho,
+      balanceBlindingFactorForSend,
       sendContext
     );
 
@@ -742,9 +690,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
       )
       .destination(holder2KeyPair.publicKey().deriveAddress())
       .mpTokenIssuanceId(mpTokenIssuanceId)
-      .senderEncryptedAmount(senderEncryptedAmount)
-      .destinationEncryptedAmount(destinationEncryptedAmount)
-      .issuerEncryptedAmount(issuerEncryptedAmountForSend)
+      .senderEncryptedAmount(senderCiphertext.hexValue())
+      .destinationEncryptedAmount(destinationCiphertext.hexValue())
+      .issuerEncryptedAmount(issuerCiphertextForSend.hexValue())
       .zkProof(fullZkProofHex)
       .amountCommitment(amountCommitment.hexValue())
       .balanceCommitment(balanceCommitment.hexValue())
@@ -788,7 +736,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       senderBalanceBytesAfterSend
     );
 
-    JavaElGamalBalanceDecryptor balanceDecryptor = new JavaElGamalBalanceDecryptor();
     long senderBalanceAfterSend = balanceDecryptor.decrypt(
       senderBalanceCiphertextAfterSend, holderElGamalKeyPair.privateKey(), 0, 1_000_000
     );
@@ -846,9 +793,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     // Generate Pedersen commitment for the current spending balance (400)
     UnsignedLong currentSpendingBalance = UnsignedLong.valueOf(senderBalanceAfterSend);
-    BlindingFactor convertBackPedersenRho = BlindingFactor.generate();
+    BlindingFactor convertBackBalanceBlindingFactor = BlindingFactor.generate();
     PedersenCommitment convertBackCommitment = pedersenGen.generateCommitment(currentSpendingBalance,
-      convertBackPedersenRho);
+      convertBackBalanceBlindingFactor);
 
     // Get the current encrypted balance from the ledger for the balance linkage proof
     String currentEncryptedBalanceForConvertBack = holder1MpTokenForConvertBack.confidentialBalanceSpending()
@@ -860,12 +807,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       currentBalanceBytesForConvertBack
     );
 
-    // Generate Balance Linkage Proof
+    // Generate Balance Linkage Proof (nonces are generated internally)
     // This proves the Pedersen commitment matches the on-ledger encrypted balance
-    BlindingFactor convertBackNonceKm = BlindingFactor.generate();
-    BlindingFactor convertBackNonceKr = BlindingFactor.generate();
-    BlindingFactor convertBackNonceKrho = BlindingFactor.generate();
-
     ElGamalPedersenLinkProof convertBackBalanceLinkageProof = linkProofGenerator.generateProof(
       LinkageProofType.BALANCE_COMMITMENT,
       currentBalanceCiphertextForConvertBack,
@@ -873,10 +816,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       convertBackCommitment,
       currentSpendingBalance,
       holderPrivateKeyAsBlindingFactor,
-      convertBackPedersenRho,
-      convertBackNonceKm,
-      convertBackNonceKr,
-      convertBackNonceKrho,
+      convertBackBalanceBlindingFactor,
       convertBackContext
     );
 

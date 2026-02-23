@@ -79,6 +79,9 @@ public interface ElGamalPedersenLinkProofGenerator<P extends ElGamalPrivateKeyab
    *       Uses c1=publicKey, c2=ciphertext.c2, pk=ciphertext.c1, r=privateKey (from elGamalBlindingFactor).</li>
    * </ul>
    *
+   * <p>This method generates all required nonces (km, kr, krho) internally, matching the behavior
+   * of the C implementation.</p>
+   *
    * @param proofType              The type of linkage proof to generate.
    * @param ciphertext             The ElGamal ciphertext.
    * @param publicKey              The ElGamal public key.
@@ -86,9 +89,6 @@ public interface ElGamalPedersenLinkProofGenerator<P extends ElGamalPrivateKeyab
    * @param amount                 The plaintext amount m.
    * @param elGamalBlindingFactor  The ElGamal blinding factor (r for amount, private key for balance).
    * @param pedersenBlindingFactor The Pedersen blinding factor (rho).
-   * @param nonceKm                Random nonce for amount commitment.
-   * @param nonceKr                Random nonce for ElGamal randomness commitment.
-   * @param nonceKrho              Random nonce for Pedersen blinding factor commitment.
    * @param context                The context for domain separation.
    *
    * @return An {@link ElGamalPedersenLinkProof} containing the 195-byte proof.
@@ -103,9 +103,6 @@ public interface ElGamalPedersenLinkProofGenerator<P extends ElGamalPrivateKeyab
     UnsignedLong amount,
     BlindingFactor elGamalBlindingFactor,
     BlindingFactor pedersenBlindingFactor,
-    BlindingFactor nonceKm,
-    BlindingFactor nonceKr,
-    BlindingFactor nonceKrho,
     LinkProofContext context
   );
 

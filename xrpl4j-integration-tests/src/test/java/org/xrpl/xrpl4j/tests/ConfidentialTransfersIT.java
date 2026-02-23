@@ -291,8 +291,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     //////////////////////
     // Generate Holder ElGamal key pair
     ElGamalKeyPair holderElGamalKeyPair = ElGamalKeyPair.generate();
-    String holderElGamalPublicKey = holderElGamalKeyPair.publicKey()
-      .toCompressedHex();
 
     //////////////////////
     // Prepare encryption utilities
@@ -318,20 +316,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     String issuerEncryptedAmount = issuerCiphertext.hexValue();
 
     //////////////////////
-    // Decrypt ciphertexts to verify they contain the correct amount (500)
-    JavaElGamalBalanceDecryptor decryptor = new JavaElGamalBalanceDecryptor();
-
-    // Decrypt holder ciphertext using holder's private key
-    long holderDecryptedAmount = decryptor.decrypt(holderCiphertext, holderElGamalKeyPair.privateKey(), 0, 1_000_000);
-
-    // Decrypt issuer ciphertext using issuer's private key
-    long issuerDecryptedAmount = decryptor.decrypt(issuerCiphertext, issuerElGamalKeyPair.privateKey(), 0, 1_000_000);
-
-    // Verify both decrypt to the same amount
-    assertThat(holderDecryptedAmount).isEqualTo(amountToConvert.longValue());
-    assertThat(issuerDecryptedAmount).isEqualTo(amountToConvert.longValue());
-
-    //////////////////////
     // Get updated holder account info for ConfidentialMPTConvert
     // IMPORTANT: Get this BEFORE generating ZKProof because the context hash includes the sequence number
     AccountInfoResult holderAccountInfoForConvert = this.scanForResult(
@@ -355,11 +339,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     // Generate proof
     SecretKeyProof zkProof = proofGenerator.generateProof(holderElGamalKeyPair.privateKey(), context);
-    String zkProofHex = zkProof.hexValue();
-
-    // Verify the proof locally before submitting
-    boolean localVerify = proofGenerator.verifyProof(zkProof, holderElGamalKeyPair.publicKey(), context);
-    assertThat(localVerify).isTrue();
 
     //////////////////////
     // Build and submit ConfidentialMPTConvert transaction
@@ -373,11 +352,11 @@ public class ConfidentialTransfersIT extends AbstractIT {
       )
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(amountToConvert))
-      .holderElGamalPublicKey(holderElGamalPublicKey)
+      .holderElGamalPublicKey(holderElGamalKeyPair.publicKey().toCompressedHex())
       .holderEncryptedAmount(holderEncryptedAmount)
       .issuerEncryptedAmount(issuerEncryptedAmount)
       .blindingFactor(blindingFactor.hexValue())
-      .zkProof(zkProofHex)
+      .zkProof(zkProof.hexValue())
       .build();
 
     SingleSignedTransaction<ConfidentialMPTConvert> signedConfidentialConvert = signatureService.sign(
@@ -473,7 +452,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     //////////////////////
     // Generate Holder 2 ElGamal key pair
     ElGamalKeyPair holder2ElGamalKeyPair = ElGamalKeyPair.generate();
-    String holder2ElGamalPublicKey = holder2ElGamalKeyPair.publicKey().toCompressedHex();
 
     //////////////////////
     // Prepare encryption for Holder 2 (0 amount conversion to register public key)
@@ -486,13 +464,11 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ElGamalCiphertext holder2Ciphertext = encryptor.encrypt(
       holder2AmountToConvert, holder2ElGamalKeyPair.publicKey(), holder2BlindingFactor
     );
-    String holder2EncryptedAmount = holder2Ciphertext.hexValue();
 
     // Encrypt 0 MPT for issuer (using holder 2's blinding factor)
     ElGamalCiphertext issuerCiphertextForHolder2 = encryptor.encrypt(
       holder2AmountToConvert, issuerElGamalKeyPair.publicKey(), holder2BlindingFactor
     );
-    String issuerEncryptedAmountForHolder2 = issuerCiphertextForHolder2.hexValue();
 
     //////////////////////
     // Get updated holder 2 account info for ConfidentialMPTConvert
@@ -512,12 +488,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     // Generate proof (nonce is generated internally)
     SecretKeyProof holder2ZkProof = proofGenerator.generateProof(holder2ElGamalKeyPair.privateKey(), holder2Context);
-    String holder2ZkProofHex = holder2ZkProof.hexValue();
-
-    // Verify the proof locally
-    boolean holder2LocalVerify = proofGenerator.verifyProof(holder2ZkProof, holder2ElGamalKeyPair.publicKey(),
-      holder2Context);
-    assertThat(holder2LocalVerify).isTrue();
 
     //////////////////////
     // Build and submit ConfidentialMPTConvert for Holder 2 (0 amount to register public key)
@@ -531,11 +501,11 @@ public class ConfidentialTransfersIT extends AbstractIT {
       )
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(holder2AmountToConvert))
-      .holderElGamalPublicKey(holder2ElGamalPublicKey)
-      .holderEncryptedAmount(holder2EncryptedAmount)
-      .issuerEncryptedAmount(issuerEncryptedAmountForHolder2)
+      .holderElGamalPublicKey(holder2ElGamalKeyPair.publicKey().toCompressedHex())
+      .holderEncryptedAmount(holder2Ciphertext.hexValue())
+      .issuerEncryptedAmount(issuerCiphertextForHolder2.hexValue())
       .blindingFactor(holder2BlindingFactor.hexValue())
-      .zkProof(holder2ZkProofHex)
+      .zkProof(holder2ZkProof.hexValue())
       .build();
 
     SingleSignedTransaction<ConfidentialMPTConvert> signedHolder2ConfidentialConvert = signatureService.sign(

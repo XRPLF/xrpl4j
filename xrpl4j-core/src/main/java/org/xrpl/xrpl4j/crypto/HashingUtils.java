@@ -29,7 +29,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import java.util.Objects;
 
 /**
- * Hashing utilities for XRPL related hashing algorithms.
+ * Hashing utilities for XRPL-related hashing algorithms.
  */
 public class HashingUtils {
 

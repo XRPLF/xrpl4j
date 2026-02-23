@@ -373,6 +373,15 @@ public enum TransactionType {
   MPT_AUTHORIZE("MPTokenAuthorize"),
 
   /**
+   * The {@link TransactionType} for the {@link Batch} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  BATCH("Batch"),
+
+  /**
    * The {@link TransactionType} for the {@link ConfidentialMPTConvert} transaction.
    *
    * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.

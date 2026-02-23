@@ -125,6 +125,17 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     assertCanSerializeAndDeserialize(wrapper, json);
   }
 
+  @Test
+  public void testDeriveIndividualFlagsFromFlags() {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .build();
+
+    assertThat(accountSet.flags().isEmpty()).isTrue();
+  }
+
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(

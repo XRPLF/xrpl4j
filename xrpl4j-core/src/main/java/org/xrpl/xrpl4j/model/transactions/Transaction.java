@@ -112,6 +112,7 @@ public interface Transaction {
       .put(ImmutableConfidentialMPTClawback.class, TransactionType.CONFIDENTIAL_MPT_CLAWBACK)
       .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
       .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
+      .put(ImmutableBatch.class, TransactionType.BATCH)
       .build();
 
   /**

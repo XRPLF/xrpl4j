@@ -27,6 +27,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
@@ -86,10 +87,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-@SuppressWarnings("OptionalGetWithoutIsPresent")
+@DisabledIf(value = "shouldNotRun", disabledReason = "ConfidentialTransfersIT only runs on local rippled node.")
 public class ConfidentialTransfersIT extends AbstractIT {
 
   private static final String SUCCESS_STATUS = "tesSUCCESS";
+
+  static boolean shouldNotRun() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null ||
+      System.getProperty("useDevnet") != null;
+  }
 
   @Test
   public void testEntireFlow() throws JsonRpcClientErrorException, JsonProcessingException {

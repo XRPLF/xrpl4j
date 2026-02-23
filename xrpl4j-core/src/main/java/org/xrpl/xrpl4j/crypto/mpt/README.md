@@ -186,15 +186,40 @@ ElGamalPedersenLinkProof balanceLinkageProof = linkProofGen.generateProof(
 );
 ```
 
-**Step 7: Combine proofs**
+**Step 7: Generate Bulletproof Range Proof**
+
+The bulletproof proves that both the send amount and remaining balance are non-negative (in range [0, 2^64)).
 
 ```java
-String fullZkProofHex = ZKProofUtils.combineSendProofsHex(
-  samePlaintextProof, amountLinkageProof, balanceLinkageProof
+// Compute remaining balance: senderCurrentBalance - sendAmount
+UnsignedLong remainingBalance = UnsignedLong.valueOf(
+  senderCurrentBalance.longValue() - sendAmount.longValue()
 );
 
-String amountCommitmentHex = amountCommitment.toReversedHex64();
-String balanceCommitmentHex = balanceCommitment.toReversedHex64();
+// Compute blinding factor for remaining balance: rho_rem = rho_balance - rho_amount
+byte[] negAmountBlinding = Secp256k1Operations.scalarNegate(amountBlindingFactorForSend.toBytes());
+byte[] rhoRemBytes = Secp256k1Operations.scalarAdd(balanceBlindingFactorForSend.toBytes(), negAmountBlinding);
+BlindingFactor rhoRem = BlindingFactor.fromBytes(rhoRemBytes);
+
+// Generate aggregated bulletproof for {amount, remainingBalance}
+BulletproofRangeProofGenerator bulletproofGen = new JavaBulletproofRangeProofGenerator();
+BulletproofRangeProof bulletproof = bulletproofGen.generateProof(
+  Arrays.asList(sendAmount, remainingBalance),        // List of values
+  Arrays.asList(amountBlindingFactorForSend, rhoRem), // List of blinding factors
+  sendContext
+);
+```
+
+**Step 8: Combine all proofs**
+
+```java
+// SamePlaintextMultiProof (359) + Amount Linkage (195) + Balance Linkage (195) + Bulletproof (754) = 1503 bytes
+String fullZkProofHex = ZKProofUtils.combineSendProofsWithBulletproofHex(
+  samePlaintextProof, amountLinkageProof, balanceLinkageProof, bulletproof
+);
+
+String amountCommitmentHex = amountCommitment.hexValue();
+String balanceCommitmentHex = balanceCommitment.hexValue();
 ```
 
 ---
@@ -253,9 +278,36 @@ ElGamalPedersenLinkProof balanceLinkageProof = linkProofGen.generateProof(
   convertBackBalanceBlindingFactor,
   context
 );
+```
 
-String zkProofHex = balanceLinkageProof.hexValue();
-String balanceCommitmentHex = balanceCommitment.toReversedHex64();
+**Step 5: Generate Bulletproof Range Proof**
+
+The bulletproof proves the remaining balance after conversion is non-negative.
+
+```java
+// Compute remaining balance: currentBalance - convertBackAmount
+UnsignedLong remainingBalance = UnsignedLong.valueOf(
+  currentBalance.longValue() - convertBackAmount.longValue()
+);
+
+// Generate bulletproof for remaining balance (single value)
+BulletproofRangeProofGenerator bulletproofGen = new JavaBulletproofRangeProofGenerator();
+BulletproofRangeProof bulletproof = bulletproofGen.generateProof(
+  Collections.singletonList(remainingBalance),
+  Collections.singletonList(convertBackBalanceBlindingFactor),  // Same blinding factor as balance commitment
+  context
+);
+```
+
+**Step 6: Combine proofs**
+
+```java
+// Pedersen linkage proof (195 bytes) + Bulletproof (688 bytes) = 883 bytes total
+String zkProofHex = ZKProofUtils.combineConvertBackProofsHex(
+  balanceLinkageProof, bulletproof
+);
+
+String balanceCommitmentHex = balanceCommitment.hexValue();
 ```
 
 ---
@@ -288,17 +340,16 @@ ConfidentialMPTClawbackContext context = ConfidentialMPTClawbackContext.generate
 ```java
 JavaEqualityPlaintextProofGenerator equalityProofGen = new JavaEqualityPlaintextProofGenerator();
 
+// The nonce is generated internally by the proof generator
 BlindingFactor issuerPrivateKeyAsBlindingFactor = BlindingFactor.fromBytes(
   issuerElGamalKeyPair.privateKey().naturalBytes().toByteArray()
 );
-BlindingFactor clawbackNonce = BlindingFactor.generate();
 
 EqualityPlaintextProof clawbackProof = equalityProofGen.generateProof(
   issuerBalanceCiphertext,           // ElGamalCiphertext - from MPToken.issuerEncryptedBalance
   issuerElGamalKeyPair.publicKey(),  // ElGamalPublicKey
   clawbackAmount,                    // UnsignedLong
   issuerPrivateKeyAsBlindingFactor,  // BlindingFactor - issuer's PRIVATE KEY
-  clawbackNonce,                     // BlindingFactor
   context                            // ConfidentialMPTClawbackContext
 );
 
@@ -315,7 +366,10 @@ JavaElGamalBalanceDecryptor decryptor = new JavaElGamalBalanceDecryptor();
 ElGamalCiphertext ciphertext = ElGamalCiphertext.fromBytes(
   BaseEncoding.base16().decode(encryptedHex)
 );
-long decryptedAmount = decryptor.decrypt(ciphertext, privateKey);
+
+// Decrypt with search range [minAmount, maxAmount]
+// The decryptor uses baby-step giant-step algorithm to find the plaintext
+long decryptedAmount = decryptor.decrypt(ciphertext, privateKey, 0, 1_000_000);
 ```
 
 ---

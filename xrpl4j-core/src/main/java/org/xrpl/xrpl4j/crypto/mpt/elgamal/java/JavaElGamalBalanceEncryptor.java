@@ -1,8 +1,6 @@
 package org.xrpl.xrpl4j.crypto.mpt.elgamal.java;
 
-import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
-import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.math.ec.ECPoint;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
@@ -25,18 +23,6 @@ import java.util.Objects;
  * </ul>
  */
 public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
-
-  /**
-   * Domain separator used for generating canonical encrypted zeros.
-   */
-  private static final byte[] DOMAIN_SEPARATOR = "EncZero".getBytes();
-
-  /**
-   * Constructs a new ElGamalEncryption instance.
-   */
-  public JavaElGamalBalanceEncryptor() {
-  }
-
   /**
    * Encrypts an amount using ElGamal encryption.
    *
@@ -83,46 +69,5 @@ public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
     }
 
     return new ElGamalCiphertext(c1, c2);
-  }
-
-  /**
-   * Verifies that a ciphertext is a valid encryption of the given amount.
-   *
-   * <p>This requires knowledge of the blinding factor used during encryption.</p>
-   *
-   * @param ciphertext     The ciphertext to verify.
-   * @param publicKey      The ElGamal public key used for encryption.
-   * @param amount         The claimed unsigned amount.
-   * @param blindingFactor The blinding factor used during encryption.
-   *
-   * @return {@code true} if the ciphertext is valid, {@code false} otherwise.
-   */
-  @Override
-  public boolean verifyEncryption(
-    ElGamalCiphertext ciphertext,
-    ElGamalPublicKey publicKey,
-    UnsignedLong amount,
-    BlindingFactor blindingFactor
-  ) {
-    Objects.requireNonNull(ciphertext, "ciphertext must not be null");
-    Objects.requireNonNull(publicKey, "publicKey must not be null");
-    Objects.requireNonNull(amount, "amount must not be null");
-    Objects.requireNonNull(blindingFactor, "blindingFactor must not be null");
-
-    BigInteger k = new BigInteger(1, blindingFactor.toBytes());
-    ECPoint publicKeyPoint = publicKey.asEcPoint();
-
-    // Verify C1: k * G == C1
-    ECPoint expectedC1 = Secp256k1Operations.multiplyG(k);
-    if (!Secp256k1Operations.pointsEqual(ciphertext.c1(), expectedC1)) {
-      return false;
-    }
-
-    // Verify C2: amount * G + k * Q == C2
-    ECPoint mG = Secp256k1Operations.multiplyG(amount.bigIntegerValue());
-    ECPoint sharedSecret = Secp256k1Operations.multiply(publicKeyPoint, k);
-    ECPoint expectedC2 = Secp256k1Operations.add(mG, sharedSecret);
-
-    return Secp256k1Operations.pointsEqual(ciphertext.c2(), expectedC2);
   }
 }

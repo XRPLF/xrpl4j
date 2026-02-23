@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
-import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
@@ -28,9 +27,12 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
 
   private JavaElGamalBalanceEncryptor elGamalBalanceEncryptor;
 
+  private JavaElGamalBalanceEncryptionVerifier elGamalBalanceEncryptionVerifier;
+
   @BeforeEach
   void setUp() {
     this.elGamalBalanceEncryptor = new JavaElGamalBalanceEncryptor();
+    this.elGamalBalanceEncryptionVerifier = new JavaElGamalBalanceEncryptionVerifier();
     this.elGamalBalanceDecryptor = new JavaElGamalBalanceDecryptor();
   }
 
@@ -192,7 +194,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
 
     ElGamalCiphertext ciphertext = elGamalBalanceEncryptor.encrypt(amount, publicKey, blindingFactor);
 
-    boolean isValid = elGamalBalanceEncryptor.verifyEncryption(ciphertext, publicKey, amount, blindingFactor);
+    boolean isValid = elGamalBalanceEncryptionVerifier.verifyEncryption(ciphertext, publicKey, amount, blindingFactor);
     assertThat(isValid).isTrue();
   }
 
@@ -205,7 +207,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
 
     ElGamalCiphertext ciphertext = elGamalBalanceEncryptor.encrypt(amount, publicKey, blindingFactor);
 
-    boolean isValid = elGamalBalanceEncryptor.verifyEncryption(ciphertext, publicKey, badAmount, blindingFactor);
+    boolean isValid = elGamalBalanceEncryptionVerifier.verifyEncryption(ciphertext, publicKey, badAmount, blindingFactor);
     assertThat(isValid).isFalse();
   }
 
@@ -220,7 +222,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
 
     ElGamalCiphertext ciphertext = elGamalBalanceEncryptor.encrypt(amount, publicKey, blindingFactor);
 
-    boolean isValid = elGamalBalanceEncryptor.verifyEncryption(ciphertext, publicKey, amount, badBlindingFactor);
+    boolean isValid = elGamalBalanceEncryptionVerifier.verifyEncryption(ciphertext, publicKey, amount, badBlindingFactor);
     assertThat(isValid).isFalse();
   }
 

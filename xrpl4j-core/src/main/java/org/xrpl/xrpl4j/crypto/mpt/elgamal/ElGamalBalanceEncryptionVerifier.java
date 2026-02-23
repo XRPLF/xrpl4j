@@ -19,24 +19,25 @@ import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPublicKey;
  * <p>The encryption scheme uses EC-ElGamal over secp256k1, which provides additive homomorphism
  * allowing encrypted balances to be updated without decryption.</p>
  */
-public interface ElGamalBalanceEncryptor {
-
+public interface ElGamalBalanceEncryptionVerifier {
   /**
-   * Encrypts an amount using ElGamal encryption.
+   * Verifies that a ciphertext is a valid encryption of the given amount.
    *
-   * <p>The encryption produces a ciphertext (C1, C2) where:</p>
-   * <ul>
-   *   <li>C1 = blindingFactor * G</li>
-   *   <li>C2 = amount * G + blindingFactor * publicKey</li>
-   * </ul>
+   * <p>This requires knowledge of the blinding factor used during encryption.</p>
    *
-   * @param amount         The unsigned amount to encrypt.
-   * @param publicKey      The recipient's ElGamal public key.
-   * @param blindingFactor The blinding factor (validated 32-byte scalar).
+   * @param ciphertext     The ciphertext to verify.
+   * @param publicKey      The ElGamal public key used for encryption.
+   * @param amount         The claimed unsigned amount.
+   * @param blindingFactor The blinding factor used during encryption.
    *
-   * @return The {@link ElGamalCiphertext} containing C1 and C2.
+   * @return {@code true} if the ciphertext is valid, {@code false} otherwise.
    *
    * @throws NullPointerException if any parameter is null.
    */
-  ElGamalCiphertext encrypt(UnsignedLong amount, ElGamalPublicKey publicKey, BlindingFactor blindingFactor);
+  boolean verifyEncryption(
+    ElGamalCiphertext ciphertext,
+    ElGamalPublicKey publicKey,
+    UnsignedLong amount,
+    BlindingFactor blindingFactor
+  );
 }

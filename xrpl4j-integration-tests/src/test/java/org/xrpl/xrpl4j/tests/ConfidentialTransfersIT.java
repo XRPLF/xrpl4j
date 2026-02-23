@@ -318,18 +318,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     String issuerEncryptedAmount = issuerCiphertext.hexValue();
 
     //////////////////////
-    // Verify encryption locally before submitting
-    boolean holderEncryptionValid = encryptor.verifyEncryption(
-      holderCiphertext, holderElGamalKeyPair.publicKey(), amountToConvert, blindingFactor
-    );
-    assertThat(holderEncryptionValid).isTrue();
-
-    boolean issuerEncryptionValid = encryptor.verifyEncryption(
-      issuerCiphertext, issuerElGamalKeyPair.publicKey(), amountToConvert, blindingFactor
-    );
-    assertThat(issuerEncryptionValid).isTrue();
-
-    //////////////////////
     // Decrypt ciphertexts to verify they contain the correct amount (500)
     JavaElGamalBalanceDecryptor decryptor = new JavaElGamalBalanceDecryptor();
 

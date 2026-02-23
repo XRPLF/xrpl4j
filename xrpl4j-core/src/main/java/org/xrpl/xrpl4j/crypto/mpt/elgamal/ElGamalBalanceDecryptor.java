@@ -37,6 +37,9 @@ import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPrivateKeyable;
  */
 public interface ElGamalBalanceDecryptor<P extends ElGamalPrivateKeyable> {
 
+  public static final long MAX_DECRYPTABLE_AMOUNT = 1_000_000L;
+
+
   /**
    * Decrypts an ElGamal ciphertext to recover the original amount.
    *

@@ -22,15 +22,12 @@ package org.xrpl.xrpl4j.crypto.keys;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
-import com.google.common.primitives.UnsignedInteger;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
-import org.xrpl.xrpl4j.codec.addresses.AddressBase58;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.codec.addresses.Decoded;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
@@ -126,13 +123,9 @@ public interface Seed extends javax.security.auth.Destroyable {
   static Seed ed25519SeedFromEntropy(final Entropy entropy) {
     Objects.requireNonNull(entropy);
 
-    final String base58EncodedSeed = AddressBase58.encode(
-      entropy.value(),
-      Lists.newArrayList(Version.ED25519_SEED),
-      UnsignedInteger.valueOf(entropy.value().length())
-    );
+    final String base58EncodedSeed = SeedCodec.getInstance().encodeSeed(entropy.value(), KeyType.ED25519);
 
-    return new DefaultSeed(UnsignedByteArray.of(AddressBase58.decode(base58EncodedSeed)));
+    return new DefaultSeed(UnsignedByteArray.of(Base58.decode(base58EncodedSeed)));
   }
 
   /**
@@ -155,11 +148,7 @@ public interface Seed extends javax.security.auth.Destroyable {
   static Seed secp256k1SeedFromEntropy(final Entropy entropy) {
     Objects.requireNonNull(entropy);
 
-    final String base58EncodedSeed = AddressBase58.encode(
-      entropy.value(),
-      Lists.newArrayList(Version.FAMILY_SEED),
-      UnsignedInteger.valueOf(entropy.value().length())
-    );
+    final String base58EncodedSeed = SeedCodec.getInstance().encodeSeed(entropy.value(), KeyType.SECP256K1);
 
     return new DefaultSeed(UnsignedByteArray.of(Base58.decode(base58EncodedSeed)));
   }

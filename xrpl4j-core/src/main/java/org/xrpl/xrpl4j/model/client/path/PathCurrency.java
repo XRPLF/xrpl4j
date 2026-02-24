@@ -34,7 +34,8 @@ import org.xrpl.xrpl4j.model.transactions.Address;
  * {@link RipplePathFindRequestParams}.
  *
  * <p>This class wraps an {@link Issue} to support both traditional currencies (XRP and IOUs) and MPTokens.
- * For traditional currencies, use {@link CurrencyIssue}. For MPTokens, use {@link org.xrpl.xrpl4j.model.ledger.MptIssue}.</p>
+ * For traditional currencies, use {@link CurrencyIssue}. For MPTokens, use
+ * {@link org.xrpl.xrpl4j.model.ledger.MptIssue}.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutablePathCurrency.class, using = PathCurrencySerializer.class)

@@ -103,14 +103,17 @@ public interface PathCurrency {
   }
 
   /**
-   * The asset that this path currency represents. This can be either a {@link CurrencyIssue}
-   * (for XRP or IOUs) or an {@link org.xrpl.xrpl4j.model.ledger.MptIssue} (for MPTokens).
+   * The asset that this path currency represents. This can be either a
+   * {@link org.xrpl.xrpl4j.model.ledger.CurrencyIssue} (for XRP or IOUs) or an
+   * {@link org.xrpl.xrpl4j.model.ledger.MptIssue} (for MPTokens).
    *
    * <p>The {@link Issue} fields will be unwrapped and serialized directly into the PathCurrency JSON object
-   * by the custom {@link PathCurrencySerializer}:
+   * by the custom {@link org.xrpl.xrpl4j.model.jackson.modules.PathCurrencySerializer}:
    * <ul>
-   *   <li>For {@link CurrencyIssue}: {@code {"currency": "...", "issuer": "..."}}</li>
-   *   <li>For {@link org.xrpl.xrpl4j.model.ledger.MptIssue}: {@code {"mpt_issuance_id": "..."}}</li>
+   *   <li>For {@link org.xrpl.xrpl4j.model.ledger.CurrencyIssue}:
+   *       {@code {"currency": "...", "issuer": "..."}}</li>
+   *   <li>For {@link org.xrpl.xrpl4j.model.ledger.MptIssue}:
+   *       {@code {"mpt_issuance_id": "..."}}</li>
    * </ul>
    *
    * @return An {@link Issue}.

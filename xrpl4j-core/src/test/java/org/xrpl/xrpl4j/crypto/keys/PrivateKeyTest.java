@@ -26,6 +26,8 @@ import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PRIVATE_KEY_HEX;
 import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PRIVATE_KEY_WITH_PREFIX_HEX;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PRIVATE_KEY_HEX;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PRIVATE_KEY_WITH_PREFIX_HEX;
+import static org.xrpl.xrpl4j.crypto.TestConstants.ELGAMAL_PRIVATE_KEY_HEX;
+import static org.xrpl.xrpl4j.crypto.TestConstants.ELGAMAL_PRIVATE_KEY_WITH_PREFIX_HEX;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
@@ -81,6 +83,21 @@ class PrivateKeyTest {
   }
 
   @Test
+  void testElGamalOf() {
+    UnsignedByteArray thirtyThreeBytes = UnsignedByteArray.of(
+      BaseEncoding.base16().decode(ELGAMAL_PRIVATE_KEY_WITH_PREFIX_HEX));
+    assertThat(PrivateKey.of(thirtyThreeBytes)).isEqualTo(TestConstants.getElGamalPrivateKey());
+
+    UnsignedByteArray thirtyTwoBytes = UnsignedByteArray.of(thirtyThreeBytes.slice(1, 33).toByteArray());
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.of(thirtyTwoBytes)
+    );
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 32 were supplied."
+    );
+  }
+
+  @Test
   void testOfWithLessWithEmpty() {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.of(UnsignedByteArray.empty())
@@ -103,6 +120,17 @@ class PrivateKeyTest {
   @Test
   void testEcOfWithLessThan32Bytes() {
     UnsignedByteArray twoBytes = UnsignedByteArray.of(new byte[] {(byte) 0x00, (byte) 0xFF});
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.of(twoBytes)
+    );
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 2 were supplied."
+    );
+  }
+
+  @Test
+  void testElGamalOfWithLessThan32Bytes() {
+    UnsignedByteArray twoBytes = UnsignedByteArray.of(new byte[] {(byte) 0x01, (byte) 0xFF});
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.of(twoBytes)
     );
@@ -134,6 +162,15 @@ class PrivateKeyTest {
   void testEdFromNaturalBytesWithEmpty() {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.fromNaturalBytes(UnsignedByteArray.empty(), KeyType.ED25519)
+    );
+    assertThat(exception.getMessage())
+      .isEqualTo("Byte values passed to this constructor must be 32 bytes long, with no prefix.");
+  }
+
+  @Test
+  void testElGamalFromNaturalBytesWithEmpty() {
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.fromNaturalBytes(UnsignedByteArray.empty(), KeyType.ELGAMAL_SECP256K1)
     );
     assertThat(exception.getMessage())
       .isEqualTo("Byte values passed to this constructor must be 32 bytes long, with no prefix.");
@@ -190,6 +227,33 @@ class PrivateKeyTest {
       .isEqualTo("Byte values passed to this constructor must be 32 bytes long, with no prefix.");
   }
 
+  @Test
+  void testElGamalFromNaturalBytes() {
+    UnsignedByteArray thirtyThreeBytes = UnsignedByteArray.of(
+      BaseEncoding.base16().decode(ELGAMAL_PRIVATE_KEY_WITH_PREFIX_HEX)
+    );
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.fromNaturalBytes(thirtyThreeBytes, KeyType.ELGAMAL_SECP256K1)
+    );
+    assertThat(exception.getMessage())
+      .isEqualTo("Byte values passed to this constructor must be 32 bytes long, with no prefix.");
+
+    UnsignedByteArray thirtyTwoBytes = UnsignedByteArray.of(thirtyThreeBytes.slice(1, 33).toByteArray());
+    assertThat(PrivateKey.fromNaturalBytes(thirtyTwoBytes, KeyType.ELGAMAL_SECP256K1)).isEqualTo(
+      TestConstants.getElGamalPrivateKey()
+    );
+  }
+
+  @Test
+  void testElGamalFromNaturalBytesWithLessThan32Bytes() {
+    UnsignedByteArray twoBytes = UnsignedByteArray.of(new byte[] {(byte) 0x01, (byte) 0xFF});
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.fromNaturalBytes(twoBytes, KeyType.ELGAMAL_SECP256K1)
+    );
+    assertThat(exception.getMessage())
+      .isEqualTo("Byte values passed to this constructor must be 32 bytes long, with no prefix.");
+  }
+
   ////////////////////
   // fromPrefixedBytes
   ////////////////////
@@ -232,6 +296,22 @@ class PrivateKeyTest {
   }
 
   @Test
+  void testElGamalFromPrefixedBytes() {
+    UnsignedByteArray thirtyThreeBytes = UnsignedByteArray.of(
+      BaseEncoding.base16().decode(ELGAMAL_PRIVATE_KEY_WITH_PREFIX_HEX)
+    );
+    assertThat(PrivateKey.fromPrefixedBytes(thirtyThreeBytes)).isEqualTo(TestConstants.getElGamalPrivateKey());
+
+    UnsignedByteArray thirtyTwoBytes = UnsignedByteArray.of(thirtyThreeBytes.slice(1, 33).toByteArray());
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(thirtyTwoBytes)
+    );
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 32 were supplied."
+    );
+  }
+
+  @Test
   void testEdFromPrefixedBytesWithLessThan32Bytes() {
     UnsignedByteArray twoBytes = UnsignedByteArray.of(new byte[] {(byte) 0xED, (byte) 0xFF});
     IllegalArgumentException exception = assertThrows(
@@ -245,6 +325,17 @@ class PrivateKeyTest {
   @Test
   void testEcFromPrefixedBytesWithLessThan32Bytes() {
     UnsignedByteArray twoBytes = UnsignedByteArray.of(new byte[] {(byte) 0x00, (byte) 0xFF});
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(twoBytes)
+    );
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 2 were supplied."
+    );
+  }
+
+  @Test
+  void testElGamalFromPrefixedBytesWithLessThan32Bytes() {
+    UnsignedByteArray twoBytes = UnsignedByteArray.of(new byte[] {(byte) 0x01, (byte) 0xFF});
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(twoBytes)
     );
@@ -299,6 +390,9 @@ class PrivateKeyTest {
 
     assertThat(PrivateKey.SECP256K1_PREFIX.asInt()).isEqualTo(0x00);
     assertThat(PrivateKey.SECP256K1_PREFIX.asByte()).isEqualTo((byte) 0x00);
+
+    assertThat(PrivateKey.ELGAMAL_SECP256K1_PREFIX.asInt()).isEqualTo(0x01);
+    assertThat(PrivateKey.ELGAMAL_SECP256K1_PREFIX.asByte()).isEqualTo((byte) 0x01);
   }
 
   ///////////////////
@@ -325,6 +419,16 @@ class PrivateKeyTest {
     assertThat(TestConstants.getEcPrivateKey().naturalBytes().hexValue()).isEqualTo(EC_PRIVATE_KEY_HEX);
   }
 
+  @Test
+  void valueForElGamalSecp256k1() {
+    assertThat(TestConstants.getElGamalPrivateKey().value().hexValue()) // <-- Overtly test .value()
+      .isEqualTo(ELGAMAL_PRIVATE_KEY_WITH_PREFIX_HEX);
+    assertThat(TestConstants.getElGamalPrivateKey().prefixedBytes().hexValue()).isEqualTo(
+      ELGAMAL_PRIVATE_KEY_WITH_PREFIX_HEX
+    );
+    assertThat(TestConstants.getElGamalPrivateKey().naturalBytes().hexValue()).isEqualTo(ELGAMAL_PRIVATE_KEY_HEX);
+  }
+
   ///////////////////
   // Misc
   ///////////////////
@@ -337,6 +441,11 @@ class PrivateKeyTest {
   @Test
   void keyTypeSecp256k1() {
     assertThat(TestConstants.getEcPrivateKey().keyType()).isEqualTo(KeyType.SECP256K1);
+  }
+
+  @Test
+  void keyTypeElGamalSecp256k1() {
+    assertThat(TestConstants.getElGamalPrivateKey().keyType()).isEqualTo(KeyType.ELGAMAL_SECP256K1);
   }
 
   @Test
@@ -357,6 +466,23 @@ class PrivateKeyTest {
     assertThat(privateKey.prefixedBytes()).isEqualTo(UnsignedByteArray.empty());
 
     privateKey = PrivateKey.fromPrefixedBytes(TestConstants.getEcPrivateKey().prefixedBytes());
+    assertThat(privateKey.isDestroyed()).isFalse();
+    privateKey.destroy();
+    assertThat(privateKey.isDestroyed()).isTrue();
+    assertThat(privateKey.prefixedBytes().hexValue()).isEqualTo("");
+    privateKey.destroy();
+    assertThat(privateKey.isDestroyed()).isTrue();
+
+    assertThat(privateKey.value().hexValue()).isEqualTo(""); // <-- Overtly test .value()
+    assertThat(privateKey.naturalBytes().hexValue()).isEqualTo("");
+    assertThat(privateKey.prefixedBytes().hexValue()).isEqualTo("");
+
+    assertThat(privateKey.value()).isEqualTo(UnsignedByteArray.empty()); // <-- Overtly test .value()
+    assertThat(privateKey.naturalBytes()).isEqualTo(UnsignedByteArray.empty());
+    assertThat(privateKey.prefixedBytes()).isEqualTo(UnsignedByteArray.empty());
+
+    // ElGamal destroy test
+    privateKey = PrivateKey.fromPrefixedBytes(TestConstants.getElGamalPrivateKey().prefixedBytes());
     assertThat(privateKey.isDestroyed()).isFalse();
     privateKey.destroy();
     assertThat(privateKey.isDestroyed()).isTrue();
@@ -398,6 +524,19 @@ class PrivateKeyTest {
 
     assertThat(TestConstants.getEcPrivateKey()).isNotEqualTo(TestConstants.getEdPrivateKey());
     assertThat(TestConstants.getEcPrivateKey()).isNotEqualTo(new Object());
+
+    // ElGamal equals tests
+    assertThat(TestConstants.getElGamalPrivateKey()).isEqualTo(TestConstants.getElGamalPrivateKey());
+    assertThat(TestConstants.getElGamalPrivateKey()).isEqualTo(
+      PrivateKey.fromPrefixedBytes(TestConstants.getElGamalPrivateKey().prefixedBytes())
+    );
+    assertThat(TestConstants.getElGamalPrivateKey()).isEqualTo(
+      PrivateKey.fromNaturalBytes(TestConstants.getElGamalPrivateKey().naturalBytes(), KeyType.ELGAMAL_SECP256K1)
+    );
+
+    assertThat(TestConstants.getElGamalPrivateKey()).isNotEqualTo(TestConstants.getEdPrivateKey());
+    assertThat(TestConstants.getElGamalPrivateKey()).isNotEqualTo(TestConstants.getEcPrivateKey());
+    assertThat(TestConstants.getElGamalPrivateKey()).isNotEqualTo(new Object());
   }
 
   @Test
@@ -407,6 +546,11 @@ class PrivateKeyTest {
 
     assertThat(TestConstants.getEcPrivateKey().hashCode()).isEqualTo(TestConstants.getEcPrivateKey().hashCode());
     assertThat(TestConstants.getEcPrivateKey().hashCode()).isNotEqualTo(TestConstants.getEdPrivateKey().hashCode());
+
+    // ElGamal hashcode tests
+    assertThat(TestConstants.getElGamalPrivateKey().hashCode()).isEqualTo(TestConstants.getElGamalPrivateKey().hashCode());
+    assertThat(TestConstants.getElGamalPrivateKey().hashCode()).isNotEqualTo(TestConstants.getEdPrivateKey().hashCode());
+    assertThat(TestConstants.getElGamalPrivateKey().hashCode()).isNotEqualTo(TestConstants.getEcPrivateKey().hashCode());
   }
 
   @Test
@@ -423,6 +567,14 @@ class PrivateKeyTest {
       "PrivateKey{" +
         "value=[redacted]," +
         "keyType=SECP256K1," +
+        "destroyed=false" +
+        "}"
+    );
+
+    assertThat(TestConstants.getElGamalPrivateKey().toString()).isEqualTo(
+      "PrivateKey{" +
+        "value=[redacted]," +
+        "keyType=ELGAMAL_SECP256K1," +
         "destroyed=false" +
         "}"
     );

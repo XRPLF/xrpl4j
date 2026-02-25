@@ -31,6 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
@@ -44,12 +45,12 @@ class BatchSignerTest {
 
   private static final Address ACCOUNT1 = Address.of("rDpXrnLYA4n3AC2s9z9QxSbEUHrXt5xMVk");
   private static final PublicKey PUBLIC_KEY1 = PublicKey.fromBase16EncodedPublicKey(
-    "EDE57F52F5C23803AC0FBADBB92917EF21BA0874145D7126CDDE56A2938A39C15F"
+    "EDE57F52F5C23803AC0FBADBB92917EF21BA0874145D7126CDDE56A2938A39C15F", KeyType.ED25519
   );
   private static final Address SIGNER1_ADDRESS = Address.of("rs5zPPKr7pgkvu4xFBdum1FcKHJeSRL7JP");
 
   private static final PublicKey PUBLIC_KEY2 = PublicKey.fromBase16EncodedPublicKey(
-    "ED17036166A5354D564A86F5D1E43A08C350F6B0A817249158B6F8F23DA861A940"
+    "ED17036166A5354D564A86F5D1E43A08C350F6B0A817249158B6F8F23DA861A940", KeyType.ED25519
   );
   private static final Address SIGNER2_ADDRESS = Address.of("rUJBVHUDm6FXWseGj5oA6iv1enUzDGtMYo");
 
@@ -202,7 +203,7 @@ class BatchSignerTest {
     Signer signer1 = Signer.builder()
       // rs5zPPKr7pgkvu4xFBdum1FcKHJeSRL7JP
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "EDE57F52F5C23803AC0FBADBB92917EF21BA0874145D7126CDDE56A2938A39C15F"
+        "EDE57F52F5C23803AC0FBADBB92917EF21BA0874145D7126CDDE56A2938A39C15F", KeyType.ED25519
       ))
       .transactionSignature(Signature.fromBase16(
         "7A2FFB36E0C3C5F79534AF782D0CB5CBF0EA834F856B4A9F3F0DFA89" +
@@ -213,7 +214,7 @@ class BatchSignerTest {
     Signer signer2 = Signer.builder()
       // r9LqNeG6qHxjeUocjvVki2XR35weJ9mZgQ
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A"
+        "ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A", KeyType.ED25519
       ))
       .transactionSignature(Signature.fromBase16(
         "C3646313B08EED6AF4392261A31B961F10C66CB733DB7F6CD9EAE9D9A1F8" +
@@ -224,7 +225,7 @@ class BatchSignerTest {
     Signer signer3 = Signer.builder()
       // r9zRhGr7b6xPekLvT6wP4qNdWMryaumZS7
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "ED1A7C082846CFF58FF9A892BA4BA2593151CCF1DBA59F37714CC9ED39824AF85F"
+        "ED1A7C082846CFF58FF9A892BA4BA2593151CCF1DBA59F37714CC9ED39824AF85F", KeyType.ED25519
       ))
       .transactionSignature(Signature.fromBase16(
         "A1B2C3D4E5F6071829384A5B6C7D8E9F0A1B2C3D4E5F6071829384A5B6C7" +
@@ -235,7 +236,7 @@ class BatchSignerTest {
     Signer signer4 = Signer.builder()
       // rUJBVHUDm6FXWseGj5oA6iv1enUzDGtMYo
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "ED17036166A5354D564A86F5D1E43A08C350F6B0A817249158B6F8F23DA861A940"
+        "ED17036166A5354D564A86F5D1E43A08C350F6B0A817249158B6F8F23DA861A940", KeyType.ED25519
       ))
       .transactionSignature(Signature.fromBase16(
         "BDD4F92CE43E087BB17A19938A2DD70CA73BE980BD5083791F57" +
@@ -246,7 +247,7 @@ class BatchSignerTest {
     Signer signer5 = Signer.builder()
       // rDTXLQ7ZKZVKz33zJbHjgVShjsBnqMBhmN
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "ED9434799226374926EDA3B54B1B461B4ABF7237962EAE18528FEA67595397FA32"
+        "ED9434799226374926EDA3B54B1B461B4ABF7237962EAE18528FEA67595397FA32", KeyType.ED25519
       ))
       .transactionSignature(Signature.fromBase16(
         "D4E5F6071829384A5B6C7D8E9F0A1B2C3D4E5F6071829384A5B6C7D8E9F0A" +

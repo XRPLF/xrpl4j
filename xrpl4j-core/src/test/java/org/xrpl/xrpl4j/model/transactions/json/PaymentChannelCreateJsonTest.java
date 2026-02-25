@@ -25,6 +25,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
@@ -49,7 +50,7 @@ public class PaymentChannelCreateJsonTest extends AbstractJsonTest {
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
       .cancelAfter(UnsignedLong.valueOf(533171558))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .networkId(NetworkId.of(1024))
       .build();
@@ -87,7 +88,7 @@ public class PaymentChannelCreateJsonTest extends AbstractJsonTest {
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
       .cancelAfter(UnsignedLong.valueOf(533171558))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .flags(TransactionFlags.UNSET)
       .build();
@@ -125,7 +126,7 @@ public class PaymentChannelCreateJsonTest extends AbstractJsonTest {
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
       .cancelAfter(UnsignedLong.valueOf(533171558))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
@@ -163,7 +164,7 @@ public class PaymentChannelCreateJsonTest extends AbstractJsonTest {
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
       .cancelAfter(UnsignedLong.valueOf(533171558))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .networkId(NetworkId.of(1024))
       .putUnknownFields("Foo", "Bar")

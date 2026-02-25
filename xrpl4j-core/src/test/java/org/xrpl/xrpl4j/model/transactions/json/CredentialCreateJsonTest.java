@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
@@ -45,7 +46,7 @@ public class CredentialCreateJsonTest extends AbstractJsonTest {
       .sequence(UnsignedInteger.valueOf(3195631))
       .fee(XrpCurrencyAmount.ofDrops(1))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
+        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84", KeyType.ED25519)
       )
       .build();
 
@@ -73,7 +74,7 @@ public class CredentialCreateJsonTest extends AbstractJsonTest {
       .sequence(UnsignedInteger.valueOf(3195631))
       .fee(XrpCurrencyAmount.ofDrops(1))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
+        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84", KeyType.ED25519)
       )
       .flags(TransactionFlags.UNSET)
       .build();
@@ -103,7 +104,7 @@ public class CredentialCreateJsonTest extends AbstractJsonTest {
       .sequence(UnsignedInteger.valueOf(3195631))
       .fee(XrpCurrencyAmount.ofDrops(1))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
+        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84", KeyType.ED25519)
       )
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
@@ -133,7 +134,7 @@ public class CredentialCreateJsonTest extends AbstractJsonTest {
       .sequence(UnsignedInteger.valueOf(3195631))
       .fee(XrpCurrencyAmount.ofDrops(1))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
+        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84", KeyType.ED25519)
       )
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .putUnknownFields("Foo", "Bar")

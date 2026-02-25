@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonassert.JsonAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
@@ -42,7 +43,7 @@ class SignerTest {
   @BeforeEach
   void setUp() {
     signer = Signer.builder()
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "00"))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "00", KeyType.SECP256K1))
       .transactionSignature(Signature.builder()
         .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
         .build())

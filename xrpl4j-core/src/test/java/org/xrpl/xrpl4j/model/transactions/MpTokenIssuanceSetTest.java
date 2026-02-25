@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
@@ -20,7 +21,7 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(15))
       .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148", KeyType.ED25519)
       )
       .build();
 
@@ -45,7 +46,7 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(15))
       .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148", KeyType.ED25519)
       )
       .build();
 
@@ -61,7 +62,7 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(15))
       .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148", KeyType.ED25519)
       )
       .flags(MpTokenIssuanceSetFlags.LOCK)
       .build();
@@ -78,7 +79,7 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(15))
       .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148", KeyType.ED25519)
       )
       .flags(MpTokenIssuanceSetFlags.LOCK)
       .build();

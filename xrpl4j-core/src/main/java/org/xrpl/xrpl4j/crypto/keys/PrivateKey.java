@@ -59,6 +59,11 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    */
   public static final UnsignedByte SECP256K1_PREFIX = UnsignedByte.of(0x00);
 
+  /**
+   * This is to distinguish ElGamal secp256k1 private keys (Generated from 32 bytes of entropy) from
+   * secp256k1 private keys (Generated from 16 bytes of entropy) that are used for signing transactions.
+   * Note: This is not a standard XRPL prefix. It is specific to xrpl4j.
+   */
   public static final UnsignedByte ELGAMAL_SECP256K1_PREFIX = UnsignedByte.of(0x01);
 
 

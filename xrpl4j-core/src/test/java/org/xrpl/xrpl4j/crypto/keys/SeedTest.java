@@ -347,7 +347,7 @@ public class SeedTest {
         BaseEncoding.base16().decode("ED2F1185B6F5525D7A7D2A22C1D8BAEEBEEFFE597C9010AF916EBB9447BECC5BE6"
         ))))
       .publicKey(
-        PublicKey.fromBase16EncodedPublicKey("EDFC76D20CCC92FB18CC280C27EECEFB652749C7B090BA12CF30D4F35BE0009191")
+        PublicKey.fromBase16EncodedPublicKey("EDFC76D20CCC92FB18CC280C27EECEFB652749C7B090BA12CF30D4F35BE0009191", KeyType.ED25519)
       )
       .build();
     assertThat(keyPair).isEqualTo(expectedKeyPair);
@@ -379,7 +379,7 @@ public class SeedTest {
         BaseEncoding.base16().decode("00D78B9735C3F26501C7337B8A5727FD53A6EFDBC6AA55984F098488561F985E23"
         ))))
       .publicKey(
-        PublicKey.fromBase16EncodedPublicKey("030D58EB48B4420B1F7B9DF55087E0E29FEF0E8468F9A6825B01CA2C361042D435")
+        PublicKey.fromBase16EncodedPublicKey("030D58EB48B4420B1F7B9DF55087E0E29FEF0E8468F9A6825B01CA2C361042D435", KeyType.SECP256K1)
       )
       .build();
     assertThat(keyPair).isEqualTo(expectedKeyPair);
@@ -396,7 +396,7 @@ public class SeedTest {
         BaseEncoding.base16().decode("014D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4"
         ))))
       .publicKey(
-        PublicKey.fromBase16EncodedPublicKey("02F56CE1E425A98E7D2FEC83B051124F3966E7206AD9ED590F15A59885359F5289")
+        PublicKey.fromBase16EncodedPublicKey("02F56CE1E425A98E7D2FEC83B051124F3966E7206AD9ED590F15A59885359F5289", KeyType.ELGAMAL_SECP256K1)
       )
       .build();
     assertThat(keyPair).isEqualTo(expectedKeyPair);
@@ -407,7 +407,7 @@ public class SeedTest {
     Entropy entropy = Entropy.of(BaseEncoding.base16().decode("0102030405060708090A0B0C0D0E0F10"));
     Seed seed = Seed.ed25519SeedFromEntropy(entropy);
     assertThat(seed.deriveKeyPair().publicKey()).isEqualTo(
-      PublicKey.fromBase16EncodedPublicKey("ED01FA53FA5A7E77798F882ECE20B1ABC00BB358A9E55A202D0D0676BD0CE37A63"));
+      PublicKey.fromBase16EncodedPublicKey("ED01FA53FA5A7E77798F882ECE20B1ABC00BB358A9E55A202D0D0676BD0CE37A63", KeyType.ED25519));
     assertThat(seed.deriveKeyPair().privateKey()).isEqualTo(PrivateKey.fromPrefixedBytes(
       UnsignedByteArray.fromHex("EDB4C4E046826BD26190D09715FC31F4E6A728204EADD112905B08B14B7F15C4F3")
     ));

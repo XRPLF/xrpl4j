@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.BatchFlags;
@@ -114,7 +115,7 @@ public interface Batch extends Transaction {
   @Value.Check
   default void checkRawTransactions() {
     // TODO: Replace with constant once https://github.com/XRPLF/xrpl4j/issues/683 is merged.
-    final PublicKey emptyPublicKey = PublicKey.builder().value(UnsignedByteArray.empty()).build();
+    final PublicKey emptyPublicKey = PublicKey.builder().value(UnsignedByteArray.empty()).keyType(KeyType.ED25519).build();
     final XrpCurrencyAmount zeroFee = XrpCurrencyAmount.ofDrops(0);
 
     // Check 1: Validate transaction count (must be between 2 and 8 inclusive)

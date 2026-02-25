@@ -28,6 +28,9 @@ import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PUBLIC_KEY_HEX;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY_B58;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY_HEX;
+import static org.xrpl.xrpl4j.crypto.TestConstants.ELGAMAL_PUBLIC_KEY;
+import static org.xrpl.xrpl4j.crypto.TestConstants.ELGAMAL_PUBLIC_KEY_B58;
+import static org.xrpl.xrpl4j.crypto.TestConstants.ELGAMAL_PUBLIC_KEY_HEX;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
@@ -46,33 +49,45 @@ public class PublicKeyTest {
   public void fromBase58EncodedStringEd25519WithTooFewBytes() {
     UnsignedByteArray twoBytes = UnsignedByteArray.of(new byte[] {(byte) 0xED, (byte) 0xFF});
     EncodeException exception = assertThrows(
-      EncodeException.class, () -> PublicKey.fromBase16EncodedPublicKey(twoBytes.hexValue())
+      EncodeException.class, () -> PublicKey.fromBase16EncodedPublicKey(twoBytes.hexValue(), KeyType.ED25519)
     );
     assertThat(exception.getMessage()).isEqualTo("Length of bytes does not match expectedLength of 33.");
   }
 
   @Test
   public void fromBase58EncodedStringEd25519() {
-    assertThat(PublicKey.fromBase58EncodedPublicKey(ED_PUBLIC_KEY_B58).base58Value()).isEqualTo(ED_PUBLIC_KEY_B58);
+    assertThat(PublicKey.fromBase58EncodedPublicKey(ED_PUBLIC_KEY_B58, KeyType.ED25519).base58Value()).isEqualTo(ED_PUBLIC_KEY_B58);
   }
 
   @Test
   public void fromBase58EncodedStringSecp256k1() {
-    assertThat(PublicKey.fromBase58EncodedPublicKey(EC_PUBLIC_KEY_B58).base58Value()).isEqualTo(EC_PUBLIC_KEY_B58);
+    assertThat(PublicKey.fromBase58EncodedPublicKey(EC_PUBLIC_KEY_B58, KeyType.SECP256K1).base58Value()).isEqualTo(EC_PUBLIC_KEY_B58);
+  }
+
+  @Test
+  public void fromBase58EncodedStringElGamalSecp256k1() {
+    assertThat(PublicKey.fromBase58EncodedPublicKey(ELGAMAL_PUBLIC_KEY_B58, KeyType.ELGAMAL_SECP256K1).base58Value()).isEqualTo(ELGAMAL_PUBLIC_KEY_B58);
   }
 
   @Test
   public void fromBase16EncodedStringEd25519() {
-    assertThat(PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX).base58Value()).isEqualTo(ED_PUBLIC_KEY_B58);
-    assertThat(PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX.toLowerCase()).base58Value())
+    assertThat(PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX, KeyType.ED25519).base58Value()).isEqualTo(ED_PUBLIC_KEY_B58);
+    assertThat(PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX.toLowerCase(), KeyType.ED25519).base58Value())
       .isEqualTo(ED_PUBLIC_KEY_B58);
   }
 
   @Test
   public void fromBase16EncodedStringSecp256k1() {
-    assertThat(PublicKey.fromBase16EncodedPublicKey(EC_PUBLIC_KEY_HEX).base58Value()).isEqualTo(EC_PUBLIC_KEY_B58);
-    assertThat(PublicKey.fromBase16EncodedPublicKey(EC_PUBLIC_KEY_HEX.toLowerCase()).base58Value())
+    assertThat(PublicKey.fromBase16EncodedPublicKey(EC_PUBLIC_KEY_HEX, KeyType.SECP256K1).base58Value()).isEqualTo(EC_PUBLIC_KEY_B58);
+    assertThat(PublicKey.fromBase16EncodedPublicKey(EC_PUBLIC_KEY_HEX.toLowerCase(), KeyType.SECP256K1).base58Value())
       .isEqualTo(EC_PUBLIC_KEY_B58);
+  }
+
+  @Test
+  public void fromBase16EncodedStringElGamalSecp256k1() {
+    assertThat(PublicKey.fromBase16EncodedPublicKey(ELGAMAL_PUBLIC_KEY_HEX, KeyType.ELGAMAL_SECP256K1).base58Value()).isEqualTo(ELGAMAL_PUBLIC_KEY_B58);
+    assertThat(PublicKey.fromBase16EncodedPublicKey(ELGAMAL_PUBLIC_KEY_HEX.toLowerCase(), KeyType.ELGAMAL_SECP256K1).base58Value())
+      .isEqualTo(ELGAMAL_PUBLIC_KEY_B58);
   }
 
   @Test
@@ -86,6 +101,11 @@ public class PublicKeyTest {
   }
 
   @Test
+  public void keyTypeElGamalSecp256k1() {
+    assertThat(ELGAMAL_PUBLIC_KEY.keyType()).isEqualTo(KeyType.ELGAMAL_SECP256K1);
+  }
+
+  @Test
   void hexValue() {
     // Call this multiple times to ensure immutability...
     assertThat(ED_PUBLIC_KEY.base16Value()).isEqualTo(ED_PUBLIC_KEY_HEX);
@@ -94,6 +114,10 @@ public class PublicKeyTest {
     // Call this multiple times to ensure immutability...
     assertThat(EC_PUBLIC_KEY.base16Value()).isEqualTo(EC_PUBLIC_KEY_HEX);
     assertThat(EC_PUBLIC_KEY.base16Value()).isEqualTo(EC_PUBLIC_KEY_HEX);
+
+    // Call this multiple times to ensure immutability...
+    assertThat(ELGAMAL_PUBLIC_KEY.base16Value()).isEqualTo(ELGAMAL_PUBLIC_KEY_HEX);
+    assertThat(ELGAMAL_PUBLIC_KEY.base16Value()).isEqualTo(ELGAMAL_PUBLIC_KEY_HEX);
   }
 
   @Test
@@ -139,6 +163,10 @@ public class PublicKeyTest {
     assertThat(EC_PUBLIC_KEY).isEqualTo(EC_PUBLIC_KEY);
     assertThat(EC_PUBLIC_KEY).isNotEqualTo(ED_PUBLIC_KEY);
     assertThat(EC_PUBLIC_KEY).isNotEqualTo(new Object());
+
+    assertThat(ELGAMAL_PUBLIC_KEY).isEqualTo(ELGAMAL_PUBLIC_KEY);
+    assertThat(ELGAMAL_PUBLIC_KEY).isNotEqualTo(EC_PUBLIC_KEY);
+    assertThat(ELGAMAL_PUBLIC_KEY).isNotEqualTo(new Object());
   }
 
   @Test
@@ -154,15 +182,15 @@ public class PublicKeyTest {
   void testToString() {
     assertThat(ED_PUBLIC_KEY.toString()).isEqualTo(
       "PublicKey{value=UnsignedByteArray{" + "unsignedBytes=List(size=33)}, " +
+        "keyType=ED25519, " +
         "base58Value=aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B, " +
-        "base16Value=ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE, " +
-        "keyType=ED25519" +
+        "base16Value=ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE" +
         "}");
     assertThat(EC_PUBLIC_KEY.toString()).isEqualTo(
       "PublicKey{value=UnsignedByteArray{" + "unsignedBytes=List(size=33)}, " +
+        "keyType=SECP256K1, " +
         "base58Value=aB4ifx88a26RYRSSzeKW8HpbXfbpzQFRsX6dMNmMwEVHUTKzfWdk, " +
-        "base16Value=027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9, " +
-        "keyType=SECP256K1" +
+        "base16Value=027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9" +
         "}");
   }
 
@@ -183,10 +211,10 @@ public class PublicKeyTest {
 
   @Test
   void testStaticBuildersWithEmptyString() {
-    PublicKey fromBase16 = PublicKey.fromBase16EncodedPublicKey("");
+    PublicKey fromBase16 = PublicKey.fromBase16EncodedPublicKey("", KeyType.ED25519);
     assertThat(fromBase16).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
 
-    PublicKey fromBase58 = PublicKey.fromBase58EncodedPublicKey("");
+    PublicKey fromBase58 = PublicKey.fromBase58EncodedPublicKey("", KeyType.ED25519);
     assertThat(fromBase58).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
   }
 

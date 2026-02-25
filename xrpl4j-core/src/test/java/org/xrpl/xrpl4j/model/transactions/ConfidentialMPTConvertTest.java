@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 
@@ -16,7 +17,7 @@ class ConfidentialMPTConvertTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(15))
       .sequence(UnsignedInteger.valueOf(432))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED0C0B9B7D5F80868A701693D7C994385EB4DC661D9E7A2DD95E8199EDC5C211E7")
+        PublicKey.fromBase16EncodedPublicKey("ED0C0B9B7D5F80868A701693D7C994385EB4DC661D9E7A2DD95E8199EDC5C211E7", KeyType.ED25519)
       )
       .mpTokenIssuanceId(MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41"))
       .mptAmount(MpTokenNumericAmount.of(1000L))
@@ -55,7 +56,7 @@ class ConfidentialMPTConvertTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(15))
       .sequence(UnsignedInteger.valueOf(432))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED0C0B9B7D5F80868A701693D7C994385EB4DC661D9E7A2DD95E8199EDC5C211E7")
+        PublicKey.fromBase16EncodedPublicKey("ED0C0B9B7D5F80868A701693D7C994385EB4DC661D9E7A2DD95E8199EDC5C211E7", KeyType.ED25519)
       )
       .mpTokenIssuanceId(MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41"))
       .mptAmount(MpTokenNumericAmount.of(500L))

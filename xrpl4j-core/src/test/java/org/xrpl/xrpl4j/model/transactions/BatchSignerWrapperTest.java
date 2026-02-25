@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
@@ -44,12 +45,12 @@ class BatchSignerWrapperTest {
   private static final Address ACCOUNT1 = Address.of("rDpXrnLYA4n3AC2s9z9QxSbEUHrXt5xMVk");
 
   private static final PublicKey PUBLIC_KEY1 = PublicKey.fromBase16EncodedPublicKey(
-    "EDE57F52F5C23803AC0FBADBB92917EF21BA0874145D7126CDDE56A2938A39C15F"
+    "EDE57F52F5C23803AC0FBADBB92917EF21BA0874145D7126CDDE56A2938A39C15F", KeyType.ED25519
   );
   private static final Address SIGNER1_ADDRESS = Address.of("rs5zPPKr7pgkvu4xFBdum1FcKHJeSRL7JP");
 
   private static final PublicKey PUBLIC_KEY2 = PublicKey.fromBase16EncodedPublicKey(
-    "ED17036166A5354D564A86F5D1E43A08C350F6B0A817249158B6F8F23DA861A940"
+    "ED17036166A5354D564A86F5D1E43A08C350F6B0A817249158B6F8F23DA861A940", KeyType.ED25519
   );
   private static final Address SIGNER2_ADDRESS = Address.of("rUJBVHUDm6FXWseGj5oA6iv1enUzDGtMYo");
 

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
@@ -45,7 +46,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .sequence(UnsignedInteger.valueOf(12))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey( "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .networkId(NetworkId.of(1024))
       .build();
@@ -71,7 +72,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .sequence(UnsignedInteger.valueOf(12))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey( "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .flags(TransactionFlags.UNSET)
       .build();
@@ -97,7 +98,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .sequence(UnsignedInteger.valueOf(12))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey( "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
@@ -123,7 +124,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .sequence(UnsignedInteger.valueOf(12))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey( "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .networkId(NetworkId.of(1024))
       .putUnknownFields("Foo", "Bar")
@@ -152,7 +153,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .deliverMin(XrpCurrencyAmount.ofDrops(100))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .networkId(NetworkId.of(1024))
       .build();
@@ -180,7 +181,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .amount(XrpCurrencyAmount.ofDrops(100))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .build();
 
@@ -206,7 +207,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .amount(XrpCurrencyAmount.ofDrops(100))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .flags(TransactionFlags.UNSET)
       .build();
@@ -234,7 +235,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .amount(XrpCurrencyAmount.ofDrops(100))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
@@ -262,7 +263,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .deliverMin(XrpCurrencyAmount.ofDrops(100))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .networkId(NetworkId.of(1024))
       .putUnknownFields("Foo", "Bar")
@@ -295,7 +296,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .expiration(UnsignedInteger.valueOf(570113521))
       .invoiceId(Hash256.of("6F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .networkId(NetworkId.of(1024))
       .build();
@@ -326,7 +327,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .sendMax(XrpCurrencyAmount.ofDrops(100000000))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .build();
 
@@ -352,7 +353,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .sendMax(XrpCurrencyAmount.ofDrops(100000000))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .flags(TransactionFlags.UNSET)
       .build();
@@ -380,7 +381,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .sendMax(XrpCurrencyAmount.ofDrops(100000000))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
@@ -411,7 +412,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .expiration(UnsignedInteger.valueOf(570113521))
       .invoiceId(Hash256.of("6F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
       )
       .networkId(NetworkId.of(1024))
       .putUnknownFields("Foo", "Bar")

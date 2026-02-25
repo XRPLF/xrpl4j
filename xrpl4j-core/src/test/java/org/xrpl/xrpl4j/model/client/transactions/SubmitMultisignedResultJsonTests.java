@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -71,7 +72,7 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
                 Signer.builder()
                   .signingPublicKey(
                     PublicKey.fromBase16EncodedPublicKey(
-                      "02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF"
+                      "02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF", KeyType.SECP256K1
                     )
                   )
                   .transactionSignature(Signature.fromBase16(
@@ -84,7 +85,7 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
                 Signer.builder()
                   .signingPublicKey(
                     PublicKey.fromBase16EncodedPublicKey(
-                      "03398A4EDAE8EE009A5879113EAA5BA15C7BB0F612A87F4103E793AC919BD1E3C1"
+                      "03398A4EDAE8EE009A5879113EAA5BA15C7BB0F612A87F4103E793AC919BD1E3C1", KeyType.SECP256K1
                     )
                   )
                   .transactionSignature(Signature.fromBase16(

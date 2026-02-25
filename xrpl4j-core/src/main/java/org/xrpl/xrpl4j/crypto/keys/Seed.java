@@ -393,7 +393,7 @@ public interface Seed extends javax.security.auth.Destroyable {
 
         return KeyPair.builder()
           .privateKey(PrivateKey.fromNaturalBytes(UnsignedByteArray.of(privateKey.getEncoded()), KeyType.ED25519))
-          .publicKey(PublicKey.fromBase16EncodedPublicKey(prefixedPublicKey.hexValue()))
+          .publicKey(PublicKey.fromBase16EncodedPublicKey(prefixedPublicKey.hexValue(), KeyType.ED25519))
           .build();
       }
     }
@@ -462,7 +462,7 @@ public interface Seed extends javax.security.auth.Destroyable {
 
         return KeyPair.builder()
           .privateKey(PrivateKey.fromPrefixedBytes(Secp256k1.toUnsignedByteArray(privateKeyInt, 33)))
-          .publicKey(PublicKey.builder().value(publicKeyByteArray).build())
+          .publicKey(PublicKey.builder().value(publicKeyByteArray).keyType(KeyType.SECP256K1).build())
           .build();
       }
 
@@ -628,7 +628,7 @@ public interface Seed extends javax.security.auth.Destroyable {
 
         return KeyPair.builder()
           .privateKey(PrivateKey.fromNaturalBytes(entropyBytes, KeyType.ELGAMAL_SECP256K1))
-          .publicKey(PublicKey.builder().value(publicKeyBytes).build())
+          .publicKey(PublicKey.builder().value(publicKeyBytes).keyType(KeyType.ELGAMAL_SECP256K1).build())
           .build();
       }
     }

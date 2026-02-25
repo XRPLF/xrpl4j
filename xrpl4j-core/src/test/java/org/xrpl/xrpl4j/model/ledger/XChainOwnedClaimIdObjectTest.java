@@ -5,6 +5,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -41,7 +42,7 @@ class XChainOwnedClaimIdObjectTest extends AbstractJsonTest {
             .attestationSignerAccount(Address.of("rfsxNxZ6xB1nTPhTMwQajNnkCxWG8B714n"))
             .destination(Address.of("rBW1U7J9mEhEdk6dMHEFUjqQ7HW7WpaEMi"))
             .publicKey(
-              PublicKey.fromBase16EncodedPublicKey("025CA526EF20567A50FEC504589F949E0E3401C13EF76DD5FD1CC2850FA485BD7B")
+              PublicKey.fromBase16EncodedPublicKey("025CA526EF20567A50FEC504589F949E0E3401C13EF76DD5FD1CC2850FA485BD7B", KeyType.SECP256K1)
             )
             .wasLockingChainSend(true)
             .build()
@@ -58,7 +59,7 @@ class XChainOwnedClaimIdObjectTest extends AbstractJsonTest {
             .attestationRewardAccount(Address.of("rUUL1tP523M8KimERqVS7sxb1tLLmpndyv"))
             .attestationSignerAccount(Address.of("rEg5sHxZVTNwRL3BAdMwJatkmWDzHMmzDF"))
             .publicKey(
-              PublicKey.fromBase16EncodedPublicKey("03D40434A6843638681E2F215310EBC4131AFB12EA85985DA073183B732525F7C9")
+              PublicKey.fromBase16EncodedPublicKey("03D40434A6843638681E2F215310EBC4131AFB12EA85985DA073183B732525F7C9", KeyType.SECP256K1)
             )
             .wasLockingChainSend(false)
             .build()

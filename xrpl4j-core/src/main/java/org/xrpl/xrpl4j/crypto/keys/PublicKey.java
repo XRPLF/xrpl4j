@@ -60,7 +60,7 @@ public interface PublicKey {
    * {@link PublicKey} that can be used as the {@link Transaction#signingPublicKey()} value for multi-signed
    * transactions.
    */
-  PublicKey MULTI_SIGN_PUBLIC_KEY = PublicKey.builder().value(UnsignedByteArray.empty()).build();
+  PublicKey MULTI_SIGN_PUBLIC_KEY = PublicKey.builder().value(UnsignedByteArray.empty()).keyType(KeyType.ED25519).build();
 
   /**
    * Instantiates a new builder.
@@ -75,10 +75,11 @@ public interface PublicKey {
    * Construct a {@link PublicKey} from a base58-encoded {@link String}.
    *
    * @param base58EncodedPublicKey A base58-encoded {@link String}.
+   * @param keyType                The {@link KeyType} of the public key.
    *
    * @return A {@link PrivateKey}.
    */
-  static PublicKey fromBase58EncodedPublicKey(final String base58EncodedPublicKey) {
+  static PublicKey fromBase58EncodedPublicKey(final String base58EncodedPublicKey, KeyType keyType) {
     Objects.requireNonNull(base58EncodedPublicKey);
 
     if (base58EncodedPublicKey.isEmpty()) {
@@ -87,6 +88,7 @@ public interface PublicKey {
 
     return PublicKey.builder()
       .value(PublicKeyCodec.getInstance().decodeAccountPublicKey(base58EncodedPublicKey))
+      .keyType(keyType)
       .build();
   }
 
@@ -94,10 +96,11 @@ public interface PublicKey {
    * Construct a {@link PrivateKey} from a base16-encoded (HEX) {@link String}.
    *
    * @param base16EncodedPublicKey A base16-encoded (HEX) {@link String}.
+   * @param keyType                The {@link KeyType} of the public key.
    *
    * @return A {@link PrivateKey}.
    */
-  static PublicKey fromBase16EncodedPublicKey(final String base16EncodedPublicKey) {
+  static PublicKey fromBase16EncodedPublicKey(final String base16EncodedPublicKey, KeyType keyType) {
     Objects.requireNonNull(base16EncodedPublicKey);
 
     if (base16EncodedPublicKey.isEmpty()) {
@@ -106,6 +109,7 @@ public interface PublicKey {
 
     return PublicKey.builder()
       .value(UnsignedByteArray.of(BaseEncoding.base16().decode(base16EncodedPublicKey.toUpperCase())))
+      .keyType(keyType)
       .build();
   }
 
@@ -115,6 +119,13 @@ public interface PublicKey {
    * @return An instance of {@link UnsignedByteArray}.
    */
   UnsignedByteArray value();
+
+  /**
+   * The type of this key.
+   *
+   * @return A {@link KeyType}.
+   */
+  KeyType keyType();
 
   /**
    * The public-key, as a base-58 encoded {@link String}.
@@ -139,16 +150,6 @@ public interface PublicKey {
   @Derived
   default String base16Value() {
     return this.value().hexValue();
-  }
-
-  /**
-   * The type of this key.
-   *
-   * @return A {@link KeyType}.
-   */
-  @Derived
-  default KeyType keyType() {
-    return this.base16Value().startsWith("ED") ? KeyType.ED25519 : KeyType.SECP256K1;
   }
 
   /**

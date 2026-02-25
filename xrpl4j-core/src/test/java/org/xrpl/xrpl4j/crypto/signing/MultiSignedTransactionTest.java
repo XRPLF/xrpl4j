@@ -31,6 +31,7 @@ import com.jayway.jsonassert.JsonAssert;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -59,13 +60,13 @@ class MultiSignedTransactionTest {
       .transactionSignature(Signature.builder()
         .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
         .build())
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "01"))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "01", KeyType.SECP256K1))
       .build();
     signer2 = Signer.builder()
       .transactionSignature(Signature.builder()
         .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
         .build())
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "00"))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "00", KeyType.SECP256K1))
       .build();
     multiSignedTransaction = MultiSignedTransaction.<Payment>builder()
       .unsignedTransaction(Payment.builder()

@@ -25,7 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.keys.Entropy;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Arrays;
 
@@ -35,8 +36,17 @@ import java.util.Arrays;
 class EntropyTest {
 
   @Test
-  void newInstance() {
+  void newInstanceDefault() {
     assertThat(Entropy.newInstance()).isNotNull();
+    assertThat(Entropy.newInstance().value().length()).isEqualTo(16);
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {16, 32})
+  void newInstanceWithSize(int size) {
+    Entropy entropy = Entropy.newInstance(size);
+    assertThat(entropy).isNotNull();
+    assertThat(entropy.value().length()).isEqualTo(size);
   }
 
   @Test
@@ -49,9 +59,10 @@ class EntropyTest {
     });
   }
 
-  @Test
-  void value() {
-    final byte[] entropyBytes = new byte[16];
+  @ParameterizedTest
+  @ValueSource(ints = {16, 32})
+  void value(int size) {
+    final byte[] entropyBytes = new byte[size];
     for (int i = 0; i < entropyBytes.length; i++) {
       entropyBytes[i] = 1;
     }

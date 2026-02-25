@@ -25,6 +25,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -60,6 +61,17 @@ public class SeedCodec {
     );
   }
 
+  public Decoded decodeElGamalSeed(final String base58EncodedSeed) throws EncodingFormatException {
+    Objects.requireNonNull(base58EncodedSeed);
+
+    return AddressBase58.decode(
+      base58EncodedSeed,
+      Lists.newArrayList(KeyType.ELGAMAL_SECP256K1),
+      Lists.newArrayList(Version.ELGAMAL_SEED),
+      Optional.of(UnsignedInteger.valueOf(32))
+    );
+  }
+
   /**
    * Encodes a byte array to a Base58Check {@link String} using the given {@link KeyType}.
    *
@@ -72,11 +84,28 @@ public class SeedCodec {
     Objects.requireNonNull(entropy);
     Objects.requireNonNull(type);
 
-    if (entropy.getUnsignedBytes().size() != 16) {
+    List<KeyType> signingKeyTypes = Lists.newArrayList(KeyType.ED25519, KeyType.SECP256K1);
+    if (signingKeyTypes.contains(type) && entropy.getUnsignedBytes().size() != 16) {
       throw new EncodeException("entropy must have length 16.");
     }
 
-    Version version = type.equals(KeyType.ED25519) ? Version.ED25519_SEED : Version.FAMILY_SEED;
-    return AddressBase58.encode(entropy, Lists.newArrayList(version), UnsignedInteger.valueOf(16));
+    if (type.equals(KeyType.ELGAMAL_SECP256K1) && entropy.getUnsignedBytes().size() != 32) {
+      throw new EncodeException("entropy must have length 32.");
+    }
+
+    switch (type) {
+      case ED25519: {
+        return AddressBase58.encode(entropy, Lists.newArrayList(Version.ED25519_SEED), UnsignedInteger.valueOf(16));
+      }
+      case SECP256K1: {
+        return AddressBase58.encode(entropy, Lists.newArrayList(Version.FAMILY_SEED), UnsignedInteger.valueOf(16));
+      }
+      case ELGAMAL_SECP256K1: {
+        return AddressBase58.encode(entropy, Lists.newArrayList(Version.ELGAMAL_SEED), UnsignedInteger.valueOf(32));
+      }
+      default: {
+        throw new IllegalArgumentException("Unsupported KeyType: " + type);
+      }
+    }
   }
 }

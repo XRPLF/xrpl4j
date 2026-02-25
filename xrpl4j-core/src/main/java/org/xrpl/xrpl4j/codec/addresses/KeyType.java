@@ -23,6 +23,8 @@ package org.xrpl.xrpl4j.codec.addresses;
 public enum KeyType {
 
   ED25519,
-  SECP256K1
 
+  SECP256K1,
+
+  ELGAMAL_SECP256K1
 }

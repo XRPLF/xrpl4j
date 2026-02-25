@@ -23,9 +23,11 @@ package org.xrpl.xrpl4j.codec.addresses;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
+import org.xrpl.xrpl4j.crypto.keys.Entropy;
 
 /**
  * Unit tests for {@link SeedCodec}.
@@ -122,6 +124,16 @@ class SeedCodecTest extends AbstractCodecTest {
     assertThat(encoded).isEqualTo("sEdV19BLfeQeKdEXyYA4NhjPJe6XBfG");
   }
 
+  // encodeDecodeElGamalSeed
+  @Test
+  public void encodeDecodeElGamalSeed() {
+    Entropy entropy = Entropy.of(BaseEncoding.base16().decode("4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4"));
+    String encoded = seedCodec.encodeSeed(unsignedByteArrayFromHex(
+      entropy.value().hexValue()), KeyType.ELGAMAL_SECP256K1);
+    String decoded = seedCodec.decodeElGamalSeed(encoded).bytes().hexValue();
+    assertThat(decoded).isEqualTo(entropy.value().hexValue());
+  }
+
   @Test
   public void encodeSeedWithFewerThanSixteenBytes() {
     assertThrows(
@@ -138,6 +150,27 @@ class SeedCodecTest extends AbstractCodecTest {
       () -> seedCodec
         .encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFF"), KeyType.SECP256K1),
       "entropy must have length 16."
+    );
+  }
+
+  @Test
+  public void encodeElGamalSeedWithLessThanThirtyTwoBytes() {
+    assertThrows(
+      EncodeException.class,
+      () -> seedCodec
+        .encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFF"), KeyType.ELGAMAL_SECP256K1),
+      "entropy must have length 32."
+    );
+  }
+
+  @Test
+  public void encodeElGamalSeedWithMoreThanThirtyTwoBytes() {
+    assertThrows(
+      EncodeException.class,
+      () -> seedCodec
+        .encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFFCF2DE378FBDD7E2EE87D486DFB5A7BFFFFFF")
+          , KeyType.ELGAMAL_SECP256K1),
+      "entropy must have length 32."
     );
   }
 }

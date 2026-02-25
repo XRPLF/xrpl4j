@@ -82,13 +82,13 @@ public class RippledContainer {
    * No-args constructor.
    */
   public RippledContainer() {
-    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:latest")) {
+    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:develop")) {
       this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
-          cmd.withEntrypoint("/opt/ripple/bin/rippled"))
-        .withCommand("-a --start --conf /config/rippled.cfg")
+          cmd.withEntrypoint("/opt/xrpld/bin/xrpld"))
+        .withCommand("-a --start --conf /config/xrpld.cfg")
         .withExposedPorts(5005)
         .withImagePullPolicy(PullPolicy.alwaysPull())
-        .withClasspathResourceMapping("rippled",
+        .withClasspathResourceMapping("xrpld",
           "/config",
           BindMode.READ_ONLY)
         .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));

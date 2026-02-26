@@ -93,17 +93,6 @@ public final class BcKeyUtils {
   }
 
   /**
-   * Convert from a {@link ECPrivateKeyParameters} to a {@link PrivateKey} with SECP256K1 key type.
-   *
-   * @param ecPrivateKeyParameters A {@link ECPrivateKeyParameters}.
-   *
-   * @return A {@link PrivateKey}.
-   */
-  public static PrivateKey toPrivateKey(final ECPrivateKeyParameters ecPrivateKeyParameters) {
-    return toPrivateKey(ecPrivateKeyParameters, KeyType.SECP256K1);
-  }
-
-  /**
    * Convert from a {@link ECPrivateKeyParameters} to a {@link PrivateKey}.
    *
    * @param ecPrivateKeyParameters A {@link ECPrivateKeyParameters}.

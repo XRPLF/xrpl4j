@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.crypto.mpt.context;
  * =========================LICENSE_END==================================
  */
 
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PedersenLinkProofGenerator;
+
 /**
  * Common interface for context hashes used in ElGamal-Pedersen linkage proofs.
  *
@@ -30,7 +32,7 @@ package org.xrpl.xrpl4j.crypto.mpt.context;
  *   <li>{@link ConfidentialMPTConvertBackContext} - for ConfidentialMPTConvertBack transactions</li>
  * </ul>
  *
- * @see org.xrpl.xrpl4j.crypto.mpt.bulletproofs.ElGamalPedersenLinkProofGenerator
+ * @see PedersenLinkProofGenerator
  */
 public interface LinkProofContext {
 

@@ -4,6 +4,8 @@ import com.google.common.primitives.UnsignedLong;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.math.ec.ECPoint;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -237,6 +239,22 @@ public final class Secp256k1Operations {
   }
 
   /**
+   * Reduces a 32-byte hash to a valid scalar (mod curve order).
+   */
+  public static byte[] reduceToScalar(byte[] hash) {
+    BigInteger hashInt = new BigInteger(1, hash);
+    BigInteger reduced = hashInt.mod(Secp256k1Operations.getCurveOrder());
+    return Secp256k1Operations.toBytes32(reduced);
+  }
+
+  public static int appendPoint(byte[] buffer, int offset, ECPoint point) {
+    byte[] pointBytes = Secp256k1Operations.serializeCompressed(point);
+    System.arraycopy(pointBytes, 0, buffer, offset, 33);
+    return offset + 33;
+  }
+
+
+  /**
    * Returns the scalar representing (n - 1), which is equivalent to -1 mod n.
    *
    * @return A 32-byte array representing -1 mod n.
@@ -339,5 +357,43 @@ public final class Secp256k1Operations {
     byte[] result = new byte[64];
     System.arraycopy(uncompressedWithPrefix, 1, result, 0, 64);
     return result;
+  }
+
+  // ============================================================================
+  // PublicKey / PrivateKey Conversion Utilities
+  // ============================================================================
+
+  /**
+   * Converts a {@link PublicKey} to an {@link ECPoint}.
+   *
+   * <p>This method extracts the compressed public key bytes and deserializes them
+   * to an EC point on the secp256k1 curve.</p>
+   *
+   * @param publicKey The public key to convert.
+   *
+   * @return The corresponding EC point.
+   *
+   * @throws NullPointerException if publicKey is null.
+   */
+  public static ECPoint toEcPoint(PublicKey publicKey) {
+    Objects.requireNonNull(publicKey, "publicKey must not be null");
+    return deserialize(publicKey.value().toByteArray());
+  }
+
+  /**
+   * Converts a {@link PrivateKey} to a {@link BigInteger} scalar.
+   *
+   * <p>This method extracts the natural (unprefixed) private key bytes and converts
+   * them to a BigInteger for use in elliptic curve operations.</p>
+   *
+   * @param privateKey The private key to convert.
+   *
+   * @return The private key as a BigInteger scalar.
+   *
+   * @throws NullPointerException if privateKey is null.
+   */
+  public static BigInteger toScalar(PrivateKey privateKey) {
+    Objects.requireNonNull(privateKey, "privateKey must not be null");
+    return new BigInteger(1, privateKey.naturalBytes().toByteArray());
   }
 }

@@ -7,7 +7,8 @@ import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaPedersenCommitmentGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.commitments.bc.BcPedersenCommitmentGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.commitments.PedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.PedersenCommitment;
 
 /**
@@ -23,7 +24,7 @@ class PedersenCommitmentGeneratorTest {
 
   @BeforeEach
   void setUp() {
-    generator = new JavaPedersenCommitmentGenerator();
+    generator = new BcPedersenCommitmentGenerator();
   }
 
   /**

@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.crypto.mpt.bulletproofs;
 
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
-import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.SecretKeyProof;
@@ -31,21 +30,21 @@ import org.xrpl.xrpl4j.crypto.mpt.wrapper.SecretKeyProof;
  * @see ConfidentialMPTConvertContext
  * @see SecretKeyProof
  */
-public interface SecretKeyProofGenerator<PK extends PrivateKeyable> {
+public interface SecretKeyProofVerifier {
 
   /**
-   * Generates a Schnorr Proof of Knowledge for the given private key.
+   * Verifies a Schnorr Proof of Knowledge.
    *
-   * <p>The public key is derived from the private key as P = sk * G.</p>
+   * <p>Verification equation: s * G == T + e * P</p>
    *
-   * @param privateKeyable The private key (scalar).
-   * @param context    The context for domain separation (e.g., from {@link ConfidentialMPTConvertContext#generate}).
-   *                   Can be null for no context.
+   * @param proof     The proof to verify.
+   * @param publicKey The ElGamal public key.
+   * @param context   The context for domain separation. Can be null for no context.
    *
-   * @return A {@link SecretKeyProof} containing the 65-byte proof.
+   * @return {@code true} if the proof is valid, {@code false} otherwise.
    *
-   * @throws NullPointerException if privateKey is null.
+   * @throws NullPointerException if proof or publicKey is null.
    */
-  SecretKeyProof generateProof(PK privateKeyable, ConfidentialMPTConvertContext context);
+  boolean verifyProof(SecretKeyProof proof, PublicKey publicKey, ConfidentialMPTConvertContext context);
 }
 

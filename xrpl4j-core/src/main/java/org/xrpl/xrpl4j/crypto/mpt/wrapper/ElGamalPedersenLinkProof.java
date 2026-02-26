@@ -22,7 +22,7 @@ package org.xrpl.xrpl4j.crypto.mpt.wrapper;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.ElGamalPedersenLinkProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PedersenLinkProofGenerator;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -45,7 +45,7 @@ import java.util.Objects;
  *
  * <p>Total size: 195 bytes.</p>
  *
- * @see ElGamalPedersenLinkProofGenerator
+ * @see PedersenLinkProofGenerator
  */
 public final class ElGamalPedersenLinkProof {
 

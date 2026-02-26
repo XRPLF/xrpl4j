@@ -26,6 +26,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PlaintextEqualityProofGenerator;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
@@ -49,7 +50,7 @@ import java.util.Objects;
  *   <li>holder (20 bytes) - holder account from which tokens are clawed back</li>
  * </ul>
  *
- * <p>This context is used in {@link org.xrpl.xrpl4j.crypto.mpt.bulletproofs.EqualityPlaintextProofGenerator}
+ * <p>This context is used in {@link PlaintextEqualityProofGenerator}
  * to bind the proof to a specific clawback transaction.</p>
  */
 public final class ConfidentialMPTClawbackContext {

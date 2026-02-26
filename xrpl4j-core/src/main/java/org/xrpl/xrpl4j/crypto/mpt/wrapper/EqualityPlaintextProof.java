@@ -22,7 +22,7 @@ package org.xrpl.xrpl4j.crypto.mpt.wrapper;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.EqualityPlaintextProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PlaintextEqualityProofGenerator;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -42,7 +42,7 @@ import java.util.Objects;
  *
  * <p>Total size: 98 bytes.</p>
  *
- * @see EqualityPlaintextProofGenerator
+ * @see PlaintextEqualityProofGenerator
  */
 public final class EqualityPlaintextProof {
 

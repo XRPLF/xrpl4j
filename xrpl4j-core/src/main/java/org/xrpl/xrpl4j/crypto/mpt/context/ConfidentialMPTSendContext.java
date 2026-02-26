@@ -26,6 +26,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.HashingUtils;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SamePlaintextProofGenerator;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
@@ -47,7 +48,7 @@ import java.util.Objects;
  *   <li>version (4 bytes) - confidential balance version</li>
  * </ul>
  *
- * <p>This context is used in {@link org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SamePlaintextMultiProofGenerator}
+ * <p>This context is used in {@link SamePlaintextProofGenerator}
  * to bind the proof to a specific transaction.</p>
  */
 public final class ConfidentialMPTSendContext implements LinkProofContext {

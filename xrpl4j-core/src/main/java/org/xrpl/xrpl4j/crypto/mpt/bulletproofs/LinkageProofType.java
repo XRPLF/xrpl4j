@@ -27,7 +27,7 @@ package org.xrpl.xrpl4j.crypto.mpt.bulletproofs;
  * encode the same plaintext amount. The proof parameters are ordered differently
  * depending on whether we're proving linkage for an amount commitment or a balance commitment.</p>
  *
- * @see ElGamalPedersenLinkProofGenerator
+ * @see PedersenLinkProofGenerator
  */
 public enum LinkageProofType {
 

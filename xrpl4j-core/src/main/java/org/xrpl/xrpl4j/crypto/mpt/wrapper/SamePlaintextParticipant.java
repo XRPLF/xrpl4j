@@ -20,9 +20,9 @@ package org.xrpl.xrpl4j.crypto.mpt.wrapper;
  * =========================LICENSE_END==================================
  */
 
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
-import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPublicKey;
 
 import java.util.Objects;
 
@@ -42,12 +42,12 @@ import java.util.Objects;
 public final class SamePlaintextParticipant {
 
   private final ElGamalCiphertext ciphertext;
-  private final ElGamalPublicKey publicKey;
+  private final PublicKey publicKey;
   private final BlindingFactor blindingFactor;
 
   private SamePlaintextParticipant(
     final ElGamalCiphertext ciphertext,
-    final ElGamalPublicKey publicKey,
+    final PublicKey publicKey,
     final BlindingFactor blindingFactor
   ) {
     this.ciphertext = ciphertext;
@@ -66,7 +66,7 @@ public final class SamePlaintextParticipant {
    */
   public static SamePlaintextParticipant forProofGeneration(
     final ElGamalCiphertext ciphertext,
-    final ElGamalPublicKey publicKey,
+    final PublicKey publicKey,
     final BlindingFactor blindingFactor
   ) {
     Objects.requireNonNull(ciphertext, "ciphertext must not be null");
@@ -85,7 +85,7 @@ public final class SamePlaintextParticipant {
    */
   public static SamePlaintextParticipant forVerification(
     final ElGamalCiphertext ciphertext,
-    final ElGamalPublicKey publicKey
+    final PublicKey publicKey
   ) {
     Objects.requireNonNull(ciphertext, "ciphertext must not be null");
     Objects.requireNonNull(publicKey, "publicKey must not be null");
@@ -106,7 +106,7 @@ public final class SamePlaintextParticipant {
    *
    * @return The public key.
    */
-  public ElGamalPublicKey publicKey() {
+  public PublicKey publicKey() {
     return publicKey;
   }
 

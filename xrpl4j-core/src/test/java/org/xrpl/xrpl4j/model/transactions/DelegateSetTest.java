@@ -40,12 +40,12 @@ public class DelegateSetTest {
   @Test
   public void testDelegateSetWithAuthorize() {
     Address authorize = Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de");
-    List<PermissionWrapper> permissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("Payment").build())
+    List<AccountPermissionWrapper> permissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("Payment").build())
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("TrustSet").build())
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("TrustSet").build())
         .build()
     );
 
@@ -85,9 +85,9 @@ public class DelegateSetTest {
   @Test
   public void testDelegateSetValidationAuthorizeEqualsAccount() {
     Address sameAddress = Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8");
-    List<PermissionWrapper> permissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("Payment").build())
+    List<AccountPermissionWrapper> permissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("Payment").build())
         .build()
     );
 
@@ -121,9 +121,9 @@ public class DelegateSetTest {
       TransactionType.PAYMENT_CHANNEL_CREATE
     };
 
-    List<PermissionWrapper> tooManyPermissions = Arrays.stream(validTypes)
-      .map(txType -> PermissionWrapper.builder()
-        .permission(Permission.of(txType))
+    List<AccountPermissionWrapper> tooManyPermissions = Arrays.stream(validTypes)
+      .map(txType -> AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(txType))
         .build())
       .collect(Collectors.toList());
 
@@ -142,12 +142,12 @@ public class DelegateSetTest {
 
   @Test
   public void testDelegateSetValidationDuplicatePermissions() {
-    List<PermissionWrapper> duplicatePermissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("Payment").build())
+    List<AccountPermissionWrapper> duplicatePermissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("Payment").build())
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("Payment").build())
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("Payment").build())
         .build()
     );
 
@@ -166,16 +166,11 @@ public class DelegateSetTest {
 
   @Test
   public void testDelegateSetValidationNonDelegatableTransactions() {
-    // Test each non-delegatable transaction type
-    String[] nonDelegatableTypes = {
-      "AccountSet", "SetRegularKey", "SignerListSet", "DelegateSet",
-      "AccountDelete", "Batch", "EnableAmendment", "SetFee", "UNLModify"
-    };
-
-    for (String txType : nonDelegatableTypes) {
-      List<PermissionWrapper> permissions = Arrays.asList(
-        PermissionWrapper.builder()
-          .permission(Permission.builder().permissionValue(txType).build())
+    // Test each non-delegatable transaction type by reusing DelegateSet.NON_DELEGABLE_TRANSACTIONS
+    for (String txType : DelegateSet.NON_DELEGABLE_TRANSACTIONS) {
+      List<AccountPermissionWrapper> permissions = Arrays.asList(
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.builder().permissionValue(txType).build())
           .build()
       );
 
@@ -210,9 +205,9 @@ public class DelegateSetTest {
       TransactionType.ESCROW_CANCEL
     };
 
-    List<PermissionWrapper> maxPermissions = Arrays.stream(validTypes)
-      .map(txType -> PermissionWrapper.builder()
-        .permission(Permission.of(txType))
+    List<AccountPermissionWrapper> maxPermissions = Arrays.stream(validTypes)
+      .map(txType -> AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(txType))
         .build())
       .collect(Collectors.toList());
 
@@ -230,18 +225,18 @@ public class DelegateSetTest {
   @Test
   public void testDelegateSetWithDelegatableTransactions() {
     // Test with valid delegatable transaction types
-    List<PermissionWrapper> permissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("Payment").build())
+    List<AccountPermissionWrapper> permissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("Payment").build())
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("TrustSet").build())
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("TrustSet").build())
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("OfferCreate").build())
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("OfferCreate").build())
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("OfferCancel").build())
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("OfferCancel").build())
         .build()
     );
 
@@ -262,16 +257,16 @@ public class DelegateSetTest {
 
   @Test
   public void testDelegateSetWithTransactionTypeEnum() {
-    // Test using Permission.of(TransactionType) factory method
-    List<PermissionWrapper> permissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.of(TransactionType.PAYMENT))
+    // Test using AccountPermission.of(TransactionType) factory method
+    List<AccountPermissionWrapper> permissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(TransactionType.PAYMENT))
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.of(TransactionType.TRUST_SET))
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(TransactionType.TRUST_SET))
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.of(TransactionType.OFFER_CREATE))
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(TransactionType.OFFER_CREATE))
         .build()
     );
 
@@ -291,16 +286,16 @@ public class DelegateSetTest {
 
   @Test
   public void testDelegateSetWithGranularPermissionEnum() {
-    // Test using Permission.of(GranularPermission) factory method
-    List<PermissionWrapper> permissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.of(GranularPermission.TRUSTLINE_AUTHORIZE))
+    // Test using AccountPermission.of(GranularPermission) factory method
+    List<AccountPermissionWrapper> permissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(GranularPermission.TRUSTLINE_AUTHORIZE))
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.of(GranularPermission.TRUSTLINE_FREEZE))
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(GranularPermission.TRUSTLINE_FREEZE))
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.of(GranularPermission.PAYMENT_MINT))
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(GranularPermission.PAYMENT_MINT))
         .build()
     );
 
@@ -321,15 +316,15 @@ public class DelegateSetTest {
   @Test
   public void testDelegateSetWithMixedPermissions() {
     // Test with both TransactionType and GranularPermission
-    List<PermissionWrapper> permissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.of(TransactionType.PAYMENT))
+    List<AccountPermissionWrapper> permissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(TransactionType.PAYMENT))
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.of(GranularPermission.TRUSTLINE_AUTHORIZE))
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(GranularPermission.TRUSTLINE_AUTHORIZE))
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.of(TransactionType.ESCROW_CREATE))
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(TransactionType.ESCROW_CREATE))
         .build()
     );
 
@@ -350,9 +345,9 @@ public class DelegateSetTest {
   @Test
   public void testDelegateSetWithInvalidPermissionValue() {
     // Test with an invalid permission value that is neither TransactionType nor GranularPermission
-    List<PermissionWrapper> permissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("InvalidPermission").build())
+    List<AccountPermissionWrapper> permissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("InvalidPermission").build())
         .build()
     );
 
@@ -372,45 +367,21 @@ public class DelegateSetTest {
 
   @Test
   public void testAllDelegatableTransactionTypes() {
-    // Test all delegatable transaction types (non-pseudo, non-restricted)
-    TransactionType[] delegatableTypes = {
-      TransactionType.CHECK_CANCEL,
-      TransactionType.CHECK_CASH,
-      TransactionType.CHECK_CREATE,
-      TransactionType.CREDENTIAL_ACCEPT,
-      TransactionType.CREDENTIAL_CREATE,
-      TransactionType.CREDENTIAL_DELETE,
-      TransactionType.DEPOSIT_PRE_AUTH,
-      TransactionType.ESCROW_CANCEL,
-      TransactionType.ESCROW_CREATE,
-      TransactionType.ESCROW_FINISH,
-      TransactionType.NFTOKEN_MINT,
-      TransactionType.NFTOKEN_BURN,
-      TransactionType.NFTOKEN_ACCEPT_OFFER,
-      TransactionType.NFTOKEN_CANCEL_OFFER,
-      TransactionType.NFTOKEN_CREATE_OFFER,
-      TransactionType.OFFER_CANCEL,
-      TransactionType.OFFER_CREATE,
-      TransactionType.PAYMENT,
-      TransactionType.PAYMENT_CHANNEL_CLAIM,
-      TransactionType.PAYMENT_CHANNEL_CREATE,
-      TransactionType.PAYMENT_CHANNEL_FUND,
-      TransactionType.TRUST_SET,
-      TransactionType.TICKET_CREATE,
-      TransactionType.CLAWBACK,
-      TransactionType.AMM_BID,
-      TransactionType.AMM_CREATE,
-      TransactionType.AMM_DEPOSIT,
-      TransactionType.AMM_VOTE,
-      TransactionType.AMM_WITHDRAW,
-      TransactionType.AMM_DELETE,
-      TransactionType.AMM_CLAWBACK
-    };
+    // Automatically derive delegatable transaction types by removing non-delegatable ones
+    // from all TransactionType values. This ensures that when new transaction types are added
+    // to the enum, they are automatically tested.
+    List<TransactionType> delegatableTypes = Arrays.stream(TransactionType.values())
+      .filter(txType -> !DelegateSet.NON_DELEGABLE_TRANSACTIONS.contains(txType.value()))
+      .filter(txType -> txType != TransactionType.UNKNOWN) // Exclude UNKNOWN
+      .collect(Collectors.toList());
+
+    // Verify we have a reasonable number of delegatable types (sanity check)
+    assertThat(delegatableTypes.size()).isGreaterThan(20);
 
     for (TransactionType txType : delegatableTypes) {
-      List<PermissionWrapper> permissions = Arrays.asList(
-        PermissionWrapper.builder()
-          .permission(Permission.of(txType))
+      List<AccountPermissionWrapper> permissions = Arrays.asList(
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(txType))
           .build()
       );
 
@@ -429,23 +400,19 @@ public class DelegateSetTest {
 
   @Test
   public void testAllNonDelegatableTransactionTypesWithEnum() {
-    // Test all non-delegatable transaction types using TransactionType enum
-    TransactionType[] nonDelegatableTypes = {
-      TransactionType.ACCOUNT_SET,
-      TransactionType.SET_REGULAR_KEY,
-      TransactionType.SIGNER_LIST_SET,
-      TransactionType.DELEGATE_SET,
-      TransactionType.ACCOUNT_DELETE,
-      TransactionType.BATCH,
-      TransactionType.ENABLE_AMENDMENT,
-      TransactionType.SET_FEE,
-      TransactionType.UNL_MODIFY
-    };
+    // Automatically derive non-delegatable transaction types from DelegateSet.NON_DELEGABLE_TRANSACTIONS
+    // This ensures that when new non-delegatable types are added, they are automatically tested
+    List<TransactionType> nonDelegatableTypes = Arrays.stream(TransactionType.values())
+      .filter(txType -> DelegateSet.NON_DELEGABLE_TRANSACTIONS.contains(txType.value()))
+      .collect(Collectors.toList());
+
+    // Verify we have the expected number of non-delegatable types (sanity check)
+    assertThat(nonDelegatableTypes.size()).isEqualTo(DelegateSet.NON_DELEGABLE_TRANSACTIONS.size());
 
     for (TransactionType txType : nonDelegatableTypes) {
-      List<PermissionWrapper> permissions = Arrays.asList(
-        PermissionWrapper.builder()
-          .permission(Permission.of(txType))
+      List<AccountPermissionWrapper> permissions = Arrays.asList(
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(txType))
           .build()
       );
 
@@ -466,26 +433,17 @@ public class DelegateSetTest {
 
   @Test
   public void testAllGranularPermissions() {
-    // Test all granular permission types
-    GranularPermission[] allGranularPermissions = {
-      GranularPermission.TRUSTLINE_AUTHORIZE,
-      GranularPermission.TRUSTLINE_FREEZE,
-      GranularPermission.TRUSTLINE_UNFREEZE,
-      GranularPermission.ACCOUNT_DOMAIN_SET,
-      GranularPermission.ACCOUNT_EMAIL_HASH_SET,
-      GranularPermission.ACCOUNT_MESSAGE_KEY_SET,
-      GranularPermission.ACCOUNT_TRANSFER_RATE_SET,
-      GranularPermission.ACCOUNT_TICK_SIZE_SET,
-      GranularPermission.PAYMENT_MINT,
-      GranularPermission.PAYMENT_BURN,
-      GranularPermission.MPTOKEN_ISSUANCE_LOCK,
-      GranularPermission.MPTOKEN_ISSUANCE_UNLOCK
-    };
+    // Test all granular permission types using GranularPermission.values()
+    // This ensures that when new granular permissions are added to the enum, they are automatically tested
+    GranularPermission[] allGranularPermissions = GranularPermission.values();
+
+    // Verify we have a reasonable number of granular permissions (sanity check)
+    assertThat(allGranularPermissions.length).isGreaterThan(10);
 
     for (GranularPermission granularPerm : allGranularPermissions) {
-      List<PermissionWrapper> permissions = Arrays.asList(
-        PermissionWrapper.builder()
-          .permission(Permission.of(granularPerm))
+      List<AccountPermissionWrapper> permissions = Arrays.asList(
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(granularPerm))
           .build()
       );
 

@@ -25,10 +25,10 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.transactions.AccountPermission;
+import org.xrpl.xrpl4j.model.transactions.AccountPermissionWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.Permission;
-import org.xrpl.xrpl4j.model.transactions.PermissionWrapper;
 
 import java.util.Arrays;
 
@@ -43,11 +43,11 @@ public class DelegateObjectJsonTest extends AbstractJsonTest {
       .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
       .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
       .permissions(Arrays.asList(
-        PermissionWrapper.builder()
-          .permission(Permission.builder().permissionValue("Payment").build())
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.builder().permissionValue("Payment").build())
           .build(),
-        PermissionWrapper.builder()
-          .permission(Permission.builder().permissionValue("TrustSet").build())
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.builder().permissionValue("TrustSet").build())
           .build()
       ))
       .ownerNode("0")
@@ -80,17 +80,17 @@ public class DelegateObjectJsonTest extends AbstractJsonTest {
       .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
       .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
       .permissions(Arrays.asList(
-        PermissionWrapper.builder()
-          .permission(Permission.builder().permissionValue("Payment").build())
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.builder().permissionValue("Payment").build())
           .build(),
-        PermissionWrapper.builder()
-          .permission(Permission.builder().permissionValue("TrustSet").build())
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.builder().permissionValue("TrustSet").build())
           .build(),
-        PermissionWrapper.builder()
-          .permission(Permission.builder().permissionValue("OfferCreate").build())
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.builder().permissionValue("OfferCreate").build())
           .build(),
-        PermissionWrapper.builder()
-          .permission(Permission.builder().permissionValue("OfferCancel").build())
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.builder().permissionValue("OfferCancel").build())
           .build()
       ))
       .ownerNode("0")

@@ -405,13 +405,15 @@ public enum TransactionType {
   /**
    * Gets an instance of {@link TransactionType} for the given string value.
    *
+   * <p>The comparison is case-insensitive to handle variations in transaction type formatting.</p>
+   *
    * @param value The {@link String} value corresponding to a {@link TransactionType}.
    *
    * @return The {@link TransactionType} with the corresponding value.
    */
   public static TransactionType forValue(String value) {
     for (TransactionType transactionType : TransactionType.values()) {
-      if (transactionType.value.equals(value)) {
+      if (transactionType.value.equalsIgnoreCase(value)) {
         return transactionType;
       }
     }

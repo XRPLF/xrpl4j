@@ -27,28 +27,29 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.transactions.AccountPermission;
+import org.xrpl.xrpl4j.model.transactions.AccountPermissionWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.DelegateSet;
-import org.xrpl.xrpl4j.model.transactions.Permission;
-import org.xrpl.xrpl4j.model.transactions.PermissionWrapper;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Arrays;
-import java.util.Collections;
 
+/**
+ * Unit tests for {@link DelegateSet} JSON serialization and deserialization.
+ */
 public class DelegateSetJsonTest extends AbstractJsonTest {
-
   @Test
   public void testDelegateSetJsonWithPermissions() throws JsonProcessingException, JSONException {
     DelegateSet delegateSet = DelegateSet.builder()
       .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
       .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
       .permissions(Arrays.asList(
-        PermissionWrapper.builder()
-          .permission(Permission.builder().permissionValue("Payment").build())
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.builder().permissionValue("Payment").build())
           .build(),
-        PermissionWrapper.builder()
-          .permission(Permission.builder().permissionValue("TrustSet").build())
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.builder().permissionValue("TrustSet").build())
           .build()
       ))
       .sequence(UnsignedInteger.valueOf(2))
@@ -80,8 +81,8 @@ public class DelegateSetJsonTest extends AbstractJsonTest {
       .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
       .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
       .permissions(Arrays.asList(
-        PermissionWrapper.builder()
-          .permission(Permission.builder().permissionValue("Payment").build())
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.builder().permissionValue("Payment").build())
           .build()
       ))
       .sequence(UnsignedInteger.valueOf(2))

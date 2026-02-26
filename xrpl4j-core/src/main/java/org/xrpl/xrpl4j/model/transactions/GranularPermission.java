@@ -103,13 +103,21 @@ public enum GranularPermission {
   private final String value;
   private final int numericValue;
 
-  GranularPermission(String value, int numericValue) {
-    this.value = value;
+  /**
+   * Constructs a {@code GranularPermission} instance with the specified value and numeric value.
+   *
+   * @param value        A string representing the name or identifier of the permission. This parameter cannot be null.
+   * @param numericValue An integer representing the numeric value associated with the permission.
+   */
+  GranularPermission(final String value, final int numericValue) {
+    this.value = Objects.requireNonNull(value);
     this.numericValue = numericValue;
   }
 
   /**
    * Gets an instance of {@link GranularPermission} for the given string value.
+   *
+   * <p>The comparison is case-insensitive to handle variations in permission value formatting.</p>
    *
    * @param value The {@link String} value corresponding to a {@link GranularPermission}.
    *
@@ -119,7 +127,7 @@ public enum GranularPermission {
   public static Optional<GranularPermission> forValue(final String value) {
     Objects.requireNonNull(value);
     for (GranularPermission permission : GranularPermission.values()) {
-      if (permission.value.equals(value)) {
+      if (permission.value.equalsIgnoreCase(value)) {
         return Optional.of(permission);
       }
     }

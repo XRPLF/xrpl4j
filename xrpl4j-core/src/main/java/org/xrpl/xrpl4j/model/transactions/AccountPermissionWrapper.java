@@ -27,34 +27,35 @@ import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 
 /**
- * Wrapper object for a {@link Permission}, so that the JSON representation of a list of {@link Permission}s is correct,
- * according to the XRPL binary serialization specification.
+ * Wrapper object for a {@link AccountPermission}, so that the JSON representation of a list of
+ * {@link AccountPermission}s is correct, according to the XRPL binary serialization specification.
  *
  * <p>This class will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
  * Its API is subject to change.</p>
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutablePermissionWrapper.class)
-@JsonDeserialize(as = ImmutablePermissionWrapper.class)
+@JsonSerialize(as = ImmutableAccountPermissionWrapper.class)
+@JsonDeserialize(as = ImmutableAccountPermissionWrapper.class)
 @Beta
-public interface PermissionWrapper {
+public interface AccountPermissionWrapper {
 
   /**
    * Construct a builder for this class.
    *
-   * @return An {@link ImmutablePermissionWrapper.Builder}.
+   * @return An {@link ImmutableAccountPermissionWrapper.Builder}.
    */
-  static ImmutablePermissionWrapper.Builder builder() {
-    return ImmutablePermissionWrapper.builder();
+  static ImmutableAccountPermissionWrapper.Builder builder() {
+    return ImmutableAccountPermissionWrapper.builder();
   }
 
   /**
    * A permission.
    *
-   * @return A {@link Permission}.
+   * @return A {@link AccountPermission}.
    */
   @JsonProperty("Permission")
-  Permission permission();
+  AccountPermission permission();
 
 }
+
 

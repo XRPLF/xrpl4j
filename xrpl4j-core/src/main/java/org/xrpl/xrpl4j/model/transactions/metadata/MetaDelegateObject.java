@@ -28,9 +28,9 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.transactions.AccountPermissionWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.PermissionWrapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -67,10 +67,10 @@ public interface MetaDelegateObject extends MetaLedgerObject {
   /**
    * The transaction permissions that the account has access to.
    *
-   * @return An {@link Optional} {@link List} of {@link PermissionWrapper}s.
+   * @return An {@link Optional} {@link List} of {@link AccountPermissionWrapper}s.
    */
   @JsonProperty("Permissions")
-  Optional<List<PermissionWrapper>> permissions();
+  Optional<List<AccountPermissionWrapper>> permissions();
 
   /**
    * A hint indicating which page of the sender's owner directory links to this object,

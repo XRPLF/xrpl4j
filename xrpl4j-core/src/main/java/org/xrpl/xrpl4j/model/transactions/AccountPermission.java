@@ -27,36 +27,36 @@ import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 
 /**
- * {@link Permission} inner object with PermissionValue details.
+ * {@link AccountPermission} inner object with PermissionValue details.
  *
  * <p>This class will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
  * Its API is subject to change.</p>
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutablePermission.class)
-@JsonDeserialize(as = ImmutablePermission.class)
+@JsonSerialize(as = ImmutableAccountPermission.class)
+@JsonDeserialize(as = ImmutableAccountPermission.class)
 @Beta
-public interface Permission {
+public interface AccountPermission {
 
   /**
    * Construct a builder for this class.
    *
-   * @return An {@link ImmutablePermission.Builder}.
+   * @return An {@link ImmutableAccountPermission.Builder}.
    */
-  static ImmutablePermission.Builder builder() {
-    return ImmutablePermission.builder();
+  static ImmutableAccountPermission.Builder builder() {
+    return ImmutableAccountPermission.builder();
   }
 
   /**
-   * Create a {@link Permission} from a {@link TransactionType}.
+   * Create a {@link AccountPermission} from a {@link TransactionType}.
    *
    * <p>The permission value is calculated as the transaction type code + 1.</p>
    *
    * @param transactionType The {@link TransactionType} to create a permission for.
    *
-   * @return A {@link Permission} with the permission value set to the transaction type code + 1.
+   * @return A {@link AccountPermission} with the permission value set to the transaction type code + 1.
    */
-  static Permission of(TransactionType transactionType) {
+  static AccountPermission of(TransactionType transactionType) {
     // Transaction type permissions are the transaction type code + 1
     // We need to get the numeric code from definitions.json
     // For now, we'll use the string value directly as the permissionValue
@@ -66,13 +66,13 @@ public interface Permission {
   }
 
   /**
-   * Create a {@link Permission} from a {@link GranularPermission}.
+   * Create a {@link AccountPermission} from a {@link GranularPermission}.
    *
    * @param granularPermission The {@link GranularPermission} to create a permission for.
    *
-   * @return A {@link Permission} with the permission value set to the granular permission's string value.
+   * @return A {@link AccountPermission} with the permission value set to the granular permission's string value.
    */
-  static Permission of(GranularPermission granularPermission) {
+  static AccountPermission of(GranularPermission granularPermission) {
     return builder()
       .permissionValue(granularPermission.value())
       .build();
@@ -86,4 +86,5 @@ public interface Permission {
   @JsonProperty("PermissionValue")
   String permissionValue();
 }
+
 

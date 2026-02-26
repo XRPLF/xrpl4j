@@ -41,13 +41,13 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.ledger.DelegateObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.transactions.AccountPermission;
+import org.xrpl.xrpl4j.model.transactions.AccountPermissionWrapper;
 import org.xrpl.xrpl4j.model.transactions.DelegateSet;
 import org.xrpl.xrpl4j.model.transactions.GranularPermission;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.Permission;
-import org.xrpl.xrpl4j.model.transactions.PermissionWrapper;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -118,8 +118,8 @@ public class DelegateIT extends AbstractIT {
       .sequence(delegatingAccountInfo.accountData().sequence())
       .authorize(delegateKeyPair.publicKey().deriveAddress())
       .addPermissions(
-        PermissionWrapper.builder().permission(Permission.of(TransactionType.PAYMENT)).build(),
-        PermissionWrapper.builder().permission(Permission.of(TransactionType.TRUST_SET)).build()
+        AccountPermissionWrapper.builder().permission(AccountPermission.of(TransactionType.PAYMENT)).build(),
+        AccountPermissionWrapper.builder().permission(AccountPermission.of(TransactionType.TRUST_SET)).build()
       )
       .signingPublicKey(delegatingAccountKeyPair.publicKey())
       .networkId(networkId)
@@ -159,7 +159,9 @@ public class DelegateIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(delegatingAccountInfo.accountData().sequence())
       .authorize(delegateKeyPair.publicKey().deriveAddress())
-      .addPermissions(PermissionWrapper.builder().permission(Permission.of(TransactionType.PAYMENT)).build())
+      .addPermissions(AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(TransactionType.PAYMENT))
+        .build())
       .signingPublicKey(delegatingAccountKeyPair.publicKey())
       .networkId(networkId)
       .build();
@@ -251,7 +253,9 @@ public class DelegateIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(delegatingAccountInfo.accountData().sequence())
       .authorize(delegateKeyPair.publicKey().deriveAddress())
-      .addPermissions(PermissionWrapper.builder().permission(Permission.of(TransactionType.TRUST_SET)).build())
+      .addPermissions(AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(TransactionType.TRUST_SET))
+        .build())
       .signingPublicKey(delegatingAccountKeyPair.publicKey())
       .networkId(networkId)
       .build();
@@ -321,9 +325,15 @@ public class DelegateIT extends AbstractIT {
       .sequence(delegatingAccountInfo.accountData().sequence())
       .authorize(delegateKeyPair.publicKey().deriveAddress())
       .addPermissions(
-        PermissionWrapper.builder().permission(Permission.of(GranularPermission.TRUSTLINE_AUTHORIZE)).build(),
-        PermissionWrapper.builder().permission(Permission.of(GranularPermission.TRUSTLINE_FREEZE)).build(),
-        PermissionWrapper.builder().permission(Permission.of(GranularPermission.PAYMENT_MINT)).build()
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(GranularPermission.TRUSTLINE_AUTHORIZE))
+          .build(),
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(GranularPermission.TRUSTLINE_FREEZE))
+          .build(),
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(GranularPermission.PAYMENT_MINT))
+          .build()
       )
       .signingPublicKey(delegatingAccountKeyPair.publicKey())
       .networkId(networkId)
@@ -357,12 +367,12 @@ public class DelegateIT extends AbstractIT {
 
     /////////////////////////
     // Create a DelegateSet transaction with permissions
-    List<PermissionWrapper> permissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("Payment").build())
+    List<AccountPermissionWrapper> permissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("Payment").build())
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("TrustSet").build())
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("TrustSet").build())
         .build()
     );
 
@@ -435,9 +445,9 @@ public class DelegateIT extends AbstractIT {
 
     /////////////////////////
     // First, create a delegation
-    List<PermissionWrapper> permissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("Payment").build())
+    List<AccountPermissionWrapper> permissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("Payment").build())
         .build()
     );
 
@@ -544,9 +554,9 @@ public class DelegateIT extends AbstractIT {
 
     /////////////////////////
     // Create initial delegation with Payment permission
-    List<PermissionWrapper> initialPermissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("Payment").build())
+    List<AccountPermissionWrapper> initialPermissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("Payment").build())
         .build()
     );
 
@@ -582,12 +592,12 @@ public class DelegateIT extends AbstractIT {
 
     /////////////////////////
     // Update delegation with different permissions
-    List<PermissionWrapper> updatedPermissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("TrustSet").build())
+    List<AccountPermissionWrapper> updatedPermissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("TrustSet").build())
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("OfferCreate").build())
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("OfferCreate").build())
         .build()
     );
 
@@ -653,12 +663,12 @@ public class DelegateIT extends AbstractIT {
 
     /////////////////////////
     // Create a delegation
-    List<PermissionWrapper> permissions = Arrays.asList(
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("Payment").build())
+    List<AccountPermissionWrapper> permissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("Payment").build())
         .build(),
-      PermissionWrapper.builder()
-        .permission(Permission.builder().permissionValue("TrustSet").build())
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.builder().permissionValue("TrustSet").build())
         .build()
     );
 
@@ -742,5 +752,188 @@ public class DelegateIT extends AbstractIT {
     assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
 
     logger.info("Delegate object successfully queried via ledger_entry");
+  }
+
+  /**
+   * Negative test: Verify that a delegate cannot execute a transaction without proper permission.
+   * This test creates a delegation with Payment permission, then tries to execute a TrustSet transaction
+   * which should fail with terNO_DELEGATE_PERMISSION.
+   */
+  @Test
+  public void testDelegateWithoutPermission() throws JsonRpcClientErrorException, JsonProcessingException {
+    // Create three accounts: delegating account, delegate, and issuer
+    KeyPair delegatingAccountKeyPair = createRandomAccountEd25519();
+    KeyPair delegateKeyPair = createRandomAccountEd25519();
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    // First, authorize the delegate with ONLY Payment permission
+    AccountInfoResult delegatingAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(delegatingAccountKeyPair.publicKey().deriveAddress())
+    );
+
+    DelegateSet delegateSet = DelegateSet.builder()
+      .account(delegatingAccountKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(delegatingAccountInfo.accountData().sequence())
+      .authorize(delegateKeyPair.publicKey().deriveAddress())
+      .addPermissions(AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(TransactionType.PAYMENT))
+        .build())
+      .signingPublicKey(delegatingAccountKeyPair.publicKey())
+      .networkId(networkId)
+      .build();
+
+    SingleSignedTransaction<DelegateSet> signedDelegateSet = signatureService.sign(
+      delegatingAccountKeyPair.privateKey(), delegateSet
+    );
+    SubmitResult<DelegateSet> delegateSetResult = xrplClient.submit(signedDelegateSet);
+    assertThat(delegateSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> this.getValidatedTransaction(delegateSetResult.transactionResult().hash(), DelegateSet.class)
+    );
+
+    // Get updated account info
+    AccountInfoResult updatedDelegatingAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(delegatingAccountKeyPair.publicKey().deriveAddress())
+    );
+
+    // Now try to send a TrustSet transaction (which the delegate does NOT have permission for)
+    IssuedCurrencyAmount limitAmount = IssuedCurrencyAmount.builder()
+      .currency("USD")
+      .issuer(issuerKeyPair.publicKey().deriveAddress())
+      .value("1000")
+      .build();
+
+    TrustSet trustSet = TrustSet.builder()
+      .account(delegatingAccountKeyPair.publicKey().deriveAddress())  // Delegating account
+      .delegate(delegateKeyPair.publicKey().deriveAddress())          // Delegate
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(updatedDelegatingAccountInfo.accountData().sequence())
+      .limitAmount(limitAmount)
+      .flags(TrustSetFlags.empty())
+      .signingPublicKey(delegateKeyPair.publicKey())  // Delegate's public key
+      .networkId(networkId)
+      .build();
+
+    // Sign with delegate's private key
+    SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(delegateKeyPair.privateKey(), trustSet);
+    SubmitResult<TrustSet> trustSetResult = xrplClient.submit(signedTrustSet);
+
+    // Should fail with terNO_DELEGATE_PERMISSION
+    assertThat(trustSetResult.engineResult()).isEqualTo("terNO_DELEGATE_PERMISSION");
+    logger.info("TrustSet without permission correctly failed with: {}", trustSetResult.engineResult());
+  }
+
+  /**
+   * Negative test: Verify that the wrong delegate cannot use a delegation.
+   * This test creates a delegation for delegate1, then tries to execute a transaction
+   * using delegate2's signature, which should fail.
+   */
+  @Test
+  public void testWrongDelegateCannotUsePermission() throws JsonRpcClientErrorException, JsonProcessingException {
+    // Create four accounts: delegating account, authorized delegate, unauthorized delegate, and destination
+    KeyPair delegatingAccountKeyPair = createRandomAccountEd25519();
+    KeyPair authorizedDelegateKeyPair = createRandomAccountEd25519();
+    KeyPair unauthorizedDelegateKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    // Authorize only the first delegate
+    AccountInfoResult delegatingAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(delegatingAccountKeyPair.publicKey().deriveAddress())
+    );
+
+    DelegateSet delegateSet = DelegateSet.builder()
+      .account(delegatingAccountKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(delegatingAccountInfo.accountData().sequence())
+      .authorize(authorizedDelegateKeyPair.publicKey().deriveAddress())  // Only authorize this delegate
+      .addPermissions(AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(TransactionType.PAYMENT))
+        .build())
+      .signingPublicKey(delegatingAccountKeyPair.publicKey())
+      .networkId(networkId)
+      .build();
+
+    SingleSignedTransaction<DelegateSet> signedDelegateSet = signatureService.sign(
+      delegatingAccountKeyPair.privateKey(), delegateSet
+    );
+    SubmitResult<DelegateSet> delegateSetResult = xrplClient.submit(signedDelegateSet);
+    assertThat(delegateSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> this.getValidatedTransaction(delegateSetResult.transactionResult().hash(), DelegateSet.class)
+    );
+
+    // Get updated account info
+    AccountInfoResult updatedDelegatingAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(delegatingAccountKeyPair.publicKey().deriveAddress())
+    );
+
+    // Now try to send a Payment with the WRONG delegate (unauthorizedDelegate)
+    XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
+    Payment payment = Payment.builder()
+      .account(delegatingAccountKeyPair.publicKey().deriveAddress())      // Delegating account
+      .delegate(unauthorizedDelegateKeyPair.publicKey().deriveAddress())  // WRONG delegate
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(updatedDelegatingAccountInfo.accountData().sequence())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
+      .amount(amount)
+      .signingPublicKey(unauthorizedDelegateKeyPair.publicKey())  // Wrong delegate's public key
+      .networkId(networkId)
+      .build();
+
+    // Sign with wrong delegate's private key
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(
+      unauthorizedDelegateKeyPair.privateKey(), payment
+    );
+    SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
+
+    // Should fail with terNO_DELEGATE_PERMISSION (no delegation exists for this delegate)
+    assertThat(paymentResult.engineResult()).isEqualTo("terNO_DELEGATE_PERMISSION");
+    logger.info("Payment with wrong delegate correctly failed with: {}", paymentResult.engineResult());
+  }
+
+  /**
+   * Negative test: Verify that an account cannot delegate to itself.
+   * This test tries to create a DelegateSet where Account and Authorize are the same,
+   * which should fail with temBAD_SIGNER.
+   */
+  @Test
+  public void testCannotDelegateToSelf() throws JsonRpcClientErrorException, JsonProcessingException {
+    // Create one account that will try to delegate to itself
+    KeyPair accountKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    AccountInfoResult accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(accountKeyPair.publicKey().deriveAddress())
+    );
+
+    // Try to create a DelegateSet where Account == Authorize (self-delegation)
+    DelegateSet delegateSet = DelegateSet.builder()
+      .account(accountKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(accountInfo.accountData().sequence())
+      .authorize(accountKeyPair.publicKey().deriveAddress())  // Same as Account - self delegation
+      .addPermissions(AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(TransactionType.PAYMENT))
+        .build())
+      .signingPublicKey(accountKeyPair.publicKey())
+      .networkId(networkId)
+      .build();
+
+    SingleSignedTransaction<DelegateSet> signedDelegateSet = signatureService.sign(
+      accountKeyPair.privateKey(), delegateSet
+    );
+    SubmitResult<DelegateSet> delegateSetResult = xrplClient.submit(signedDelegateSet);
+
+    // Should fail with temBAD_SIGNER (cannot delegate to self)
+    assertThat(delegateSetResult.engineResult()).isEqualTo("temBAD_SIGNER");
+    logger.info("Self-delegation correctly failed with: {}", delegateSetResult.engineResult());
   }
 }

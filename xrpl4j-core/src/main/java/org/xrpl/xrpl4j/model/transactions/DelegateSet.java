@@ -79,12 +79,14 @@ public interface DelegateSet extends Transaction {
 
   /**
    * Set of {@link TransactionFlags}s for this {@link DelegateSet}. Note that {@link DelegateSet} transactions
-   * do not support any transaction-specific flags, only universal flags.
+   * do not support any transaction-specific flags, only universal transaction flags that apply to all transaction
+   * types.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
    *
-   * @return Always {@link TransactionFlags#EMPTY}.
+   * @return {@link TransactionFlags#EMPTY} by default, or {@link TransactionFlags} with universal flags set when
+   *   used in specific contexts.
    */
   @JsonProperty("Flags")
   @Value.Default
@@ -103,11 +105,11 @@ public interface DelegateSet extends Transaction {
   /**
    * The transaction permissions (represented by transaction type strings) that the account has been granted.
    *
-   * @return A {@link List} of {@link PermissionWrapper}s.
+   * @return A {@link List} of {@link AccountPermissionWrapper}s.
    */
   @JsonProperty("Permissions")
   @JsonInclude(JsonInclude.Include.ALWAYS)
-  List<PermissionWrapper> permissions();
+  List<AccountPermissionWrapper> permissions();
 
   /**
    * Validate that the Authorize field is not the same as the Account field.
@@ -137,7 +139,7 @@ public interface DelegateSet extends Transaction {
   @Value.Check
   default void validateNoDuplicatePermissions() {
     Set<String> permissionValues = new HashSet<>();
-    for (PermissionWrapper wrapper : permissions()) {
+    for (AccountPermissionWrapper wrapper : permissions()) {
       String permissionValue = wrapper.permission().permissionValue();
       Preconditions.checkArgument(
         permissionValues.add(permissionValue),
@@ -151,7 +153,7 @@ public interface DelegateSet extends Transaction {
    */
   @Value.Check
   default void validateNoNonDelegatableTransactions() {
-    for (PermissionWrapper wrapper : permissions()) {
+    for (AccountPermissionWrapper wrapper : permissions()) {
       String permissionValue = wrapper.permission().permissionValue();
       Preconditions.checkArgument(
         !NON_DELEGABLE_TRANSACTIONS.contains(permissionValue),
@@ -165,7 +167,7 @@ public interface DelegateSet extends Transaction {
    */
   @Value.Check
   default void validatePermissionValuesAreValid() {
-    for (PermissionWrapper wrapper : permissions()) {
+    for (AccountPermissionWrapper wrapper : permissions()) {
       String permissionValue = wrapper.permission().permissionValue();
 
       // Check if it's a valid TransactionType

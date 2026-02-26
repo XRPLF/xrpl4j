@@ -27,10 +27,10 @@ import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.transactions.AccountPermissionWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.DelegateSet;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.PermissionWrapper;
 
 import java.util.List;
 
@@ -86,10 +86,10 @@ public interface DelegateObject extends LedgerObject {
   /**
    * The transaction permissions that the account has access to.
    *
-   * @return A {@link List} of {@link PermissionWrapper}s.
+   * @return A {@link List} of {@link AccountPermissionWrapper}s.
    */
   @JsonProperty("Permissions")
-  List<PermissionWrapper> permissions();
+  List<AccountPermissionWrapper> permissions();
 
   /**
    * A hint indicating which page of the sender's owner directory links to this object,

@@ -167,10 +167,10 @@ public class DelegateSetTest {
   @Test
   public void testDelegateSetValidationNonDelegatableTransactions() {
     // Test each non-delegatable transaction type by reusing DelegateSet.NON_DELEGABLE_TRANSACTIONS
-    for (String txType : DelegateSet.NON_DELEGABLE_TRANSACTIONS) {
+    for (TransactionType txType : DelegateSet.NON_DELEGABLE_TRANSACTIONS) {
       List<AccountPermissionWrapper> permissions = Arrays.asList(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue(txType).build())
+          .permission(AccountPermission.builder().permissionValue(txType.value()).build())
           .build()
       );
 
@@ -371,7 +371,7 @@ public class DelegateSetTest {
     // from all TransactionType values. This ensures that when new transaction types are added
     // to the enum, they are automatically tested.
     List<TransactionType> delegatableTypes = Arrays.stream(TransactionType.values())
-      .filter(txType -> !DelegateSet.NON_DELEGABLE_TRANSACTIONS.contains(txType.value()))
+      .filter(txType -> !DelegateSet.NON_DELEGABLE_TRANSACTIONS.contains(txType))
       .filter(txType -> txType != TransactionType.UNKNOWN) // Exclude UNKNOWN
       .collect(Collectors.toList());
 
@@ -403,7 +403,7 @@ public class DelegateSetTest {
     // Automatically derive non-delegatable transaction types from DelegateSet.NON_DELEGABLE_TRANSACTIONS
     // This ensures that when new non-delegatable types are added, they are automatically tested
     List<TransactionType> nonDelegatableTypes = Arrays.stream(TransactionType.values())
-      .filter(txType -> DelegateSet.NON_DELEGABLE_TRANSACTIONS.contains(txType.value()))
+      .filter(txType -> DelegateSet.NON_DELEGABLE_TRANSACTIONS.contains(txType))
       .collect(Collectors.toList());
 
     // Verify we have the expected number of non-delegatable types (sanity check)

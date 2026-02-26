@@ -55,17 +55,17 @@ public interface DelegateSet extends Transaction {
   /**
    * Set of transaction types that cannot be delegated.
    */
-  Set<String> NON_DELEGABLE_TRANSACTIONS = Sets.newHashSet(
-    TransactionType.ACCOUNT_SET.value(),
-    TransactionType.SET_REGULAR_KEY.value(),
-    TransactionType.SIGNER_LIST_SET.value(),
-    TransactionType.DELEGATE_SET.value(),
-    TransactionType.ACCOUNT_DELETE.value(),
-    TransactionType.BATCH.value(),
+  Set<TransactionType> NON_DELEGABLE_TRANSACTIONS = Sets.newHashSet(
+    TransactionType.ACCOUNT_SET,
+    TransactionType.SET_REGULAR_KEY,
+    TransactionType.SIGNER_LIST_SET,
+    TransactionType.DELEGATE_SET,
+    TransactionType.ACCOUNT_DELETE,
+    TransactionType.BATCH,
     // Pseudo transactions below:
-    TransactionType.ENABLE_AMENDMENT.value(),
-    TransactionType.SET_FEE.value(),
-    TransactionType.UNL_MODIFY.value()
+    TransactionType.ENABLE_AMENDMENT,
+    TransactionType.SET_FEE,
+    TransactionType.UNL_MODIFY
   );
 
   /**
@@ -155,8 +155,10 @@ public interface DelegateSet extends Transaction {
   default void validateNoNonDelegatableTransactions() {
     for (AccountPermissionWrapper wrapper : permissions()) {
       String permissionValue = wrapper.permission().permissionValue();
+      boolean isNonDelegatable = NON_DELEGABLE_TRANSACTIONS.stream()
+        .anyMatch(txType -> txType.value().equals(permissionValue));
       Preconditions.checkArgument(
-        !NON_DELEGABLE_TRANSACTIONS.contains(permissionValue),
+        !isNonDelegatable,
         String.format("DelegateSet: PermissionValue contains a non-delegatable transaction %s", permissionValue)
       );
     }

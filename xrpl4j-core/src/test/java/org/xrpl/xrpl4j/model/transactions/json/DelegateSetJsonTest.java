@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.transactions.AccountPermission;
 import org.xrpl.xrpl4j.model.transactions.AccountPermissionWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.DelegateSet;
+import org.xrpl.xrpl4j.model.transactions.GranularPermission;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Arrays;
@@ -132,6 +133,46 @@ public class DelegateSetJsonTest extends AbstractJsonTest {
             "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
             "  \"TransactionType\":\"DelegateSet\"" +
             "}";
+
+    assertCanSerializeAndDeserialize(delegateSet, json);
+  }
+
+  @Test
+  public void testDelegateSetJsonWithGranularPermissions() throws JsonProcessingException, JSONException {
+    DelegateSet delegateSet = DelegateSet.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
+      .permissions(Arrays.asList(
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(GranularPermission.TRUSTLINE_AUTHORIZE))
+          .build(),
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(GranularPermission.PAYMENT_MINT))
+          .build(),
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(GranularPermission.TRUSTLINE_FREEZE))
+          .build()
+      ))
+      .sequence(UnsignedInteger.valueOf(2))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
+      )
+      .build();
+
+    String json = "{" +
+      "  \"Account\":\"rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8\"," +
+      "  \"Authorize\":\"rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de\"," +
+      "  \"Permissions\":[" +
+      "    {\"Permission\":{\"PermissionValue\":\"TrustlineAuthorize\"}}," +
+      "    {\"Permission\":{\"PermissionValue\":\"PaymentMint\"}}," +
+      "    {\"Permission\":{\"PermissionValue\":\"TrustlineFreeze\"}}" +
+      "  ]," +
+      "  \"Fee\":\"10\"," +
+      "  \"Sequence\":2," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"TransactionType\":\"DelegateSet\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(delegateSet, json);
   }

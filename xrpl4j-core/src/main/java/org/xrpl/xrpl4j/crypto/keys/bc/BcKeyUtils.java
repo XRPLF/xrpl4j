@@ -96,21 +96,14 @@ public final class BcKeyUtils {
    * Convert from a {@link ECPrivateKeyParameters} to a {@link PrivateKey}.
    *
    * @param ecPrivateKeyParameters A {@link ECPrivateKeyParameters}.
-   * @param keyType                The {@link KeyType} for the private key.
    *
    * @return A {@link PrivateKey}.
    */
-  public static PrivateKey toPrivateKey(final ECPrivateKeyParameters ecPrivateKeyParameters, KeyType keyType) {
-    // Call `UnsignedByteArray.from` to properly prefix-pad the BigInteger's bytes.
-    UnsignedByteArray prefixedBytes = Secp256k1.toUnsignedByteArray(ecPrivateKeyParameters.getD(), 33);
-
-    // If keyType is ELGAMAL_SECP256K1, replace the 0th byte with ELGAMAL_SECP256K1_PREFIX
-    if (keyType == KeyType.ELGAMAL_SECP256K1) {
-      prefixedBytes = UnsignedByteArray.of(PrivateKey.ELGAMAL_SECP256K1_PREFIX)
-        .append(prefixedBytes.slice(1, 33));
-    }
-
-    return PrivateKey.fromPrefixedBytes(prefixedBytes);
+  public static PrivateKey toPrivateKey(final ECPrivateKeyParameters ecPrivateKeyParameters) {
+    return PrivateKey.fromPrefixedBytes(
+      // Call `UnsignedByteArray.from` to properly prefix-pad the BigInteger's bytes.
+      Secp256k1.toUnsignedByteArray(ecPrivateKeyParameters.getD(), 33)
+    );
   }
 
   /**
@@ -148,7 +141,6 @@ public final class BcKeyUtils {
 
     return PublicKey.builder()
       .value(prefixedPublicKey)
-      .keyType(ED25519)
       .build();
   }
 
@@ -159,13 +151,12 @@ public final class BcKeyUtils {
    *
    * @return A {@link PublicKey}.
    */
-  public static PublicKey toPublicKey(final ECPublicKeyParameters ecPublicKeyParameters, KeyType keyType) {
+  public static PublicKey toPublicKey(final ECPublicKeyParameters ecPublicKeyParameters) {
     Objects.requireNonNull(ecPublicKeyParameters);
     // The binary version of an EC PublicKey is the encoded ECPoint, compressed.
     final byte[] encodedPublicKey = ecPublicKeyParameters.getQ().getEncoded(true);
     return PublicKey.builder()
       .value(UnsignedByteArray.of(encodedPublicKey))
-      .keyType(keyType)
       .build();
   }
 
@@ -198,11 +189,7 @@ public final class BcKeyUtils {
     } else if (privateKey.keyType() == KeyType.SECP256K1) {
       final ECPrivateKeyParameters ecPrivateKeyParameters = toEcPrivateKeyParams(privateKey);
       final ECPublicKeyParameters ecPublicKeyParameters = toPublicKey(ecPrivateKeyParameters);
-      return toPublicKey(ecPublicKeyParameters, KeyType.SECP256K1);
-    } else if (privateKey.keyType() == KeyType.ELGAMAL_SECP256K1){
-      final ECPrivateKeyParameters ecPrivateKeyParameters = toEcPrivateKeyParams(privateKey);
-      final ECPublicKeyParameters ecPublicKeyParameters = toPublicKey(ecPrivateKeyParameters);
-      return toPublicKey(ecPublicKeyParameters, KeyType.ELGAMAL_SECP256K1);
+      return toPublicKey(ecPublicKeyParameters);
     } else {
       throw new IllegalArgumentException("Invalid KeyType: " + privateKey.keyType());
     }
@@ -231,7 +218,7 @@ public final class BcKeyUtils {
    */
   public static ECPublicKeyParameters toEcPublicKeyParameters(final PublicKey publicKey) {
     Objects.requireNonNull(publicKey);
-    Preconditions.checkArgument(publicKey.keyType() == KeyType.SECP256K1 || publicKey.keyType() == KeyType.ELGAMAL_SECP256K1);
+    Preconditions.checkArgument(publicKey.keyType() == KeyType.SECP256K1);
 
     ECPoint ecPoint = PARAMS.getCurve()
       .decodePoint(publicKey.value().toByteArray());
@@ -247,8 +234,7 @@ public final class BcKeyUtils {
    */
   public static ECPrivateKeyParameters toEcPrivateKeyParams(final PrivateKey privateKey) {
     Objects.requireNonNull(privateKey);
-    Preconditions.checkArgument(privateKey.keyType() == KeyType.SECP256K1 || privateKey.keyType() == KeyType.ELGAMAL_SECP256K1
-      , "KeyType must be SECP256K1 or ELGAMAL_SECP256K1");
+    Preconditions.checkArgument(privateKey.keyType() == KeyType.SECP256K1, "KeyType must be SECP256K1");
 
     // From http://www.secg.org/sec1-v2.pdf: A PrivateKey consists of an elliptic curve secret key `d` which is an
     // integer in the interval [1, n − 1]. Therefore, it is safe to assume that the signum below should always be 1.

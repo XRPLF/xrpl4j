@@ -44,7 +44,6 @@ import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -197,7 +196,7 @@ public class SignatureUtilsTest {
   public void setUp() throws JsonProcessingException {
     openMocks(this);
 
-    this.sourcePublicKey = PublicKey.fromBase16EncodedPublicKey(HEX_PUBLIC_KEY, KeyType.SECP256K1);
+    this.sourcePublicKey = PublicKey.fromBase16EncodedPublicKey(HEX_PUBLIC_KEY);
 
     when(objectMapperMock.writeValueAsString(any())).thenReturn("{foo}"); // <-- Unused JSON value.
     when(xrplBinaryCodecMock.encodeForSigning(anyString())).thenReturn("ED");
@@ -1687,7 +1686,7 @@ public class SignatureUtilsTest {
     when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
     when(transactionMock.signingPublicKey())
       .thenReturn(
-        PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
       );
     assertThatThrownBy(
       () -> signatureUtils.addMultiSignaturesToTransaction(transactionMock, Lists.newArrayList(signer1))
@@ -2494,13 +2493,13 @@ public class SignatureUtilsTest {
       .batchSigners(Lists.newArrayList(
         BatchSignerWrapper.of(BatchSigner.builder()
           .account(payment1.account())
-          .signingPublicKey(signer1KeyPair.publicKey())
+          .signingPublicKey(payment1.signingPublicKey())
           .transactionSignature(Signature.fromBase16("00112233"))
           .build()
         ),
         BatchSignerWrapper.of(BatchSigner.builder()
           .account(payment2.account())
-          .signingPublicKey(signer2KeyPair.publicKey())
+          .signingPublicKey(payment2.signingPublicKey())
           .transactionSignature(Signature.fromBase16("00112233"))
           .build()
         )

@@ -28,8 +28,7 @@ public enum Version {
   NODE_PUBLIC(new int[] {0x1C}), // 28 in decimal
   NODE_PRIVATE(new int[] {0x20}), // 32 in decimal
   ACCOUNT_SECRET_KEY(new int[] {0x22}), // 34 in decimal
-  ACCOUNT_PUBLIC_KEY(new int[] {0x23}), // 35 in decimal
-  ELGAMAL_SEED(new int[] {0x01, 0x01});
+  ACCOUNT_PUBLIC_KEY(new int[] {0x23}); // 35 in decimal
 
   private final int[] values;
 

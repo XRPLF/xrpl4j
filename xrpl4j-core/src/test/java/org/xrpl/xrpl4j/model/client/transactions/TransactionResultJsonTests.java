@@ -27,7 +27,6 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -59,7 +58,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         .lastLedgerSequence(UnsignedInteger.valueOf(13010048))
         .sequence(UnsignedInteger.valueOf(2062126))
         .signingPublicKey(
-          PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+          PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
         )
         .transactionSignature(Signature.fromBase16(
           "3045022100AA15E1F82455712B7D3CE138F6B913238CFBFF56DCB3E2DE39624EE4C6" +
@@ -119,7 +118,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         .lastLedgerSequence(UnsignedInteger.valueOf(13010048))
         .sequence(UnsignedInteger.valueOf(2062126))
         .signingPublicKey(
-          PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+          PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
         )
         .transactionSignature(Signature.fromBase16(
           "3045022100AA15E1F82455712B7D3CE138F6B913238CFBFF56DCB3E2DE39624EE4C6" +
@@ -173,7 +172,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         .lastLedgerSequence(UnsignedInteger.valueOf(13010048))
         .sequence(UnsignedInteger.valueOf(2062126))
         .signingPublicKey(
-          PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+          PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
         )
         .transactionSignature(Signature.fromBase16(
           "3045022100AA15E1F82455712B7D3CE138F6B913238CFBFF56DCB3E2DE39624EE4C6" +

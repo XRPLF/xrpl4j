@@ -53,22 +53,20 @@ public class SeedCodec {
   public Decoded decodeSeed(final String base58EncodedSeed) throws EncodingFormatException {
     Objects.requireNonNull(base58EncodedSeed);
 
+    if (base58EncodedSeed.length() == 51) {
+      return AddressBase58.decode(
+        base58EncodedSeed,
+        Lists.newArrayList(KeyType.SECP256K1),
+        Lists.newArrayList(Version.FAMILY_SEED),
+        Optional.of(UnsignedInteger.valueOf(32))
+      );
+    }
+
     return AddressBase58.decode(
       base58EncodedSeed,
       Lists.newArrayList(KeyType.ED25519, KeyType.SECP256K1),
       Lists.newArrayList(Version.ED25519_SEED, Version.FAMILY_SEED),
       Optional.of(UnsignedInteger.valueOf(16))
-    );
-  }
-
-  public Decoded decodeElGamalSeed(final String base58EncodedSeed) throws EncodingFormatException {
-    Objects.requireNonNull(base58EncodedSeed);
-
-    return AddressBase58.decode(
-      base58EncodedSeed,
-      Lists.newArrayList(KeyType.ELGAMAL_SECP256K1),
-      Lists.newArrayList(Version.ELGAMAL_SEED),
-      Optional.of(UnsignedInteger.valueOf(32))
     );
   }
 
@@ -84,28 +82,11 @@ public class SeedCodec {
     Objects.requireNonNull(entropy);
     Objects.requireNonNull(type);
 
-    List<KeyType> signingKeyTypes = Lists.newArrayList(KeyType.ED25519, KeyType.SECP256K1);
-    if (signingKeyTypes.contains(type) && entropy.getUnsignedBytes().size() != 16) {
-      throw new EncodeException("entropy must have length 16.");
+    if (entropy.getUnsignedBytes().size() != 16 && entropy.getUnsignedBytes().size() != 32) {
+      throw new EncodeException("entropy must have length 16 or 32.");
     }
 
-    if (type.equals(KeyType.ELGAMAL_SECP256K1) && entropy.getUnsignedBytes().size() != 32) {
-      throw new EncodeException("entropy must have length 32.");
-    }
-
-    switch (type) {
-      case ED25519: {
-        return AddressBase58.encode(entropy, Lists.newArrayList(Version.ED25519_SEED), UnsignedInteger.valueOf(16));
-      }
-      case SECP256K1: {
-        return AddressBase58.encode(entropy, Lists.newArrayList(Version.FAMILY_SEED), UnsignedInteger.valueOf(16));
-      }
-      case ELGAMAL_SECP256K1: {
-        return AddressBase58.encode(entropy, Lists.newArrayList(Version.ELGAMAL_SEED), UnsignedInteger.valueOf(32));
-      }
-      default: {
-        throw new IllegalArgumentException("Unsupported KeyType: " + type);
-      }
-    }
+    Version version = type.equals(KeyType.ED25519) ? Version.ED25519_SEED : Version.FAMILY_SEED;
+    return AddressBase58.encode(entropy, Lists.newArrayList(version), UnsignedInteger.valueOf(entropy.getUnsignedBytes().size()));
   }
 }

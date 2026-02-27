@@ -30,7 +30,6 @@ import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.math.ec.ECPoint;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
@@ -45,10 +44,6 @@ class BcKeyUtilsTest {
   private static final String EC_PRIVATE_KEY_HEX = "D12D2FACA9AD92828D89683778CB8DFCCDBD6C9E92F6AB7D6065E8AACC1FF6D6";
   private static final BigInteger EC_PRIVATE_KEY_BIGINTEGER = new BigInteger(EC_PRIVATE_KEY_HEX, 16);
   private static final String EC_PUBLIC_KEY_HEX = "03661BA57FED0D115222E30FE7E9509325EE30E7E284D3641E6FB5E67368C2DB18";
-
-  private static final String ELGAMAL_PRIVATE_KEY_HEX = "4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4";
-  private static final BigInteger ELGAMAL_PRIVATE_KEY_BIGINTEGER = new BigInteger(ELGAMAL_PRIVATE_KEY_HEX, 16);
-  private static final String ELGAMAL_PUBLIC_KEY_HEX = "02F56CE1E425A98E7D2FEC83B051124F3966E7206AD9ED590F15A59885359F5289";
 
   private static final String ED_PRIVATE_KEY_HEX = "B224AFDCCEC7AA4E245E35452585D4FBBE37519BCA3929578BFC5BBD4640E163";
   private static final String ED_PUBLIC_KEY_HEX = "94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE";
@@ -78,7 +73,7 @@ class BcKeyUtilsTest {
     );
 
     // To PrivateKey
-    PrivateKey privateKey = BcKeyUtils.toPrivateKey(ecPrivateKeyParameters, KeyType.SECP256K1);
+    PrivateKey privateKey = BcKeyUtils.toPrivateKey(ecPrivateKeyParameters);
     assertThat(Base58.encode(privateKey.prefixedBytes().toByteArray()))
       .isEqualTo("rEnYwxojogCYKG3F5Bf7zvcZjo76pEqKwG9wGH14JngcV");
     assertThat(BaseEncoding.base16().encode(privateKey.prefixedBytes().toByteArray()))
@@ -87,23 +82,6 @@ class BcKeyUtilsTest {
       .isEqualTo(ecPrivateKeyParameters);
 
     // Convert back
-    ECPrivateKeyParameters converted = BcKeyUtils.toEcPrivateKeyParams(privateKey);
-    assertThat(converted).usingRecursiveComparison().isEqualTo(ecPrivateKeyParameters);
-  }
-
-  @Test
-  void elgamalPrivateKeyParametersToPrivateKeyAndBack() {
-    ECPrivateKeyParameters ecPrivateKeyParameters = new ECPrivateKeyParameters(
-      ELGAMAL_PRIVATE_KEY_BIGINTEGER, BcKeyUtils.PARAMS
-    );
-
-    // To PrivateKey with ELGAMAL_SECP256K1 key type
-    PrivateKey privateKey = BcKeyUtils.toPrivateKey(ecPrivateKeyParameters, KeyType.ELGAMAL_SECP256K1);
-    assertThat(BaseEncoding.base16().encode(privateKey.prefixedBytes().toByteArray()))
-      .isEqualTo("01" + ELGAMAL_PRIVATE_KEY_HEX);
-    assertThat(privateKey.keyType()).isEqualTo(KeyType.ELGAMAL_SECP256K1);
-
-    // Convert back - note: toEcPrivateKeyParams strips the prefix, so the BigInteger should match
     ECPrivateKeyParameters converted = BcKeyUtils.toEcPrivateKeyParams(privateKey);
     assertThat(converted).usingRecursiveComparison().isEqualTo(ecPrivateKeyParameters);
   }
@@ -129,23 +107,8 @@ class BcKeyUtilsTest {
     ECPoint ecPoint = BcKeyUtils.PARAMS.getG().multiply(ecPrivateKeyParameters.getD());
     ECPublicKeyParameters ecPublicKeyParameters = new ECPublicKeyParameters(ecPoint, BcKeyUtils.PARAMS);
 
-    PublicKey publicKey = BcKeyUtils.toPublicKey(ecPublicKeyParameters, KeyType.SECP256K1);
+    PublicKey publicKey = BcKeyUtils.toPublicKey(ecPublicKeyParameters);
     assertThat(publicKey.base16Value()).isEqualTo(EC_PUBLIC_KEY_HEX);
-
-    ECPublicKeyParameters converted = BcKeyUtils.toEcPublicKeyParameters(publicKey);
-    assertThat(converted).usingRecursiveComparison().isEqualTo(ecPublicKeyParameters);
-  }
-
-  @Test
-  void elgamalPublicKeyParametersToPublicKeyAndBack() {
-    ECPrivateKeyParameters ecPrivateKeyParameters = new ECPrivateKeyParameters(
-      ELGAMAL_PRIVATE_KEY_BIGINTEGER, BcKeyUtils.PARAMS
-    );
-    ECPoint ecPoint = BcKeyUtils.PARAMS.getG().multiply(ecPrivateKeyParameters.getD());
-    ECPublicKeyParameters ecPublicKeyParameters = new ECPublicKeyParameters(ecPoint, BcKeyUtils.PARAMS);
-
-    PublicKey publicKey = BcKeyUtils.toPublicKey(ecPublicKeyParameters, KeyType.ELGAMAL_SECP256K1);
-    assertThat(publicKey.base16Value()).isEqualTo(ELGAMAL_PUBLIC_KEY_HEX);
 
     ECPublicKeyParameters converted = BcKeyUtils.toEcPublicKeyParameters(publicKey);
     assertThat(converted).usingRecursiveComparison().isEqualTo(ecPublicKeyParameters);
@@ -156,7 +119,7 @@ class BcKeyUtilsTest {
     ECPrivateKeyParameters ecPrivateKeyParameters = new ECPrivateKeyParameters(
       EC_PRIVATE_KEY_BIGINTEGER, BcKeyUtils.PARAMS
     );
-    PrivateKey ecPrivateKey = BcKeyUtils.toPrivateKey(ecPrivateKeyParameters, KeyType.SECP256K1);
+    PrivateKey ecPrivateKey = BcKeyUtils.toPrivateKey(ecPrivateKeyParameters);
 
     // To Public Key
     PublicKey publicKey = BcKeyUtils.toPublicKey(ecPrivateKey);

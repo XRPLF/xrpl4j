@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
@@ -28,7 +27,7 @@ class AmmDeleteTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(9))
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156", KeyType.ED25519
+        "EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156"
       ))
       .build();
 
@@ -64,7 +63,7 @@ class AmmDeleteTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(9))
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156", KeyType.ED25519
+        "EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156"
       ))
       .putUnknownFields("Foo", "Bar")
       .build();
@@ -102,7 +101,7 @@ class AmmDeleteTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(9))
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156", KeyType.ED25519
+        "EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156"
       ))
       .build();
 
@@ -124,7 +123,7 @@ class AmmDeleteTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(9))
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156", KeyType.ED25519
+        "EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156"
       ))
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();

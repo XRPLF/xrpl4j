@@ -56,7 +56,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       .clearFlag(AccountSetFlag.DEFAULT_RIPPLE)
       .emailHash("f9879d71855b5ff21e4963273a886bfc")
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .flags(AccountSetTransactionFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .mintAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
@@ -99,7 +99,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       .tickSize(UnsignedInteger.valueOf(15))
       .clearFlag(AccountSetFlag.DEFAULT_RIPPLE)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .flags(AccountSetTransactionFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .mintAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
@@ -139,7 +139,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       .tickSize(UnsignedInteger.valueOf(15))
       .clearFlag(AccountSetFlag.DEFAULT_RIPPLE)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .flags(AccountSetTransactionFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .mintAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
@@ -182,7 +182,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       .clearFlag(AccountSetFlag.DEFAULT_RIPPLE)
       .emailHash(Strings.repeat("0", 32))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .flags(AccountSetTransactionFlags.of(0))
       .mintAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
@@ -222,7 +222,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       .clearFlag(AccountSetFlag.DEFAULT_RIPPLE)
       .emailHash("f9879d71855b5ff21e4963273a886bfc")
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .mintAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .build();
@@ -260,7 +260,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       .clearFlag(AccountSetFlag.NONE)
       .emailHash("f9879d71855b5ff21e4963273a886bfc")
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .mintAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .build();
@@ -293,7 +293,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       .setFlagRawValue(UnsignedInteger.valueOf(4294967295L))
       .clearFlagRawValue(UnsignedInteger.valueOf(4294967295L))
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "ED03FCED79BB3699089BC3F0F57BBD9F9ABA4772C20EC14BFAE908B4299344194A", KeyType.ED25519
+        "ED03FCED79BB3699089BC3F0F57BBD9F9ABA4772C20EC14BFAE908B4299344194A"
       ))
       .transactionSignature(Signature.fromBase16("8D0915449FB617234DD54E1BA79136B50C4439696BB4287F" +
         "CA25717F3FD4875D5A1FEE6269B91D71D9306B48DECAAE1F1C91CAD1AAD0E0D683DC11E68212740E"))
@@ -332,7 +332,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       .setFlagRawValue(UnsignedInteger.valueOf(11))
       .clearFlagRawValue(UnsignedInteger.valueOf(11))
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "ED03FCED79BB3699089BC3F0F57BBD9F9ABA4772C20EC14BFAE908B4299344194A", KeyType.ED25519
+        "ED03FCED79BB3699089BC3F0F57BBD9F9ABA4772C20EC14BFAE908B4299344194A"
       ))
       .transactionSignature(Signature.fromBase16("8D0915449FB617234DD54E1BA79136B50C4439696BB4287F" +
         "CA25717F3FD4875D5A1FEE6269B91D71D9306B48DECAAE1F1C91CAD1AAD0E0D683DC11E68212740E"))
@@ -376,7 +376,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       .clearFlag(AccountSetFlag.DEFAULT_RIPPLE)
       .emailHash("f9879d71855b5ff21e4963273a886bfc")
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .flags(AccountSetTransactionFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .mintAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))

@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -66,7 +65,7 @@ class SignedTransactionTest {
       .destination(Address.of("rDNvjMc6LjtpR7BdfiSNvavUBjznhhmpNq"))
       .amount(XrpCurrencyAmount.ofDrops(1))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("0281E58C76A7EB8397C008CB6B6D325FF6765F008CF845AF5EB02DAB6D222C612C", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("0281E58C76A7EB8397C008CB6B6D325FF6765F008CF845AF5EB02DAB6D222C612C")
       )
       .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .destinationTag(UnsignedInteger.valueOf(371969))
@@ -120,7 +119,7 @@ class SignedTransactionTest {
       ))
       .sequence(UnsignedInteger.valueOf(84987644))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED05DC98B76FCD734BD44CDF153C34F79728485D2F24F9381CF7A284223EA258CE", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED05DC98B76FCD734BD44CDF153C34F79728485D2F24F9381CF7A284223EA258CE")
       )
       .build();
 
@@ -173,7 +172,7 @@ class SignedTransactionTest {
       ))
       .sequence(UnsignedInteger.valueOf(84987644))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED05DC98B76FCD734BD44CDF153C34F79728485D2F24F9381CF7A284223EA258CE", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED05DC98B76FCD734BD44CDF153C34F79728485D2F24F9381CF7A284223EA258CE")
       )
       .build();
 

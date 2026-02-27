@@ -27,7 +27,6 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
@@ -49,7 +48,7 @@ public class PaymentChannelFundTest extends AbstractJsonTest {
       .amount(XrpCurrencyAmount.ofDrops(200000))
       .expiration(UnsignedLong.valueOf(543171558))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .networkId(NetworkId.of(1024))
       .build();
@@ -79,7 +78,7 @@ public class PaymentChannelFundTest extends AbstractJsonTest {
       .amount(XrpCurrencyAmount.ofDrops(200000))
       .expiration(UnsignedLong.valueOf(543171558))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .flags(TransactionFlags.UNSET)
       .build();
@@ -109,7 +108,7 @@ public class PaymentChannelFundTest extends AbstractJsonTest {
       .amount(XrpCurrencyAmount.ofDrops(200000))
       .expiration(UnsignedLong.valueOf(543171558))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
@@ -139,7 +138,7 @@ public class PaymentChannelFundTest extends AbstractJsonTest {
       .amount(XrpCurrencyAmount.ofDrops(200000))
       .expiration(UnsignedLong.valueOf(543171558))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .networkId(NetworkId.of(1024))
       .putUnknownFields("Foo", "Bar")

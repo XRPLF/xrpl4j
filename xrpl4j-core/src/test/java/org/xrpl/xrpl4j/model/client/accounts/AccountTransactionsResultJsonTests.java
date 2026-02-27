@@ -25,7 +25,6 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -67,7 +66,7 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
                 .sequence(UnsignedInteger.valueOf(702819))
                 .signingPublicKey(
                   PublicKey.fromBase16EncodedPublicKey(
-                    "020A46D8D02AC780C59853ACA309EAA92E7D8E02DD72A0B6AC315A7D18A6C3276A", KeyType.SECP256K1
+                    "020A46D8D02AC780C59853ACA309EAA92E7D8E02DD72A0B6AC315A7D18A6C3276A"
                   )
                 )
                 .transactionSignature(Signature.fromBase16(
@@ -102,7 +101,7 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
               .sequence(UnsignedInteger.valueOf(466334))
               .signingPublicKey(
                 PublicKey.fromBase16EncodedPublicKey(
-                  "0381575032E254BF4D699C3D8D6EFDB63B3A71F97475C6F6885BC7DAEEE55D9A01", KeyType.SECP256K1
+                  "0381575032E254BF4D699C3D8D6EFDB63B3A71F97475C6F6885BC7DAEEE55D9A01"
                 )
               )
               .transactionSignature(Signature.fromBase16(

@@ -22,18 +22,22 @@ package org.xrpl.xrpl4j.crypto.keys;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
+import com.google.common.primitives.UnsignedInteger;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Lazy;
+import org.xrpl.xrpl4j.codec.addresses.AddressBase58;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.Decoded;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.PublicKeyCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.model.jackson.modules.PublicKeyDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.PublicKeySerializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -60,7 +64,7 @@ public interface PublicKey {
    * {@link PublicKey} that can be used as the {@link Transaction#signingPublicKey()} value for multi-signed
    * transactions.
    */
-  PublicKey MULTI_SIGN_PUBLIC_KEY = PublicKey.builder().value(UnsignedByteArray.empty()).keyType(KeyType.ED25519).build();
+  PublicKey MULTI_SIGN_PUBLIC_KEY = PublicKey.builder().value(UnsignedByteArray.empty()).build();
 
   /**
    * Instantiates a new builder.
@@ -75,11 +79,10 @@ public interface PublicKey {
    * Construct a {@link PublicKey} from a base58-encoded {@link String}.
    *
    * @param base58EncodedPublicKey A base58-encoded {@link String}.
-   * @param keyType                The {@link KeyType} of the public key.
    *
    * @return A {@link PrivateKey}.
    */
-  static PublicKey fromBase58EncodedPublicKey(final String base58EncodedPublicKey, KeyType keyType) {
+  static PublicKey fromBase58EncodedPublicKey(final String base58EncodedPublicKey) {
     Objects.requireNonNull(base58EncodedPublicKey);
 
     if (base58EncodedPublicKey.isEmpty()) {
@@ -88,7 +91,6 @@ public interface PublicKey {
 
     return PublicKey.builder()
       .value(PublicKeyCodec.getInstance().decodeAccountPublicKey(base58EncodedPublicKey))
-      .keyType(keyType)
       .build();
   }
 
@@ -96,11 +98,10 @@ public interface PublicKey {
    * Construct a {@link PrivateKey} from a base16-encoded (HEX) {@link String}.
    *
    * @param base16EncodedPublicKey A base16-encoded (HEX) {@link String}.
-   * @param keyType                The {@link KeyType} of the public key.
    *
    * @return A {@link PrivateKey}.
    */
-  static PublicKey fromBase16EncodedPublicKey(final String base16EncodedPublicKey, KeyType keyType) {
+  static PublicKey fromBase16EncodedPublicKey(final String base16EncodedPublicKey) {
     Objects.requireNonNull(base16EncodedPublicKey);
 
     if (base16EncodedPublicKey.isEmpty()) {
@@ -109,7 +110,6 @@ public interface PublicKey {
 
     return PublicKey.builder()
       .value(UnsignedByteArray.of(BaseEncoding.base16().decode(base16EncodedPublicKey.toUpperCase())))
-      .keyType(keyType)
       .build();
   }
 
@@ -119,13 +119,6 @@ public interface PublicKey {
    * @return An instance of {@link UnsignedByteArray}.
    */
   UnsignedByteArray value();
-
-  /**
-   * The type of this key.
-   *
-   * @return A {@link KeyType}.
-   */
-  KeyType keyType();
 
   /**
    * The public-key, as a base-58 encoded {@link String}.
@@ -150,6 +143,16 @@ public interface PublicKey {
   @Derived
   default String base16Value() {
     return this.value().hexValue();
+  }
+
+  /**
+   * The type of this key.
+   *
+   * @return A {@link KeyType}.
+   */
+  @Derived
+  default KeyType keyType() {
+    return this.base16Value().startsWith("ED") ? KeyType.ED25519 : KeyType.SECP256K1;
   }
 
   /**

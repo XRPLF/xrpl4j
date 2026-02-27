@@ -23,7 +23,6 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 import java.io.IOException;
@@ -42,8 +41,7 @@ public class PublicKeyDeserializer extends StdDeserializer<PublicKey> {
 
   @Override
   public PublicKey deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
-    KeyType keyType = !jsonParser.getText().startsWith("ED") ? KeyType.SECP256K1 : KeyType.ED25519;
-    return PublicKey.fromBase16EncodedPublicKey(jsonParser.getText(), keyType);
+    return PublicKey.fromBase16EncodedPublicKey(jsonParser.getText());
   }
 
 }

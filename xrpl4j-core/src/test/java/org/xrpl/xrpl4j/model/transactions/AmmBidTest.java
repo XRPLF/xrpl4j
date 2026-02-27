@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -22,7 +21,7 @@ class AmmBidTest extends AbstractJsonTest {
     AmmBid bid = AmmBid.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .asset(Issue.XRP)
       .asset2(
@@ -74,7 +73,7 @@ class AmmBidTest extends AbstractJsonTest {
     AmmBid bid = AmmBid.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .asset(Issue.XRP)
       .asset2(
@@ -128,7 +127,7 @@ class AmmBidTest extends AbstractJsonTest {
     AmmBid bid = AmmBid.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .asset(Issue.XRP)
       .asset2(
@@ -183,7 +182,7 @@ class AmmBidTest extends AbstractJsonTest {
     AmmBid bid = AmmBid.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .asset(Issue.XRP)
       .asset2(
@@ -280,7 +279,7 @@ class AmmBidTest extends AbstractJsonTest {
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .sequence(UnsignedInteger.valueOf(87704195))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED2D15BC6B61D6520011E4C794C5B320E584106154D0865BB095D70DA9A2A57B57", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED2D15BC6B61D6520011E4C794C5B320E584106154D0865BB095D70DA9A2A57B57")
       )
       .transactionSignature(
         Signature.fromBase16("F652BD5369F6EE9A8A1490BD37B8240CEE2B4B6EF94D22EC2DBB6912AA729B829" +
@@ -321,7 +320,7 @@ class AmmBidTest extends AbstractJsonTest {
     AmmBid bid = AmmBid.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .asset(Issue.XRP)
       .asset2(
@@ -375,7 +374,7 @@ class AmmBidTest extends AbstractJsonTest {
     AmmBid ammBid = AmmBid.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .asset(Issue.XRP)
       .asset2(
@@ -397,7 +396,7 @@ class AmmBidTest extends AbstractJsonTest {
     AmmBid original = AmmBid.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
       .asset(Issue.XRP)
       .asset2(

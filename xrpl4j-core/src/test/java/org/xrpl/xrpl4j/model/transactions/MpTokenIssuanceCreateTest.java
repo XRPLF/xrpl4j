@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
@@ -20,7 +19,7 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(15))
       .sequence(UnsignedInteger.valueOf(321))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
       )
       .flags(MpTokenIssuanceCreateFlags.builder()
         .tfMptCanLock(true)
@@ -59,7 +58,7 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(15))
       .sequence(UnsignedInteger.valueOf(321))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
       )
       .build();
 
@@ -74,7 +73,7 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(15))
       .sequence(UnsignedInteger.valueOf(321))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
       )
       .flags(MpTokenIssuanceCreateFlags.builder()
         .tfMptCanTransfer(true)
@@ -93,7 +92,7 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(15))
       .sequence(UnsignedInteger.valueOf(321))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
       )
       .flags(MpTokenIssuanceCreateFlags.builder()
         .tfMptCanTransfer(true)

@@ -36,7 +36,7 @@ public interface TestConstants {
   // ED25519 Public Key
   String ED_PUBLIC_KEY_HEX = "ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE";
   String ED_PUBLIC_KEY_B58 = "aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B";
-  PublicKey ED_PUBLIC_KEY = PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX, KeyType.ED25519);
+  PublicKey ED_PUBLIC_KEY = PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX);
 
   String ED_PRIVATE_KEY_HEX = "B224AFDCCEC7AA4E245E35452585D4FBBE37519BCA3929578BFC5BBD4640E163";
   String ED_PRIVATE_KEY_WITH_PREFIX_HEX = "ED" + ED_PRIVATE_KEY_HEX;
@@ -56,7 +56,7 @@ public interface TestConstants {
   // Secp256k1 Public Key
   String EC_PUBLIC_KEY_HEX = "027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9";
   String EC_PUBLIC_KEY_B58 = "aB4ifx88a26RYRSSzeKW8HpbXfbpzQFRsX6dMNmMwEVHUTKzfWdk";
-  PublicKey EC_PUBLIC_KEY = PublicKey.fromBase16EncodedPublicKey(EC_PUBLIC_KEY_HEX, KeyType.SECP256K1);
+  PublicKey EC_PUBLIC_KEY = PublicKey.fromBase16EncodedPublicKey(EC_PUBLIC_KEY_HEX);
 
   String EC_PRIVATE_KEY_HEX = "DAD3C2B4BF921398932C889DE5335F89D90249355FC6FFB73F1256D2957F9F17";
   String EC_PRIVATE_KEY_WITH_PREFIX_HEX = "00" + EC_PRIVATE_KEY_HEX;
@@ -69,25 +69,6 @@ public interface TestConstants {
   static PrivateKey getEcPrivateKey() {
     return PrivateKey.fromNaturalBytes(
       UnsignedByteArray.of(BaseEncoding.base16().decode(EC_PRIVATE_KEY_HEX)), KeyType.SECP256K1
-    );
-  }
-
-  // ElGamal Public Key
-  String ELGAMAL_PUBLIC_KEY_HEX = "02F56CE1E425A98E7D2FEC83B051124F3966E7206AD9ED590F15A59885359F5289";
-  String ELGAMAL_PUBLIC_KEY_B58 = "aBPFbh2jo3JgtQSgu7H4jYNsjPAmqKQTKyFDyNHcwUeXzs25GdEA";
-  PublicKey ELGAMAL_PUBLIC_KEY = PublicKey.fromBase16EncodedPublicKey(ELGAMAL_PUBLIC_KEY_HEX, KeyType.ELGAMAL_SECP256K1);
-
-  String ELGAMAL_PRIVATE_KEY_HEX = "4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4";
-  String ELGAMAL_PRIVATE_KEY_WITH_PREFIX_HEX = "01" + ELGAMAL_PRIVATE_KEY_HEX;
-
-  /**
-   * Helper method to return a newly constructed {@link PrivateKey} with its own copy of bytes.
-   *
-   * @return A {@link PrivateKey}.
-   */
-  static PrivateKey getElGamalPrivateKey() {
-    return PrivateKey.fromNaturalBytes(
-      UnsignedByteArray.of(BaseEncoding.base16().decode(ELGAMAL_PRIVATE_KEY_HEX)), KeyType.ELGAMAL_SECP256K1
     );
   }
 

@@ -196,11 +196,7 @@ public interface Seed extends javax.security.auth.Destroyable {
    * @return A {@link Seed}.
    */
   static Seed elGamalSecp256k1Seed() {
-    Entropy entropy;
-    do {
-      entropy = Entropy.newInstance(32);
-    } while (!DefaultSeed.ElGamalSecp256k1KeyPairService.isValidScalar(entropy.value()));
-    return elGamalSecp256k1SeedFromEntropy(entropy);
+    return elGamalSecp256k1SeedFromEntropy(Entropy.newInstance(32));
   }
 
   /**
@@ -216,7 +212,7 @@ public interface Seed extends javax.security.auth.Destroyable {
 
     final String base58EncodedSeed = AddressBase58.encode(
       entropy.value(),
-      Lists.newArrayList(Version.ELGAMAL_SEED),
+      Lists.newArrayList(Version.FAMILY_SEED),
       UnsignedInteger.valueOf(entropy.value().length())
     );
 
@@ -275,20 +271,12 @@ public interface Seed extends javax.security.auth.Destroyable {
 
     /**
      * The decoded details of this seed.
-     * SECP256K1 seed bytes = Version (1) + Entropy (16) + Checksum (4) = 21 bytes
-     * ED25519 seed bytes = Version (3) + Entropy (16) + Checksum (4) = 23 bytes
-     * ELGAMAL_SECP256K1 seed bytes = Version (2) + Entropy (32) + Checksum (4) = 38 bytes
+     *
      * @return An instance of {@link Decoded}.
      */
     public Decoded decodedSeed() {
       final byte[] copiedByteValue = new byte[this.value.length()];
       System.arraycopy(this.value.toByteArray(), 0, copiedByteValue, 0, value.length());
-
-      if (copiedByteValue.length == 38) {
-        return SeedCodec.getInstance().decodeElGamalSeed(
-          Base58.encode(copiedByteValue)
-        );
-      }
 
       return SeedCodec.getInstance().decodeSeed(
         Base58.encode(copiedByteValue)
@@ -306,9 +294,6 @@ public interface Seed extends javax.security.auth.Destroyable {
         }
         case SECP256K1: {
           return Secp256k1KeyPairService.deriveKeyPair(this);
-        }
-        case ELGAMAL_SECP256K1: {
-          return ElGamalSecp256k1KeyPairService.deriveKeyPair(this);
         }
         default: {
           throw new IllegalArgumentException("Unsupported seed type.");
@@ -393,7 +378,7 @@ public interface Seed extends javax.security.auth.Destroyable {
 
         return KeyPair.builder()
           .privateKey(PrivateKey.fromNaturalBytes(UnsignedByteArray.of(privateKey.getEncoded()), KeyType.ED25519))
-          .publicKey(PublicKey.fromBase16EncodedPublicKey(prefixedPublicKey.hexValue(), KeyType.ED25519))
+          .publicKey(PublicKey.fromBase16EncodedPublicKey(prefixedPublicKey.hexValue()))
           .build();
       }
     }
@@ -462,7 +447,7 @@ public interface Seed extends javax.security.auth.Destroyable {
 
         return KeyPair.builder()
           .privateKey(PrivateKey.fromPrefixedBytes(Secp256k1.toUnsignedByteArray(privateKeyInt, 33)))
-          .publicKey(PublicKey.builder().value(publicKeyByteArray).keyType(KeyType.SECP256K1).build())
+          .publicKey(PublicKey.builder().value(publicKeyByteArray).build())
           .build();
       }
 
@@ -557,79 +542,6 @@ public interface Seed extends javax.security.auth.Destroyable {
         }
 
         return key;
-      }
-    }
-
-    /**
-     * Encapsulates algorithms to derive ElGamal keys using the secp256k1 curve.
-     *
-     * <p>Unlike standard XRPL key derivation (Ed25519/secp256k1), ElGamal key derivation
-     * uses the 32-byte entropy directly as the private key without any hashing or derivation.</p>
-     */
-    @VisibleForTesting
-    static class ElGamalSecp256k1KeyPairService {
-
-      /**
-       * Static constants for Secp256k1.
-       */
-      static X9ECParameters EC_PARAMETERS = SECNamedCurves.getByName("secp256k1");
-      static ECDomainParameters EC_DOMAIN_PARAMETERS = new ECDomainParameters(
-        EC_PARAMETERS.getCurve(),
-        EC_PARAMETERS.getG(),
-        EC_PARAMETERS.getN(),
-        EC_PARAMETERS.getH()
-      );
-
-      /**
-       * Private, no-args constructor to prevent instantiation.
-       */
-      private ElGamalSecp256k1KeyPairService() {
-      }
-
-      /**
-       * Checks if the given entropy bytes represent a valid secp256k1 scalar.
-       *
-       * <p>A valid scalar must satisfy: 1 ≤ scalar &lt; n (curve order).</p>
-       *
-       * @param entropyBytes The entropy bytes to check.
-       *
-       * @return {@code true} if the entropy is a valid scalar, {@code false} otherwise.
-       */
-      static boolean isValidScalar(final UnsignedByteArray entropyBytes) {
-        Objects.requireNonNull(entropyBytes);
-        BigInteger scalar = new BigInteger(1, entropyBytes.toByteArray());
-        return scalar.compareTo(BigInteger.ZERO) > 0 && scalar.compareTo(EC_DOMAIN_PARAMETERS.getN()) < 0;
-      }
-
-      /**
-       * Derive a {@link KeyPair} from the supplied {@code seed}.
-       *
-       * <p>For ElGamal, the 32-byte entropy is used directly as the private key (no hashing).
-       * The entropy must be a valid secp256k1 scalar (1 ≤ scalar &lt; n).
-       * The public key is derived by multiplying the generator point G by the private key scalar.</p>
-       *
-       * @param seed A {@link Seed}.
-       *
-       * @return A newly generated {@link KeyPair}.
-       */
-      public static KeyPair deriveKeyPair(final Seed seed) {
-        Objects.requireNonNull(seed);
-
-        // The entropy is used directly as the private key (no derivation/hashing)
-        UnsignedByteArray entropyBytes = seed.decodedSeed().bytes();
-        BigInteger privateKeyScalar = new BigInteger(1, entropyBytes.toByteArray());
-
-        // Derive public key: publicKey = privateKey * G
-        UnsignedByteArray publicKeyBytes = UnsignedByteArray.of(
-          EC_DOMAIN_PARAMETERS.getG().multiply(privateKeyScalar).getEncoded(true)
-        );
-        // Ensure public key is 33 bytes (compressed format)
-        publicKeyBytes = Secp256k1.withZeroPrefixPadding(publicKeyBytes, 33);
-
-        return KeyPair.builder()
-          .privateKey(PrivateKey.fromNaturalBytes(entropyBytes, KeyType.ELGAMAL_SECP256K1))
-          .publicKey(PublicKey.builder().value(publicKeyBytes).keyType(KeyType.ELGAMAL_SECP256K1).build())
-          .build();
       }
     }
 

@@ -8,7 +8,6 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -209,7 +208,7 @@ class XChainAddAccountCreateAttestationTest extends AbstractJsonTest {
       .destination(Address.of("rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd"))
       .amount(XrpCurrencyAmount.ofDrops(2000000000))
       .publicKey(
-        PublicKey.fromBase16EncodedPublicKey("EDF7C3F9C80C102AF6D241752B37356E91ED454F26A35C567CF6F8477960F66614", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("EDF7C3F9C80C102AF6D241752B37356E91ED454F26A35C567CF6F8477960F66614")
       )
       .signature(
         Signature.fromBase16("F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E" +

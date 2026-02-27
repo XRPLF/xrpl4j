@@ -28,7 +28,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 import java.io.IOException;
@@ -49,7 +48,7 @@ class PublicKeySerializerTest {
   @Test
   void testSerialize() throws IOException {
     JsonGenerator jsonGeneratorMock = mock(JsonGenerator.class);
-    PublicKey expected = PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX, KeyType.ED25519);
+    PublicKey expected = PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX);
 
     serializer.serialize(expected, jsonGeneratorMock, mock(SerializerProvider.class));
     verify(jsonGeneratorMock).writeString(ED_PUBLIC_KEY_HEX);

@@ -59,14 +59,6 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    */
   public static final UnsignedByte SECP256K1_PREFIX = UnsignedByte.of(0x00);
 
-  /**
-   * This is to distinguish ElGamal secp256k1 private keys (Generated from 32 bytes of entropy) from
-   * secp256k1 private keys (Generated from 16 bytes of entropy) that are used for signing transactions.
-   * Note: This is not a standard XRPL prefix. It is specific to xrpl4j.
-   */
-  public static final UnsignedByte ELGAMAL_SECP256K1_PREFIX = UnsignedByte.of(0x01);
-
-
   private final UnsignedByteArray value;
 
   private final KeyType keyType;
@@ -106,8 +98,6 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
       return new PrivateKey(value.slice(1, 33), KeyType.ED25519);
     } else if (SECP256K1_PREFIX.equals(prefixByte)) {
       return new PrivateKey(value.slice(1, 33), KeyType.SECP256K1);
-    } else if (ELGAMAL_SECP256K1_PREFIX.equals(prefixByte)) {
-      return new PrivateKey(value.slice(1, 33), KeyType.ELGAMAL_SECP256K1);
     } else {
       throw new IllegalArgumentException(String.format(
         "PrivateKey construction requires 32 natural bytes plug a one-byte prefix value of either `0xED` for ed25519 " +
@@ -219,10 +209,6 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
         }
         case SECP256K1: {
           return UnsignedByteArray.of(SECP256K1_PREFIX)
-            .append(this.naturalBytes()); // <-- Forward to this function to guarantee copied bytes
-        }
-        case ELGAMAL_SECP256K1: {
-          return UnsignedByteArray.of(ELGAMAL_SECP256K1_PREFIX)
             .append(this.naturalBytes()); // <-- Forward to this function to guarantee copied bytes
         }
         default: {

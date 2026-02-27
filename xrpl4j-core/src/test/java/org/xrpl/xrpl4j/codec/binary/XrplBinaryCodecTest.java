@@ -35,7 +35,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.fixtures.FixtureUtils;
 import org.xrpl.xrpl4j.codec.fixtures.codec.CodecFixture;
@@ -303,7 +302,7 @@ class XrplBinaryCodecTest {
         .build())
       .destination(Address.of("rrrrrrrrrrrrrrrrrrrrBZbvji"))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
       )
       .flags(PaymentFlags.builder().tfPartialPayment(true).build())
       .destinationTag(UnsignedInteger.valueOf(2))
@@ -320,7 +319,7 @@ class XrplBinaryCodecTest {
       SignerWrapper.of(Signer.builder()
         .signingPublicKey(
           PublicKey.fromBase16EncodedPublicKey(
-            "02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF", KeyType.SECP256K1
+            "02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF"
           )
         )
         .transactionSignature(Signature.fromBase16(
@@ -332,7 +331,7 @@ class XrplBinaryCodecTest {
       SignerWrapper.of(Signer.builder()
         .signingPublicKey(
           PublicKey.fromBase16EncodedPublicKey(
-            "028FFB276505F9AC3F57E8D5242B386A597EF6C40A7999F37F1948636FD484E25B", KeyType.SECP256K1
+            "028FFB276505F9AC3F57E8D5242B386A597EF6C40A7999F37F1948636FD484E25B"
           )
         )
         .transactionSignature(Signature.fromBase16(
@@ -378,7 +377,7 @@ class XrplBinaryCodecTest {
     List<SignerWrapper> signers = Lists.newArrayList(
       SignerWrapper.of(Signer.builder()
         .signingPublicKey(
-          PublicKey.fromBase16EncodedPublicKey("02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF", KeyType.SECP256K1)
+          PublicKey.fromBase16EncodedPublicKey("02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF")
         )
         .transactionSignature(Signature.fromBase16(
           "30450221009C195DBBF7967E223D8626CA19CF02073667F2B22E206727BFE848" +
@@ -388,7 +387,7 @@ class XrplBinaryCodecTest {
       ),
       SignerWrapper.of(Signer.builder()
         .signingPublicKey(
-          PublicKey.fromBase16EncodedPublicKey("028FFB276505F9AC3F57E8D5242B386A597EF6C40A7999F37F1948636FD484E25B", KeyType.SECP256K1)
+          PublicKey.fromBase16EncodedPublicKey("028FFB276505F9AC3F57E8D5242B386A597EF6C40A7999F37F1948636FD484E25B")
         )
         .transactionSignature(Signature.fromBase16(
           "30440220680BBD745004E9CFB6B13A137F505FB92298AD309071D16C7B982825" +
@@ -507,7 +506,7 @@ class XrplBinaryCodecTest {
 
   private static final Address BATCH_ACCOUNT = Address.of("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK");
   private static final PublicKey BATCH_ACCOUNT_SIGNING_PUB_KEY =
-    PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020", KeyType.SECP256K1);
+    PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020");
 
   @Test
   void encodeForBatchInnerSigningWithTwoTransactions() throws JsonProcessingException {

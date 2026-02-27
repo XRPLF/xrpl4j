@@ -33,7 +33,6 @@ import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
@@ -1073,7 +1072,7 @@ public class BinarySerializationTests {
         .value(IssuedCurrencyAmount.MAX_VALUE)
         .build())
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156")
       )
       .build();
 
@@ -1108,7 +1107,7 @@ public class BinarySerializationTests {
         .value(new BigDecimal(IssuedCurrencyAmount.MAX_VALUE).scaleByPowerOfTen(-1).toString())
         .build())
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED930B5CBBBCA68DE43CC928E4F3860151E1E5F10D52478B38512651363F4DE8D0", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED930B5CBBBCA68DE43CC928E4F3860151E1E5F10D52478B38512651363F4DE8D0")
       )
       .build();
 
@@ -1187,7 +1186,7 @@ public class BinarySerializationTests {
         .value(IssuedCurrencyAmount.MIN_POSITIVE_VALUE)
         .build())
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED55D61E72F14EC798ABC10BC96381573717658B46F58E416EC0C74A467835AB4D", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED55D61E72F14EC798ABC10BC96381573717658B46F58E416EC0C74A467835AB4D")
       )
       .build();
 
@@ -1224,7 +1223,7 @@ public class BinarySerializationTests {
         .value(value.toString())
         .build())
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED098659726D4B0CDCD35E37135766FF2038579291351CC08DE70C32851D049A83", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED098659726D4B0CDCD35E37135766FF2038579291351CC08DE70C32851D049A83")
       )
       .build();
 
@@ -1261,7 +1260,7 @@ public class BinarySerializationTests {
         .value(value.toString())
         .build())
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED098659726D4B0CDCD35E37135766FF2038579291351CC08DE70C32851D049A83", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED098659726D4B0CDCD35E37135766FF2038579291351CC08DE70C32851D049A83")
       )
       .build();
 
@@ -1789,7 +1788,7 @@ public class BinarySerializationTests {
       .sequence(UnsignedInteger.ONE)
       .signatureReward(XrpCurrencyAmount.ofDrops(10000))
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB3265" +
-        "4A313222F7FD020", KeyType.SECP256K1))
+        "4A313222F7FD020"))
       .transactionSignature(Signature.fromBase16(
         "304402202984DDE7F0B566F081F7953D7212BF031ACBF8860FE114102E9512C4C8768C770220701" +
           "13F4630B1DC3045E4A98DDD648CEBC31B12774F7B44A1B8123CD2C9F5CF18")
@@ -1827,7 +1826,7 @@ public class BinarySerializationTests {
       .destination(Address.of("rJdTJRJZ6GXCCRaamHJgEqVzB7Zy4557Pi"))
       .amount(XrpCurrencyAmount.ofDrops(10000000))
       .publicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED1F4A024ACFEBDB6C7AA88DEDE3364E060487EA31B14CC9E0D610D152B31AADC2", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED1F4A024ACFEBDB6C7AA88DEDE3364E060487EA31B14CC9E0D610D152B31AADC2")
       )
       .signature(
         Signature.fromBase16("EEFCFA3DC2AB4AB7C4D2EBBC168CB621A11B82BABD86534DFC8EFA72439A49662" +
@@ -1850,7 +1849,7 @@ public class BinarySerializationTests {
       .sequence(UnsignedInteger.valueOf(5))
       .lastLedgerSequence(UnsignedInteger.valueOf(13))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("EDF54108BA2E0A0D3DC2AE3897F8BE0EFE776AE8D0F9FB0D0B9D64233084A8DDD1", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("EDF54108BA2E0A0D3DC2AE3897F8BE0EFE776AE8D0F9FB0D0B9D64233084A8DDD1")
       )
       .transactionSignature(
         Signature.fromBase16("03E74AEF1F585F156786429D2FC87A89E5C6B5A56D68BFC9A6A329F3AC67CBF" +
@@ -1884,14 +1883,14 @@ public class BinarySerializationTests {
       .otherChainSource(Address.of("raFcdz1g8LWJDJWJE2ZKLRGdmUmsTyxaym"))
       .sequence(UnsignedInteger.valueOf(9))
       .publicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED7541DEC700470F54276C90C333A13CDBB5D341FD43C60CEA12170F6D6D4E1136", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED7541DEC700470F54276C90C333A13CDBB5D341FD43C60CEA12170F6D6D4E1136")
       )
       .signature(
         Signature.fromBase16("7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44" +
           "528FE99AA50E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C")
       )
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED0406B134786FE0751717226657F7BF8AFE96442C05D28ACEC66FB64852BA604C", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED0406B134786FE0751717226657F7BF8AFE96442C05D28ACEC66FB64852BA604C")
       )
       .wasLockingChainSend(true)
       .xChainBridge(
@@ -1930,7 +1929,7 @@ public class BinarySerializationTests {
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
       )
       .amount(XrpCurrencyAmount.ofDrops(10000))
       .transactionSignature(
@@ -1977,7 +1976,7 @@ public class BinarySerializationTests {
       )
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
       )
       .transactionSignature(
         Signature.fromBase16("3043021F177323F0D93612C82A4393A99B23905A7E675753FD80C52997AFA" +
@@ -2012,7 +2011,7 @@ public class BinarySerializationTests {
       )
       .minAccountCreateAmount(XrpCurrencyAmount.ofDrops(10000))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
       )
       .transactionSignature(
         Signature.fromBase16("30440220101BCA4B5B5A37C6F44480F9A34752C9AA8B2CDF5AD47E3CB424DEDC" +
@@ -2049,7 +2048,7 @@ public class BinarySerializationTests {
       )
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
       )
       .transactionSignature(
         Signature.fromBase16("30440220247B20A1B9C48E21A374CB9B3E1FE2A7C528151868DF8D307E9FBE" +
@@ -2085,7 +2084,7 @@ public class BinarySerializationTests {
       .minAccountCreateAmount(XrpCurrencyAmount.ofDrops(10000))
       .flags(XChainModifyBridgeFlags.UNSET)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
       )
       .transactionSignature(
         Signature.fromBase16("3045022100D2CABC1B0E0635A8EE2E6554F6D474C49BC292C995C5C9F83179F" +
@@ -2111,7 +2110,7 @@ public class BinarySerializationTests {
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .sequence(UnsignedInteger.valueOf(3))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347")
       )
       .transactionSignature(
         Signature.fromBase16("AACD31A04CAE14670FC483A1382F393AA96B49C84479B58067F049FBD7729993" +
@@ -2138,7 +2137,7 @@ public class BinarySerializationTests {
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .sequence(UnsignedInteger.valueOf(3))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347")
       )
       .transactionSignature(
         Signature.fromBase16("AACD31A04CAE14670FC483A1382F393AA96B49C84479B58067F049FBD7729993" +
@@ -2164,7 +2163,7 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(4))
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347", KeyType.ED25519)
+        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347")
       )
       .transactionSignature(
         Signature.fromBase16("71E28B12465A1B47162C22E121DF61089DCD9AAF5773704B76179E771666" +
@@ -2190,7 +2189,7 @@ public class BinarySerializationTests {
       .provider(OracleProvider.of("68747470733A2F2F74687265657872702E646576"))
       .sequence(UnsignedInteger.valueOf(2019238))
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "EDA6501D3E53D47F10AE37A0C6B34194CF8A205DE9611FE81B63E7B62105E90EAC", KeyType.ED25519
+        "EDA6501D3E53D47F10AE37A0C6B34194CF8A205DE9611FE81B63E7B62105E90EAC"
       ))
       .lastUpdateTime(UnsignedInteger.valueOf(1715785124))
       .addPriceDataSeries(
@@ -2262,7 +2261,7 @@ public class BinarySerializationTests {
       .sequence(UnsignedInteger.valueOf(10))
       .lastLedgerSequence(UnsignedInteger.valueOf(17))
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
-        "ED6884529D21E8059F689827F5BF2AD5CBC138A3427A04C12B004C9BE9BBB22A77", KeyType.ED25519
+        "ED6884529D21E8059F689827F5BF2AD5CBC138A3427A04C12B004C9BE9BBB22A77"
       ))
       .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
       .build();
@@ -2279,7 +2278,7 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
       .flags(AmmWithdrawFlags.LP_TOKEN)
       .asset(Issue.builder()
@@ -2340,7 +2339,7 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A", KeyType.SECP256K1))
+        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A"))
       .asset(Issue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
@@ -2387,7 +2386,7 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
       .amount(
         IssuedCurrencyAmount.builder()
@@ -2421,7 +2420,7 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
       .asset(Issue.builder()
         .currency("4755534400000000000000000000000000000000")
@@ -2450,7 +2449,7 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
       .flags(AmmDepositFlags.SINGLE_ASSET)
       .asset(Issue.builder()
@@ -2513,7 +2512,7 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A", KeyType.SECP256K1)
+        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
       .asset(Issue.builder()
         .currency("4755534400000000000000000000000000000000")

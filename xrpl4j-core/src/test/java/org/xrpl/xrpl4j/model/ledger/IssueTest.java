@@ -210,7 +210,7 @@ class IssueTest extends AbstractJsonTest {
 
     NullPointerException exception = assertThrows(
       NullPointerException.class,
-      () -> currencyIssue.handle(null, mi -> {})
+      () -> currencyIssue.handle(null, mi -> { })
     );
   }
 
@@ -221,7 +221,7 @@ class IssueTest extends AbstractJsonTest {
 
     NullPointerException exception = assertThrows(
       NullPointerException.class,
-      () -> mptIssue.handle(ci -> {}, null)
+      () -> mptIssue.handle(ci -> { }, null)
     );
   }
 
@@ -248,7 +248,7 @@ class IssueTest extends AbstractJsonTest {
 
     IllegalStateException exception = assertThrows(
       IllegalStateException.class,
-      () -> unsupportedIssue.handle(ci -> {}, mi -> {})
+      () -> unsupportedIssue.handle(ci -> { }, mi -> { })
     );
 
     assertThat(exception.getMessage()).contains("Unsupported Issue Type");

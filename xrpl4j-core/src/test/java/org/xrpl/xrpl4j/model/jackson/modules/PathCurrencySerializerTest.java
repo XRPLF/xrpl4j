@@ -92,7 +92,7 @@ class PathCurrencySerializerTest {
   }
 
   @Test
-  void testSerializeCurrencyIssueThrowsIOException() throws IOException {
+  void testSerializeCurrencyIssueThrowsIoException() throws IOException {
     JsonGenerator jsonGeneratorMock = mock(JsonGenerator.class);
     PathCurrency pathCurrency = PathCurrency.of("USD");
 
@@ -110,7 +110,7 @@ class PathCurrencySerializerTest {
   }
 
   @Test
-  void testSerializeMptIssueThrowsIOException() throws IOException {
+  void testSerializeMptIssueThrowsIoException() throws IOException {
     JsonGenerator jsonGeneratorMock = mock(JsonGenerator.class);
     MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
     PathCurrency pathCurrency = PathCurrency.of(MptIssue.of(mptId));

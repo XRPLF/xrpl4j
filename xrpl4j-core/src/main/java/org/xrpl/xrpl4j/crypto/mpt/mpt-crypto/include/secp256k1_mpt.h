@@ -11,60 +11,61 @@ extern "C" {
 /**
  * @brief Generates a new secp256k1 key pair.
  */
-SECP256K1_API int
-secp256k1_elgamal_generate_keypair(
-    secp256k1_context const* ctx,
-    unsigned char* privkey,
-    secp256k1_pubkey* pubkey);
+SECP256K1_API int secp256k1_elgamal_generate_keypair(
+        const secp256k1_context* ctx,
+        unsigned char* privkey,
+        secp256k1_pubkey* pubkey
+);
 
 /**
  * @brief Encrypts a 64-bit amount using ElGamal.
  */
-SECP256K1_API int
-secp256k1_elgamal_encrypt(
-    secp256k1_context const* ctx,
-    secp256k1_pubkey* c1,
-    secp256k1_pubkey* c2,
-    secp256k1_pubkey const* pubkey_Q,
-    uint64_t amount,
-    unsigned char const* blinding_factor);
+SECP256K1_API int secp256k1_elgamal_encrypt(
+        const secp256k1_context* ctx,
+        secp256k1_pubkey* c1,
+        secp256k1_pubkey* c2,
+        const secp256k1_pubkey* pubkey_Q,
+        uint64_t amount,
+        const unsigned char* blinding_factor
+);
 
 /**
  * @brief Decrypts an ElGamal ciphertext to recover the amount.
  */
-SECP256K1_API int
-secp256k1_elgamal_decrypt(
-    secp256k1_context const* ctx,
-    uint64_t* amount,
-    secp256k1_pubkey const* c1,
-    secp256k1_pubkey const* c2,
-    unsigned char const* privkey);
+SECP256K1_API int secp256k1_elgamal_decrypt(
+        const secp256k1_context* ctx,
+        uint64_t* amount,
+        const secp256k1_pubkey* c1,
+        const secp256k1_pubkey* c2,
+        const unsigned char* privkey
+);
 
 /**
  * @brief Homomorphically adds two ElGamal ciphertexts.
  */
-SECP256K1_API int
-secp256k1_elgamal_add(
-    secp256k1_context const* ctx,
-    secp256k1_pubkey* sum_c1,
-    secp256k1_pubkey* sum_c2,
-    secp256k1_pubkey const* a_c1,
-    secp256k1_pubkey const* a_c2,
-    secp256k1_pubkey const* b_c1,
-    secp256k1_pubkey const* b_c2);
+SECP256K1_API int secp256k1_elgamal_add(
+        const secp256k1_context* ctx,
+        secp256k1_pubkey* sum_c1,
+        secp256k1_pubkey* sum_c2,
+        const secp256k1_pubkey* a_c1,
+        const secp256k1_pubkey* a_c2,
+        const secp256k1_pubkey* b_c1,
+        const secp256k1_pubkey* b_c2
+);
 
 /**
  * @brief Homomorphically subtracts two ElGamal ciphertexts.
  */
-SECP256K1_API int
-secp256k1_elgamal_subtract(
-    secp256k1_context const* ctx,
-    secp256k1_pubkey* diff_c1,
-    secp256k1_pubkey* diff_c2,
-    secp256k1_pubkey const* a_c1,
-    secp256k1_pubkey const* a_c2,
-    secp256k1_pubkey const* b_c1,
-    secp256k1_pubkey const* b_c2);
+SECP256K1_API int secp256k1_elgamal_subtract(
+        const secp256k1_context* ctx,
+        secp256k1_pubkey* diff_c1,
+        secp256k1_pubkey* diff_c2,
+        const secp256k1_pubkey* a_c1,
+        const secp256k1_pubkey* a_c2,
+        const secp256k1_pubkey* b_c1,
+        const secp256k1_pubkey* b_c2
+);
+
 
 /**
  * @brief Generates the canonical encrypted zero for a given MPT token instance.
@@ -81,15 +82,15 @@ secp256k1_elgamal_subtract(
  *
  * @return 1 on success, 0 on failure.
  */
-SECP256K1_API int
-generate_canonical_encrypted_zero(
-    secp256k1_context const* ctx,
-    secp256k1_pubkey* enc_zero_c1,
-    secp256k1_pubkey* enc_zero_c2,
-    secp256k1_pubkey const* pubkey,
-    unsigned char const* account_id,      // 20 bytes
-    unsigned char const* mpt_issuance_id  // 24 bytes
+SECP256K1_API int generate_canonical_encrypted_zero(
+        const secp256k1_context* ctx,
+        secp256k1_pubkey* enc_zero_c1,
+        secp256k1_pubkey* enc_zero_c2,
+        const secp256k1_pubkey* pubkey,
+        const unsigned char* account_id,     // 20 bytes
+        const unsigned char* mpt_issuance_id // 24 bytes
 );
+
 
 // ... (includes and previous ElGamal declarations) ...
 
@@ -118,16 +119,15 @@ generate_canonical_encrypted_zero(
  *
  * @return 1 on success, 0 on failure.
  */
-SECP256K1_API int
-secp256k1_equality_plaintext_prove(
-    secp256k1_context const* ctx,
-    unsigned char* proof,  // Output: 98 bytes
-    secp256k1_pubkey const* c1,
-    secp256k1_pubkey const* c2,
-    secp256k1_pubkey const* pk_recipient,
-    uint64_t amount,
-    unsigned char const* randomness_r,  // Secret input
-    unsigned char const* tx_context_id  // 32 bytes
+SECP256K1_API int secp256k1_equality_plaintext_prove(
+        const secp256k1_context* ctx,
+        unsigned char* proof,              // Output: 98 bytes
+        const secp256k1_pubkey* c1,
+        const secp256k1_pubkey* c2,
+        const secp256k1_pubkey* pk_recipient,
+        uint64_t amount,
+        const unsigned char* randomness_r, // Secret input
+        const unsigned char* tx_context_id // 32 bytes
 );
 
 /**
@@ -147,18 +147,18 @@ secp256k1_equality_plaintext_prove(
  *
  * @return 1 if the proof is valid, 0 otherwise.
  */
-SECP256K1_API int
-secp256k1_equality_plaintext_verify(
-    secp256k1_context const* ctx,
-    unsigned char const* proof,  // Input: 98 bytes
-    secp256k1_pubkey const* c1,
-    secp256k1_pubkey const* c2,
-    secp256k1_pubkey const* pk_recipient,
-    uint64_t amount,
-    unsigned char const* tx_context_id  // 32 bytes
+SECP256K1_API int secp256k1_equality_plaintext_verify(
+        const secp256k1_context* ctx,
+        const unsigned char* proof,        // Input: 98 bytes
+        const secp256k1_pubkey* c1,
+        const secp256k1_pubkey* c2,
+        const secp256k1_pubkey* pk_recipient,
+        uint64_t amount,
+        const unsigned char* tx_context_id // 32 bytes
 );
 
 // ... (rest of header, #endif etc.)
+
 
 /*
 ================================================================================
@@ -183,20 +183,16 @@ secp256k1_equality_plaintext_verify(
  *
  * @return 1 on success, 0 on failure.
  */
-SECP256K1_API int
-secp256k1_mpt_prove_same_plaintext(
-    secp256k1_context const* ctx,
-    unsigned char* proof_out,  // Output: 261 bytes
-    secp256k1_pubkey const* R1,
-    secp256k1_pubkey const* S1,
-    secp256k1_pubkey const* P1,
-    secp256k1_pubkey const* R2,
-    secp256k1_pubkey const* S2,
-    secp256k1_pubkey const* P2,
-    uint64_t amount_m,
-    unsigned char const* randomness_r1,
-    unsigned char const* randomness_r2,
-    unsigned char const* tx_context_id);
+SECP256K1_API int secp256k1_mpt_prove_same_plaintext(
+        const secp256k1_context* ctx,
+        unsigned char* proof_out,          // Output: 261 bytes
+        const secp256k1_pubkey* R1, const secp256k1_pubkey* S1, const secp256k1_pubkey* P1,
+        const secp256k1_pubkey* R2, const secp256k1_pubkey* S2, const secp256k1_pubkey* P2,
+        uint64_t amount_m,
+        const unsigned char* randomness_r1,
+        const unsigned char* randomness_r2,
+        const unsigned char* tx_context_id
+);
 
 /**
  * @brief Verifies a proof that two ciphertexts encrypt the same secret amount.
@@ -209,23 +205,20 @@ secp256k1_mpt_prove_same_plaintext(
  *
  * @return 1 if the proof is valid, 0 otherwise.
  */
-SECP256K1_API int
-secp256k1_mpt_verify_same_plaintext(
-    secp256k1_context const* ctx,
-    unsigned char const* proof,  // Input: 261 bytes
-    secp256k1_pubkey const* R1,
-    secp256k1_pubkey const* S1,
-    secp256k1_pubkey const* P1,
-    secp256k1_pubkey const* R2,
-    secp256k1_pubkey const* S2,
-    secp256k1_pubkey const* P2,
-    unsigned char const* tx_context_id);
+SECP256K1_API int secp256k1_mpt_verify_same_plaintext(
+        const secp256k1_context* ctx,
+        const unsigned char* proof,        // Input: 261 bytes
+        const secp256k1_pubkey* R1, const secp256k1_pubkey* S1, const secp256k1_pubkey* P1,
+        const secp256k1_pubkey* R2, const secp256k1_pubkey* S2, const secp256k1_pubkey* P2,
+        const unsigned char* tx_context_id
+);
+
+
 
 /**
  * @brief Calculates the expected proof size for a given number of ciphertexts.
  */
-SECP256K1_API size_t
-secp256k1_mpt_prove_same_plaintext_multi_size(size_t n_ciphertexts);
+SECP256K1_API size_t secp256k1_mpt_prove_same_plaintext_multi_size(size_t n_ciphertexts);
 
 /**
  * @brief Generates a proof that N ciphertexts encrypt the same secret amount 'm'.
@@ -243,32 +236,33 @@ secp256k1_mpt_prove_same_plaintext_multi_size(size_t n_ciphertexts);
  *
  * @return 1 on success, 0 on failure.
  */
-SECP256K1_API int
-secp256k1_mpt_prove_same_plaintext_multi(
-    secp256k1_context const* ctx,
-    unsigned char* proof_out,
-    size_t* proof_len,
-    uint64_t amount_m,
-    size_t n_ciphertexts,
-    secp256k1_pubkey const* R_array,
-    secp256k1_pubkey const* S_array,
-    secp256k1_pubkey const* Pk_array,
-    unsigned char const* r_array,  // Flat array: r1 || r2 || ... (N * 32 bytes)
-    unsigned char const* tx_context_id);
+SECP256K1_API int secp256k1_mpt_prove_same_plaintext_multi(
+        const secp256k1_context* ctx,
+        unsigned char* proof_out,
+        size_t* proof_len,
+        uint64_t amount_m,
+        size_t n_ciphertexts,
+        const secp256k1_pubkey* R_array,
+        const secp256k1_pubkey* S_array,
+        const secp256k1_pubkey* Pk_array,
+        const unsigned char* r_array, // Flat array: r1 || r2 || ... (N * 32 bytes)
+        const unsigned char* tx_context_id
+);
 
 /**
  * @brief Verifies a proof that N ciphertexts encrypt the same secret amount.
  */
-SECP256K1_API int
-secp256k1_mpt_verify_same_plaintext_multi(
-    secp256k1_context const* ctx,
-    unsigned char const* proof,
-    size_t proof_len,
-    size_t n_ciphertexts,
-    secp256k1_pubkey const* R_array,
-    secp256k1_pubkey const* S_array,
-    secp256k1_pubkey const* Pk_array,
-    unsigned char const* tx_context_id);
+SECP256K1_API int secp256k1_mpt_verify_same_plaintext_multi(
+        const secp256k1_context* ctx,
+        const unsigned char* proof,
+        size_t proof_len,
+        size_t n_ciphertexts,
+        const secp256k1_pubkey* R_array,
+        const secp256k1_pubkey* S_array,
+        const secp256k1_pubkey* Pk_array,
+        const unsigned char* tx_context_id
+);
+
 
 /**
  * @brief Computes a Pedersen Commitment: C = value*G + blinding_factor*Pk_base.
@@ -284,35 +278,37 @@ secp256k1_mpt_verify_same_plaintext_multi(
  *
  * @return 1 on success, 0 on failure.
  */
-SECP256K1_API int
-secp256k1_bulletproof_create_commitment(
-    secp256k1_context const* ctx,
-    secp256k1_pubkey* commitment_C,
-    uint64_t value,
-    unsigned char const* blinding_factor,
-    secp256k1_pubkey const* pk_base);
+SECP256K1_API int secp256k1_bulletproof_create_commitment(
+        const secp256k1_context* ctx,
+        secp256k1_pubkey* commitment_C,
+        uint64_t value,
+        const unsigned char* blinding_factor,
+        const secp256k1_pubkey* pk_base
+);
 
-int
-secp256k1_bulletproof_prove(
-    secp256k1_context const* ctx,
-    unsigned char* proof_out,
-    size_t* proof_len,
-    uint64_t value,
-    unsigned char const* blinding_factor,
-    secp256k1_pubkey const* pk_base,
-    unsigned char const* context_id, /* <--- AND HERE */
-    unsigned int proof_type);
 
-int
-secp256k1_bulletproof_verify(
-    secp256k1_context const* ctx,
-    secp256k1_pubkey const* G_vec,
-    secp256k1_pubkey const* H_vec,
-    unsigned char const* proof,
-    size_t proof_len,
-    secp256k1_pubkey const* commitment_C,
-    secp256k1_pubkey const* pk_base, /* This is generator H */
-    unsigned char const* context_id);
+int secp256k1_bulletproof_prove(
+        const secp256k1_context* ctx,
+        unsigned char* proof_out,
+        size_t* proof_len,
+        uint64_t value,
+        const unsigned char* blinding_factor,
+        const secp256k1_pubkey* pk_base,
+        const unsigned char* context_id,    /* <--- AND HERE */
+        unsigned int proof_type
+);
+
+
+int secp256k1_bulletproof_verify(
+        const secp256k1_context* ctx,
+        const secp256k1_pubkey* G_vec,
+        const secp256k1_pubkey* H_vec,
+        const unsigned char* proof,
+        size_t proof_len,
+        const secp256k1_pubkey* commitment_C,
+        const secp256k1_pubkey* pk_base, /* This is generator H */
+        const unsigned char* context_id
+);
 /**
  * @brief Proves the link between an ElGamal ciphertext and a Pedersen commitment.
  * * Formal Statement: Knowledge of (m, r, rho) such that:
@@ -329,160 +325,155 @@ secp256k1_bulletproof_verify(
  * @param context_id  32-byte unique transaction context identifier.
  * @return 1 on success, 0 on failure.
  */
-int
-secp256k1_elgamal_pedersen_link_prove(
-    secp256k1_context const* ctx,
-    unsigned char* proof,
-    secp256k1_pubkey const* c1,
-    secp256k1_pubkey const* c2,
-    secp256k1_pubkey const* pk,
-    secp256k1_pubkey const* pcm,
-    uint64_t amount,
-    unsigned char const* r,
-    unsigned char const* rho,
-    unsigned char const* context_id);
+int secp256k1_elgamal_pedersen_link_prove(
+        const secp256k1_context* ctx,
+        unsigned char* proof,
+        const secp256k1_pubkey* c1,
+        const secp256k1_pubkey* c2,
+        const secp256k1_pubkey* pk,
+        const secp256k1_pubkey* pcm,
+        uint64_t amount,
+        const unsigned char* r,
+        const unsigned char* rho,
+        const unsigned char* context_id);
 
 /**
  * @brief Verifies the link proof between ElGamal and Pedersen commitments.
  * * @return 1 if the proof is valid, 0 otherwise.
  */
-int
-secp256k1_elgamal_pedersen_link_verify(
-    secp256k1_context const* ctx,
-    unsigned char const* proof,
-    secp256k1_pubkey const* c1,
-    secp256k1_pubkey const* c2,
-    secp256k1_pubkey const* pk,
-    secp256k1_pubkey const* pcm,
-    unsigned char const* context_id);
+int secp256k1_elgamal_pedersen_link_verify(
+        const secp256k1_context* ctx,
+        const unsigned char* proof,
+        const secp256k1_pubkey* c1,
+        const secp256k1_pubkey* c2,
+        const secp256k1_pubkey* pk,
+        const secp256k1_pubkey* pcm,
+        const unsigned char* context_id);
 
 /**
  * Verifies that (c1, c2) is a valid ElGamal encryption of 'amount'
  * for 'pubkey_Q' using the revealed 'blinding_factor'.
  */
-int
-secp256k1_elgamal_verify_encryption(
-    secp256k1_context const* ctx,
-    secp256k1_pubkey const* c1,
-    secp256k1_pubkey const* c2,
-    secp256k1_pubkey const* pubkey_Q,
-    uint64_t amount,
-    unsigned char const* blinding_factor);
+int secp256k1_elgamal_verify_encryption(
+        const secp256k1_context* ctx,
+        const secp256k1_pubkey* c1,
+        const secp256k1_pubkey* c2,
+        const secp256k1_pubkey* pubkey_Q,
+        uint64_t amount,
+        const unsigned char* blinding_factor
+);
 
 /** Proof of Knowledge of Secret Key for Registration */
-int
-secp256k1_mpt_pok_sk_prove(
-    secp256k1_context const* ctx,
-    unsigned char* proof, /* Expected size: 65 bytes */
-    secp256k1_pubkey const* pk,
-    unsigned char const* sk,
-    unsigned char const* context_id);
+int secp256k1_mpt_pok_sk_prove(
+        const secp256k1_context* ctx,
+        unsigned char* proof,           /* Expected size: 65 bytes */
+        const secp256k1_pubkey* pk,
+        const unsigned char* sk,
+        const unsigned char* context_id
+);
 
-int
-secp256k1_mpt_pok_sk_verify(
-    secp256k1_context const* ctx,
-    unsigned char const* proof, /* Expected size: 65 bytes */
-    secp256k1_pubkey const* pk,
-    unsigned char const* context_id);
+int secp256k1_mpt_pok_sk_verify(
+        const secp256k1_context* ctx,
+        const unsigned char* proof,     /* Expected size: 65 bytes */
+        const secp256k1_pubkey* pk,
+        const unsigned char* context_id
+);
 
 /**
  * Compute a Pedersen Commitment: PC = m*G + rho*H
  * Returns 1 on success, 0 on failure.
  */
-int
-secp256k1_mpt_pedersen_commit(
-    secp256k1_context const* ctx,
-    secp256k1_pubkey* commitment,
-    uint64_t amount,
-    unsigned char const* blinding_factor_rho /* 32 bytes */
+int secp256k1_mpt_pedersen_commit(
+        const secp256k1_context* ctx,
+        secp256k1_pubkey* commitment,
+        uint64_t amount,
+        const unsigned char* blinding_factor_rho  /* 32 bytes */
 );
 
 /** Get the standardized H generator for Pedersen Commitments */
-int
-secp256k1_mpt_get_h_generator(secp256k1_context const* ctx, secp256k1_pubkey* h);
+int secp256k1_mpt_get_h_generator(const secp256k1_context* ctx, secp256k1_pubkey* h);
 
 /**
  * @brief Generates a vector of N independent NUMS generators.
  */
-int
-secp256k1_mpt_get_generator_vector(
-    secp256k1_context const* ctx,
-    secp256k1_pubkey* vec,
-    size_t n,
-    unsigned char const* label,
-    size_t label_len);
+int secp256k1_mpt_get_generator_vector(
+        const secp256k1_context* ctx,
+        secp256k1_pubkey* vec,
+        size_t n,
+        const unsigned char* label,
+        size_t label_len
+);
 
-void
-secp256k1_mpt_scalar_add(unsigned char* res, unsigned char const* a, unsigned char const* b);
-void
-secp256k1_mpt_scalar_mul(unsigned char* res, unsigned char const* a, unsigned char const* b);
-void
-secp256k1_mpt_scalar_inverse(unsigned char* res, unsigned char const* in);
-void
-secp256k1_mpt_scalar_negate(unsigned char* res, unsigned char const* in);
-void
-secp256k1_mpt_scalar_reduce32(unsigned char out32[32], unsigned char const in32[32]);
+void secp256k1_mpt_scalar_add(unsigned char *res, const unsigned char *a, const unsigned char *b);
+void secp256k1_mpt_scalar_mul(unsigned char *res, const unsigned char *a, const unsigned char *b);
+void secp256k1_mpt_scalar_inverse(unsigned char *res, const unsigned char *in);
+void secp256k1_mpt_scalar_negate(unsigned char *res, const unsigned char *in);
+void secp256k1_mpt_scalar_reduce32(unsigned char out32[32], const unsigned char in32[32]);
+
 
 /**
  * Returns the size of the serialized proof for N recipients.
  * Size: (1 + N) * 33 bytes for points + 2 * 32 bytes for scalars.
  */
-size_t
-secp256k1_mpt_proof_equality_shared_r_size(size_t n);
+size_t secp256k1_mpt_proof_equality_shared_r_size(size_t n);
 
 /**
  * Generates a proof that multiple ciphertexts encrypt the same amount m
  * using the SAME shared randomness r.
  */
-int
-secp256k1_mpt_prove_equality_shared_r(
-    secp256k1_context const* ctx,
-    unsigned char* proof_out,
-    uint64_t amount,
-    unsigned char const* r_shared,
-    size_t n,
-    secp256k1_pubkey const* C1,
-    secp256k1_pubkey const* C2_vec,
-    secp256k1_pubkey const* Pk_vec,
-    unsigned char const* context_id);
+int secp256k1_mpt_prove_equality_shared_r(
+        const secp256k1_context* ctx,
+        unsigned char* proof_out,
+        uint64_t amount,
+        const unsigned char* r_shared,
+        size_t n,
+        const secp256k1_pubkey* C1,
+        const secp256k1_pubkey* C2_vec,
+        const secp256k1_pubkey* Pk_vec,
+        const unsigned char* context_id
+);
 
 /**
  * Verifies the proof of equality with shared randomness.
  */
-int
-secp256k1_mpt_verify_equality_shared_r(
-    secp256k1_context const* ctx,
-    unsigned char const* proof,
-    size_t n,
-    secp256k1_pubkey const* C1,
-    secp256k1_pubkey const* C2_vec,
-    secp256k1_pubkey const* Pk_vec,
-    unsigned char const* context_id);
+int secp256k1_mpt_verify_equality_shared_r(
+        const secp256k1_context* ctx,
+        const unsigned char* proof,
+        size_t n,
+        const secp256k1_pubkey* C1,
+        const secp256k1_pubkey* C2_vec,
+        const secp256k1_pubkey* Pk_vec,
+        const unsigned char* context_id
+);
 
-int
-secp256k1_bulletproof_prove_agg(
-    secp256k1_context const* ctx,
-    unsigned char* proof_out,
-    size_t* proof_len,
-    uint64_t const* values,
-    unsigned char const* blindings_flat,
-    size_t m,
-    secp256k1_pubkey const* pk_base,
-    unsigned char const* context_id);
-int
-secp256k1_bulletproof_verify_agg(
-    secp256k1_context const* ctx,
-    secp256k1_pubkey const* G_vec, /* length n = 64*m */
-    secp256k1_pubkey const* H_vec, /* length n = 64*m */
-    unsigned char const* proof,
-    size_t proof_len,
-    secp256k1_pubkey const* commitment_C_vec, /* length m */
-    size_t m,
-    secp256k1_pubkey const* pk_base,
-    unsigned char const* context_id);
+int secp256k1_bulletproof_prove_agg(
+        const secp256k1_context* ctx,
+        unsigned char* proof_out,
+        size_t* proof_len,
+        const uint64_t* values,
+        const unsigned char* blindings_flat,
+        size_t m,
+        const secp256k1_pubkey* pk_base,
+        const unsigned char* context_id
+);
+int secp256k1_bulletproof_verify_agg(
+        const secp256k1_context* ctx,
+        const secp256k1_pubkey* G_vec,              /* length n = 64*m */
+        const secp256k1_pubkey* H_vec,              /* length n = 64*m */
+        const unsigned char* proof,
+        size_t proof_len,
+        const secp256k1_pubkey* commitment_C_vec,   /* length m */
+        size_t m,
+        const secp256k1_pubkey* pk_base,
+        const unsigned char* context_id
+);
+
+
+
+
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // SECP256K1_MPT_H
+#endif // SECP256K1_MPT_H

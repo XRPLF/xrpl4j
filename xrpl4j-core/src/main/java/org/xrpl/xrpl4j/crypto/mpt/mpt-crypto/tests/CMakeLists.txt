@@ -41,3 +41,5 @@ add_mpt_test(test_ipa test_ipa.c mpt-crypto secp256k1)
 add_mpt_test(test_same_plaintext_multi_shared_r test_same_plaintext_multi_shared_r.c mpt-crypto secp256k1)
 
 add_mpt_test(test_bulletproof_agg test_bulletproof_agg.c mpt-crypto secp256k1)
+
+add_mpt_test(test_mpt_utility test_mpt_utility.cpp mpt-crypto secp256k1 OpenSSL::Crypto)

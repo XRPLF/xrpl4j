@@ -16,7 +16,8 @@ add_library(mpt-crypto
             src/proof_pok_sk.c
             src/proof_same_plaintext.c
             src/proof_same_plaintext_multi.c
-            src/proof_same_plaintext_multi_shared_r.c)
+            src/proof_same_plaintext_multi_shared_r.c
+            src/utility/mpt_utility.cpp)
 
 # --- Set Include Directories ---
 target_include_directories(mpt-crypto PUBLIC include)

@@ -45,3 +45,5 @@ add_mpt_test(test_bulletproof_agg test_bulletproof_agg.c mpt-crypto secp256k1)
 add_mpt_test(test_mpt_utility test_mpt_utility.cpp mpt-crypto secp256k1 OpenSSL::Crypto)
 
 add_mpt_test(test_elgamal_vectors test_elgamal_vectors.c mpt-crypto)
+
+add_mpt_test(test_elgamal_decrypt_vectors test_elgamal_decrypt_vectors.c mpt-crypto)

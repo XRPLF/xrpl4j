@@ -155,7 +155,10 @@ public interface ElGamalCiphertext {
   @JsonIgnore
   @Value.Lazy
   default UnsignedByteArray toBytes() {
-    return c1().append(c2());
+    byte[] result = new byte[Secp256k1Operations.ELGAMAL_TOTAL_SIZE];
+    System.arraycopy(c1().toByteArray(), 0, result, 0, Secp256k1Operations.ELGAMAL_CIPHER_SIZE);
+    System.arraycopy(c2().toByteArray(), 0, result, Secp256k1Operations.ELGAMAL_CIPHER_SIZE, Secp256k1Operations.ELGAMAL_CIPHER_SIZE);
+    return UnsignedByteArray.of(result);
   }
 
   /**

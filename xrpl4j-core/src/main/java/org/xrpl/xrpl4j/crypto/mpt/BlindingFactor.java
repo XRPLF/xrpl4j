@@ -20,45 +20,68 @@ package org.xrpl.xrpl4j.crypto.mpt;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
-import org.xrpl.xrpl4j.crypto.SecureRandomUtils;
-
-import java.util.Arrays;
-import java.util.Objects;
+import org.immutables.value.Value;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 
 /**
- * A 32-byte random value used as a blinding factor in ElGamal encryption and zero-knowledge proofs.
+ * An immutable 32-byte value used as a blinding factor in ElGamal encryption and zero-knowledge proofs.
  *
  * <p>A blinding factor must be a valid secp256k1 scalar (0 &lt; value &lt; curve order) because it is
  * used as a scalar multiplier in elliptic curve operations.</p>
  *
- * <p>Use {@link #hexValue()} to get the hex string representation for use in transaction objects.</p>
+ * <p>For production code that needs dependency injection (e.g., for testing with deterministic values),
+ * use {@link BlindingFactorGenerator} interface with {@link SecureRandomBlindingFactorGenerator} implementation.
+ * For convenience, the static {@link #generate()} method is provided which uses the default secure random
+ * generator.</p>
+ *
+ * @see BlindingFactorGenerator
+ * @see SecureRandomBlindingFactorGenerator
  */
-public final class BlindingFactor {
+@Value.Immutable
+public interface BlindingFactor {
 
-  public static final int LENGTH = 32;
-
-  private final byte[] value;
-
-  private BlindingFactor(final byte[] value) {
-    this.value = Arrays.copyOf(value, value.length);
-  }
+  /**
+   * Default generator instance for the static {@link #generate()} method.
+   */
+  BlindingFactorGenerator DEFAULT_GENERATOR = new SecureRandomBlindingFactorGenerator();
 
   /**
    * Generates a random blinding factor using secure random entropy.
+   *
+   * <p>This is a convenience method that uses the default {@link SecureRandomBlindingFactorGenerator}.
+   * For code that needs dependency injection (e.g., for testing with deterministic values),
+   * inject a {@link BlindingFactorGenerator} instead.</p>
    *
    * <p>The generated value is guaranteed to be a valid secp256k1 scalar
    * (0 &lt; value &lt; curve order) using rejection sampling.</p>
    *
    * @return A randomly generated {@link BlindingFactor}.
    */
-  public static BlindingFactor generate() {
-    byte[] bytes = new byte[LENGTH];
-    do {
-      SecureRandomUtils.secureRandom().nextBytes(bytes);
-    } while (!Secp256k1Operations.isValidScalar(bytes));
-    return new BlindingFactor(bytes);
+  static BlindingFactor generate() {
+    return DEFAULT_GENERATOR.generate();
+  }
+
+  /**
+   * Instantiates a new builder.
+   *
+   * @return An {@link ImmutableBlindingFactor.Builder}.
+   */
+  static ImmutableBlindingFactor.Builder builder() {
+    return ImmutableBlindingFactor.builder();
+  }
+
+  /**
+   * Creates a blinding factor from an {@link UnsignedByteArray}.
+   *
+   * @param value The 32-byte value as an {@link UnsignedByteArray}.
+   *
+   * @return A {@link BlindingFactor}.
+   */
+  static BlindingFactor of(final UnsignedByteArray value) {
+    return builder().value(value).build();
   }
 
   /**
@@ -71,18 +94,8 @@ public final class BlindingFactor {
    * @throws NullPointerException     if bytes is null.
    * @throws IllegalArgumentException if bytes is not exactly 32 bytes or is not a valid scalar.
    */
-  public static BlindingFactor fromBytes(final byte[] bytes) {
-    Objects.requireNonNull(bytes, "bytes must not be null");
-    Preconditions.checkArgument(
-      bytes.length == LENGTH,
-      "Blinding factor must be %s bytes, but was %s bytes",
-      LENGTH, bytes.length
-    );
-    Preconditions.checkArgument(
-      Secp256k1Operations.isValidScalar(bytes),
-      "Blinding factor must be a valid scalar (0 < value < curve order)"
-    );
-    return new BlindingFactor(bytes);
+  static BlindingFactor fromBytes(final byte[] bytes) {
+    return of(UnsignedByteArray.of(bytes));
   }
 
   /**
@@ -95,10 +108,31 @@ public final class BlindingFactor {
    * @throws NullPointerException     if hex is null.
    * @throws IllegalArgumentException if hex is not a valid 64-character hex string.
    */
-  public static BlindingFactor fromHex(final String hex) {
-    Objects.requireNonNull(hex, "hex must not be null");
-    byte[] bytes = BaseEncoding.base16().decode(hex.toUpperCase());
-    return fromBytes(bytes);
+  static BlindingFactor fromHex(final String hex) {
+    return of(UnsignedByteArray.fromHex(hex));
+  }
+
+  /**
+   * The blinding factor value as an {@link UnsignedByteArray}.
+   *
+   * @return The 32-byte value.
+   */
+  UnsignedByteArray value();
+
+  /**
+   * Validates that the blinding factor is exactly 32 bytes and is a valid secp256k1 scalar.
+   */
+  @Value.Check
+  default void validate() {
+    Preconditions.checkArgument(
+      value().length() == Secp256k1Operations.BLINDING_FACTOR_SIZE,
+      "Blinding factor must be %s bytes, but was %s bytes",
+      Secp256k1Operations.BLINDING_FACTOR_SIZE, value().length()
+    );
+    Preconditions.checkArgument(
+      Secp256k1Operations.isValidScalar(value().toByteArray()),
+      "Blinding factor must be a valid scalar (0 < value < curve order)"
+    );
   }
 
   /**
@@ -106,8 +140,10 @@ public final class BlindingFactor {
    *
    * @return A copy of the 32-byte value.
    */
-  public byte[] toBytes() {
-    return Arrays.copyOf(value, value.length);
+  @JsonIgnore
+  @Value.Lazy
+  default byte[] toBytes() {
+    return value().toByteArray();
   }
 
   /**
@@ -117,30 +153,10 @@ public final class BlindingFactor {
    *
    * @return A 64-character uppercase hex string.
    */
-  public String hexValue() {
-    return BaseEncoding.base16().encode(value);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    BlindingFactor that = (BlindingFactor) o;
-    return Arrays.equals(value, that.value);
-  }
-
-  @Override
-  public int hashCode() {
-    return Arrays.hashCode(value);
-  }
-
-  @Override
-  public String toString() {
-    return "BlindingFactor{" + hexValue() + "}";
+  @JsonIgnore
+  @Value.Lazy
+  default String hexValue() {
+    return BaseEncoding.base16().encode(toBytes());
   }
 }
 

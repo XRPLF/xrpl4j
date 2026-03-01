@@ -15,8 +15,78 @@ import java.util.Objects;
  * Utility class for secp256k1 elliptic curve operations using BouncyCastle.
  *
  * <p>This is a static utility class - all methods are static and no instances should be created.</p>
+ *
+ * <p>Size constants match the C implementation in mpt_utility.h.</p>
  */
 public final class Secp256k1Operations {
+
+  // ============================================================================
+  // Size Constants (matching mpt_utility.h)
+  // ============================================================================
+
+  /**
+   * Size of a SHA-256 half hash in bytes (kMPT_HALF_SHA_SIZE).
+   */
+  public static final int HALF_SHA_SIZE = 32;
+
+  /**
+   * Size of a compressed public key in bytes (kMPT_PUBKEY_SIZE).
+   */
+  public static final int PUBKEY_SIZE = 33;
+
+  /**
+   * Size of a private key in bytes (kMPT_PRIVKEY_SIZE).
+   */
+  public static final int PRIVKEY_SIZE = 32;
+
+  /**
+   * Size of a blinding factor in bytes (kMPT_BLINDING_FACTOR_SIZE).
+   */
+  public static final int BLINDING_FACTOR_SIZE = 32;
+
+  /**
+   * Size of a single ElGamal ciphertext component in bytes (kMPT_ELGAMAL_CIPHER_SIZE).
+   */
+  public static final int ELGAMAL_CIPHER_SIZE = 33;
+
+  /**
+   * Total size of an ElGamal ciphertext pair (c1 || c2) in bytes (kMPT_ELGAMAL_TOTAL_SIZE).
+   */
+  public static final int ELGAMAL_TOTAL_SIZE = 66;
+
+  /**
+   * Size of a Pedersen commitment in bytes (kMPT_PEDERSEN_COMMIT_SIZE).
+   */
+  public static final int PEDERSEN_COMMIT_SIZE = 33;
+
+  /**
+   * Size of a Schnorr proof in bytes (kMPT_SCHNORR_PROOF_SIZE).
+   */
+  public static final int SCHNORR_PROOF_SIZE = 65;
+
+  /**
+   * Size of an equality proof in bytes (kMPT_EQUALITY_PROOF_SIZE).
+   */
+  public static final int EQUALITY_PROOF_SIZE = 98;
+
+  /**
+   * Size of a Pedersen link proof in bytes (kMPT_PEDERSEN_LINK_SIZE).
+   */
+  public static final int PEDERSEN_LINK_SIZE = 195;
+
+  /**
+   * Size of a single bulletproof in bytes (kMPT_SINGLE_BULLETPROOF_SIZE).
+   */
+  public static final int SINGLE_BULLETPROOF_SIZE = 688;
+
+  /**
+   * Size of a double bulletproof in bytes (kMPT_DOUBLE_BULLETPROOF_SIZE).
+   */
+  public static final int DOUBLE_BULLETPROOF_SIZE = 754;
+
+  // ============================================================================
+  // Curve Parameters
+  // ============================================================================
 
   private static final X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256k1");
   private static final BigInteger CURVE_ORDER = CURVE_PARAMS.getN();

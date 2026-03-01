@@ -27,8 +27,8 @@ import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.RangeProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.context.LinkProofContext;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.BulletproofRangeProof;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.PedersenCommitment;
+import org.xrpl.xrpl4j.crypto.mpt.tmp.BulletproofRangeProof;
+import org.xrpl.xrpl4j.crypto.mpt.tmp.PedersenCommitment;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;

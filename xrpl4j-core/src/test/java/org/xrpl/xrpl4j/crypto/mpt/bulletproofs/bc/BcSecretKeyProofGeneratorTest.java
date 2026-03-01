@@ -14,7 +14,7 @@ import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SecretKeyProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SecretKeyProofVerifier;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.SecretKeyProof;
+import org.xrpl.xrpl4j.crypto.mpt.tmp.SecretKeyProof;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 

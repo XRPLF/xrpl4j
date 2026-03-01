@@ -5,7 +5,7 @@ import org.bouncycastle.math.ec.ECPoint;
 import org.xrpl.xrpl4j.crypto.HashingUtils;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.PedersenCommitment;
+import org.xrpl.xrpl4j.crypto.mpt.tmp.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.mpt.commitments.PedersenCommitmentGenerator;
 
 import java.math.BigInteger;

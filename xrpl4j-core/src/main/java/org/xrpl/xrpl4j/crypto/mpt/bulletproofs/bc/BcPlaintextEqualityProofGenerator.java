@@ -1,6 +1,5 @@
 package org.xrpl.xrpl4j.crypto.mpt.bulletproofs.bc;
 
-import com.google.common.hash.Hashing;
 import com.google.common.primitives.UnsignedLong;
 import org.bouncycastle.math.ec.ECPoint;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
@@ -11,7 +10,7 @@ import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.ChallengeUtils;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PlaintextEqualityProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTClawbackContext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.EqualityPlaintextProof;
+import org.xrpl.xrpl4j.crypto.mpt.tmp.EqualityPlaintextProof;
 
 import java.math.BigInteger;
 import java.util.Objects;

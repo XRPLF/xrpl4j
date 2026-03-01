@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.mpt.wrapper;
+package org.xrpl.xrpl4j.crypto.mpt.tmp;
 
 /*-
  * ========================LICENSE_START=================================
@@ -22,68 +22,75 @@ package org.xrpl.xrpl4j.crypto.mpt.wrapper;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SecretKeyProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PedersenLinkProofGenerator;
 
 import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Represents a Schnorr proof of knowledge of a secret key.
+ * Represents an ElGamal-Pedersen linkage proof.
+ *
+ * <p>This proof demonstrates that an ElGamal ciphertext and a Pedersen commitment
+ * encode the same plaintext amount without revealing the amount.</p>
  *
  * <p>The proof consists of:
  * <ul>
- *   <li>T (33 bytes) - commitment point (compressed EC point)</li>
- *   <li>s (32 bytes) - response scalar</li>
+ *   <li>T1 (33 bytes) - commitment point 1 (compressed EC point)</li>
+ *   <li>T2 (33 bytes) - commitment point 2 (compressed EC point)</li>
+ *   <li>T3 (33 bytes) - commitment point 3 (compressed EC point)</li>
+ *   <li>sm (32 bytes) - response scalar for message</li>
+ *   <li>sr (32 bytes) - response scalar for ElGamal randomness</li>
+ *   <li>srho (32 bytes) - response scalar for Pedersen randomness</li>
  * </ul>
  *
- * <p>Total size: 65 bytes.</p>
+ * <p>Total size: 195 bytes.</p>
  *
- * @see SecretKeyProofGenerator
+ * @see PedersenLinkProofGenerator
  */
-public final class SecretKeyProof {
+public final class ElGamalPedersenLinkProof {
 
   /**
-   * The length of the proof in bytes (33 + 32 = 65).
+   * The length of the proof in bytes (33 + 33 + 33 + 32 + 32 + 32 = 195).
    */
-  public static final int PROOF_LENGTH = 65;
+  public static final int PROOF_LENGTH = 195;
 
   private final byte[] proof;
 
-  private SecretKeyProof(final byte[] proof) {
+  private ElGamalPedersenLinkProof(final byte[] proof) {
     this.proof = Arrays.copyOf(proof, proof.length);
   }
 
   /**
    * Creates a proof from raw bytes.
    *
-   * @param bytes The 65-byte proof (T || s).
+   * @param bytes The 195-byte proof.
    *
-   * @return A {@link SecretKeyProof}.
+   * @return An {@link ElGamalPedersenLinkProof}.
    *
    * @throws NullPointerException     if bytes is null.
-   * @throws IllegalArgumentException if bytes is not exactly 65 bytes.
+   * @throws IllegalArgumentException if bytes is not exactly 195 bytes.
    */
-  public static SecretKeyProof fromBytes(final byte[] bytes) {
+  public static ElGamalPedersenLinkProof fromBytes(final byte[] bytes) {
     Objects.requireNonNull(bytes, "bytes must not be null");
     Preconditions.checkArgument(
       bytes.length == PROOF_LENGTH,
       "Proof must be %s bytes, but was %s bytes",
       PROOF_LENGTH, bytes.length
     );
-    return new SecretKeyProof(bytes);
+    return new ElGamalPedersenLinkProof(bytes);
   }
 
   /**
    * Creates a proof from a hex string.
    *
-   * @param hex The 130-character hex string representing the proof.
+   * @param hex The 390-character hex string representing the proof.
    *
-   * @return A {@link SecretKeyProof}.
+   * @return An {@link ElGamalPedersenLinkProof}.
    *
    * @throws NullPointerException     if hex is null.
-   * @throws IllegalArgumentException if hex is not a valid 65-byte hex string.
+   * @throws IllegalArgumentException if hex is not a valid 195-byte hex string.
    */
-  public static SecretKeyProof fromHex(final String hex) {
+  public static ElGamalPedersenLinkProof fromHex(final String hex) {
     Objects.requireNonNull(hex, "hex must not be null");
     byte[] bytes = BaseEncoding.base16().decode(hex.toUpperCase());
     return fromBytes(bytes);
@@ -92,7 +99,7 @@ public final class SecretKeyProof {
   /**
    * Returns the proof as a byte array.
    *
-   * @return A copy of the 65-byte proof.
+   * @return A copy of the 195-byte proof.
    */
   public byte[] toBytes() {
     return Arrays.copyOf(proof, proof.length);
@@ -101,7 +108,7 @@ public final class SecretKeyProof {
   /**
    * Returns the proof as an uppercase hex string.
    *
-   * @return A 130-character uppercase hex string.
+   * @return A 390-character uppercase hex string.
    */
   public String hexValue() {
     return BaseEncoding.base16().encode(proof);
@@ -115,7 +122,7 @@ public final class SecretKeyProof {
     if (obj == null || getClass() != obj.getClass()) {
       return false;
     }
-    SecretKeyProof that = (SecretKeyProof) obj;
+    ElGamalPedersenLinkProof that = (ElGamalPedersenLinkProof) obj;
     return Arrays.equals(proof, that.proof);
   }
 
@@ -126,7 +133,7 @@ public final class SecretKeyProof {
 
   @Override
   public String toString() {
-    return "SecretKeyProof{proof=" + hexValue() + "}";
+    return "ElGamalPedersenLinkProof{proof=" + hexValue() + "}";
   }
 }
 

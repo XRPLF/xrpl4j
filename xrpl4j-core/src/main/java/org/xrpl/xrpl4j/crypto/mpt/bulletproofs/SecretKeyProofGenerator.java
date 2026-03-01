@@ -4,7 +4,7 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.SecretKeyProof;
+import org.xrpl.xrpl4j.crypto.mpt.tmp.SecretKeyProof;
 
 /**
  * Interface for generating Schnorr Proof of Knowledge (PoK) for ElGamal secret keys.

@@ -13,8 +13,8 @@ import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalEncryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.bc.BcElGamalEncryptor;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.ConfidentialMPTConvertResult;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.SecretKeyProof;
+import org.xrpl.xrpl4j.crypto.mpt.tmp.ConfidentialMPTConvertResult;
+import org.xrpl.xrpl4j.crypto.mpt.tmp.SecretKeyProof;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 

@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.mpt.wrapper;
+package org.xrpl.xrpl4j.crypto.mpt.tmp;
 
 /*-
  * ========================LICENSE_START=================================
@@ -22,75 +22,72 @@ package org.xrpl.xrpl4j.crypto.mpt.wrapper;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PedersenLinkProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PlaintextEqualityProofGenerator;
 
 import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Represents an ElGamal-Pedersen linkage proof.
+ * Represents an Equality Plaintext Proof (Zero-Knowledge Proof of Knowledge of Plaintext and Randomness).
  *
- * <p>This proof demonstrates that an ElGamal ciphertext and a Pedersen commitment
- * encode the same plaintext amount without revealing the amount.</p>
+ * <p>This proof demonstrates that an ElGamal ciphertext (C1, C2) encrypts a specific known plaintext m
+ * under a public key P, and that the prover knows the randomness r used in the encryption.</p>
  *
  * <p>The proof consists of:
  * <ul>
  *   <li>T1 (33 bytes) - commitment point 1 (compressed EC point)</li>
  *   <li>T2 (33 bytes) - commitment point 2 (compressed EC point)</li>
- *   <li>T3 (33 bytes) - commitment point 3 (compressed EC point)</li>
- *   <li>sm (32 bytes) - response scalar for message</li>
- *   <li>sr (32 bytes) - response scalar for ElGamal randomness</li>
- *   <li>srho (32 bytes) - response scalar for Pedersen randomness</li>
+ *   <li>s (32 bytes) - response scalar</li>
  * </ul>
  *
- * <p>Total size: 195 bytes.</p>
+ * <p>Total size: 98 bytes.</p>
  *
- * @see PedersenLinkProofGenerator
+ * @see PlaintextEqualityProofGenerator
  */
-public final class ElGamalPedersenLinkProof {
+public final class EqualityPlaintextProof {
 
   /**
-   * The length of the proof in bytes (33 + 33 + 33 + 32 + 32 + 32 = 195).
+   * The length of the proof in bytes (33 + 33 + 32 = 98).
    */
-  public static final int PROOF_LENGTH = 195;
+  public static final int PROOF_LENGTH = 98;
 
   private final byte[] proof;
 
-  private ElGamalPedersenLinkProof(final byte[] proof) {
+  private EqualityPlaintextProof(final byte[] proof) {
     this.proof = Arrays.copyOf(proof, proof.length);
   }
 
   /**
    * Creates a proof from raw bytes.
    *
-   * @param bytes The 195-byte proof.
+   * @param bytes The 98-byte proof (T1 || T2 || s).
    *
-   * @return An {@link ElGamalPedersenLinkProof}.
+   * @return An {@link EqualityPlaintextProof}.
    *
    * @throws NullPointerException     if bytes is null.
-   * @throws IllegalArgumentException if bytes is not exactly 195 bytes.
+   * @throws IllegalArgumentException if bytes is not exactly 98 bytes.
    */
-  public static ElGamalPedersenLinkProof fromBytes(final byte[] bytes) {
+  public static EqualityPlaintextProof fromBytes(final byte[] bytes) {
     Objects.requireNonNull(bytes, "bytes must not be null");
     Preconditions.checkArgument(
       bytes.length == PROOF_LENGTH,
       "Proof must be %s bytes, but was %s bytes",
       PROOF_LENGTH, bytes.length
     );
-    return new ElGamalPedersenLinkProof(bytes);
+    return new EqualityPlaintextProof(bytes);
   }
 
   /**
    * Creates a proof from a hex string.
    *
-   * @param hex The 390-character hex string representing the proof.
+   * @param hex The 196-character hex string representing the proof.
    *
-   * @return An {@link ElGamalPedersenLinkProof}.
+   * @return An {@link EqualityPlaintextProof}.
    *
    * @throws NullPointerException     if hex is null.
-   * @throws IllegalArgumentException if hex is not a valid 195-byte hex string.
+   * @throws IllegalArgumentException if hex is not a valid 98-byte hex string.
    */
-  public static ElGamalPedersenLinkProof fromHex(final String hex) {
+  public static EqualityPlaintextProof fromHex(final String hex) {
     Objects.requireNonNull(hex, "hex must not be null");
     byte[] bytes = BaseEncoding.base16().decode(hex.toUpperCase());
     return fromBytes(bytes);
@@ -99,7 +96,7 @@ public final class ElGamalPedersenLinkProof {
   /**
    * Returns the proof as a byte array.
    *
-   * @return A copy of the 195-byte proof.
+   * @return A copy of the 98-byte proof.
    */
   public byte[] toBytes() {
     return Arrays.copyOf(proof, proof.length);
@@ -108,7 +105,7 @@ public final class ElGamalPedersenLinkProof {
   /**
    * Returns the proof as an uppercase hex string.
    *
-   * @return A 390-character uppercase hex string.
+   * @return A 196-character uppercase hex string.
    */
   public String hexValue() {
     return BaseEncoding.base16().encode(proof);
@@ -122,7 +119,7 @@ public final class ElGamalPedersenLinkProof {
     if (obj == null || getClass() != obj.getClass()) {
       return false;
     }
-    ElGamalPedersenLinkProof that = (ElGamalPedersenLinkProof) obj;
+    EqualityPlaintextProof that = (EqualityPlaintextProof) obj;
     return Arrays.equals(proof, that.proof);
   }
 
@@ -133,7 +130,7 @@ public final class ElGamalPedersenLinkProof {
 
   @Override
   public String toString() {
-    return "ElGamalPedersenLinkProof{proof=" + hexValue() + "}";
+    return "EqualityPlaintextProof{proof=" + hexValue() + "}";
   }
 }
 

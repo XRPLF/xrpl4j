@@ -5,8 +5,8 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.context.LinkProofContext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.ElGamalPedersenLinkProof;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.PedersenCommitment;
+import org.xrpl.xrpl4j.crypto.mpt.tmp.ElGamalPedersenLinkProof;
+import org.xrpl.xrpl4j.crypto.mpt.tmp.PedersenCommitment;
 
 /**
  * Interface for generating and verifying Zero-Knowledge Proofs linking ElGamal ciphertexts

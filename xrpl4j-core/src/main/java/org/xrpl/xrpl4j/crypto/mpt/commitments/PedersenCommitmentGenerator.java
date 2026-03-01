@@ -2,7 +2,7 @@ package org.xrpl.xrpl4j.crypto.mpt.commitments;
 
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.PedersenCommitment;
+import org.xrpl.xrpl4j.crypto.mpt.models.PedersenCommitment;
 
 /**
  * Interface for generating Pedersen Commitments of the form C = v * G + rho * H.

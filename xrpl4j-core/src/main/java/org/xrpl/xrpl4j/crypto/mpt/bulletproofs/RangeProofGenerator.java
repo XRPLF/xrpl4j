@@ -23,8 +23,8 @@ package org.xrpl.xrpl4j.crypto.mpt.bulletproofs;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.context.LinkProofContext;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.BulletproofRangeProof;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.PedersenCommitment;
+import org.xrpl.xrpl4j.crypto.mpt.models.BulletproofRangeProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.PedersenCommitment;
 
 import java.util.List;
 

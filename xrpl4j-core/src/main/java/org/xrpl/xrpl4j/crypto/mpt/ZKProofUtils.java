@@ -21,9 +21,9 @@ package org.xrpl.xrpl4j.crypto.mpt;
  */
 
 import com.google.common.io.BaseEncoding;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.BulletproofRangeProof;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.ElGamalPedersenLinkProof;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.SamePlaintextMultiProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.BulletproofRangeProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.ElGamalPedersenLinkProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.SamePlaintextMultiProof;
 
 import java.util.Objects;
 

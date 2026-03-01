@@ -2,8 +2,8 @@ package org.xrpl.xrpl4j.crypto.mpt.bulletproofs;
 
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.SamePlaintextMultiProof;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.SamePlaintextParticipant;
+import org.xrpl.xrpl4j.crypto.mpt.models.SamePlaintextMultiProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.SamePlaintextParticipant;
 
 import java.util.List;
 

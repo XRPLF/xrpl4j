@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.mpt.tmp;
+package org.xrpl.xrpl4j.crypto.mpt.models;
 
 /*-
  * ========================LICENSE_START=================================
@@ -22,72 +22,68 @@ package org.xrpl.xrpl4j.crypto.mpt.tmp;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PlaintextEqualityProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SecretKeyProofGenerator;
 
 import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Represents an Equality Plaintext Proof (Zero-Knowledge Proof of Knowledge of Plaintext and Randomness).
- *
- * <p>This proof demonstrates that an ElGamal ciphertext (C1, C2) encrypts a specific known plaintext m
- * under a public key P, and that the prover knows the randomness r used in the encryption.</p>
+ * Represents a Schnorr proof of knowledge of a secret key.
  *
  * <p>The proof consists of:
  * <ul>
- *   <li>T1 (33 bytes) - commitment point 1 (compressed EC point)</li>
- *   <li>T2 (33 bytes) - commitment point 2 (compressed EC point)</li>
+ *   <li>T (33 bytes) - commitment point (compressed EC point)</li>
  *   <li>s (32 bytes) - response scalar</li>
  * </ul>
  *
- * <p>Total size: 98 bytes.</p>
+ * <p>Total size: 65 bytes.</p>
  *
- * @see PlaintextEqualityProofGenerator
+ * @see SecretKeyProofGenerator
  */
-public final class EqualityPlaintextProof {
+public final class SecretKeyProof {
 
   /**
-   * The length of the proof in bytes (33 + 33 + 32 = 98).
+   * The length of the proof in bytes (33 + 32 = 65).
    */
-  public static final int PROOF_LENGTH = 98;
+  public static final int PROOF_LENGTH = 65;
 
   private final byte[] proof;
 
-  private EqualityPlaintextProof(final byte[] proof) {
+  private SecretKeyProof(final byte[] proof) {
     this.proof = Arrays.copyOf(proof, proof.length);
   }
 
   /**
    * Creates a proof from raw bytes.
    *
-   * @param bytes The 98-byte proof (T1 || T2 || s).
+   * @param bytes The 65-byte proof (T || s).
    *
-   * @return An {@link EqualityPlaintextProof}.
+   * @return A {@link SecretKeyProof}.
    *
    * @throws NullPointerException     if bytes is null.
-   * @throws IllegalArgumentException if bytes is not exactly 98 bytes.
+   * @throws IllegalArgumentException if bytes is not exactly 65 bytes.
    */
-  public static EqualityPlaintextProof fromBytes(final byte[] bytes) {
+  public static SecretKeyProof fromBytes(final byte[] bytes) {
     Objects.requireNonNull(bytes, "bytes must not be null");
     Preconditions.checkArgument(
       bytes.length == PROOF_LENGTH,
       "Proof must be %s bytes, but was %s bytes",
       PROOF_LENGTH, bytes.length
     );
-    return new EqualityPlaintextProof(bytes);
+    return new SecretKeyProof(bytes);
   }
 
   /**
    * Creates a proof from a hex string.
    *
-   * @param hex The 196-character hex string representing the proof.
+   * @param hex The 130-character hex string representing the proof.
    *
-   * @return An {@link EqualityPlaintextProof}.
+   * @return A {@link SecretKeyProof}.
    *
    * @throws NullPointerException     if hex is null.
-   * @throws IllegalArgumentException if hex is not a valid 98-byte hex string.
+   * @throws IllegalArgumentException if hex is not a valid 65-byte hex string.
    */
-  public static EqualityPlaintextProof fromHex(final String hex) {
+  public static SecretKeyProof fromHex(final String hex) {
     Objects.requireNonNull(hex, "hex must not be null");
     byte[] bytes = BaseEncoding.base16().decode(hex.toUpperCase());
     return fromBytes(bytes);
@@ -96,7 +92,7 @@ public final class EqualityPlaintextProof {
   /**
    * Returns the proof as a byte array.
    *
-   * @return A copy of the 98-byte proof.
+   * @return A copy of the 65-byte proof.
    */
   public byte[] toBytes() {
     return Arrays.copyOf(proof, proof.length);
@@ -105,7 +101,7 @@ public final class EqualityPlaintextProof {
   /**
    * Returns the proof as an uppercase hex string.
    *
-   * @return A 196-character uppercase hex string.
+   * @return A 130-character uppercase hex string.
    */
   public String hexValue() {
     return BaseEncoding.base16().encode(proof);
@@ -119,7 +115,7 @@ public final class EqualityPlaintextProof {
     if (obj == null || getClass() != obj.getClass()) {
       return false;
     }
-    EqualityPlaintextProof that = (EqualityPlaintextProof) obj;
+    SecretKeyProof that = (SecretKeyProof) obj;
     return Arrays.equals(proof, that.proof);
   }
 
@@ -130,7 +126,7 @@ public final class EqualityPlaintextProof {
 
   @Override
   public String toString() {
-    return "EqualityPlaintextProof{proof=" + hexValue() + "}";
+    return "SecretKeyProof{proof=" + hexValue() + "}";
   }
 }
 

@@ -11,8 +11,8 @@ import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PedersenLinkProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.LinkageProofType;
 import org.xrpl.xrpl4j.crypto.mpt.context.LinkProofContext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.ElGamalPedersenLinkProof;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.PedersenCommitment;
+import org.xrpl.xrpl4j.crypto.mpt.models.ElGamalPedersenLinkProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.PedersenCommitment;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;

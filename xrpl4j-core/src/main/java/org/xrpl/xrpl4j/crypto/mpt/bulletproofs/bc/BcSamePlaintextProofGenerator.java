@@ -6,9 +6,9 @@ import org.bouncycastle.math.ec.ECPoint;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.ChallengeUtils;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.SamePlaintextMultiProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.SamePlaintextMultiProof;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SamePlaintextProofGenerator;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.SamePlaintextParticipant;
+import org.xrpl.xrpl4j.crypto.mpt.models.SamePlaintextParticipant;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 

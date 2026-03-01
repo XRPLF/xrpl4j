@@ -7,7 +7,7 @@ import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.ChallengeUtils;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.SecretKeyProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.SecretKeyProof;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SecretKeyProofGenerator;
 
 import java.math.BigInteger;

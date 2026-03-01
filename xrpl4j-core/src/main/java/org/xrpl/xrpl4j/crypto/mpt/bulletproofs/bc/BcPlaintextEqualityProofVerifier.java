@@ -8,7 +8,7 @@ import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.ChallengeUtils;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PlaintextEqualityProofVerifier;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTClawbackContext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.EqualityPlaintextProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.EqualityPlaintextProof;
 
 import java.math.BigInteger;
 import java.util.Objects;

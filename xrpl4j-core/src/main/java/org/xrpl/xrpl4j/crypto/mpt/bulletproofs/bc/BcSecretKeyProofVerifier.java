@@ -9,7 +9,7 @@ import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.ChallengeUtils;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SecretKeyProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SecretKeyProofVerifier;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.SecretKeyProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.SecretKeyProof;
 
 import java.math.BigInteger;
 import java.util.Objects;

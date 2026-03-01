@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.commitments.bc.BcPedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.commitments.PedersenCommitmentGenerator;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.PedersenCommitment;
+import org.xrpl.xrpl4j.crypto.mpt.models.PedersenCommitment;
 
 /**
  * Unit tests for {@link PedersenCommitmentGenerator}.

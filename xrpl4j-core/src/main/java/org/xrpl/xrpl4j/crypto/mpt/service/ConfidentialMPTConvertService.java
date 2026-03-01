@@ -4,7 +4,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.ConfidentialMPTConvertResult;
+import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTConvertResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 

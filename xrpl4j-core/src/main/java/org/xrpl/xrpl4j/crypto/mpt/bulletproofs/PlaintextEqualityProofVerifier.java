@@ -4,7 +4,7 @@ import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTClawbackContext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.EqualityPlaintextProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.EqualityPlaintextProof;
 
 /**
  * Interface for generating and verifying Zero-Knowledge Proofs of Knowledge of Plaintext and Randomness.

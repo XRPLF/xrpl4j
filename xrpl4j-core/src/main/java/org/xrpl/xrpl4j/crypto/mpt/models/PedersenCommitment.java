@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.mpt.tmp;
+package org.xrpl.xrpl4j.crypto.mpt.models;
 
 import com.google.common.io.BaseEncoding;
 import org.bouncycastle.math.ec.ECPoint;

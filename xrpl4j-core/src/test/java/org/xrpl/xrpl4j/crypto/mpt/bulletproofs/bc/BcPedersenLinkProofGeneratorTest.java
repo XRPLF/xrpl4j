@@ -18,8 +18,8 @@ import org.xrpl.xrpl4j.crypto.mpt.commitments.PedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.commitments.bc.BcPedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.ElGamalPedersenLinkProof;
-import org.xrpl.xrpl4j.crypto.mpt.tmp.PedersenCommitment;
+import org.xrpl.xrpl4j.crypto.mpt.models.ElGamalPedersenLinkProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.PedersenCommitment;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 

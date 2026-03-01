@@ -35,9 +35,11 @@ public interface ElGamalEncryptorPort {
    * @param pubkeyQ        The recipient's public key (33 bytes, compressed).
    * @param blindingFactor The random blinding factor (32 bytes).
    *
-   * @return The ciphertext as a 66-byte {@link UnsignedByteArray} containing c1 || c2.
+   * @return The ciphertext containing c1 and c2 components.
+   *
+   * @throws IllegalStateException if encryption fails (e.g., invalid inputs produce point at infinity).
    */
-  UnsignedByteArray encrypt(
+  ElGamalCiphertext encrypt(
     UnsignedLong amount,
     UnsignedByteArray pubkeyQ,
     UnsignedByteArray blindingFactor

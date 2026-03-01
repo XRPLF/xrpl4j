@@ -31,8 +31,8 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
+import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.port.bc.BcElGamalEncryptorPort;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.EncryptedAmount;
 
 /**
  * Unit tests for {@link BcElGamalEncryptor}.
@@ -64,8 +64,8 @@ class BcElGamalEncryptorTest {
     BcElGamalEncryptor encryptor1 = new BcElGamalEncryptor(sharedPort);
     BcElGamalEncryptor encryptor2 = new BcElGamalEncryptor(sharedPort);
 
-    EncryptedAmount result1 = encryptor1.encrypt(UnsignedLong.ONE, EC_PUBLIC_KEY, blindingFactor);
-    EncryptedAmount result2 = encryptor2.encrypt(UnsignedLong.ONE, EC_PUBLIC_KEY, blindingFactor);
+    ElGamalCiphertext result1 = encryptor1.encrypt(UnsignedLong.ONE, EC_PUBLIC_KEY, blindingFactor);
+    ElGamalCiphertext result2 = encryptor2.encrypt(UnsignedLong.ONE, EC_PUBLIC_KEY, blindingFactor);
 
     assertThat(result1.toHex()).isEqualTo(result2.toHex());
   }
@@ -125,10 +125,12 @@ class BcElGamalEncryptorTest {
 
   @Test
   void encryptWithValidInputs() {
-    EncryptedAmount result = encryptor.encrypt(UnsignedLong.valueOf(12345), EC_PUBLIC_KEY, blindingFactor);
+    ElGamalCiphertext result = encryptor.encrypt(UnsignedLong.valueOf(12345), EC_PUBLIC_KEY, blindingFactor);
 
     assertThat(result).isNotNull();
-    assertThat(result.value().length()).isEqualTo(Secp256k1Operations.ELGAMAL_TOTAL_SIZE);
+    assertThat(result.c1().length()).isEqualTo(Secp256k1Operations.ELGAMAL_CIPHER_SIZE);
+    assertThat(result.c2().length()).isEqualTo(Secp256k1Operations.ELGAMAL_CIPHER_SIZE);
+    assertThat(result.toBytes().length()).isEqualTo(Secp256k1Operations.ELGAMAL_TOTAL_SIZE);
     assertThat(result.toHex()).hasSize(132); // 66 bytes * 2 hex chars
   }
 }

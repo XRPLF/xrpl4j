@@ -28,6 +28,7 @@ import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalEncryptorPort;
 
 import java.io.InputStream;
@@ -59,9 +60,9 @@ public class BcElGamalEncryptorPortTest {
       UnsignedLong amount = UnsignedLong.valueOf(amountStr);
       UnsignedByteArray blindingFactor = UnsignedByteArray.fromHex(blindingFactorHex);
 
-      UnsignedByteArray javaCiphertext = encryptor.encrypt(amount, pubkeyQ, blindingFactor);
+      ElGamalCiphertext javaCiphertext = encryptor.encrypt(amount, pubkeyQ, blindingFactor);
 
-      assertThat(javaCiphertext.hexValue())
+      assertThat(javaCiphertext.toBytes().hexValue())
           .as("Ciphertext for amount %s", amountStr)
           .isEqualToIgnoringCase(expectedCiphertextHex);
     }
@@ -79,7 +80,7 @@ public class BcElGamalEncryptorPortTest {
       UnsignedLong amount = UnsignedLong.valueOf(amountStr);
       UnsignedByteArray blindingFactor = UnsignedByteArray.fromHex(blindingFactorHex);
 
-      UnsignedByteArray originalCiphertext = encryptor.encrypt(amount, pubkeyQ, blindingFactor);
+      ElGamalCiphertext originalCiphertext = encryptor.encrypt(amount, pubkeyQ, blindingFactor);
 
       // Modify one byte (last byte) of the public key and verify ciphertext differs
       byte[] modifiedBytes = pubkeyQ.toByteArray();
@@ -87,10 +88,10 @@ public class BcElGamalEncryptorPortTest {
       UnsignedByteArray modifiedPubkey = UnsignedByteArray.of(modifiedBytes);
 
       try {
-        UnsignedByteArray modifiedCiphertext = encryptor.encrypt(amount, modifiedPubkey, blindingFactor);
-        assertThat(modifiedCiphertext.hexValue())
+        ElGamalCiphertext modifiedCiphertext = encryptor.encrypt(amount, modifiedPubkey, blindingFactor);
+        assertThat(modifiedCiphertext.toBytes().hexValue())
             .as("Vector %d: Ciphertext should differ when pubkey is modified", vectorIndex)
-            .isNotEqualToIgnoringCase(originalCiphertext.hexValue());
+            .isNotEqualToIgnoringCase(originalCiphertext.toBytes().hexValue());
       } catch (Exception e) {
         // Modified pubkey may be invalid - that's acceptable
       }
@@ -110,7 +111,7 @@ public class BcElGamalEncryptorPortTest {
       UnsignedLong amount = UnsignedLong.valueOf(amountStr);
       UnsignedByteArray blindingFactor = UnsignedByteArray.fromHex(blindingFactorHex);
 
-      UnsignedByteArray originalCiphertext = encryptor.encrypt(amount, pubkeyQ, blindingFactor);
+      ElGamalCiphertext originalCiphertext = encryptor.encrypt(amount, pubkeyQ, blindingFactor);
 
       // Modify one byte (last byte) of the blinding factor and verify ciphertext differs
       byte[] modifiedBytes = blindingFactor.toByteArray();
@@ -118,10 +119,10 @@ public class BcElGamalEncryptorPortTest {
       UnsignedByteArray modifiedBlindingFactor = UnsignedByteArray.of(modifiedBytes);
 
       try {
-        UnsignedByteArray modifiedCiphertext = encryptor.encrypt(amount, pubkeyQ, modifiedBlindingFactor);
-        assertThat(modifiedCiphertext.hexValue())
+        ElGamalCiphertext modifiedCiphertext = encryptor.encrypt(amount, pubkeyQ, modifiedBlindingFactor);
+        assertThat(modifiedCiphertext.toBytes().hexValue())
             .as("Vector %d: Ciphertext should differ when blinding factor is modified", vectorIndex)
-            .isNotEqualToIgnoringCase(originalCiphertext.hexValue());
+            .isNotEqualToIgnoringCase(originalCiphertext.toBytes().hexValue());
       } catch (Exception e) {
         // Modified blinding factor may be invalid - that's acceptable
       }

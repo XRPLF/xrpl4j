@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.crypto.mpt.wrapper;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalEncryptorPort;
 
 /**
@@ -51,11 +52,11 @@ public interface ElGamalEncryptor {
    * @param publicKey      The recipient's secp256k1 public key.
    * @param blindingFactor The 32-byte random blinding factor.
    *
-   * @return The encrypted amount as an {@link EncryptedAmount}.
+   * @return The encrypted amount as an {@link ElGamalCiphertext}.
    *
    * @throws NullPointerException     if any parameter is null.
    * @throws IllegalArgumentException if publicKey is not a secp256k1 key.
    */
-  EncryptedAmount encrypt(UnsignedLong amount, PublicKey publicKey, BlindingFactor blindingFactor);
+  ElGamalCiphertext encrypt(UnsignedLong amount, PublicKey publicKey, BlindingFactor blindingFactor);
 }
 

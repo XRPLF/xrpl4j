@@ -23,12 +23,12 @@ package org.xrpl.xrpl4j.crypto.mpt.wrapper.bc;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
+import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.port.bc.BcElGamalEncryptorPort;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.ElGamalEncryptor;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.EncryptedAmount;
 
 import java.util.Objects;
 
@@ -59,7 +59,7 @@ public class BcElGamalEncryptor implements ElGamalEncryptor {
   }
 
   @Override
-  public EncryptedAmount encrypt(
+  public ElGamalCiphertext encrypt(
     final UnsignedLong amount,
     final PublicKey publicKey,
     final BlindingFactor blindingFactor
@@ -78,13 +78,18 @@ public class BcElGamalEncryptor implements ElGamalEncryptor {
       publicKey.keyType()
     );
 
-    UnsignedByteArray ciphertext = encryptor.encrypt(
+    ElGamalCiphertext ciphertext = encryptor.encrypt(
       amount,
       publicKey.value(),
       blindingFactor.value()
     );
 
-    return EncryptedAmount.of(ciphertext);
+    Secp256k1Operations.validateEcPair(
+      ciphertext.c1().toByteArray(),
+      ciphertext.c2().toByteArray()
+    );
+
+    return ciphertext;
   }
 }
 

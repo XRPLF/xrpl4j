@@ -24,6 +24,7 @@ import com.google.common.primitives.UnsignedLong;
 import org.bouncycastle.math.ec.ECPoint;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
+import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalEncryptorPort;
 
 import java.math.BigInteger;
@@ -35,7 +36,7 @@ import java.util.Arrays;
 public class BcElGamalEncryptorPort implements ElGamalEncryptorPort {
 
   @Override
-  public UnsignedByteArray encrypt(
+  public ElGamalCiphertext encrypt(
     final UnsignedLong amount,
     final UnsignedByteArray pubkeyQ,
     final UnsignedByteArray blindingFactor
@@ -45,9 +46,15 @@ public class BcElGamalEncryptorPort implements ElGamalEncryptorPort {
 
     /* 1. C1 = r * G */
     ECPoint c1 = Secp256k1Operations.multiplyG(new BigInteger(1, r));
+    if (c1.isInfinity()) {
+      throw new IllegalStateException("Encryption failed: C1 is point at infinity");
+    }
 
     /* 2. S = r * Q (Shared Secret) */
     ECPoint S = Secp256k1Operations.multiply(Q, new BigInteger(1, r));
+    if (S.isInfinity()) {
+      throw new IllegalStateException("Encryption failed: shared secret is point at infinity");
+    }
 
     /* 3. C2 = S + m*G */
     ECPoint c2;
@@ -55,7 +62,13 @@ public class BcElGamalEncryptorPort implements ElGamalEncryptorPort {
       c2 = S; // m*G is infinity, so C2 = S
     } else {
       ECPoint mG = computeAmountPoint(amount);
+      if (mG.isInfinity()) {
+        throw new IllegalStateException("Encryption failed: amount point is point at infinity");
+      }
       c2 = Secp256k1Operations.add(mG, S);
+      if (c2.isInfinity()) {
+        throw new IllegalStateException("Encryption failed: C2 is point at infinity");
+      }
     }
 
     byte[] c1Bytes = Secp256k1Operations.serializeCompressed(c1);
@@ -63,7 +76,10 @@ public class BcElGamalEncryptorPort implements ElGamalEncryptorPort {
 
     Arrays.fill(r, (byte) 0);
 
-    return UnsignedByteArray.of(c1Bytes).append(UnsignedByteArray.of(c2Bytes));
+    return ElGamalCiphertext.of(
+      UnsignedByteArray.of(c1Bytes),
+      UnsignedByteArray.of(c2Bytes)
+    );
   }
 
   private ECPoint computeAmountPoint(UnsignedLong amount) {

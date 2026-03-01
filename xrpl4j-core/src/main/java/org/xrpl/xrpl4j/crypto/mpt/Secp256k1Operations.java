@@ -221,6 +221,40 @@ public final class Secp256k1Operations {
     return CURVE_PARAMS.getCurve().decodePoint(encoded).normalize();
   }
 
+  /**
+   * Validates that c1 and c2 are valid curve points and can be serialized.
+   *
+   * <p>This mirrors the C function {@code mpt_serialize_ec_pair} which validates
+   * that both points can be serialized successfully.</p>
+   *
+   * @param c1 The first ciphertext component (33 bytes compressed).
+   * @param c2 The second ciphertext component (33 bytes compressed).
+   *
+   * @throws IllegalStateException if either point is invalid or cannot be deserialized.
+   */
+  public static void validateEcPair(byte[] c1, byte[] c2) {
+    Objects.requireNonNull(c1, "c1 must not be null");
+    Objects.requireNonNull(c2, "c2 must not be null");
+
+    try {
+      ECPoint point1 = deserialize(c1);
+      if (point1.isInfinity()) {
+        throw new IllegalStateException("Serialization failed: c1 is point at infinity");
+      }
+    } catch (IllegalArgumentException e) {
+      throw new IllegalStateException("Serialization failed: c1 is not a valid curve point", e);
+    }
+
+    try {
+      ECPoint point2 = deserialize(c2);
+      if (point2.isInfinity()) {
+        throw new IllegalStateException("Serialization failed: c2 is point at infinity");
+      }
+    } catch (IllegalArgumentException e) {
+      throw new IllegalStateException("Serialization failed: c2 is not a valid curve point", e);
+    }
+  }
+
   // ============================================================================
   // Scalar Arithmetic Operations (for Bulletproofs)
   // ============================================================================

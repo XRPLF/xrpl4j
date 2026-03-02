@@ -98,7 +98,7 @@ public interface PathStep {
   default void validateMptMutualExclusion() {
     if (mptIssuanceId().isPresent()) {
       Preconditions.checkArgument(
-        account().isEmpty() && currency().isEmpty() && issuer().isEmpty(),
+        !account().isPresent() && !currency().isPresent() && !issuer().isPresent(),
         "mpt_issuance_id is mutually exclusive with account, currency, and issuer in a PathStep."
       );
     }

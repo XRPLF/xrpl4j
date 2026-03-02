@@ -4,10 +4,13 @@ import com.google.common.primitives.UnsignedLong;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.math.ec.ECPoint;
+import org.xrpl.xrpl4j.codec.addresses.ByteUtils;
+import org.xrpl.xrpl4j.crypto.HashingUtils;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -91,6 +94,18 @@ public final class Secp256k1Operations {
   private static final X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256k1");
   private static final BigInteger CURVE_ORDER = CURVE_PARAMS.getN();
 
+  // ============================================================================
+  // NUMS Generator Constants (for Pedersen commitments)
+  // ============================================================================
+
+  private static final String NUMS_DOMAIN_SEPARATOR = "MPT_BULLETPROOF_V1_NUMS";
+  private static final String NUMS_CURVE_LABEL = "secp256k1";
+
+  /**
+   * Cached H generator point (lazily initialized, thread-safe via volatile).
+   */
+  private static volatile ECPoint cachedH;
+
   /**
    * Private constructor to prevent instantiation.
    */
@@ -105,6 +120,28 @@ public final class Secp256k1Operations {
    */
   public static ECPoint getG() {
     return CURVE_PARAMS.getG();
+  }
+
+  /**
+   * Gets the H generator point for Pedersen commitments.
+   *
+   * <p>Port of {@code secp256k1_mpt_get_h_generator} which derives a NUMS (Nothing-Up-My-Sleeve)
+   * point using the label "H" at index 0. The discrete logarithm of H with respect to G is
+   * unknown, which is required for the binding property of Pedersen commitments.</p>
+   *
+   * <p>This method is thread-safe and caches the result for efficiency.</p>
+   *
+   * @return The H generator point.
+   */
+  public static ECPoint getH() {
+    if (cachedH == null) {
+      synchronized (Secp256k1Operations.class) {
+        if (cachedH == null) {
+          cachedH = hashToPointNums("H".getBytes(StandardCharsets.UTF_8), 0);
+        }
+      }
+    }
+    return cachedH;
   }
 
   /**
@@ -499,5 +536,71 @@ public final class Secp256k1Operations {
   public static BigInteger toScalar(PrivateKey privateKey) {
     Objects.requireNonNull(privateKey, "privateKey must not be null");
     return new BigInteger(1, privateKey.naturalBytes().toByteArray());
+  }
+
+  // ============================================================================
+  // NUMS Point Derivation (for Pedersen commitments)
+  // ============================================================================
+
+  /**
+   * Deterministically derives a NUMS (Nothing-Up-My-Sleeve) generator point.
+   *
+   * <p>Port of {@code secp256k1_mpt_hash_to_point_nums} from commitments.c.</p>
+   *
+   * <p>Uses SHA-256 try-and-increment to find a valid x-coordinate. This ensures the
+   * discrete logarithm of the resulting point is unknown.</p>
+   *
+   * @param label The domain/vector label (e.g., "H").
+   * @param index The vector index.
+   *
+   * @return The derived generator point.
+   *
+   * @throws IllegalStateException if no valid point is found (extremely unlikely).
+   */
+  private static ECPoint hashToPointNums(byte[] label, int index) {
+    byte[] domainBytes = NUMS_DOMAIN_SEPARATOR.getBytes(StandardCharsets.UTF_8);
+    byte[] curveBytes = NUMS_CURVE_LABEL.getBytes(StandardCharsets.UTF_8);
+    byte[] indexBe = ByteUtils.toByteArray(index, 4);
+
+    // Try-and-increment loop
+    for (long ctr = 0; ctr < 0xFFFFFFFFL; ctr++) {
+      byte[] ctrBe = ByteUtils.toByteArray((int) ctr, 4);
+
+      // Build hash input: domainSeparator || curveLabel || label || index || counter
+      int inputLen = domainBytes.length + curveBytes.length +
+        (label != null ? label.length : 0) + 4 + 4;
+      byte[] hashInput = new byte[inputLen];
+      int offset = 0;
+
+      System.arraycopy(domainBytes, 0, hashInput, offset, domainBytes.length);
+      offset += domainBytes.length;
+      System.arraycopy(curveBytes, 0, hashInput, offset, curveBytes.length);
+      offset += curveBytes.length;
+      if (label != null && label.length > 0) {
+        System.arraycopy(label, 0, hashInput, offset, label.length);
+        offset += label.length;
+      }
+      System.arraycopy(indexBe, 0, hashInput, offset, 4);
+      offset += 4;
+      System.arraycopy(ctrBe, 0, hashInput, offset, 4);
+
+      byte[] hash = HashingUtils.sha256(hashInput).toByteArray();
+
+      // Construct compressed point candidate: 0x02 || hash
+      byte[] compressed = new byte[33];
+      compressed[0] = 0x02;
+      System.arraycopy(hash, 0, compressed, 1, 32);
+
+      try {
+        ECPoint point = deserialize(compressed);
+        if (point != null && !point.isInfinity()) {
+          return point;
+        }
+      } catch (Exception e) {
+        // Invalid point, continue to next counter
+      }
+    }
+
+    throw new IllegalStateException("Failed to derive NUMS point (extremely unlikely)");
   }
 }

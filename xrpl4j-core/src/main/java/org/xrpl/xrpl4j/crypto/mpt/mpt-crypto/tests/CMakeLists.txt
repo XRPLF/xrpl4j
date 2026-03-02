@@ -53,3 +53,5 @@ add_mpt_test(test_pok_sk_vectors test_pok_sk_vectors.c mpt-crypto secp256k1 Open
 add_mpt_test(test_same_plaintext_multi_vectors test_same_plaintext_multi_vectors.c mpt-crypto secp256k1 OpenSSL::Crypto)
 
 add_mpt_test(test_pedersen_vectors test_pedersen_vectors.c mpt-crypto secp256k1 OpenSSL::Crypto)
+
+add_mpt_test(test_pedersen_link_vectors test_pedersen_link_vectors.c mpt-crypto secp256k1 OpenSSL::Crypto)

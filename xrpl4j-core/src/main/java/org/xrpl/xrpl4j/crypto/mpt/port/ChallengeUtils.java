@@ -40,6 +40,7 @@ public final class ChallengeUtils {
 
   private static final String POK_SK_DOMAIN = "MPT_POK_SK_REGISTER";
   private static final String SAME_PLAINTEXT_DOMAIN = "MPT_POK_SAME_PLAINTEXT_PROOF";
+  private static final String PEDERSEN_LINK_DOMAIN = "MPT_ELGAMAL_PEDERSEN_LINK";
 
   private ChallengeUtils() {
     // Utility class
@@ -177,6 +178,108 @@ public final class ChallengeUtils {
     }
 
     // 3. Context
+    if (contextId != null) {
+      byte[] contextBytes = contextId.toByteArray();
+      System.arraycopy(contextBytes, 0, hashInput, offset, 32);
+      Arrays.fill(contextBytes, (byte) 0);
+    }
+
+    byte[] h = Hashing.sha256().hashBytes(hashInput).asBytes();
+
+    // secp256k1_mpt_scalar_reduce32
+    byte[] e = Secp256k1Operations.reduceToScalar(h);
+
+    // Clear intermediate values
+    Arrays.fill(hashInput, (byte) 0);
+    Arrays.fill(h, (byte) 0);
+
+    return UnsignedByteArray.of(e);
+  }
+
+  /**
+   * Builds the challenge hash for the Pedersen Link proof.
+   *
+   * <p>Port of {@code build_link_challenge_hash} from proof_link.c.</p>
+   *
+   * <p>The challenge is computed as:
+   * {@code e = reduce(SHA256("MPT_ELGAMAL_PEDERSEN_LINK" || C1 || C2 || Pk || PCm || T1 || T2 || T3 [|| contextId])) mod n}</p>
+   *
+   * @param c1        The ElGamal ephemeral key (33 bytes compressed).
+   * @param c2        The ElGamal masked value (33 bytes compressed).
+   * @param pk        The public key (33 bytes compressed).
+   * @param pcm       The Pedersen commitment (33 bytes compressed).
+   * @param T1        The commitment point T1 (33 bytes compressed).
+   * @param T2        The commitment point T2 (33 bytes compressed).
+   * @param T3        The commitment point T3 (33 bytes compressed).
+   * @param contextId The optional 32-byte context identifier. Can be null.
+   *
+   * @return A 32-byte challenge scalar (reduced mod curve order).
+   */
+  public static UnsignedByteArray buildPedersenLinkChallenge(
+    final UnsignedByteArray c1,
+    final UnsignedByteArray c2,
+    final UnsignedByteArray pk,
+    final UnsignedByteArray pcm,
+    final UnsignedByteArray T1,
+    final UnsignedByteArray T2,
+    final UnsignedByteArray T3,
+    final UnsignedByteArray contextId
+  ) {
+    byte[] domainBytes = PEDERSEN_LINK_DOMAIN.getBytes(StandardCharsets.UTF_8);
+
+    int contextIdLength = (contextId != null) ? 32 : 0;
+    // domain + c1 + c2 + pk + pcm + T1 + T2 + T3 + optional contextId
+    int totalSize = domainBytes.length + (7 * 33) + contextIdLength;
+    byte[] hashInput = new byte[totalSize];
+    int offset = 0;
+
+    // Domain
+    System.arraycopy(domainBytes, 0, hashInput, offset, domainBytes.length);
+    offset += domainBytes.length;
+
+    // C1
+    byte[] c1Bytes = c1.toByteArray();
+    System.arraycopy(c1Bytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(c1Bytes, (byte) 0);
+
+    // C2
+    byte[] c2Bytes = c2.toByteArray();
+    System.arraycopy(c2Bytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(c2Bytes, (byte) 0);
+
+    // Pk
+    byte[] pkBytes = pk.toByteArray();
+    System.arraycopy(pkBytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(pkBytes, (byte) 0);
+
+    // PCm
+    byte[] pcmBytes = pcm.toByteArray();
+    System.arraycopy(pcmBytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(pcmBytes, (byte) 0);
+
+    // T1
+    byte[] t1Bytes = T1.toByteArray();
+    System.arraycopy(t1Bytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(t1Bytes, (byte) 0);
+
+    // T2
+    byte[] t2Bytes = T2.toByteArray();
+    System.arraycopy(t2Bytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(t2Bytes, (byte) 0);
+
+    // T3
+    byte[] t3Bytes = T3.toByteArray();
+    System.arraycopy(t3Bytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(t3Bytes, (byte) 0);
+
+    // Context
     if (contextId != null) {
       byte[] contextBytes = contextId.toByteArray();
       System.arraycopy(contextBytes, 0, hashInput, offset, 32);

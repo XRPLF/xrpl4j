@@ -36,6 +36,8 @@ import org.xrpl.xrpl4j.crypto.mpt.ZKProofUtils;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.RangeProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.bc.BcRangeProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.commitments.bc.BcPedersenCommitmentGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
+import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTConvertProof;
 import org.xrpl.xrpl4j.crypto.mpt.models.SamePlaintextMultiProof;
 import org.xrpl.xrpl4j.crypto.mpt.models.SamePlaintextParticipant;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
@@ -49,10 +51,8 @@ import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTClawbackContext;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.bc.BcPlaintextEqualityProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.models.EqualityPlaintextProof;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.bc.BcSamePlaintextProofGenerator;
-import org.xrpl.xrpl4j.crypto.mpt.service.BcConfidentialMPTConvertService;
 import org.xrpl.xrpl4j.crypto.mpt.service.ConfidentialMPTConvertService;
 import org.xrpl.xrpl4j.crypto.mpt.models.BulletproofRangeProof;
-import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTConvertResult;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.bc.BcElGamalDecryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.bc.BcElGamalEncryptor;
@@ -100,6 +100,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
   @Test
   public void testEntireFlow() throws JsonRpcClientErrorException, JsonProcessingException {
+    ConfidentialMPTConvertService convertService =
+      new ConfidentialMPTConvertService();
+
     //////////////////////
     // Create random issuer account
     KeyPair issuerKeyPair = createRandomAccountEd25519();
@@ -317,20 +320,21 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     //////////////////////
     // Use ConfidentialMPTConvertService to generate all cryptographic data
+    BlindingFactor blindingFactor = BlindingFactor.generate();
     UnsignedLong amountToConvert = UnsignedLong.valueOf(500);
-    ConfidentialMPTConvertService<org.xrpl.xrpl4j.crypto.keys.PrivateKey> convertService =
-      new BcConfidentialMPTConvertService();
 
-    ConfidentialMPTConvertResult convertResult = convertService.generateConvertData(
-      holderElGamalKeyPair.privateKey(),
-      holderElGamalKeyPair.publicKey(),
-      issuerElGamalKeyPair.publicKey(),
-      Optional.empty(),  // no auditor
-      holderKeyPair.publicKey().deriveAddress(),
+    ConfidentialMPTConvertContext context = convertService.generateContext(holderKeyPair.publicKey().deriveAddress(),
       holderAccountInfoForConvert.accountData().sequence(),
       mpTokenIssuanceId,
       amountToConvert
     );
+
+    ConfidentialMPTConvertProof zkProof = convertService.generateProof(holderElGamalKeyPair, context);
+
+    ElGamalCiphertext holderEncryptedAmount = encryptor.encrypt(amountToConvert, holderElGamalKeyPair.publicKey(), blindingFactor);
+    ElGamalCiphertext issuerEncryptedAmount = encryptor.encrypt(amountToConvert, issuerElGamalKeyPair.publicKey(), blindingFactor);
+
+
 
     //////////////////////
     // Build and submit ConfidentialMPTConvert transaction
@@ -345,10 +349,10 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(amountToConvert))
       .holderElGamalPublicKey(holderElGamalKeyPair.publicKey().base16Value())
-      .holderEncryptedAmount(convertResult.holderEncryptedAmount().hexValue())
-      .issuerEncryptedAmount(convertResult.issuerEncryptedAmount().hexValue())
-      .blindingFactor(convertResult.blindingFactor().hexValue())
-      .zkProof(convertResult.zkProof().hexValue())
+      .holderEncryptedAmount(holderEncryptedAmount.hexValue())
+      .issuerEncryptedAmount(issuerEncryptedAmount.hexValue())
+      .blindingFactor(blindingFactor.hexValue())
+      .zkProof(zkProof.hexValue())
       .build();
 
     SingleSignedTransaction<ConfidentialMPTConvert> signedConfidentialConvert = signatureService.sign(
@@ -455,18 +459,20 @@ public class ConfidentialTransfersIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(holder2KeyPair.publicKey().deriveAddress())
     );
 
-    //////////////////////
-    // Use ConfidentialMPTConvertService for Holder 2
-    ConfidentialMPTConvertResult holder2ConvertResult = convertService.generateConvertData(
-      holder2ElGamalKeyPair.privateKey(),
-      holder2ElGamalKeyPair.publicKey(),
-      issuerElGamalKeyPair.publicKey(),
-      Optional.empty(),  // no auditor
-      holder2KeyPair.publicKey().deriveAddress(),
+    BlindingFactor holder2BlindingFactor = BlindingFactor.generate();
+
+    ConfidentialMPTConvertContext holder2Context = convertService.generateContext(holder2KeyPair.publicKey().deriveAddress(),
       holder2AccountInfoForConvert.accountData().sequence(),
       mpTokenIssuanceId,
       holder2AmountToConvert
     );
+
+    ConfidentialMPTConvertProof holder2ZkProof = convertService.generateProof(holder2ElGamalKeyPair, holder2Context);
+
+    ElGamalCiphertext holder2EncryptedAmount = encryptor.encrypt(holder2AmountToConvert, holder2ElGamalKeyPair.publicKey(),
+      holder2BlindingFactor);
+    ElGamalCiphertext issuer2EncryptedAmount = encryptor.encrypt(holder2AmountToConvert, issuerElGamalKeyPair.publicKey(), holder2BlindingFactor);
+
 
     //////////////////////
     // Build and submit ConfidentialMPTConvert for Holder 2 (0 amount to register public key)
@@ -481,10 +487,10 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(holder2AmountToConvert))
       .holderElGamalPublicKey(holder2ElGamalKeyPair.publicKey().base16Value())
-      .holderEncryptedAmount(holder2ConvertResult.holderEncryptedAmount().hexValue())
-      .issuerEncryptedAmount(holder2ConvertResult.issuerEncryptedAmount().hexValue())
-      .blindingFactor(holder2ConvertResult.blindingFactor().hexValue())
-      .zkProof(holder2ConvertResult.zkProof().hexValue())
+      .holderEncryptedAmount(holder2EncryptedAmount.hexValue())
+      .issuerEncryptedAmount(issuer2EncryptedAmount.hexValue())
+      .blindingFactor(holder2BlindingFactor.hexValue())
+      .zkProof(holder2ZkProof.hexValue())
       .build();
 
     SingleSignedTransaction<ConfidentialMPTConvert> signedHolder2ConfidentialConvert = signatureService.sign(

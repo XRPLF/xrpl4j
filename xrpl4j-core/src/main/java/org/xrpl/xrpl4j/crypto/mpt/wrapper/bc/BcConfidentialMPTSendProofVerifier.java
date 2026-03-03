@@ -160,7 +160,7 @@ public class BcConfidentialMPTSendProofVerifier implements ConfidentialMPTSendPr
 
     for (int i = 0; i < n; i++) {
       MPTConfidentialParty party = recipients.get(i);
-      ElGamalCiphertext ciphertext = party.ciphertext();
+      ElGamalCiphertext ciphertext = party.encryptedAmount();
       c1List.add(ciphertext.c1());
       c2List.add(ciphertext.c2());
       pkList.add(party.publicKey().value());
@@ -177,7 +177,7 @@ public class BcConfidentialMPTSendProofVerifier implements ConfidentialMPTSendPr
     PedersenCommitment amountCommitment,
     ConfidentialMPTSendContext context
   ) {
-    ElGamalCiphertext ciphertext = firstRecipient.ciphertext();
+    ElGamalCiphertext ciphertext = firstRecipient.encryptedAmount();
     UnsignedByteArray pcm = amountCommitment.value();
 
     // Amount linkage: c1, c2, pk, pcm (matching C code order)
@@ -197,7 +197,7 @@ public class BcConfidentialMPTSendProofVerifier implements ConfidentialMPTSendPr
     PedersenCommitment balanceCommitment,
     ConfidentialMPTSendContext context
   ) {
-    ElGamalCiphertext ciphertext = firstRecipient.ciphertext();
+    ElGamalCiphertext ciphertext = firstRecipient.encryptedAmount();
     UnsignedByteArray pcm = balanceCommitment.value();
 
     // Balance linkage: pk, c2, c1, pcm (matching C code order - note swapped c1/c2)

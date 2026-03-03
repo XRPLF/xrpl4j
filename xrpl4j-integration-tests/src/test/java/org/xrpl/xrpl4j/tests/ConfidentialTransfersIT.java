@@ -31,32 +31,26 @@ import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
-import org.xrpl.xrpl4j.crypto.mpt.ZKProofUtils;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.RangeProofGenerator;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.bc.BcRangeProofGenerator;
-import org.xrpl.xrpl4j.crypto.mpt.commitments.bc.BcPedersenCommitmentGenerator;
-import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTContextUtil;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
+import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTConvertBackProof;
 import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTConvertProof;
-import org.xrpl.xrpl4j.crypto.mpt.models.SamePlaintextMultiProof;
-import org.xrpl.xrpl4j.crypto.mpt.models.SamePlaintextParticipant;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
 import org.xrpl.xrpl4j.crypto.mpt.models.PedersenCommitment;
-import org.xrpl.xrpl4j.crypto.mpt.commitments.PedersenCommitmentGenerator;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.LinkageProofType;
-import org.xrpl.xrpl4j.crypto.mpt.models.ElGamalPedersenLinkProof;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.bc.BcPedersenLinkProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertBackContext;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTClawbackContext;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.bc.BcPlaintextEqualityProofGenerator;
-import org.xrpl.xrpl4j.crypto.mpt.models.EqualityPlaintextProof;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.bc.BcSamePlaintextProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
+import org.xrpl.xrpl4j.crypto.mpt.service.ConfidentialMPTClawbackService;
+import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTClawbackProof;
+import org.xrpl.xrpl4j.crypto.mpt.service.ConfidentialMPTConvertBackService;
 import org.xrpl.xrpl4j.crypto.mpt.service.ConfidentialMPTConvertService;
-import org.xrpl.xrpl4j.crypto.mpt.models.BulletproofRangeProof;
-import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
-import org.xrpl.xrpl4j.crypto.mpt.elgamal.bc.BcElGamalDecryptor;
-import org.xrpl.xrpl4j.crypto.mpt.elgamal.bc.BcElGamalEncryptor;
+import org.xrpl.xrpl4j.crypto.mpt.service.ConfidentialMPTSendService;
+import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTSendProof;
+import org.xrpl.xrpl4j.crypto.mpt.models.MPTConfidentialParty;
+import org.xrpl.xrpl4j.crypto.mpt.models.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.MPTAmountEncryptor;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.bc.BcMPTAmountEncryptor;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.MPTAmountDecryptor;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.bc.BcMPTAmountDecryptor;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
@@ -85,8 +79,6 @@ import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Optional;
 
 @DisabledIf(value = "shouldNotRun", disabledReason = "ConfidentialTransfersIT only runs on local rippled node.")
 public class ConfidentialTransfersIT extends AbstractIT {
@@ -103,6 +95,14 @@ public class ConfidentialTransfersIT extends AbstractIT {
   public void testEntireFlow() throws JsonRpcClientErrorException, JsonProcessingException {
     ConfidentialMPTConvertService convertService =
       new ConfidentialMPTConvertService();
+    ConfidentialMPTSendService sendService =
+      new ConfidentialMPTSendService();
+    ConfidentialMPTConvertBackService convertBackService =
+      new ConfidentialMPTConvertBackService();
+    ConfidentialMPTClawbackService clawbackService =
+      new ConfidentialMPTClawbackService();
+    MPTAmountEncryptor encryptor = new BcMPTAmountEncryptor();
+    MPTAmountDecryptor decryptor = new BcMPTAmountDecryptor();
 
     //////////////////////
     // Create random issuer account
@@ -309,10 +309,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     KeyPair holderElGamalKeyPair = Seed.elGamalSecp256k1Seed().deriveKeyPair();
 
     //////////////////////
-    // Prepare encryption utilities (still needed for later operations)
-    BcElGamalEncryptor encryptor = new BcElGamalEncryptor();
-
-    //////////////////////
     // Get updated holder account info for ConfidentialMPTConvert
     // IMPORTANT: Get this BEFORE generating ZKProof because the context hash includes the sequence number
     AccountInfoResult holderAccountInfoForConvert = this.scanForResult(
@@ -332,7 +328,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     ConfidentialMPTConvertProof zkProof = convertService.generateProof(holderElGamalKeyPair, context);
 
-    ElGamalCiphertext holderEncryptedAmount = encryptor.encrypt(amountToConvert, holderElGamalKeyPair.publicKey(), blindingFactor);
+    ElGamalCiphertext holderEncryptedAmount = encryptor.encrypt(amountToConvert,
+      holderElGamalKeyPair.publicKey(), blindingFactor);
     ElGamalCiphertext issuerEncryptedAmount = encryptor.encrypt(amountToConvert, issuerElGamalKeyPair.publicKey(), blindingFactor);
 
 
@@ -350,8 +347,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(amountToConvert))
       .holderElGamalPublicKey(holderElGamalKeyPair.publicKey().base16Value())
-      .holderEncryptedAmount(holderEncryptedAmount.hexValue())
-      .issuerEncryptedAmount(issuerEncryptedAmount.hexValue())
+      .holderEncryptedAmount(holderEncryptedAmount.toHex())
+      .issuerEncryptedAmount(issuerEncryptedAmount.toHex())
       .blindingFactor(blindingFactor.hexValue())
       .zkProof(zkProof.hexValue())
       .build();
@@ -488,8 +485,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(holder2AmountToConvert))
       .holderElGamalPublicKey(holder2ElGamalKeyPair.publicKey().base16Value())
-      .holderEncryptedAmount(holder2EncryptedAmount.hexValue())
-      .issuerEncryptedAmount(issuer2EncryptedAmount.hexValue())
+      .holderEncryptedAmount(holder2EncryptedAmount.toHex())
+      .issuerEncryptedAmount(issuer2EncryptedAmount.toHex())
       .blindingFactor(holder2BlindingFactor.hexValue())
       .zkProof(holder2ZkProof.hexValue())
       .build();
@@ -528,43 +525,20 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     //////////////////////
     // ConfidentialMPTSend: Holder 1 sends 100 confidential MPT to Holder 2
+    // Using ConfidentialMPTSendService for proof generation
     UnsignedLong sendAmount = UnsignedLong.valueOf(100);
 
-    // Generate blinding factors for the send (one for each recipient: sender, destination, issuer)
-    BlindingFactor sendBlindingFactorSender = BlindingFactor.generate();
-    BlindingFactor sendBlindingFactorHolder2 = BlindingFactor.generate();
-    BlindingFactor sendBlindingFactorIssuer = BlindingFactor.generate();
 
-    // Encrypt for sender (holder 1) - this is the amount being debited
-    ElGamalCiphertext senderCiphertext = encryptor.encrypt(
-      sendAmount, holderElGamalKeyPair.publicKey(), sendBlindingFactorSender
-    );
-
-    // Encrypt for destination (holder 2)
-    ElGamalCiphertext destinationCiphertext = encryptor.encrypt(
-      sendAmount, holder2ElGamalKeyPair.publicKey(), sendBlindingFactorHolder2
-    );
-
-    // Encrypt for issuer
-    ElGamalCiphertext issuerCiphertextForSend = encryptor.encrypt(
-      sendAmount, issuerElGamalKeyPair.publicKey(), sendBlindingFactorIssuer
-    );
-
-    //////////////////////
     // Get holder 1 account info for the Send transaction
     AccountInfoResult holderAccountInfoForSend = this.scanForResult(
       () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
     );
 
-    //////////////////////
-    // Generate SamePlaintextMultiProof (proves all 3 ciphertexts encrypt the same amount)
-    BcSamePlaintextProofGenerator samePlaintextProofGenerator = new BcSamePlaintextProofGenerator();
-
     // Get the version from holder 1's MPToken (default to 0 if not present)
     UnsignedInteger holder1Version = holder1MpToken.confidentialBalanceVersion().orElse(UnsignedInteger.ZERO);
 
-    // Generate context for ConfidentialMPTSend
-    ConfidentialMPTSendContext sendContext = ConfidentialMPTContextUtil.generateSendContext(
+    // Generate context for ConfidentialMPTSend using the service
+    ConfidentialMPTSendContext sendContext = sendService.generateContext(
       holderKeyPair.publicKey().deriveAddress(),  // sender account
       holderAccountInfoForSend.accountData().sequence(),  // sequence
       mpTokenIssuanceId,  // issuanceId
@@ -572,116 +546,69 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holder1Version  // version from MPToken
     );
 
-    // Create participants for proof generation
-    SamePlaintextParticipant senderParticipant = SamePlaintextParticipant.forProofGeneration(
-      senderCiphertext, holderElGamalKeyPair.publicKey(), sendBlindingFactorSender
-    );
-    SamePlaintextParticipant destParticipant = SamePlaintextParticipant.forProofGeneration(
-      destinationCiphertext, holder2ElGamalKeyPair.publicKey(), sendBlindingFactorHolder2
-    );
-    SamePlaintextParticipant issuerParticipant = SamePlaintextParticipant.forProofGeneration(
-      issuerCiphertextForSend, issuerElGamalKeyPair.publicKey(), sendBlindingFactorIssuer
+    // Generate a single transaction blinding factor for all recipients (matching C implementation)
+    BlindingFactor txBlindingFactor = BlindingFactor.generate();
+
+    // Encrypt for sender (holder 1) - using wrapper encryptor which returns port's ElGamalCiphertext
+    ElGamalCiphertext senderCiphertext = encryptor.encrypt(
+      sendAmount, holderElGamalKeyPair.publicKey(), txBlindingFactor
     );
 
-    // Generate the SamePlaintextMultiProof for all 3 participants: sender, destination, issuer
-    SamePlaintextMultiProof samePlaintextProof = samePlaintextProofGenerator.generateProof(
-      sendAmount,
-      Arrays.asList(senderParticipant, destParticipant, issuerParticipant),
-      sendContext
+    // Encrypt for destination (holder 2)
+    ElGamalCiphertext destinationCiphertext = encryptor.encrypt(
+      sendAmount, holder2ElGamalKeyPair.publicKey(), txBlindingFactor
     );
 
-    //////////////////////
-    // Generate Pedersen Commitments and Linkage Proofs
-    PedersenCommitmentGenerator pedersenGen = new BcPedersenCommitmentGenerator();
-    BcPedersenLinkProofGenerator linkProofGenerator = new BcPedersenLinkProofGenerator();
-    BcElGamalDecryptor balanceDecryptor = new BcElGamalDecryptor();
+    // Encrypt for issuer
+    ElGamalCiphertext issuerCiphertextForSend = encryptor.encrypt(
+      sendAmount, issuerElGamalKeyPair.publicKey(), txBlindingFactor
+    );
+
+    // Create MPTConfidentialParty objects for each recipient (publicKey, encryptedAmount)
+    MPTConfidentialParty senderParty = MPTConfidentialParty.of(
+      holderElGamalKeyPair.publicKey(), senderCiphertext
+    );
+    MPTConfidentialParty destParty = MPTConfidentialParty.of(
+      holder2ElGamalKeyPair.publicKey(), destinationCiphertext
+    );
+    MPTConfidentialParty issuerParty = MPTConfidentialParty.of(
+      issuerElGamalKeyPair.publicKey(), issuerCiphertextForSend
+    );
+
+    // Get the sender's current encrypted spending balance from the ledger and decrypt it
+    String currentEncryptedBalance = holder1MpToken.confidentialBalanceSpending()
+      .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance"));
+    org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext currentBalanceCiphertext =
+      org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext.fromHex(currentEncryptedBalance);
+
+    // Decrypt the sender's current spending balance using wrapper decryptor
+    UnsignedLong senderCurrentBalance = decryptor.decrypt(
+      currentBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, UnsignedLong.valueOf(1_000_000)
+    );
 
     // Generate blinding factors for Pedersen commitments
     BlindingFactor amountBlindingFactorForSend = BlindingFactor.generate();
     BlindingFactor balanceBlindingFactorForSend = BlindingFactor.generate();
 
-    // Generate Amount Pedersen Commitment: PCm = sendAmount * G + amountBlindingFactorForSend * H
-    PedersenCommitment amountCommitment = pedersenGen.generateCommitment(sendAmount, amountBlindingFactorForSend);
-
-    // Get the sender's current encrypted spending balance from the ledger and decrypt it
-    String currentEncryptedBalance = holder1MpToken.confidentialBalanceSpending()
-      .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance"));
-    byte[] currentBalanceBytes = BaseEncoding.base16().decode(currentEncryptedBalance);
-    ElGamalCiphertext currentBalanceCiphertext = ElGamalCiphertext.fromBytes(currentBalanceBytes);
-
-    // Decrypt the sender's current spending balance (this is what a real client would do)
-    long senderCurrentBalanceLong = balanceDecryptor.decrypt(
-      currentBalanceCiphertext, holderElGamalKeyPair.privateKey(), 0, 1_000_000
+    // Generate Pedersen proof parameters for amount using the service
+    PedersenProofParams amountParams = sendService.generatePedersenProofParams(
+      sendAmount, senderCiphertext, amountBlindingFactorForSend
     );
-    UnsignedLong senderCurrentBalance = UnsignedLong.valueOf(senderCurrentBalanceLong);
 
-    // Generate Balance Pedersen Commitment: PCb = senderCurrentBalance * G + balanceBlindingFactorForSend * H
-    PedersenCommitment balanceCommitment = pedersenGen.generateCommitment(senderCurrentBalance, balanceBlindingFactorForSend);
+    // Generate Pedersen proof parameters for balance using the service
+    PedersenProofParams balanceParams = sendService.generatePedersenProofParams(
+      senderCurrentBalance, currentBalanceCiphertext, balanceBlindingFactorForSend
+    );
 
-    //////////////////////
-    // Generate Amount Linkage Proof
-    // Proves: sender's encrypted amount (senderCiphertext) links to amountCommitment
-    ElGamalPedersenLinkProof amountLinkageProof = linkProofGenerator.generateProof(
-      LinkageProofType.AMOUNT_COMMITMENT,
-      senderCiphertext,
-      holderElGamalKeyPair.publicKey(),
-      amountCommitment,
+    // Generate the complete ConfidentialMPTSend proof using the service
+    ConfidentialMPTSendProof sendProof = sendService.generateProof(
+      holderElGamalKeyPair,
       sendAmount,
-      sendBlindingFactorSender,
-      amountBlindingFactorForSend,
-      sendContext
-    );
-
-    //////////////////////
-    // Generate Balance Linkage Proof
-    // Proves: sender's current encrypted balance links to balanceCommitment
-    // Uses the sender's private key as the "r" parameter (swapped parameters vs amount linkage)
-
-    // Get the holder's ElGamal private key as a BlindingFactor
-    BlindingFactor holderPrivateKeyAsBlindingFactor = BlindingFactor.fromBytes(
-      holderElGamalKeyPair.privateKey().naturalBytes().toByteArray()
-    );
-
-    // Generate Balance Linkage Proof (nonces are generated internally)
-    ElGamalPedersenLinkProof balanceLinkageProof = linkProofGenerator.generateProof(
-      LinkageProofType.BALANCE_COMMITMENT,
-      currentBalanceCiphertext,
-      holderElGamalKeyPair.publicKey(),
-      balanceCommitment,
-      senderCurrentBalance,
-      holderPrivateKeyAsBlindingFactor,
-      balanceBlindingFactorForSend,
-      sendContext
-    );
-
-    //////////////////////
-    // Generate Bulletproof Range Proof for amount and remaining balance
-    // This proves both values are non-negative (in range [0, 2^64))
-
-    // Compute remaining balance: senderCurrentBalance - sendAmount
-    UnsignedLong remainingBalanceForSend = UnsignedLong.valueOf(
-      senderCurrentBalance.longValue() - sendAmount.longValue()
-    );
-
-    // Compute blinding factor for remaining balance: rho_rem = rho_balance - rho_amount
-    // This matches the C++ implementation: secp256k1_mpt_scalar_negate + secp256k1_mpt_scalar_add
-    byte[] negAmountBlinding = Secp256k1Operations.scalarNegate(amountBlindingFactorForSend.toBytes());
-    byte[] rhoRemBytes = Secp256k1Operations.scalarAdd(balanceBlindingFactorForSend.toBytes(), negAmountBlinding);
-    BlindingFactor rhoRem = BlindingFactor.fromBytes(rhoRemBytes);
-
-    // Generate aggregated bulletproof for {amount, remainingBalance}
-    RangeProofGenerator sendBulletproofGenerator = new BcRangeProofGenerator();
-    BulletproofRangeProof sendBulletproof = sendBulletproofGenerator.generateProof(
-      Arrays.asList(sendAmount, remainingBalanceForSend),
-      Arrays.asList(amountBlindingFactorForSend, rhoRem),
-      sendContext
-    );
-
-    //////////////////////
-    // Combine all proofs into full ZKProof for ConfidentialMPTSend
-    // SamePlaintextMultiProof (359) + Amount Linkage (195) + Balance Linkage (195) + Bulletproof (754) = 1503 bytes
-    String fullZkProofHex = ZKProofUtils.combineSendProofsWithBulletproofHex(
-      samePlaintextProof, amountLinkageProof, balanceLinkageProof, sendBulletproof
+      Arrays.asList(senderParty, destParty, issuerParty),
+      txBlindingFactor,
+      sendContext,
+      amountParams,
+      balanceParams
     );
 
     //////////////////////
@@ -696,12 +623,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
       )
       .destination(holder2KeyPair.publicKey().deriveAddress())
       .mpTokenIssuanceId(mpTokenIssuanceId)
-      .senderEncryptedAmount(senderCiphertext.hexValue())
-      .destinationEncryptedAmount(destinationCiphertext.hexValue())
-      .issuerEncryptedAmount(issuerCiphertextForSend.hexValue())
-      .zkProof(fullZkProofHex)
-      .amountCommitment(amountCommitment.hexValue())
-      .balanceCommitment(balanceCommitment.hexValue())
+      .senderEncryptedAmount(senderCiphertext.toHex())
+      .destinationEncryptedAmount(destinationCiphertext.toHex())
+      .issuerEncryptedAmount(issuerCiphertextForSend.toHex())
+      .zkProof(sendProof.hexValue())
+      .amountCommitment(amountParams.pedersenCommitment().hexValue())
+      .balanceCommitment(balanceParams.pedersenCommitment().hexValue())
       .build();
 
     SingleSignedTransaction<ConfidentialMPTSend> signedConfidentialSend = signatureService.sign(
@@ -742,13 +669,13 @@ public class ConfidentialTransfersIT extends AbstractIT {
       senderBalanceBytesAfterSend
     );
 
-    long senderBalanceAfterSend = balanceDecryptor.decrypt(
-      senderBalanceCiphertextAfterSend, holderElGamalKeyPair.privateKey(), 0, 1_000_000
+    UnsignedLong senderBalanceAfterSend = decryptor.decrypt(
+      senderBalanceCiphertextAfterSend, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, UnsignedLong.valueOf(1_000_000)
     );
 
     // Expected balance: 500 (initial) - 100 (sent) = 400
     long expectedSenderBalance = amountToConvert.longValue() - sendAmount.longValue();
-    assertThat(senderBalanceAfterSend).isEqualTo(expectedSenderBalance);
+    assertThat(senderBalanceAfterSend.longValue()).isEqualTo(expectedSenderBalance);
 
     //////////////////////
     // ConfidentialMPTConvertBack: Holder 1 converts 50 confidential MPT back to public balance
@@ -786,8 +713,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       convertBackAmount, issuerElGamalKeyPair.publicKey(), convertBackBlindingFactor
     );
 
-    // Generate context for ConfidentialMPTConvertBack
-    ConfidentialMPTConvertBackContext convertBackContext = ConfidentialMPTConvertBackContext.generate(
+    // Generate context for ConfidentialMPTConvertBack using the service
+    ConfidentialMPTConvertBackContext convertBackContext = convertBackService.generateContext(
       holderKeyPair.publicKey().deriveAddress(),
       holderAccountInfoForConvertBack.accountData().sequence(),
       mpTokenIssuanceId,
@@ -801,54 +728,36 @@ public class ConfidentialTransfersIT extends AbstractIT {
     byte[] currentBalanceBytesForConvertBack = BaseEncoding.base16().decode(
       currentEncryptedBalanceForConvertBack
     );
-    ElGamalCiphertext currentBalanceCiphertextForConvertBack = ElGamalCiphertext.fromBytes(
-      currentBalanceBytesForConvertBack
+    ElGamalCiphertext currentBalanceCiphertextForConvertBack = ElGamalCiphertext.fromHex(
+      currentEncryptedBalanceForConvertBack
     );
 
     // Decrypt the current spending balance from the ledger
-    long decryptedCurrentBalance = balanceDecryptor.decrypt(
-      currentBalanceCiphertextForConvertBack, holderElGamalKeyPair.privateKey(), 0, 1_000_000
+    UnsignedLong currentSpendingBalance = decryptor.decrypt(
+      currentBalanceCiphertextForConvertBack, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, UnsignedLong.valueOf(1_000_000)
     );
-    UnsignedLong currentSpendingBalance = UnsignedLong.valueOf(decryptedCurrentBalance);
 
-    // Generate Pedersen commitment for the current spending balance
+
+    // Generate Pedersen proof params for the current spending balance using the service
     BlindingFactor convertBackBalanceBlindingFactor = BlindingFactor.generate();
-    PedersenCommitment convertBackCommitment = pedersenGen.generateCommitment(currentSpendingBalance,
-      convertBackBalanceBlindingFactor);
-
-    // Generate Balance Linkage Proof (nonces are generated internally)
-    // This proves the Pedersen commitment matches the on-ledger encrypted balance
-    ElGamalPedersenLinkProof convertBackBalanceLinkageProof = linkProofGenerator.generateProof(
-      LinkageProofType.BALANCE_COMMITMENT,
-      currentBalanceCiphertextForConvertBack,
-      holderElGamalKeyPair.publicKey(),
-      convertBackCommitment,
+    PedersenProofParams convertBackBalanceParams = convertBackService.generatePedersenProofParams(
       currentSpendingBalance,
-      holderPrivateKeyAsBlindingFactor,
-      convertBackBalanceBlindingFactor,
-      convertBackContext
+      currentBalanceCiphertextForConvertBack,
+      convertBackBalanceBlindingFactor
     );
 
-    // Compute the remaining balance after conversion: currentBalance - convertBackAmount
-    UnsignedLong remainingBalanceValue = UnsignedLong.valueOf(
-      currentSpendingBalance.longValue() - convertBackAmount.longValue()
-    );
+    // Generate the ConvertBack proof using the service
+    ConfidentialMPTConvertBackProof convertBackProof =
+      convertBackService.generateProof(
+        holderElGamalKeyPair,
+        convertBackAmount,
+        convertBackContext,
+        convertBackBalanceParams
+      );
 
-    // Generate bulletproof range proof for the remaining balance
-    // This proves the remaining balance is non-negative (in range [0, 2^64))
-    // IMPORTANT: Use the SAME blinding factor as the Pedersen commitment for the current balance
-    // This matches the C++ implementation where pcParams.blindingFactor is reused
-    RangeProofGenerator bulletproofGenerator = new BcRangeProofGenerator();
-    BulletproofRangeProof bulletproof = bulletproofGenerator.generateProof(
-      Collections.singletonList(remainingBalanceValue),
-      Collections.singletonList(convertBackBalanceBlindingFactor),  // Same blinding factor as used for balance commitment
-      convertBackContext
-    );
-
-    // Combine Pedersen linkage proof + bulletproof into zkProof using utility
-    // Format: pedersenProof (195 bytes) + bulletproof (688 bytes) = 883 bytes total
-    String combinedZkProofHex = ZKProofUtils.combineConvertBackProofsHex(
-      convertBackBalanceLinkageProof, bulletproof
+    // Get the Pedersen commitment from the params
+    PedersenCommitment convertBackCommitment = org.xrpl.xrpl4j.crypto.mpt.models.PedersenCommitment.of(
+      convertBackBalanceParams.pedersenCommitment()
     );
 
     //////////////////////
@@ -863,11 +772,11 @@ public class ConfidentialTransfersIT extends AbstractIT {
       )
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(convertBackAmount))
-      .holderEncryptedAmount(holderConvertBackCiphertext.hexValue())
-      .issuerEncryptedAmount(issuerConvertBackCiphertext.hexValue())
+      .holderEncryptedAmount(holderConvertBackCiphertext.toHex())
+      .issuerEncryptedAmount(issuerConvertBackCiphertext.toHex())
       .blindingFactor(convertBackBlindingFactor.hexValue())
       .balanceCommitment(convertBackCommitment.hexValue())
-      .zkProof(combinedZkProofHex)
+      .zkProof(convertBackProof.hexValue())
       .build();
 
     SingleSignedTransaction<ConfidentialMPTConvertBack> signedConvertBack = signatureService.sign(
@@ -904,15 +813,15 @@ public class ConfidentialTransfersIT extends AbstractIT {
     String remainingEncryptedBalance = holder1MpTokenAfterConvertBack.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance after convert back"));
     byte[] remainingBalanceBytes = BaseEncoding.base16().decode(remainingEncryptedBalance);
-    ElGamalCiphertext remainingBalanceCiphertext = ElGamalCiphertext.fromBytes(remainingBalanceBytes);
+    ElGamalCiphertext remainingBalanceCiphertext = ElGamalCiphertext.fromHex(remainingEncryptedBalance);
 
-    long remainingConfidentialBalance = balanceDecryptor.decrypt(
-      remainingBalanceCiphertext, holderElGamalKeyPair.privateKey(), 0, 1_000_000
+    UnsignedLong remainingConfidentialBalance = decryptor.decrypt(
+      remainingBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, UnsignedLong.valueOf(1_000_000)
     );
 
     // Expected remaining balance: 400 - 50 = 350
-    long expectedRemainingBalance = senderBalanceAfterSend - convertBackAmount.longValue();
-    assertThat(remainingConfidentialBalance).isEqualTo(expectedRemainingBalance);
+    long expectedRemainingBalance = senderBalanceAfterSend.longValue() - convertBackAmount.longValue();
+    assertThat(remainingConfidentialBalance.longValue()).isEqualTo(expectedRemainingBalance);
 
     //////////////////////
     // ConfidentialMPTClawback: Issuer claws back 350 confidential MPT from holder
@@ -932,25 +841,19 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Get the issuer's encrypted balance for this holder (IssuerEncryptedBalance)
     String issuerEncryptedBalanceForClawback = holderMpTokenForClawback.issuerEncryptedBalance()
       .orElseThrow(() -> new RuntimeException("No issuer encrypted balance found"));
-    byte[] issuerEncryptedBalanceBytes = BaseEncoding.base16().decode(issuerEncryptedBalanceForClawback);
-    ElGamalCiphertext issuerBalanceCiphertext = ElGamalCiphertext.fromBytes(issuerEncryptedBalanceBytes);
+    ElGamalCiphertext issuerBalanceCiphertext = ElGamalCiphertext.fromHex(issuerEncryptedBalanceForClawback);
 
-    long issuerDecryptedBalance = balanceDecryptor.decrypt(issuerBalanceCiphertext, issuerElGamalKeyPair.privateKey(), 0, 1_000_000);
-    assertThat(issuerDecryptedBalance).isGreaterThanOrEqualTo(clawbackAmount.longValue());
+    UnsignedLong issuerDecryptedBalance = decryptor.decrypt(issuerBalanceCiphertext, issuerElGamalKeyPair.privateKey(),
+      UnsignedLong.ZERO, UnsignedLong.valueOf(1_000_000));
+    assertThat(issuerDecryptedBalance.longValue()).isGreaterThanOrEqualTo(clawbackAmount.longValue());
 
     // Get updated issuer account info for the clawback transaction
     AccountInfoResult issuerAccountInfoForClawback = this.scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
 
-    // Generate the Equality Plaintext Proof
-    // For clawback, the ciphertext is constructed as: c1=issuer's pk, c2=balance.c2
-    // And the publicKey is the balance.c1
-    // The issuer uses their private key as the "randomness" parameter
-    BcPlaintextEqualityProofGenerator equalityProofGenerator = new BcPlaintextEqualityProofGenerator();
-
-    // Generate context hash for clawback
-    ConfidentialMPTClawbackContext clawbackContext = ConfidentialMPTClawbackContext.generate(
+    // Generate context hash for clawback using the service
+    ConfidentialMPTClawbackContext clawbackContext = clawbackService.generateContext(
       issuerKeyPair.publicKey().deriveAddress(),  // issuer account
       issuerAccountInfoForClawback.accountData().sequence(),  // sequence
       mpTokenIssuanceId,  // issuance ID
@@ -958,7 +861,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holderKeyPair.publicKey().deriveAddress()  // holder
     );
 
-    EqualityPlaintextProof clawbackProof = equalityProofGenerator.generateProof(
+    // Generate the clawback proof using the service
+    ConfidentialMPTClawbackProof clawbackProof = clawbackService.generateProof(
       issuerBalanceCiphertext,  // IssuerEncryptedBalance ciphertext
       issuerElGamalKeyPair.publicKey(),  // issuer's ElGamal public key
       clawbackAmount,

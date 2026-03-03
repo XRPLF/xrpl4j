@@ -88,6 +88,7 @@ public class BcConfidentialMPTSendProofGenerator implements ConfidentialMPTSendP
     final KeyPair senderKeyPair,
     final UnsignedLong amount,
     final List<MPTConfidentialParty> recipients,
+    final BlindingFactor txBlindingFactor,
     final ConfidentialMPTSendContext context,
     final PedersenProofParams amountParams,
     final PedersenProofParams balanceParams
@@ -96,6 +97,7 @@ public class BcConfidentialMPTSendProofGenerator implements ConfidentialMPTSendP
     Objects.requireNonNull(senderKeyPair, "senderKeyPair must not be null");
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(recipients, "recipients must not be null");
+    Objects.requireNonNull(txBlindingFactor, "txBlindingFactor must not be null");
     Objects.requireNonNull(context, "context must not be null");
     Objects.requireNonNull(amountParams, "amountParams must not be null");
     Objects.requireNonNull(balanceParams, "balanceParams must not be null");
@@ -114,14 +116,14 @@ public class BcConfidentialMPTSendProofGenerator implements ConfidentialMPTSendP
     List<UnsignedByteArray> pkList = new java.util.ArrayList<>();
     List<UnsignedByteArray> blindingsList = new java.util.ArrayList<>();
 
+    UnsignedByteArray txBlindingBytes = UnsignedByteArray.of(txBlindingFactor.toBytes());
     for (int i = 0; i < numRecipients; i++) {
       MPTConfidentialParty party = recipients.get(i);
-      ElGamalCiphertext ciphertext = party.ciphertext();
+      ElGamalCiphertext ciphertext = party.encryptedAmount();
       c1List.add(ciphertext.c1());
       c2List.add(ciphertext.c2());
       pkList.add(party.publicKey().value());
-      // Use each party's own blinding factor
-      blindingsList.add(UnsignedByteArray.of(party.blindingFactor().toBytes()));
+      blindingsList.add(txBlindingBytes);
     }
 
     // 1. Generate same-plaintext multi proof
@@ -129,15 +131,15 @@ public class BcConfidentialMPTSendProofGenerator implements ConfidentialMPTSendP
       amount, c1List, c2List, pkList, blindingsList, context.value()
     );
 
-    // 2. Generate amount linkage proof (uses the sender's blinding factor from the first recipient)
+    // 2. Generate amount linkage proof (uses the transaction blinding factor)
     MPTConfidentialParty senderParty = recipients.get(0);
     UnsignedByteArray amountLinkageProof = generateAmountLinkageProof(
-      senderParty, senderParty.blindingFactor(), context, amountParams
+      senderParty, txBlindingFactor, context, amountParams
     );
 
     // 3. Generate balance linkage proof
     UnsignedByteArray balanceLinkageProof = generateBalanceLinkageProof(
-      senderKeyPair, recipients.get(0), context, balanceParams
+      senderKeyPair, senderParty, context, balanceParams
     );
 
     // 4. Generate aggregated bulletproof range proof
@@ -147,18 +149,9 @@ public class BcConfidentialMPTSendProofGenerator implements ConfidentialMPTSendP
     return combineProofs(samePlaintextProof, amountLinkageProof, balanceLinkageProof, rangeProof);
   }
 
-  private UnsignedByteArray buildBlindingsFlat(BlindingFactor blindingFactor, int numRecipients) {
-    byte[] flat = new byte[numRecipients * 32];
-    byte[] bf = blindingFactor.toBytes();
-    for (int i = 0; i < numRecipients; i++) {
-      System.arraycopy(bf, 0, flat, i * 32, 32);
-    }
-    return UnsignedByteArray.of(flat);
-  }
-
   private UnsignedByteArray generateAmountLinkageProof(
     MPTConfidentialParty firstRecipient,
-    BlindingFactor elGamalBlinding,
+    BlindingFactor txBlindingFactor,
     ConfidentialMPTSendContext context,
     PedersenProofParams amountParams
   ) {
@@ -176,7 +169,7 @@ public class BcConfidentialMPTSendProofGenerator implements ConfidentialMPTSendP
       firstRecipient.publicKey().value(),
       pcm,
       amountParams.amount(),
-      UnsignedByteArray.of(elGamalBlinding.toBytes()),
+      UnsignedByteArray.of(txBlindingFactor.toBytes()),
       UnsignedByteArray.of(amountParams.blindingFactor().toBytes()),
       context.value()
     );

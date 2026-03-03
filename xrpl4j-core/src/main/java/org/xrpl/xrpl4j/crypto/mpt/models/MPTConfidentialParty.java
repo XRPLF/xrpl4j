@@ -24,19 +24,20 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
 
 /**
- * Represents a party (recipient) in a Confidential MPT transaction.
+ * Represents a recipient in a Confidential MPT Send transaction.
  *
- * <p>This immutable encapsulates the data needed for one party (sender, destination, issuer, or auditor)
- * in the proof generation and verification process:</p>
+ * <p>This immutable mirrors the C struct {@code mpt_confidential_recipient} from mpt_utility.h,
+ * which contains only a public key and an encrypted amount:</p>
  * <ul>
- *   <li>{@code ciphertext} - The ElGamal ciphertext encrypting the amount for this party</li>
- *   <li>{@code publicKey} - The ElGamal public key of this party</li>
- *   <li>{@code blindingFactor} - The blinding factor used to encrypt the ciphertext for this party</li>
+ *   <li>{@code publicKey} - The ElGamal public key of this recipient (33 bytes)</li>
+ *   <li>{@code encryptedAmount} - The ElGamal ciphertext encrypting the amount for this recipient (66 bytes)</li>
  * </ul>
+ *
+ * <p>Note: The blinding factor used for encryption is passed separately to the proof generation
+ * function, as all recipients share the same transaction blinding factor.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableMPTConfidentialParty.class)
@@ -53,45 +54,35 @@ public interface MPTConfidentialParty {
   }
 
   /**
-   * Creates a new party with the given ciphertext, public key, and blinding factor.
+   * Creates a new recipient with the given public key and encrypted amount.
    *
-   * @param ciphertext      The ElGamal ciphertext encrypting the amount for this party.
-   * @param publicKey       The ElGamal public key of this party.
-   * @param blindingFactor  The blinding factor used to encrypt the ciphertext.
+   * @param publicKey       The ElGamal public key of this recipient.
+   * @param encryptedAmount The ElGamal ciphertext encrypting the amount for this recipient.
    *
    * @return A new {@link MPTConfidentialParty}.
    */
   static MPTConfidentialParty of(
-    final ElGamalCiphertext ciphertext,
     final PublicKey publicKey,
-    final BlindingFactor blindingFactor
+    final ElGamalCiphertext encryptedAmount
   ) {
     return builder()
-      .ciphertext(ciphertext)
       .publicKey(publicKey)
-      .blindingFactor(blindingFactor)
+      .encryptedAmount(encryptedAmount)
       .build();
   }
 
   /**
-   * The ElGamal ciphertext encrypting the amount for this party.
-   *
-   * @return The {@link ElGamalCiphertext}.
-   */
-  ElGamalCiphertext ciphertext();
-
-  /**
-   * The ElGamal public key of this party.
+   * The ElGamal public key of this recipient.
    *
    * @return The {@link PublicKey}.
    */
   PublicKey publicKey();
 
   /**
-   * The blinding factor used to encrypt the ciphertext for this party.
+   * The ElGamal ciphertext encrypting the amount for this recipient.
    *
-   * @return The {@link BlindingFactor}.
+   * @return The {@link ElGamalCiphertext}.
    */
-  BlindingFactor blindingFactor();
+  ElGamalCiphertext encryptedAmount();
 }
 

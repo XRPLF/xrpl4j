@@ -22,6 +22,7 @@ package org.xrpl.xrpl4j.crypto.mpt.wrapper;
 
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
 import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTSendProof;
 import org.xrpl.xrpl4j.crypto.mpt.models.MPTConfidentialParty;
@@ -48,13 +49,13 @@ public interface ConfidentialMPTSendProofGenerator {
   /**
    * Generates a ConfidentialMPTSend proof.
    *
-   * @param senderKeyPair   The sender's key pair (must be secp256k1).
-   * @param amount          The amount being sent.
-   * @param recipients      The list of recipients (sender, destination, issuer, and optionally auditor).
-   *                        Each recipient must include its own blinding factor.
-   * @param context         The context hash binding the proof to a specific transaction.
-   * @param amountParams    The Pedersen proof parameters for the amount.
-   * @param balanceParams   The Pedersen proof parameters for the sender's balance.
+   * @param senderKeyPair     The sender's key pair (must be secp256k1).
+   * @param amount            The amount being sent.
+   * @param recipients        The list of recipients (sender, destination, issuer, and optionally auditor).
+   * @param txBlindingFactor  The single blinding factor used to encrypt the amount for all recipients.
+   * @param context           The context hash binding the proof to a specific transaction.
+   * @param amountParams      The Pedersen proof parameters for the amount.
+   * @param balanceParams     The Pedersen proof parameters for the sender's balance.
    *
    * @return A {@link ConfidentialMPTSendProof} containing the complete proof.
    *
@@ -66,6 +67,7 @@ public interface ConfidentialMPTSendProofGenerator {
     KeyPair senderKeyPair,
     UnsignedLong amount,
     List<MPTConfidentialParty> recipients,
+    BlindingFactor txBlindingFactor,
     ConfidentialMPTSendContext context,
     PedersenProofParams amountParams,
     PedersenProofParams balanceParams

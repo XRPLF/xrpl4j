@@ -47,9 +47,19 @@ public final class ConfidentialMPTContextUtil {
   private static final int TT_CONFIDENTIAL_MPT_CONVERT = 85;
 
   /**
+   * Transaction type for ConfidentialMPTConvertBack (from definitions.json).
+   */
+  private static final int TT_CONFIDENTIAL_MPT_CONVERT_BACK = 87;
+
+  /**
    * Transaction type for ConfidentialMPTSend (from definitions.json).
    */
   private static final int TT_CONFIDENTIAL_MPT_SEND = 88;
+
+  /**
+   * Transaction type for ConfidentialMPTClawback (from definitions.json).
+   */
+  private static final int TT_CONFIDENTIAL_MPT_CLAWBACK = 89;
 
   private static final AddressCodec ADDRESS_CODEC = new AddressCodec();
 
@@ -165,6 +175,139 @@ public final class ConfidentialMPTContextUtil {
 
     UnsignedByteArray hash = HashingUtils.sha512Half(buffer.array());
     return ConfidentialMPTSendContext.of(hash);
+  }
+
+  /**
+   * Generates a context hash for a ConfidentialMPTConvertBack transaction.
+   *
+   * <p>The context hash is computed as SHA512Half of:
+   * <ul>
+   *   <li>txType (2 bytes) - ttCONFIDENTIAL_MPT_CONVERT_BACK (87)</li>
+   *   <li>account (20 bytes) - sender account</li>
+   *   <li>sequence (4 bytes) - transaction sequence</li>
+   *   <li>issuanceId (24 bytes) - MPTokenIssuanceID</li>
+   *   <li>amount (8 bytes) - amount being converted back</li>
+   *   <li>version (4 bytes) - confidential balance version</li>
+   * </ul>
+   *
+   * @param account    The account address.
+   * @param sequence   The transaction sequence number.
+   * @param issuanceId The MPTokenIssuanceId (24 bytes as hex string).
+   * @param amount     The amount being converted back.
+   * @param version    The confidential balance version from the MPToken ledger object.
+   *
+   * @return A {@link ConfidentialMPTConvertBackContext} containing the 32-byte context hash.
+   *
+   * @throws NullPointerException if any parameter is null.
+   */
+  public static ConfidentialMPTConvertBackContext generateConvertBackContext(
+    final Address account,
+    final UnsignedInteger sequence,
+    final MpTokenIssuanceId issuanceId,
+    final UnsignedLong amount,
+    final UnsignedInteger version
+  ) {
+    Objects.requireNonNull(account, "account must not be null");
+    Objects.requireNonNull(sequence, "sequence must not be null");
+    Objects.requireNonNull(issuanceId, "issuanceId must not be null");
+    Objects.requireNonNull(amount, "amount must not be null");
+    Objects.requireNonNull(version, "version must not be null");
+
+    // Total: 2 (txType) + 20 (account) + 4 (sequence) + 24 (issuanceId) + 8 (amount) + 4 (version) = 62 bytes
+    ByteBuffer buffer = ByteBuffer.allocate(62);
+    buffer.order(ByteOrder.BIG_ENDIAN);
+
+    // 1. add16(txType)
+    buffer.putShort((short) TT_CONFIDENTIAL_MPT_CONVERT_BACK);
+
+    // 2. addBitString(account)
+    UnsignedByteArray accountBytes = ADDRESS_CODEC.decodeAccountId(account);
+    buffer.put(accountBytes.toByteArray());
+
+    // 3. add32(sequence)
+    buffer.putInt(sequence.intValue());
+
+    // 4. addBitString(issuanceID)
+    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
+    buffer.put(issuanceIdBytes);
+
+    // 5. add64(amount)
+    buffer.putLong(amount.longValue());
+
+    // 6. add32(version)
+    buffer.putInt(version.intValue());
+
+    // Compute SHA512Half
+    UnsignedByteArray hash = HashingUtils.sha512Half(buffer.array());
+
+    return ConfidentialMPTConvertBackContext.of(hash);
+  }
+
+  /**
+   * Generates a context hash for a ConfidentialMPTClawback transaction.
+   *
+   * <p>The context hash is computed as SHA512Half of:
+   * <ul>
+   *   <li>txType (2 bytes) - ttCONFIDENTIAL_MPT_CLAWBACK (89)</li>
+   *   <li>account (20 bytes) - issuer account</li>
+   *   <li>sequence (4 bytes) - transaction sequence</li>
+   *   <li>issuanceId (24 bytes) - MPTokenIssuanceID</li>
+   *   <li>amount (8 bytes) - amount being clawed back</li>
+   *   <li>holder (20 bytes) - holder account from which tokens are clawed back</li>
+   * </ul>
+   *
+   * @param account    The issuer's account address.
+   * @param sequence   The transaction sequence number.
+   * @param issuanceId The MPTokenIssuanceId (24 bytes as hex string).
+   * @param amount     The amount being clawed back.
+   * @param holder     The holder account from which tokens are being clawed back.
+   *
+   * @return A {@link ConfidentialMPTClawbackContext} containing the 32-byte context hash.
+   *
+   * @throws NullPointerException if any parameter is null.
+   */
+  public static ConfidentialMPTClawbackContext generateClawbackContext(
+    final Address account,
+    final UnsignedInteger sequence,
+    final MpTokenIssuanceId issuanceId,
+    final UnsignedLong amount,
+    final Address holder
+  ) {
+    Objects.requireNonNull(account, "account must not be null");
+    Objects.requireNonNull(sequence, "sequence must not be null");
+    Objects.requireNonNull(issuanceId, "issuanceId must not be null");
+    Objects.requireNonNull(amount, "amount must not be null");
+    Objects.requireNonNull(holder, "holder must not be null");
+
+    // Total: 2 (txType) + 20 (account) + 4 (sequence) + 24 (issuanceId) + 8 (amount) + 20 (holder) = 78 bytes
+    ByteBuffer buffer = ByteBuffer.allocate(78);
+    buffer.order(ByteOrder.BIG_ENDIAN);
+
+    // 1. add16(txType)
+    buffer.putShort((short) TT_CONFIDENTIAL_MPT_CLAWBACK);
+
+    // 2. addBitString(account)
+    UnsignedByteArray accountBytes = ADDRESS_CODEC.decodeAccountId(account);
+    buffer.put(accountBytes.toByteArray());
+
+    // 3. add32(sequence)
+    buffer.putInt(sequence.intValue());
+
+    // 4. addBitString(issuanceID)
+    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
+    buffer.put(issuanceIdBytes);
+
+    // 5. add64(amount)
+    buffer.putLong(amount.longValue());
+
+    // 6. addBitString(holder)
+    UnsignedByteArray holderBytes = ADDRESS_CODEC.decodeAccountId(holder);
+    buffer.put(holderBytes.toByteArray());
+
+    // Compute SHA512Half
+    UnsignedByteArray hash = HashingUtils.sha512Half(buffer.array());
+
+    return ConfidentialMPTClawbackContext.of(hash);
   }
 }
 

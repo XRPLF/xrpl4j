@@ -41,6 +41,7 @@ public final class ChallengeUtils {
   private static final String POK_SK_DOMAIN = "MPT_POK_SK_REGISTER";
   private static final String SAME_PLAINTEXT_DOMAIN = "MPT_POK_SAME_PLAINTEXT_PROOF";
   private static final String PEDERSEN_LINK_DOMAIN = "MPT_ELGAMAL_PEDERSEN_LINK";
+  private static final String PLAINTEXT_EQUALITY_DOMAIN = "MPT_POK_PLAINTEXT_PROOF";
 
   private ChallengeUtils() {
     // Utility class
@@ -285,6 +286,100 @@ public final class ChallengeUtils {
       System.arraycopy(contextBytes, 0, hashInput, offset, 32);
       Arrays.fill(contextBytes, (byte) 0);
     }
+
+    byte[] h = Hashing.sha256().hashBytes(hashInput).asBytes();
+
+    // secp256k1_mpt_scalar_reduce32
+    byte[] e = Secp256k1Operations.reduceToScalar(h);
+
+    // Clear intermediate values
+    Arrays.fill(hashInput, (byte) 0);
+    Arrays.fill(h, (byte) 0);
+
+    return UnsignedByteArray.of(e);
+  }
+
+  /**
+   * Builds the challenge hash for the Plaintext Equality proof.
+   *
+   * <p>Port of {@code build_equality_challenge_hash} from proof_equality_plaintext.c.</p>
+   *
+   * <p>The challenge is computed as:
+   * {@code e = reduce(SHA256("MPT_POK_PLAINTEXT_PROOF" || C1 || C2 || Pk || [mG] || T1 || T2 || contextId)) mod n}</p>
+   *
+   * @param c1        The first ciphertext component (33 bytes compressed).
+   * @param c2        The second ciphertext component (33 bytes compressed).
+   * @param pk        The recipient's public key (33 bytes compressed).
+   * @param mG        The amount times G point (33 bytes compressed), or null if amount is 0.
+   * @param T1        The commitment point T1 (33 bytes compressed).
+   * @param T2        The commitment point T2 (33 bytes compressed).
+   * @param contextId The 32-byte context identifier.
+   *
+   * @return A 32-byte challenge scalar (reduced mod curve order).
+   */
+  public static UnsignedByteArray buildPlaintextEqualityChallenge(
+    final UnsignedByteArray c1,
+    final UnsignedByteArray c2,
+    final UnsignedByteArray pk,
+    final UnsignedByteArray mG,
+    final UnsignedByteArray T1,
+    final UnsignedByteArray T2,
+    final UnsignedByteArray contextId
+  ) {
+    byte[] domainBytes = PLAINTEXT_EQUALITY_DOMAIN.getBytes(StandardCharsets.UTF_8);
+
+    // Calculate total size: domain + c1 + c2 + pk + [mG] + T1 + T2 + contextId
+    int mGLength = (mG != null) ? 33 : 0;
+    int totalSize = domainBytes.length + 33 + 33 + 33 + mGLength + 33 + 33 + 32;
+    byte[] hashInput = new byte[totalSize];
+    int offset = 0;
+
+    // Domain
+    System.arraycopy(domainBytes, 0, hashInput, offset, domainBytes.length);
+    offset += domainBytes.length;
+
+    // C1
+    byte[] c1Bytes = c1.toByteArray();
+    System.arraycopy(c1Bytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(c1Bytes, (byte) 0);
+
+    // C2
+    byte[] c2Bytes = c2.toByteArray();
+    System.arraycopy(c2Bytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(c2Bytes, (byte) 0);
+
+    // Pk
+    byte[] pkBytes = pk.toByteArray();
+    System.arraycopy(pkBytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(pkBytes, (byte) 0);
+
+    // mG (only if amount > 0)
+    if (mG != null) {
+      byte[] mGBytes = mG.toByteArray();
+      System.arraycopy(mGBytes, 0, hashInput, offset, 33);
+      offset += 33;
+      Arrays.fill(mGBytes, (byte) 0);
+    }
+
+    // T1
+    byte[] t1Bytes = T1.toByteArray();
+    System.arraycopy(t1Bytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(t1Bytes, (byte) 0);
+
+    // T2
+    byte[] t2Bytes = T2.toByteArray();
+    System.arraycopy(t2Bytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(t2Bytes, (byte) 0);
+
+    // Context ID
+    byte[] contextBytes = contextId.toByteArray();
+    System.arraycopy(contextBytes, 0, hashInput, offset, 32);
+    Arrays.fill(contextBytes, (byte) 0);
 
     byte[] h = Hashing.sha256().hashBytes(hashInput).asBytes();
 

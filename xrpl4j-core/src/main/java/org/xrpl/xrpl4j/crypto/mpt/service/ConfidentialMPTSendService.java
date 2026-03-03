@@ -155,13 +155,13 @@ public class ConfidentialMPTSendService {
    *   <li>Aggregated bulletproof range proof - proves amount and remaining balance are in valid range</li>
    * </ul>
    *
-   * @param senderKeyPair          The sender's key pair (must be secp256k1).
-   * @param amount                 The amount being sent.
-   * @param recipients             The list of recipients (sender, destination, issuer, and optionally auditor).
-   *                               Each recipient must include its own blinding factor.
-   * @param context                The context hash binding the proof to a specific transaction.
-   * @param amountParams           The Pedersen proof parameters for the amount.
-   * @param balanceParams          The Pedersen proof parameters for the sender's balance.
+   * @param senderKeyPair     The sender's key pair (must be secp256k1).
+   * @param amount            The amount being sent.
+   * @param recipients        The list of recipients (sender, destination, issuer, and optionally auditor).
+   * @param txBlindingFactor  The single blinding factor used to encrypt the amount for all recipients.
+   * @param context           The context hash binding the proof to a specific transaction.
+   * @param amountParams      The Pedersen proof parameters for the amount.
+   * @param balanceParams     The Pedersen proof parameters for the sender's balance.
    *
    * @return A {@link ConfidentialMPTSendProof} containing the complete proof.
    */
@@ -169,6 +169,7 @@ public class ConfidentialMPTSendService {
     final KeyPair senderKeyPair,
     final UnsignedLong amount,
     final List<MPTConfidentialParty> recipients,
+    final BlindingFactor txBlindingFactor,
     final ConfidentialMPTSendContext context,
     final PedersenProofParams amountParams,
     final PedersenProofParams balanceParams
@@ -177,6 +178,7 @@ public class ConfidentialMPTSendService {
       senderKeyPair,
       amount,
       recipients,
+      txBlindingFactor,
       context,
       amountParams,
       balanceParams

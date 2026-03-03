@@ -38,7 +38,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 @Value.Immutable
 @JsonSerialize(as = ImmutableConfidentialMPTSendContext.class)
 @JsonDeserialize(as = ImmutableConfidentialMPTSendContext.class)
-public interface ConfidentialMPTSendContext extends LinkProofContext {
+public interface ConfidentialMPTSendContext {
 
   /**
    * Creates a new builder for {@link ConfidentialMPTSendContext}.
@@ -95,22 +95,10 @@ public interface ConfidentialMPTSendContext extends LinkProofContext {
   }
 
   /**
-   * Returns the context hash as a byte array.
-   *
-   * @return A copy of the 32-byte context hash.
-   */
-  @Override
-  @JsonIgnore
-  default byte[] toBytes() {
-    return value().toByteArray();
-  }
-
-  /**
    * Returns the context hash as an uppercase hex string.
    *
    * @return A {@link String}.
    */
-  @Override
   @Lazy
   @JsonIgnore
   default String hexValue() {

@@ -34,7 +34,7 @@ import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalEncryptorPort;
  *
  * @see ElGamalEncryptorPort
  */
-public interface ElGamalEncryptor {
+public interface MPTAmountEncryptor {
 
   /**
    * Encrypts an MPT amount using ElGamal encryption.

@@ -17,6 +17,7 @@ import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SamePlaintextProofVerifier;
 import org.xrpl.xrpl4j.crypto.mpt.models.SamePlaintextMultiProof;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SamePlaintextProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.models.SamePlaintextParticipant;
+import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTContextUtil;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -104,7 +105,7 @@ class BcSamePlaintextProofGeneratorTest {
     );
 
     // 6. Create context
-    ConfidentialMPTSendContext context = ConfidentialMPTSendContext.generate(
+    ConfidentialMPTSendContext context = ConfidentialMPTContextUtil.generateSendContext(
       Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"),
       UnsignedInteger.valueOf(1),
       MpTokenIssuanceId.of("000000000000000000000000000000000000000000000000"),

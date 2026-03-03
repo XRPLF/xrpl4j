@@ -109,7 +109,7 @@ public class BcSamePlaintextProofVerifier implements SamePlaintextProofVerifier 
     }
 
     // Recompute challenge
-    byte[] e = ChallengeUtils.samePlaintextProofChallenge(n, R, S, publicKeys, Tm, TrG, TrP, context.toBytes());
+    byte[] e = ChallengeUtils.samePlaintextProofChallenge(n, R, S, publicKeys, Tm, TrG, TrP, context.value().toByteArray());
     BigInteger eInt = new BigInteger(1, e);
 
     // Precompute s_m * G

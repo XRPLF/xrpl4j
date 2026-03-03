@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.mpt.bulletproofs.bc;
+package org.xrpl.xrpl4j.crypto.mpt.port.bc;
 
 /*-
  * ========================LICENSE_START=================================
@@ -22,134 +22,110 @@ package org.xrpl.xrpl4j.crypto.mpt.bulletproofs.bc;
 
 import com.google.common.primitives.UnsignedLong;
 import org.bouncycastle.math.ec.ECPoint;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.HashingUtils;
-import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.mpt.BlindingFactorGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.RangeProofGenerator;
-import org.xrpl.xrpl4j.crypto.mpt.context.LinkProofContext;
-import org.xrpl.xrpl4j.crypto.mpt.models.BulletproofRangeProof;
-import org.xrpl.xrpl4j.crypto.mpt.models.PedersenCommitment;
+import org.xrpl.xrpl4j.crypto.mpt.SecureRandomBlindingFactorGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.port.RangeProofGeneratorPort;
 
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 /**
- * Java implementation of {@link RangeProofGenerator}.
+ * BouncyCastle implementation of {@link RangeProofGeneratorPort}.
  *
- * <p>This implementation generates Bulletproof range proofs compatible with
- * rippled's secp256k1_bulletproof_prove_agg function.</p>
- *
- * <p>Implements the Bulletproofs protocol (Bünz et al., 2018) for proving
- * that committed values lie within [0, 2^64) without revealing the values.</p>
- *
- * @see RangeProofGenerator
+ * <p>Port of {@code secp256k1_bulletproof_prove_agg} from bulletproof_aggregated.c.</p>
  */
-public class BcRangeProofGenerator implements RangeProofGenerator {
+public class BcRangeProofGeneratorPort implements RangeProofGeneratorPort {
 
-  private static final int BP_VALUE_BITS = 64;
-  private static final String NUMS_DOMAIN_SEPARATOR = "MPT_BULLETPROOF_V1_NUMS";
-  private static final String CURVE_LABEL = "secp256k1";
-  private static final String RANGE_DOMAIN = "MPT_BULLETPROOF_RANGE";
   private static final int SCALAR_SIZE = 32;
   private static final int COMPRESSED_POINT_SIZE = 33;
+  private static final String RANGE_DOMAIN = "MPT_BULLETPROOF_RANGE";
 
-  private final SecureRandom secureRandom;
-
-  // Cached generators
-  private ECPoint cachedH;
-  private ECPoint cachedU;
+  private final BlindingFactorGenerator blindingFactorGenerator;
 
   /**
-   * Constructs a new BcRangeProofGenerator.
+   * Constructs a new generator using {@link SecureRandomBlindingFactorGenerator}.
    */
-  public BcRangeProofGenerator() {
-    this.secureRandom = new SecureRandom();
+  public BcRangeProofGeneratorPort() {
+    this(new SecureRandomBlindingFactorGenerator());
+  }
+
+  /**
+   * Constructs a new generator with the given blinding factor generator.
+   *
+   * @param blindingFactorGenerator The generator for random scalars.
+   */
+  public BcRangeProofGeneratorPort(BlindingFactorGenerator blindingFactorGenerator) {
+    this.blindingFactorGenerator = Objects.requireNonNull(blindingFactorGenerator);
   }
 
   @Override
-  public BulletproofRangeProof generateProof(
-    final List<UnsignedLong> values,
-    final List<BlindingFactor> blindingFactors,
-    final LinkProofContext context
+  public UnsignedByteArray generateProof(
+    UnsignedLong[] values,
+    UnsignedByteArray blindingsFlat,
+    UnsignedByteArray pkBase,
+    UnsignedByteArray contextId
   ) {
     Objects.requireNonNull(values, "values must not be null");
-    Objects.requireNonNull(blindingFactors, "blindingFactors must not be null");
-    Objects.requireNonNull(context, "context must not be null");
+    Objects.requireNonNull(blindingsFlat, "blindingsFlat must not be null");
+    Objects.requireNonNull(pkBase, "pkBase must not be null");
 
-    if (values.isEmpty()) {
-      throw new IllegalArgumentException("values must not be empty");
+    final int m = values.length;
+
+    // Convert UnsignedLong[] to long[]
+    long[] valuesLong = new long[m];
+    for (int i = 0; i < m; i++) {
+      valuesLong[i] = values[i].longValue();
     }
-    if (values.size() != blindingFactors.size()) {
-      throw new IllegalArgumentException("values and blindingFactors must have the same size");
+    if (m == 0 || (m & (m - 1)) != 0) {
+      throw new IllegalArgumentException("m must be a power of 2 (1 or 2)");
     }
-
-    // Convert to arrays for internal method
-    long[] valuesArray = new long[values.size()];
-    byte[][] blindingsArray = new byte[blindingFactors.size()][];
-
-    for (int i = 0; i < values.size(); i++) {
-      Objects.requireNonNull(values.get(i), "values[" + i + "] must not be null");
-      Objects.requireNonNull(blindingFactors.get(i), "blindingFactors[" + i + "] must not be null");
-      valuesArray[i] = values.get(i).longValue();
-      blindingsArray[i] = blindingFactors.get(i).toBytes();
+    if (blindingsFlat.length() != m * SCALAR_SIZE) {
+      throw new IllegalArgumentException("blindingsFlat must be " + (m * SCALAR_SIZE) + " bytes");
     }
 
-    byte[] proof = generateBulletproofInternal(valuesArray, blindingsArray, context.toBytes());
-    return BulletproofRangeProof.fromBytes(proof);
+    final int n = VALUE_BITS * m;
+    final int rounds = ipaRounds(n);
+    final int proofSize = 292 + 66 * rounds;
+
+    // Parse pk_base
+    ECPoint pkBasePoint = Secp256k1Operations.deserialize(pkBase.toByteArray());
+
+    // Extract blindings
+    byte[][] blindings = new byte[m][SCALAR_SIZE];
+    for (int j = 0; j < m; j++) {
+      System.arraycopy(blindingsFlat.toByteArray(), j * SCALAR_SIZE, blindings[j], 0, SCALAR_SIZE);
+    }
+
+    // Generate proof
+    byte[] proof = generateProofInternal(valuesLong, blindings, pkBasePoint,
+      contextId != null ? contextId.toByteArray() : null, n, rounds);
+
+    // Clear sensitive data
+    for (byte[] b : blindings) {
+      Arrays.fill(b, (byte) 0);
+    }
+
+    return UnsignedByteArray.of(proof);
   }
 
-  @Override
-  public boolean verify(
-    final BulletproofRangeProof proof,
-    final List<PedersenCommitment> commitments,
-    final LinkProofContext context
-  ) {
-    Objects.requireNonNull(proof, "proof must not be null");
-    Objects.requireNonNull(commitments, "commitments must not be null");
-    Objects.requireNonNull(context, "context must not be null");
-
-    if (commitments.isEmpty()) {
-      throw new IllegalArgumentException("commitments must not be empty");
-    }
-
-    byte[][] commitmentsArray = new byte[commitments.size()][];
-    for (int i = 0; i < commitments.size(); i++) {
-      Objects.requireNonNull(commitments.get(i), "commitments[" + i + "] must not be null");
-      commitmentsArray[i] = commitments.get(i).value().toByteArray();
-    }
-
-    return verifyBulletproofInternal(proof.toBytes(), commitmentsArray, context.toBytes());
-  }
-
-  /**
-   * Internal method to generate a bulletproof.
-   * Implements the full Bulletproof protocol.
-   */
-  private byte[] generateBulletproofInternal(
-    final long[] values,
-    final byte[][] blindings,
-    final byte[] contextId
+  private byte[] generateProofInternal(
+    long[] values,
+    byte[][] blindings,
+    ECPoint pkBase,
+    byte[] contextId,
+    int n,
+    int rounds
   ) {
     final int m = values.length;
-    final int n = BP_VALUE_BITS * m;
-    final int rounds = ipaRounds(n);
 
-    // Validate m is power of 2
-    if (m == 0 || (m & (m - 1)) != 0) {
-      throw new IllegalArgumentException("Number of values must be a power of 2");
-    }
-
-    // Get H generator (pk_base)
-    ECPoint pkBase = getHGenerator();
-
-    // Generate generator vectors G and H
-    ECPoint[] gVec = generateGeneratorVector("G", n);
-    ECPoint[] hVec = generateGeneratorVector("H", n);
-    ECPoint u = getUGenerator();
+    // Generator vectors
+    ECPoint[] gVec = Secp256k1Operations.getGeneratorVector("G", n);
+    ECPoint[] hVec = Secp256k1Operations.getGeneratorVector("H", n);
+    ECPoint u = Secp256k1Operations.getU();
 
     // Bit decomposition vectors
     byte[][] al = new byte[n][SCALAR_SIZE];
@@ -164,8 +140,8 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
     // Bit decomposition for each value
     for (int j = 0; j < m; j++) {
       long v = values[j];
-      for (int i = 0; i < BP_VALUE_BITS; i++) {
-        int k = j * BP_VALUE_BITS + i;
+      for (int i = 0; i < VALUE_BITS; i++) {
+        int k = j * VALUE_BITS + i;
         if (((v >> i) & 1) == 1) {
           al[k] = one.clone();
           ar[k] = zero.clone();
@@ -175,19 +151,27 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
         }
         sl[k] = generateRandomScalar();
         sr[k] = generateRandomScalar();
+        // Validate random scalars (matching C: if (!generate_random_scalar(...)) goto cleanup)
+        if (!Secp256k1Operations.isValidScalar(sl[k]) || !Secp256k1Operations.isValidScalar(sr[k])) {
+          throw new IllegalStateException("Failed to generate valid random scalar for sl/sr");
+        }
       }
     }
 
     // Random blinding factors
     byte[] alpha = generateRandomScalar();
     byte[] rho = generateRandomScalar();
+    // Validate random scalars (matching C: if (!generate_random_scalar(...)) goto cleanup)
+    if (!Secp256k1Operations.isValidScalar(alpha) || !Secp256k1Operations.isValidScalar(rho)) {
+      throw new IllegalStateException("Failed to generate valid random scalar for alpha/rho");
+    }
 
     // Compute A = alpha*pkBase + <al,G> + <ar,H>
     ECPoint commitA = calculateCommitmentTerm(pkBase, alpha, al, ar, gVec, hVec);
     // Compute S = rho*pkBase + <sl,G> + <sr,H>
     ECPoint commitS = calculateCommitmentTerm(pkBase, rho, sl, sr, gVec, hVec);
 
-    // Fiat-Shamir: derive y and z
+    // Serialize A and S
     byte[] aSer = Secp256k1Operations.serializeCompressed(commitA);
     byte[] sSer = Secp256k1Operations.serializeCompressed(commitS);
 
@@ -198,6 +182,7 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
       vCommitmentsSer[i] = Secp256k1Operations.serializeCompressed(vCommit);
     }
 
+    // Fiat-Shamir: derive y and z
     byte[] y = deriveYChallenge(contextId, vCommitmentsSer, aSer, sSer);
     byte[] z = deriveZChallenge(contextId, vCommitmentsSer, aSer, sSer, y);
     byte[] zNeg = Secp256k1Operations.scalarNegate(z);
@@ -215,8 +200,8 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
 
     for (int block = 0; block < m; block++) {
       byte[] zBlk = zJ2[block];
-      for (int i = 0; i < BP_VALUE_BITS; i++) {
-        int k = block * BP_VALUE_BITS + i;
+      for (int i = 0; i < VALUE_BITS; i++) {
+        int k = block * VALUE_BITS + i;
 
         // 2^i as scalar
         byte[] twoI = computeTwoPower(i);
@@ -246,11 +231,25 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
     // Random tau1, tau2
     byte[] tau1 = generateRandomScalar();
     byte[] tau2 = generateRandomScalar();
+    // Validate random scalars (matching C: if (!generate_random_scalar(...)) goto cleanup)
+    if (!Secp256k1Operations.isValidScalar(tau1) || !Secp256k1Operations.isValidScalar(tau2)) {
+      throw new IllegalStateException("Failed to generate valid random scalar for tau1/tau2");
+    }
+
+    // Check t1 is not zero (matching C: if (memcmp(t1, zero, 32) == 0) goto cleanup)
+    if (Secp256k1Operations.isScalarZero(t1)) {
+      throw new IllegalStateException("t1 polynomial coefficient is zero");
+    }
 
     // T1 = t1*G + tau1*pkBase
     ECPoint t1G = Secp256k1Operations.multiplyG(new BigInteger(1, t1));
     ECPoint tau1Base = Secp256k1Operations.multiply(pkBase, new BigInteger(1, tau1));
     ECPoint commitT1 = Secp256k1Operations.add(t1G, tau1Base);
+
+    // Check t2 is not zero (matching C: if (memcmp(t2, zero, 32) == 0) goto cleanup)
+    if (Secp256k1Operations.isScalarZero(t2)) {
+      throw new IllegalStateException("t2 polynomial coefficient is zero");
+    }
 
     // T2 = t2*G + tau2*pkBase
     ECPoint t2G = Secp256k1Operations.multiplyG(new BigInteger(1, t2));
@@ -261,6 +260,11 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
     byte[] t1Ser = Secp256k1Operations.serializeCompressed(commitT1);
     byte[] t2Ser = Secp256k1Operations.serializeCompressed(commitT2);
     byte[] x = deriveXChallenge(contextId, aSer, sSer, y, z, t1Ser, t2Ser);
+
+    // Check x is not zero (matching C: if (memcmp(x, zero, 32) == 0) goto cleanup)
+    if (Secp256k1Operations.isScalarZero(x)) {
+      throw new IllegalStateException("Challenge x is zero");
+    }
 
     // Evaluate l(x), r(x)
     for (int k = 0; k < n; k++) {
@@ -315,29 +319,54 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
       lOut, rOut, rounds, aFinal, bFinal);
 
     // Serialize proof
-    return serializeProof(commitA, commitS, commitT1, commitT2, lOut, rOut,
+    byte[] proof = serializeProof(commitA, commitS, commitT1, commitT2, lOut, rOut,
       aFinal, bFinal, tHat, tauX, mu, rounds);
-  }
 
-  /**
-   * Internal method to verify a bulletproof.
-   */
-  private boolean verifyBulletproofInternal(
-    final byte[] proof,
-    final byte[][] commitments,
-    final byte[] contextId
-  ) {
-    // For now, we trust the prover - verification can be added later
-    // The rippled server will verify the proof
-    throw new UnsupportedOperationException(
-      "Bulletproof verification not yet implemented in Java. " +
-      "The proof will be verified by rippled."
-    );
+    // Clear sensitive data (matching C code cleanup)
+    // Bit decomposition and blinding vectors
+    clearArrays(al, ar, sl, sr, lVec, rVec, r1Vec);
+
+    // Random blinding factors
+    Arrays.fill(alpha, (byte) 0);
+    Arrays.fill(rho, (byte) 0);
+    Arrays.fill(tau1, (byte) 0);
+    Arrays.fill(tau2, (byte) 0);
+
+    // Polynomial coefficients
+    Arrays.fill(t1, (byte) 0);
+    Arrays.fill(t2, (byte) 0);
+
+    // Proof scalars
+    Arrays.fill(tHat, (byte) 0);
+    Arrays.fill(tauX, (byte) 0);
+    Arrays.fill(mu, (byte) 0);
+
+    // Fiat-Shamir challenges
+    Arrays.fill(y, (byte) 0);
+    Arrays.fill(z, (byte) 0);
+    Arrays.fill(x, (byte) 0);
+    Arrays.fill(zNeg, (byte) 0);
+    Arrays.fill(xSq, (byte) 0);
+
+    // IPA related
+    Arrays.fill(uxScalar, (byte) 0);
+    Arrays.fill(ipaTranscript, (byte) 0);
+    Arrays.fill(yInv, (byte) 0);
+    Arrays.fill(yInvPow, (byte) 0);
+
+    // Power vectors
+    clearArrays(yPowers, zJ2);
+
+    return proof;
   }
 
   // ============================================================================
   // Helper Methods
   // ============================================================================
+
+  private byte[] generateRandomScalar() {
+    return blindingFactorGenerator.generate().toBytes();
+  }
 
   private int ipaRounds(int n) {
     int r = 0;
@@ -346,87 +375,6 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
       r++;
     }
     return r;
-  }
-
-  private byte[] generateRandomScalar() {
-    byte[] scalar = new byte[SCALAR_SIZE];
-    do {
-      secureRandom.nextBytes(scalar);
-    } while (!Secp256k1Operations.isValidScalar(scalar));
-    return scalar;
-  }
-
-  private ECPoint getHGenerator() {
-    if (cachedH == null) {
-      cachedH = hashToPointNums("H".getBytes(StandardCharsets.UTF_8), 0);
-    }
-    return cachedH;
-  }
-
-  private ECPoint getUGenerator() {
-    if (cachedU == null) {
-      cachedU = hashToPointNums("BP_U".getBytes(StandardCharsets.UTF_8), 0);
-    }
-    return cachedU;
-  }
-
-  private ECPoint[] generateGeneratorVector(String label, int n) {
-    ECPoint[] vec = new ECPoint[n];
-    byte[] labelBytes = label.getBytes(StandardCharsets.UTF_8);
-    for (int i = 0; i < n; i++) {
-      vec[i] = hashToPointNums(labelBytes, i);
-    }
-    return vec;
-  }
-
-  private ECPoint hashToPointNums(byte[] label, int index) {
-    byte[] domainBytes = NUMS_DOMAIN_SEPARATOR.getBytes(StandardCharsets.UTF_8);
-    byte[] curveBytes = CURVE_LABEL.getBytes(StandardCharsets.UTF_8);
-    byte[] indexBe = intToBigEndian(index);
-
-    for (int ctr = 0; ctr < Integer.MAX_VALUE; ctr++) {
-      byte[] ctrBe = intToBigEndian(ctr);
-
-      // Build hash input
-      byte[] hashInput = new byte[domainBytes.length + curveBytes.length +
-        label.length + 4 + 4];
-      int offset = 0;
-      System.arraycopy(domainBytes, 0, hashInput, offset, domainBytes.length);
-      offset += domainBytes.length;
-      System.arraycopy(curveBytes, 0, hashInput, offset, curveBytes.length);
-      offset += curveBytes.length;
-      System.arraycopy(label, 0, hashInput, offset, label.length);
-      offset += label.length;
-      System.arraycopy(indexBe, 0, hashInput, offset, 4);
-      offset += 4;
-      System.arraycopy(ctrBe, 0, hashInput, offset, 4);
-
-      byte[] hash = HashingUtils.sha256(hashInput).toByteArray();
-
-      // Construct compressed point: 0x02 || hash
-      byte[] compressed = new byte[COMPRESSED_POINT_SIZE];
-      compressed[0] = 0x02;
-      System.arraycopy(hash, 0, compressed, 1, SCALAR_SIZE);
-
-      try {
-        ECPoint point = Secp256k1Operations.deserialize(compressed);
-        if (point != null && !point.isInfinity()) {
-          return point;
-        }
-      } catch (Exception e) {
-        // Invalid point, continue
-      }
-    }
-    throw new IllegalStateException("Failed to derive NUMS point");
-  }
-
-  private byte[] intToBigEndian(int value) {
-    return new byte[]{
-      (byte) (value >> 24),
-      (byte) (value >> 16),
-      (byte) (value >> 8),
-      (byte) value
-    };
   }
 
   private ECPoint createCommitment(long value, byte[] blinding, ECPoint pkBase) {
@@ -462,10 +410,9 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
 
   private ECPoint multiScalarMul(ECPoint[] points, byte[][] scalars) {
     ECPoint result = null;
-    byte[] zero = Secp256k1Operations.scalarZero();
 
     for (int i = 0; i < points.length; i++) {
-      if (Arrays.equals(scalars[i], zero)) {
+      if (Secp256k1Operations.isScalarZero(scalars[i])) {
         continue;
       }
       ECPoint term = Secp256k1Operations.multiply(points[i], new BigInteger(1, scalars[i]));
@@ -498,74 +445,81 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
   }
 
   private byte[][] computeZPowersJ2(byte[] z, int m) {
-    byte[][] zJ2 = new byte[m][SCALAR_SIZE];
+    byte[][] result = new byte[m][SCALAR_SIZE];
+    byte[] zPow = Secp256k1Operations.scalarMultiply(z, z); // z^2
     for (int j = 0; j < m; j++) {
-      zJ2[j] = scalarPow(z, j + 2);
-    }
-    return zJ2;
-  }
-
-  private byte[] scalarPow(byte[] base, int exp) {
-    byte[] result = Secp256k1Operations.scalarOne();
-    for (int i = 0; i < exp; i++) {
-      result = Secp256k1Operations.scalarMultiply(result, base);
+      result[j] = zPow.clone();
+      zPow = Secp256k1Operations.scalarMultiply(zPow, z);
     }
     return result;
   }
 
   private byte[] computeTwoPower(int i) {
     byte[] result = new byte[SCALAR_SIZE];
-    // 2^i in big-endian
-    int bytePos = SCALAR_SIZE - 1 - (i / 8);
-    int bitPos = i % 8;
-    result[bytePos] = (byte) (1 << bitPos);
+    result[SCALAR_SIZE - 1 - (i / 8)] = (byte) (1 << (i % 8));
     return result;
   }
 
-  private byte[] deriveYChallenge(byte[] contextId, byte[][] vCommitments,
-      byte[] aSer, byte[] sSer) {
-    byte[] domain = RANGE_DOMAIN.getBytes(StandardCharsets.UTF_8);
-    int totalLen = domain.length + (contextId != null ? SCALAR_SIZE : 0) +
-      vCommitments.length * COMPRESSED_POINT_SIZE + 2 * COMPRESSED_POINT_SIZE;
-    byte[] input = new byte[totalLen];
+  private void clearArrays(byte[][]... arrays) {
+    for (byte[][] arr : arrays) {
+      for (byte[] b : arr) {
+        Arrays.fill(b, (byte) 0);
+      }
+    }
+  }
+
+  // ============================================================================
+  // Fiat-Shamir Challenge Derivation
+  // ============================================================================
+
+  private byte[] deriveYChallenge(byte[] contextId, byte[][] vCommitments, byte[] aSer, byte[] sSer) {
+    int len = RANGE_DOMAIN.length() + (contextId != null ? 32 : 0) +
+              vCommitments.length * COMPRESSED_POINT_SIZE + 2 * COMPRESSED_POINT_SIZE;
+    byte[] input = new byte[len];
     int offset = 0;
 
+    byte[] domain = RANGE_DOMAIN.getBytes();
     System.arraycopy(domain, 0, input, offset, domain.length);
     offset += domain.length;
+
     if (contextId != null) {
-      System.arraycopy(contextId, 0, input, offset, SCALAR_SIZE);
-      offset += SCALAR_SIZE;
+      System.arraycopy(contextId, 0, input, offset, 32);
+      offset += 32;
     }
-    for (byte[] vSer : vCommitments) {
-      System.arraycopy(vSer, 0, input, offset, COMPRESSED_POINT_SIZE);
+
+    for (byte[] c : vCommitments) {
+      System.arraycopy(c, 0, input, offset, COMPRESSED_POINT_SIZE);
       offset += COMPRESSED_POINT_SIZE;
     }
+
     System.arraycopy(aSer, 0, input, offset, COMPRESSED_POINT_SIZE);
     offset += COMPRESSED_POINT_SIZE;
     System.arraycopy(sSer, 0, input, offset, COMPRESSED_POINT_SIZE);
 
     byte[] hash = HashingUtils.sha256(input).toByteArray();
-    return reduceToScalar(hash);
+    return Secp256k1Operations.reduceToScalar(hash);
   }
 
-  private byte[] deriveZChallenge(byte[] contextId, byte[][] vCommitments,
-      byte[] aSer, byte[] sSer, byte[] y) {
-    byte[] domain = RANGE_DOMAIN.getBytes(StandardCharsets.UTF_8);
-    int totalLen = domain.length + (contextId != null ? SCALAR_SIZE : 0) +
-      vCommitments.length * COMPRESSED_POINT_SIZE + 2 * COMPRESSED_POINT_SIZE + SCALAR_SIZE;
-    byte[] input = new byte[totalLen];
+  private byte[] deriveZChallenge(byte[] contextId, byte[][] vCommitments, byte[] aSer, byte[] sSer, byte[] y) {
+    int len = RANGE_DOMAIN.length() + (contextId != null ? 32 : 0) +
+              vCommitments.length * COMPRESSED_POINT_SIZE + 2 * COMPRESSED_POINT_SIZE + SCALAR_SIZE;
+    byte[] input = new byte[len];
     int offset = 0;
 
+    byte[] domain = RANGE_DOMAIN.getBytes();
     System.arraycopy(domain, 0, input, offset, domain.length);
     offset += domain.length;
+
     if (contextId != null) {
-      System.arraycopy(contextId, 0, input, offset, SCALAR_SIZE);
-      offset += SCALAR_SIZE;
+      System.arraycopy(contextId, 0, input, offset, 32);
+      offset += 32;
     }
-    for (byte[] vSer : vCommitments) {
-      System.arraycopy(vSer, 0, input, offset, COMPRESSED_POINT_SIZE);
+
+    for (byte[] c : vCommitments) {
+      System.arraycopy(c, 0, input, offset, COMPRESSED_POINT_SIZE);
       offset += COMPRESSED_POINT_SIZE;
     }
+
     System.arraycopy(aSer, 0, input, offset, COMPRESSED_POINT_SIZE);
     offset += COMPRESSED_POINT_SIZE;
     System.arraycopy(sSer, 0, input, offset, COMPRESSED_POINT_SIZE);
@@ -573,20 +527,20 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
     System.arraycopy(y, 0, input, offset, SCALAR_SIZE);
 
     byte[] hash = HashingUtils.sha256(input).toByteArray();
-    return reduceToScalar(hash);
+    return Secp256k1Operations.reduceToScalar(hash);
   }
 
   private byte[] deriveXChallenge(byte[] contextId, byte[] aSer, byte[] sSer,
       byte[] y, byte[] z, byte[] t1Ser, byte[] t2Ser) {
-    int totalLen = (contextId != null ? SCALAR_SIZE : 0) +
-      4 * COMPRESSED_POINT_SIZE + 2 * SCALAR_SIZE;
-    byte[] input = new byte[totalLen];
+    int len = (contextId != null ? 32 : 0) + 4 * COMPRESSED_POINT_SIZE + 2 * SCALAR_SIZE;
+    byte[] input = new byte[len];
     int offset = 0;
 
     if (contextId != null) {
-      System.arraycopy(contextId, 0, input, offset, SCALAR_SIZE);
-      offset += SCALAR_SIZE;
+      System.arraycopy(contextId, 0, input, offset, 32);
+      offset += 32;
     }
+
     System.arraycopy(aSer, 0, input, offset, COMPRESSED_POINT_SIZE);
     offset += COMPRESSED_POINT_SIZE;
     System.arraycopy(sSer, 0, input, offset, COMPRESSED_POINT_SIZE);
@@ -600,20 +554,20 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
     System.arraycopy(t2Ser, 0, input, offset, COMPRESSED_POINT_SIZE);
 
     byte[] hash = HashingUtils.sha256(input).toByteArray();
-    return reduceToScalar(hash);
+    return Secp256k1Operations.reduceToScalar(hash);
   }
 
   private byte[] buildIpaTranscript(byte[] contextId, byte[] aSer, byte[] sSer,
       byte[] t1Ser, byte[] t2Ser, byte[] y, byte[] z, byte[] x, byte[] tHat) {
-    int totalLen = (contextId != null ? SCALAR_SIZE : 0) +
-      4 * COMPRESSED_POINT_SIZE + 4 * SCALAR_SIZE;
-    byte[] input = new byte[totalLen];
+    int len = (contextId != null ? 32 : 0) + 4 * COMPRESSED_POINT_SIZE + 4 * SCALAR_SIZE;
+    byte[] input = new byte[len];
     int offset = 0;
 
     if (contextId != null) {
-      System.arraycopy(contextId, 0, input, offset, SCALAR_SIZE);
-      offset += SCALAR_SIZE;
+      System.arraycopy(contextId, 0, input, offset, 32);
+      offset += 32;
     }
+
     System.arraycopy(aSer, 0, input, offset, COMPRESSED_POINT_SIZE);
     offset += COMPRESSED_POINT_SIZE;
     System.arraycopy(sSer, 0, input, offset, COMPRESSED_POINT_SIZE);
@@ -633,32 +587,28 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
     return HashingUtils.sha256(input).toByteArray();
   }
 
-  private byte[] deriveIpaBindingChallenge(byte[] transcript, byte[] dot) {
+  private byte[] deriveIpaBindingChallenge(byte[] transcript, byte[] tHat) {
     byte[] input = new byte[64];
-    System.arraycopy(transcript, 0, input, 0, SCALAR_SIZE);
-    System.arraycopy(dot, 0, input, SCALAR_SIZE, SCALAR_SIZE);
+    System.arraycopy(transcript, 0, input, 0, 32);
+    System.arraycopy(tHat, 0, input, 32, 32);
     byte[] hash = HashingUtils.sha256(input).toByteArray();
-    return reduceToScalar(hash);
+    return Secp256k1Operations.reduceToScalar(hash);
   }
 
   private byte[] deriveIpaRoundChallenge(byte[] lastChallenge, ECPoint l, ECPoint r) {
     byte[] lSer = Secp256k1Operations.serializeCompressed(l);
     byte[] rSer = Secp256k1Operations.serializeCompressed(r);
-
-    byte[] input = new byte[SCALAR_SIZE + 2 * COMPRESSED_POINT_SIZE];
-    System.arraycopy(lastChallenge, 0, input, 0, SCALAR_SIZE);
-    System.arraycopy(lSer, 0, input, SCALAR_SIZE, COMPRESSED_POINT_SIZE);
-    System.arraycopy(rSer, 0, input, SCALAR_SIZE + COMPRESSED_POINT_SIZE, COMPRESSED_POINT_SIZE);
-
+    byte[] input = new byte[32 + 2 * COMPRESSED_POINT_SIZE];
+    System.arraycopy(lastChallenge, 0, input, 0, 32);
+    System.arraycopy(lSer, 0, input, 32, COMPRESSED_POINT_SIZE);
+    System.arraycopy(rSer, 0, input, 32 + COMPRESSED_POINT_SIZE, COMPRESSED_POINT_SIZE);
     byte[] hash = HashingUtils.sha256(input).toByteArray();
-    return reduceToScalar(hash);
+    return Secp256k1Operations.reduceToScalar(hash);
   }
 
-  private byte[] reduceToScalar(byte[] hash) {
-    BigInteger hashInt = new BigInteger(1, hash);
-    BigInteger reduced = hashInt.mod(Secp256k1Operations.getCurveOrder());
-    return Secp256k1Operations.toBytes32(reduced);
-  }
+  // ============================================================================
+  // IPA Prover
+  // ============================================================================
 
   private void runIpaProver(ECPoint u, ECPoint[] gVec, ECPoint[] hVec,
       byte[][] aVec, byte[][] bVec, int n, byte[] ipaTranscript, byte[] uxScalar,
@@ -666,6 +616,8 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
 
     int curN = n;
     byte[] lastChallenge = ipaTranscript.clone();
+    byte[] uScalar = null;
+    byte[] uInv = null;
 
     // Make mutable copies
     ECPoint[] g = gVec.clone();
@@ -677,92 +629,146 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
       b[i] = bVec[i].clone();
     }
 
-    for (int r = 0; r < maxRounds; r++) {
-      int halfN = curN / 2;
+    try {
+      for (int round = 0; round < maxRounds; round++) {
+        int halfN = curN / 2;
 
-      // Compute L and R
-      ECPoint lr = computeLR(u, uxScalar, a, b, g, h, halfN, true);
-      ECPoint rr = computeLR(u, uxScalar, a, b, g, h, halfN, false);
+        // Compute L and R
+        ECPoint lr = computeIpaLR(g, h, a, b, halfN, u, uxScalar, true);
+        ECPoint rr = computeIpaLR(g, h, a, b, halfN, u, uxScalar, false);
 
-      lOut[r] = lr;
-      rOut[r] = rr;
+        // Validate L and R are not null (matching C: if (!secp256k1_bulletproof_ipa_compute_LR(...)) goto cleanup)
+        if (lr == null || rr == null) {
+          throw new IllegalStateException("Failed to compute IPA L/R commitment at round " + round);
+        }
 
-      // Derive round challenge
-      byte[] uScalar = deriveIpaRoundChallenge(lastChallenge, lr, rr);
-      byte[] uInv = Secp256k1Operations.scalarInverse(uScalar);
+        lOut[round] = lr;
+        rOut[round] = rr;
 
-      lastChallenge = uScalar.clone();
+        // Derive challenge
+        uScalar = deriveIpaRoundChallenge(lastChallenge, lr, rr);
 
-      // Fold vectors
-      foldVectors(a, b, g, h, halfN, uScalar, uInv);
+        // Validate challenge scalar (matching C: if (!secp256k1_ec_seckey_verify(ctx, u_inv)) goto cleanup)
+        if (!Secp256k1Operations.isValidScalar(uScalar)) {
+          throw new IllegalStateException("Invalid IPA round challenge at round " + round);
+        }
 
-      curN = halfN;
+        uInv = Secp256k1Operations.scalarInverse(uScalar);
+
+        // Validate inverse (matching C: if (!secp256k1_ec_seckey_verify(ctx, u_inv)) goto cleanup)
+        if (!Secp256k1Operations.isValidScalar(uInv)) {
+          throw new IllegalStateException("Invalid IPA round challenge inverse at round " + round);
+        }
+
+        lastChallenge = uScalar.clone();
+
+        // Fold vectors
+        foldIpaVectors(g, h, a, b, halfN, uScalar, uInv);
+
+        // Clear round-specific scalars
+        Arrays.fill(uScalar, (byte) 0);
+        Arrays.fill(uInv, (byte) 0);
+
+        curN = halfN;
+      }
+
+      System.arraycopy(a[0], 0, aFinal, 0, SCALAR_SIZE);
+      System.arraycopy(b[0], 0, bFinal, 0, SCALAR_SIZE);
+    } finally {
+      // Clear sensitive data (matching C code cleanup)
+      if (uScalar != null) Arrays.fill(uScalar, (byte) 0);
+      if (uInv != null) Arrays.fill(uInv, (byte) 0);
+      Arrays.fill(lastChallenge, (byte) 0);
+
+      // Clear mutable copies of a and b vectors
+      for (int i = 0; i < n; i++) {
+        if (a[i] != null) Arrays.fill(a[i], (byte) 0);
+        if (b[i] != null) Arrays.fill(b[i], (byte) 0);
+      }
     }
-
-    System.arraycopy(a[0], 0, aFinal, 0, SCALAR_SIZE);
-    System.arraycopy(b[0], 0, bFinal, 0, SCALAR_SIZE);
   }
 
-  private ECPoint computeLR(ECPoint u, byte[] ux, byte[][] a, byte[][] b,
-      ECPoint[] g, ECPoint[] h, int halfN, boolean isL) {
+  private ECPoint computeIpaLR(ECPoint[] g, ECPoint[] h, byte[][] a, byte[][] b,
+      int halfN, ECPoint u, byte[] ux, boolean isL) {
 
-    // For L: aL with gR, bR with hL
-    // For R: aR with gL, bL with hR
-    byte[][] aSlice = isL ? Arrays.copyOfRange(a, 0, halfN) : Arrays.copyOfRange(a, halfN, 2 * halfN);
-    byte[][] bSlice = isL ? Arrays.copyOfRange(b, halfN, 2 * halfN) : Arrays.copyOfRange(b, 0, halfN);
-    ECPoint[] gSlice = isL ? Arrays.copyOfRange(g, halfN, 2 * halfN) : Arrays.copyOfRange(g, 0, halfN);
-    ECPoint[] hSlice = isL ? Arrays.copyOfRange(h, 0, halfN) : Arrays.copyOfRange(h, halfN, 2 * halfN);
+    // For L: aL = a[0..halfN-1], aR = a[halfN..n-1]
+    // For R: swap
+    int aLStart = isL ? 0 : halfN;
+    int aRStart = isL ? halfN : 0;
+    int gLStart = isL ? halfN : 0;
+    int gRStart = isL ? 0 : halfN;
+    int hLStart = isL ? 0 : halfN;
+    int hRStart = isL ? halfN : 0;
+    int bLStart = isL ? halfN : 0;
+    int bRStart = isL ? 0 : halfN;
 
-    // c = <aSlice, bSlice>
-    byte[] c = ipaDot(aSlice, bSlice);
-
-    // result = <aSlice, gSlice> + <bSlice, hSlice> + c*ux*U
     ECPoint result = null;
 
-    ECPoint msm1 = multiScalarMul(gSlice, aSlice);
-    if (msm1 != null) {
-      result = msm1;
+    // <aL, gR>
+    for (int i = 0; i < halfN; i++) {
+      if (!Secp256k1Operations.isScalarZero(a[aLStart + i])) {
+        ECPoint term = Secp256k1Operations.multiply(g[gLStart + i], new BigInteger(1, a[aLStart + i]));
+        result = (result == null) ? term : Secp256k1Operations.add(result, term);
+      }
     }
 
-    ECPoint msm2 = multiScalarMul(hSlice, bSlice);
-    if (msm2 != null) {
-      result = result == null ? msm2 : Secp256k1Operations.add(result, msm2);
+    // <bR, hL>
+    for (int i = 0; i < halfN; i++) {
+      if (!Secp256k1Operations.isScalarZero(b[bRStart + i])) {
+        ECPoint term = Secp256k1Operations.multiply(h[hLStart + i], new BigInteger(1, b[bRStart + i]));
+        result = (result == null) ? term : Secp256k1Operations.add(result, term);
+      }
     }
 
-    byte[] cux = Secp256k1Operations.scalarMultiply(c, ux);
-    if (!Arrays.equals(cux, Secp256k1Operations.scalarZero())) {
-      ECPoint uTerm = Secp256k1Operations.multiply(u, new BigInteger(1, cux));
-      result = result == null ? uTerm : Secp256k1Operations.add(result, uTerm);
+    // c * ux * U
+    byte[] c = ipaDotRange(a, aLStart, b, bRStart, halfN);
+    byte[] cUx = Secp256k1Operations.scalarMultiply(c, ux);
+    if (!Secp256k1Operations.isScalarZero(cUx)) {
+      ECPoint term = Secp256k1Operations.multiply(u, new BigInteger(1, cUx));
+      result = (result == null) ? term : Secp256k1Operations.add(result, term);
     }
 
     return result;
   }
 
-  private void foldVectors(byte[][] a, byte[][] b, ECPoint[] g, ECPoint[] h,
+  private byte[] ipaDotRange(byte[][] a, int aStart, byte[][] b, int bStart, int len) {
+    byte[] acc = Secp256k1Operations.scalarZero();
+    for (int i = 0; i < len; i++) {
+      byte[] term = Secp256k1Operations.scalarMultiply(a[aStart + i], b[bStart + i]);
+      acc = Secp256k1Operations.scalarAdd(acc, term);
+    }
+    return acc;
+  }
+
+  private void foldIpaVectors(ECPoint[] g, ECPoint[] h, byte[][] a, byte[][] b,
       int halfN, byte[] x, byte[] xInv) {
 
     for (int i = 0; i < halfN; i++) {
-      // a'[i] = aL*x + aR*xInv
+      // a'[i] = aL*x + aR*x_inv
       byte[] t1 = Secp256k1Operations.scalarMultiply(a[i], x);
       byte[] t2 = Secp256k1Operations.scalarMultiply(a[i + halfN], xInv);
       a[i] = Secp256k1Operations.scalarAdd(t1, t2);
 
-      // b'[i] = bL*xInv + bR*x
+      // b'[i] = bL*x_inv + bR*x
       t1 = Secp256k1Operations.scalarMultiply(b[i], xInv);
       t2 = Secp256k1Operations.scalarMultiply(b[i + halfN], x);
       b[i] = Secp256k1Operations.scalarAdd(t1, t2);
 
-      // G'[i] = GL*xInv + GR*x
+      // G'[i] = GL*x_inv + GR*x
       ECPoint gL = Secp256k1Operations.multiply(g[i], new BigInteger(1, xInv));
       ECPoint gR = Secp256k1Operations.multiply(g[i + halfN], new BigInteger(1, x));
       g[i] = Secp256k1Operations.add(gL, gR);
 
-      // H'[i] = HL*x + HR*xInv
+      // H'[i] = HL*x + HR*x_inv
       ECPoint hL = Secp256k1Operations.multiply(h[i], new BigInteger(1, x));
       ECPoint hR = Secp256k1Operations.multiply(h[i + halfN], new BigInteger(1, xInv));
       h[i] = Secp256k1Operations.add(hL, hR);
     }
   }
+
+  // ============================================================================
+  // Proof Serialization
+  // ============================================================================
 
   private byte[] serializeProof(ECPoint a, ECPoint s, ECPoint t1, ECPoint t2,
       ECPoint[] lVec, ECPoint[] rVec, byte[] aFinal, byte[] bFinal,
@@ -773,34 +779,19 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
     int offset = 0;
 
     // A, S, T1, T2
-    byte[] aSer = Secp256k1Operations.serializeCompressed(a);
-    System.arraycopy(aSer, 0, proof, offset, COMPRESSED_POINT_SIZE);
-    offset += COMPRESSED_POINT_SIZE;
-
-    byte[] sSer = Secp256k1Operations.serializeCompressed(s);
-    System.arraycopy(sSer, 0, proof, offset, COMPRESSED_POINT_SIZE);
-    offset += COMPRESSED_POINT_SIZE;
-
-    byte[] t1Ser = Secp256k1Operations.serializeCompressed(t1);
-    System.arraycopy(t1Ser, 0, proof, offset, COMPRESSED_POINT_SIZE);
-    offset += COMPRESSED_POINT_SIZE;
-
-    byte[] t2Ser = Secp256k1Operations.serializeCompressed(t2);
-    System.arraycopy(t2Ser, 0, proof, offset, COMPRESSED_POINT_SIZE);
-    offset += COMPRESSED_POINT_SIZE;
+    offset = appendPoint(proof, offset, a);
+    offset = appendPoint(proof, offset, s);
+    offset = appendPoint(proof, offset, t1);
+    offset = appendPoint(proof, offset, t2);
 
     // L_vec
     for (int i = 0; i < rounds; i++) {
-      byte[] lSer = Secp256k1Operations.serializeCompressed(lVec[i]);
-      System.arraycopy(lSer, 0, proof, offset, COMPRESSED_POINT_SIZE);
-      offset += COMPRESSED_POINT_SIZE;
+      offset = appendPoint(proof, offset, lVec[i]);
     }
 
     // R_vec
     for (int i = 0; i < rounds; i++) {
-      byte[] rSer = Secp256k1Operations.serializeCompressed(rVec[i]);
-      System.arraycopy(rSer, 0, proof, offset, COMPRESSED_POINT_SIZE);
-      offset += COMPRESSED_POINT_SIZE;
+      offset = appendPoint(proof, offset, rVec[i]);
     }
 
     // a_final, b_final, t_hat, tau_x, mu
@@ -815,6 +806,12 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
     System.arraycopy(mu, 0, proof, offset, SCALAR_SIZE);
 
     return proof;
+  }
+
+  private int appendPoint(byte[] buffer, int offset, ECPoint point) {
+    byte[] ser = Secp256k1Operations.serializeCompressed(point);
+    System.arraycopy(ser, 0, buffer, offset, COMPRESSED_POINT_SIZE);
+    return offset + COMPRESSED_POINT_SIZE;
   }
 }
 

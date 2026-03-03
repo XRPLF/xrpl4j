@@ -1,40 +1,54 @@
 package org.xrpl.xrpl4j.crypto.mpt.models;
 
-import com.google.common.io.BaseEncoding;
-import org.bouncycastle.math.ec.ECPoint;
-import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: core
+ * %%
+ * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
-import java.util.Arrays;
-import java.util.Objects;
+import com.google.common.io.BaseEncoding;
+import org.immutables.value.Value;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 
 /**
  * Represents a Pedersen Commitment: C = amount * G + rho * H.
  *
- * <p>This class wraps the commitment point and provides convenient methods for
- * serialization in various formats needed for transactions and proofs.</p>
+ * <p>This immutable stores the commitment as compressed bytes (33 bytes) and provides
+ * convenient methods for serialization in various formats needed for transactions and proofs.</p>
  */
-public final class PedersenCommitment {
-
-  private final ECPoint point;
+@Value.Immutable
+public interface PedersenCommitment {
 
   /**
-   * Private constructor. Use factory methods to create instances.
-   *
-   * @param point The commitment point.
+   * The compressed point size in bytes.
    */
-  private PedersenCommitment(ECPoint point) {
-    this.point = Objects.requireNonNull(point, "point must not be null");
-  }
+  int COMPRESSED_SIZE = 33;
 
   /**
-   * Creates a PedersenCommitment from an ECPoint.
+   * Creates a PedersenCommitment from an UnsignedByteArray containing compressed bytes.
    *
-   * @param point The commitment point.
+   * @param compressedBytes The 33-byte compressed point.
    *
    * @return A new PedersenCommitment instance.
    */
-  public static PedersenCommitment fromPoint(ECPoint point) {
-    return new PedersenCommitment(point);
+  static PedersenCommitment of(UnsignedByteArray compressedBytes) {
+    return ImmutablePedersenCommitment.builder()
+      .value(compressedBytes)
+      .build();
   }
 
   /**
@@ -44,33 +58,40 @@ public final class PedersenCommitment {
    *
    * @return A new PedersenCommitment instance.
    *
-   * @throws IllegalArgumentException if the bytes are not a valid compressed point.
+   * @throws IllegalArgumentException if the bytes are not 33 bytes.
    */
-  public static PedersenCommitment fromCompressedBytes(byte[] compressedBytes) {
-    Objects.requireNonNull(compressedBytes, "compressedBytes must not be null");
-    if (compressedBytes.length != 33) {
-      throw new IllegalArgumentException("compressedBytes must be 33 bytes");
-    }
-    ECPoint point = Secp256k1Operations.deserialize(compressedBytes);
-    return new PedersenCommitment(point);
+  static PedersenCommitment of(byte[] compressedBytes) {
+    return of(UnsignedByteArray.of(compressedBytes));
   }
 
   /**
-   * Returns the commitment as an ECPoint for use in proof generation/verification.
+   * Creates a PedersenCommitment from a hex string.
    *
-   * @return The commitment point.
+   * @param hex The hex string of the 33-byte compressed point.
+   *
+   * @return A new PedersenCommitment instance.
    */
-  public ECPoint asEcPoint() {
-    return point;
+  static PedersenCommitment fromHex(String hex) {
+    return of(BaseEncoding.base16().decode(hex.toUpperCase()));
   }
 
   /**
    * Returns the commitment as 33-byte compressed format.
    *
-   * @return The 33-byte compressed point.
+   * @return The 33-byte compressed point as UnsignedByteArray.
    */
-  public byte[] toCompressedBytes() {
-    return Secp256k1Operations.serializeCompressed(point);
+  UnsignedByteArray value();
+
+  /**
+   * Validates that the value is exactly 33 bytes.
+   */
+  @Value.Check
+  default void check() {
+    if (value().length() != COMPRESSED_SIZE) {
+      throw new IllegalArgumentException(
+        "PedersenCommitment must be " + COMPRESSED_SIZE + " bytes, got " + value().length()
+      );
+    }
   }
 
   /**
@@ -78,59 +99,9 @@ public final class PedersenCommitment {
    *
    * @return The hex string of the 33-byte compressed point.
    */
-  public String hexValue() {
-    return BaseEncoding.base16().encode(toCompressedBytes());
-  }
-
-  /**
-   * Returns the commitment in the 64-byte reversed format used in transactions.
-   *
-   * <p>This format is required because rippled does memcpy directly into secp256k1_pubkey.data
-   * and expects the same reversed format as public keys. The X and Y coordinates are each reversed
-   * (little-endian).</p>
-   *
-   * @return The 64-byte reversed format suitable for transaction fields.
-   */
-  public byte[] toReversedBytes64() {
-    // Get uncompressed encoding (65 bytes with 04 prefix)
-    byte[] uncompressed = point.getEncoded(false);
-
-    // Skip the 04 prefix to get 64 bytes (X, Y)
-    byte[] result = new byte[64];
-
-    // Reverse X coordinate (first 32 bytes)
-    for (int i = 0; i < 32; i++) {
-      result[i] = uncompressed[32 - i]; // uncompressed[1..32] reversed
-    }
-    // Reverse Y coordinate (last 32 bytes)
-    for (int i = 0; i < 32; i++) {
-      result[32 + i] = uncompressed[64 - i]; // uncompressed[33..64] reversed
-    }
-
-    return result;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    PedersenCommitment that = (PedersenCommitment) o;
-    return Arrays.equals(toCompressedBytes(), that.toCompressedBytes());
-  }
-
-  @Override
-  public int hashCode() {
-    return Arrays.hashCode(toCompressedBytes());
-  }
-
-  @Override
-  public String toString() {
-    return "PedersenCommitment{" + hexValue() + "}";
+  @Value.Lazy
+  default String hexValue() {
+    return BaseEncoding.base16().encode(value().toByteArray());
   }
 }
 

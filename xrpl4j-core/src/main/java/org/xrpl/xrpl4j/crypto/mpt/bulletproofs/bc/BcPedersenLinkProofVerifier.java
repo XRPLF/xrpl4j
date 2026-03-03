@@ -58,7 +58,7 @@ public class BcPedersenLinkProofVerifier implements PedersenLinkProofVerifier {
       pk = ciphertext.c1();
     }
 
-    ECPoint commitmentPoint = commitment.asEcPoint();
+    ECPoint commitmentPoint = Secp256k1Operations.deserialize(commitment.value().toByteArray());
     byte[] contextHash = (context != null) ? context.toBytes() : null;
     byte[] proofBytes = proof.toBytes();
 

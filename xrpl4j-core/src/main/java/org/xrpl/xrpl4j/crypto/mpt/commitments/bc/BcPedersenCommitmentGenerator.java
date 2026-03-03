@@ -75,7 +75,7 @@ public class BcPedersenCommitmentGenerator implements PedersenCommitmentGenerato
       commitment = Secp256k1Operations.add(mG, rH);
     }
 
-    return PedersenCommitment.fromPoint(commitment);
+    return PedersenCommitment.of(Secp256k1Operations.serializeCompressed(commitment));
   }
 
   /**

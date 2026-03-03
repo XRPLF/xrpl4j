@@ -28,24 +28,24 @@ import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.port.bc.BcElGamalEncryptorPort;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.ElGamalEncryptor;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.MPTAmountEncryptor;
 
 import java.util.Objects;
 
 /**
- * BouncyCastle implementation of {@link ElGamalEncryptor}.
+ * BouncyCastle implementation of {@link MPTAmountEncryptor}.
  *
  * <p>This implementation delegates to {@link BcElGamalEncryptorPort}
  * and wraps the result in Java-friendly types.</p>
  */
-public class BcElGamalEncryptor implements ElGamalEncryptor {
+public class BcMPTAmountEncryptor implements MPTAmountEncryptor {
 
   private final BcElGamalEncryptorPort encryptor;
 
   /**
    * Constructs a new instance with a new {@link BcElGamalEncryptorPort}.
    */
-  public BcElGamalEncryptor() {
+  public BcMPTAmountEncryptor() {
     this(new BcElGamalEncryptorPort());
   }
 
@@ -54,7 +54,7 @@ public class BcElGamalEncryptor implements ElGamalEncryptor {
    *
    * @param encryptor The port encryptor to delegate to.
    */
-  public BcElGamalEncryptor(final BcElGamalEncryptorPort encryptor) {
+  public BcMPTAmountEncryptor(final BcElGamalEncryptorPort encryptor) {
     this.encryptor = Objects.requireNonNull(encryptor);
   }
 

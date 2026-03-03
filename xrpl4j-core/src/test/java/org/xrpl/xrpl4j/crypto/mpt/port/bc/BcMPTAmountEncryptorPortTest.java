@@ -36,7 +36,7 @@ import java.io.InputStream;
 /**
  * Test for {@link BcElGamalEncryptorPort} comparing output with C implementation.
  */
-public class BcElGamalEncryptorPortTest {
+public class BcMPTAmountEncryptorPortTest {
 
   private static JsonNode testVectors;
   private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -44,7 +44,7 @@ public class BcElGamalEncryptorPortTest {
 
   @BeforeAll
   static void loadTestVectors() throws Exception {
-    InputStream is = BcElGamalEncryptorPortTest.class.getResourceAsStream("/mpt/port/elgamal_encrypt_vectors.json");
+    InputStream is = BcMPTAmountEncryptorPortTest.class.getResourceAsStream("/mpt/port/elgamal_encrypt_vectors.json");
     testVectors = objectMapper.readTree(is);
   }
 

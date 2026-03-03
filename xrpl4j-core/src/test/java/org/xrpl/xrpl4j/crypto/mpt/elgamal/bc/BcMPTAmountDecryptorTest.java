@@ -34,7 +34,7 @@ import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 /**
  * Unit tests for {@link BcElGamalDecryptor}.
  */
-public class BcElGamalDecryptorTest extends AbstractElGamalTest {
+public class BcMPTAmountDecryptorTest extends AbstractElGamalTest {
 
   private BcElGamalDecryptor decryptor;
   private BcElGamalEncryptor encryptor;

@@ -34,13 +34,13 @@ import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.port.bc.BcElGamalDecryptorPort;
 
 /**
- * Tests for {@link BcElGamalDecryptor} wrapper-specific functionality.
+ * Tests for {@link BcMPTAmountDecryptor} wrapper-specific functionality.
  *
  * <p>Port-level cryptographic correctness is tested in {@link BcElGamalDecryptorPort}.</p>
  */
-public class BcElGamalDecryptorTest {
+public class BcMPTAmountDecryptorTest {
 
-  private BcElGamalDecryptor decryptor;
+  private BcMPTAmountDecryptor decryptor;
 
   // Valid ciphertext from test vectors (amount = 1)
   private static final String VALID_C1_HEX = "03D24EE6F15541FD35E825D2A9B7B15A67780597D04935F8C435379C3331B96B04";
@@ -52,7 +52,7 @@ public class BcElGamalDecryptorTest {
 
   @BeforeEach
   void setUp() {
-    decryptor = new BcElGamalDecryptor();
+    decryptor = new BcMPTAmountDecryptor();
     validCiphertext = ElGamalCiphertext.of(
       UnsignedByteArray.fromHex(VALID_C1_HEX),
       UnsignedByteArray.fromHex(VALID_C2_HEX)
@@ -67,14 +67,14 @@ public class BcElGamalDecryptorTest {
 
   @Test
   void constructorWithNullPortDecryptor() {
-    assertThrows(NullPointerException.class, () -> new BcElGamalDecryptor(null));
+    assertThrows(NullPointerException.class, () -> new BcMPTAmountDecryptor(null));
   }
 
   @Test
   void constructorWithSharedPortDecryptor() {
     BcElGamalDecryptorPort sharedPort = new BcElGamalDecryptorPort();
-    BcElGamalDecryptor decryptor1 = new BcElGamalDecryptor(sharedPort);
-    BcElGamalDecryptor decryptor2 = new BcElGamalDecryptor(sharedPort);
+    BcMPTAmountDecryptor decryptor1 = new BcMPTAmountDecryptor(sharedPort);
+    BcMPTAmountDecryptor decryptor2 = new BcMPTAmountDecryptor(sharedPort);
 
     UnsignedLong result1 = decryptor1.decrypt(validCiphertext, validPrivateKey, UnsignedLong.ZERO, UnsignedLong.valueOf(10));
     UnsignedLong result2 = decryptor2.decrypt(validCiphertext, validPrivateKey, UnsignedLong.ZERO, UnsignedLong.valueOf(10));

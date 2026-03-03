@@ -35,19 +35,19 @@ import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.port.bc.BcElGamalEncryptorPort;
 
 /**
- * Unit tests for {@link BcElGamalEncryptor}.
+ * Unit tests for {@link BcMPTAmountEncryptor}.
  */
-class BcElGamalEncryptorTest {
+class BcMPTAmountEncryptorTest {
 
   private static final String VALID_BLINDING_FACTOR_HEX =
       "0A0C2EB9A16B16B80CFD1B1E8573B9C722E7E19A756B97788F4D97A56B3B246A";
 
-  private BcElGamalEncryptor encryptor;
+  private BcMPTAmountEncryptor encryptor;
   private BlindingFactor blindingFactor;
 
   @BeforeEach
   void setUp() {
-    encryptor = new BcElGamalEncryptor();
+    encryptor = new BcMPTAmountEncryptor();
     blindingFactor = BlindingFactor.fromHex(VALID_BLINDING_FACTOR_HEX);
   }
 
@@ -55,14 +55,14 @@ class BcElGamalEncryptorTest {
 
   @Test
   void constructorWithNullPortEncryptor() {
-    assertThrows(NullPointerException.class, () -> new BcElGamalEncryptor(null));
+    assertThrows(NullPointerException.class, () -> new BcMPTAmountEncryptor(null));
   }
 
   @Test
   void constructorWithSharedPortEncryptor() {
     BcElGamalEncryptorPort sharedPort = new BcElGamalEncryptorPort();
-    BcElGamalEncryptor encryptor1 = new BcElGamalEncryptor(sharedPort);
-    BcElGamalEncryptor encryptor2 = new BcElGamalEncryptor(sharedPort);
+    BcMPTAmountEncryptor encryptor1 = new BcMPTAmountEncryptor(sharedPort);
+    BcMPTAmountEncryptor encryptor2 = new BcMPTAmountEncryptor(sharedPort);
 
     ElGamalCiphertext result1 = encryptor1.encrypt(UnsignedLong.ONE, EC_PUBLIC_KEY, blindingFactor);
     ElGamalCiphertext result2 = encryptor2.encrypt(UnsignedLong.ONE, EC_PUBLIC_KEY, blindingFactor);

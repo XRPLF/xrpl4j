@@ -16,6 +16,7 @@ import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.LinkageProofType;
 import org.xrpl.xrpl4j.crypto.mpt.commitments.PedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.commitments.bc.BcPedersenCommitmentGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTContextUtil;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.models.ElGamalPedersenLinkProof;
@@ -76,7 +77,7 @@ class BcPedersenLinkProofGeneratorTest {
     PedersenCommitment commitment = pedersenGen.generateCommitment(amount, rho);
 
     // 7. Create context
-    ConfidentialMPTSendContext context = ConfidentialMPTSendContext.generate(
+    ConfidentialMPTSendContext context = ConfidentialMPTContextUtil.generateSendContext(
       Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"),
       UnsignedInteger.valueOf(1),
       MpTokenIssuanceId.of("000000000000000000000000000000000000000000000000"),
@@ -159,7 +160,7 @@ class BcPedersenLinkProofGeneratorTest {
     PedersenCommitment commitment = pedersenGen.generateCommitment(balance, rho);
 
     // 7. Create context
-    ConfidentialMPTSendContext context = ConfidentialMPTSendContext.generate(
+    ConfidentialMPTSendContext context = ConfidentialMPTContextUtil.generateSendContext(
       Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"),
       UnsignedInteger.valueOf(1),
       MpTokenIssuanceId.of("000000000000000000000000000000000000000000000000"),

@@ -164,7 +164,7 @@ public final class ConfidentialMPTContextUtil {
     buffer.putInt(version.intValue());
 
     UnsignedByteArray hash = HashingUtils.sha512Half(buffer.array());
-    return ConfidentialMPTSendContext.fromBytes(hash.toByteArray());
+    return ConfidentialMPTSendContext.of(hash);
   }
 }
 

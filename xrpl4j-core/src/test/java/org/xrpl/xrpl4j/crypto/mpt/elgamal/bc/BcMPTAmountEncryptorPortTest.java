@@ -21,7 +21,7 @@ import java.util.Arrays;
 /**
  * Unit tests for {@link BcElGamalEncryptor}.
  */
-public class BcElGamalEncryptorPortTest extends AbstractElGamalTest {
+public class BcMPTAmountEncryptorPortTest extends AbstractElGamalTest {
 
   private BcElGamalDecryptor elGamalBalanceDecryptor;
 

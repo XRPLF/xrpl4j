@@ -55,3 +55,7 @@ add_mpt_test(test_same_plaintext_multi_vectors test_same_plaintext_multi_vectors
 add_mpt_test(test_pedersen_vectors test_pedersen_vectors.c mpt-crypto secp256k1 OpenSSL::Crypto)
 
 add_mpt_test(test_pedersen_link_vectors test_pedersen_link_vectors.c mpt-crypto secp256k1 OpenSSL::Crypto)
+
+add_mpt_test(test_bulletproof_vectors test_bulletproof_vectors.c mpt-crypto secp256k1 OpenSSL::Crypto)
+
+add_mpt_test(test_bulletproof_verify_external test_bulletproof_verify_external.c mpt-crypto secp256k1 OpenSSL::Crypto)

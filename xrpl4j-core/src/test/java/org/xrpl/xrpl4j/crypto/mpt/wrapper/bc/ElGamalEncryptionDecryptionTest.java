@@ -44,8 +44,8 @@ import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
  */
 public class ElGamalEncryptionDecryptionTest {
 
-  private BcElGamalEncryptor encryptor;
-  private BcElGamalDecryptor decryptor;
+  private BcMPTAmountEncryptor encryptor;
+  private BcMPTAmountDecryptor decryptor;
 
   private KeyPair keyPair;
   private BlindingFactor blindingFactor;
@@ -55,8 +55,8 @@ public class ElGamalEncryptionDecryptionTest {
   void setUp() {
 
 
-    encryptor = new BcElGamalEncryptor();
-    decryptor = new BcElGamalDecryptor();
+    encryptor = new BcMPTAmountEncryptor();
+    decryptor = new BcMPTAmountDecryptor();
     blindingFactorGenerator = new SecureRandomBlindingFactorGenerator();
 
     // Generate a fresh key pair for each test using ElGamal seed (32-byte entropy)

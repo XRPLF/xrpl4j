@@ -92,7 +92,7 @@ public class BcSamePlaintextProofGenerator implements SamePlaintextProofGenerato
     }
 
     // 2. Compute Challenge
-    byte[] e = ChallengeUtils.samePlaintextProofChallenge(n, R, S, publicKeys, Tm, TrG, TrP, context.toBytes());
+    byte[] e = ChallengeUtils.samePlaintextProofChallenge(n, R, S, publicKeys, Tm, TrG, TrP, context.value().toByteArray());
     BigInteger eInt = new BigInteger(1, e);
 
     // 3. Compute Responses

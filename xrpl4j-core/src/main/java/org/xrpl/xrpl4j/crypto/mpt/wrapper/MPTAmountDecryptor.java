@@ -41,7 +41,7 @@ import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalDecryptorPort;
  *
  * @see ElGamalDecryptorPort
  */
-public interface ElGamalDecryptor {
+public interface MPTAmountDecryptor {
 
   /**
    * Decrypts an ElGamal ciphertext to recover the original MPT amount.

@@ -68,7 +68,7 @@ public class BcPedersenLinkProofGenerator implements PedersenLinkProofGenerator 
 
     byte[] r = elGamalBlindingFactor.toBytes();
     byte[] rho = pedersenBlindingFactor.toBytes();
-    ECPoint commitmentPoint = commitment.asEcPoint();
+    ECPoint commitmentPoint = Secp256k1Operations.deserialize(commitment.value().toByteArray());
     byte[] contextHash = context.toBytes();
 
     // Generate nonces internally (matching C implementation)

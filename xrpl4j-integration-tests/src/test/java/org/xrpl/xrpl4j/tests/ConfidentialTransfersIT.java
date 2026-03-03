@@ -36,6 +36,7 @@ import org.xrpl.xrpl4j.crypto.mpt.ZKProofUtils;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.RangeProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.bc.BcRangeProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.commitments.bc.BcPedersenCommitmentGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTContextUtil;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
 import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTConvertProof;
 import org.xrpl.xrpl4j.crypto.mpt.models.SamePlaintextMultiProof;
@@ -563,7 +564,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     UnsignedInteger holder1Version = holder1MpToken.confidentialBalanceVersion().orElse(UnsignedInteger.ZERO);
 
     // Generate context for ConfidentialMPTSend
-    ConfidentialMPTSendContext sendContext = ConfidentialMPTSendContext.generate(
+    ConfidentialMPTSendContext sendContext = ConfidentialMPTContextUtil.generateSendContext(
       holderKeyPair.publicKey().deriveAddress(),  // sender account
       holderAccountInfoForSend.accountData().sequence(),  // sequence
       mpTokenIssuanceId,  // issuanceId

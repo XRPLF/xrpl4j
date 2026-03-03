@@ -23,30 +23,31 @@ package org.xrpl.xrpl4j.crypto.mpt.wrapper.bc;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.port.bc.BcElGamalDecryptorPort;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.ElGamalDecryptor;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.MPTAmountDecryptor;
 
 import java.util.Objects;
 
 /**
- * BouncyCastle implementation of {@link ElGamalDecryptor}.
+ * BouncyCastle implementation of {@link MPTAmountDecryptor}.
  *
  * <p>This implementation delegates to {@link BcElGamalDecryptorPort}
  * and validates inputs using Java-friendly types.</p>
  *
  * <p>Mirrors the C utility function {@code mpt_decrypt_amount} from mpt_utility.cpp.</p>
  */
-public class BcElGamalDecryptor implements ElGamalDecryptor {
+public class BcMPTAmountDecryptor implements MPTAmountDecryptor {
 
   private final BcElGamalDecryptorPort decryptor;
 
   /**
    * Constructs a new instance with a new {@link BcElGamalDecryptorPort}.
    */
-  public BcElGamalDecryptor() {
+  public BcMPTAmountDecryptor() {
     this(new BcElGamalDecryptorPort());
   }
 
@@ -55,7 +56,7 @@ public class BcElGamalDecryptor implements ElGamalDecryptor {
    *
    * @param decryptor The port decryptor to delegate to.
    */
-  public BcElGamalDecryptor(final BcElGamalDecryptorPort decryptor) {
+  public BcMPTAmountDecryptor(final BcElGamalDecryptorPort decryptor) {
     this.decryptor = Objects.requireNonNull(decryptor);
   }
 
@@ -87,12 +88,16 @@ public class BcElGamalDecryptor implements ElGamalDecryptor {
       ciphertext.c2().toByteArray()
     );
 
-    return decryptor.decrypt(
+    UnsignedByteArray naturalBytes = privateKey.naturalBytes();
+    UnsignedLong amount = decryptor.decrypt(
       ciphertext,
       privateKey.naturalBytes(),
       minAmount,
       maxAmount
     );
+
+    naturalBytes.destroy();
+    return amount;
   }
 }
 

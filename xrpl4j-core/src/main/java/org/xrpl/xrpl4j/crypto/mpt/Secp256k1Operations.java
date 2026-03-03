@@ -88,6 +88,25 @@ public final class Secp256k1Operations {
   public static final int DOUBLE_BULLETPROOF_SIZE = 754;
 
   // ============================================================================
+  // Size Calculation Methods
+  // ============================================================================
+
+  /**
+   * Calculates the expected proof size for a same-plaintext multi proof.
+   *
+   * <p>Port of {@code secp256k1_mpt_prove_same_plaintext_multi_size} from proof_same_plaintext_multi.c.</p>
+   *
+   * <p>Formula: (1 Tm + 2N Tr) * 33 + (1 sm + N sr) * 32 = ((1 + 2*n) * 33) + ((1 + n) * 32)</p>
+   *
+   * @param numCiphertexts The number of ciphertexts (recipients).
+   *
+   * @return The expected proof size in bytes.
+   */
+  public static int samePlaintextMultiProofSize(int numCiphertexts) {
+    return ((1 + 2 * numCiphertexts) * 33) + ((1 + numCiphertexts) * 32);
+  }
+
+  // ============================================================================
   // Curve Parameters
   // ============================================================================
 
@@ -364,6 +383,40 @@ public final class Secp256k1Operations {
   }
 
   /**
+   * Subtracts two scalars modulo the curve order.
+   *
+   * @param a The first scalar (32 bytes, big-endian).
+   * @param b The second scalar (32 bytes, big-endian).
+   *
+   * @return The difference (a - b) mod n as a 32-byte array.
+   */
+  public static byte[] scalarSub(byte[] a, byte[] b) {
+    Objects.requireNonNull(a, "a must not be null");
+    Objects.requireNonNull(b, "b must not be null");
+    BigInteger aInt = new BigInteger(1, a);
+    BigInteger bInt = new BigInteger(1, b);
+    BigInteger result = aInt.subtract(bInt).mod(CURVE_ORDER);
+    return toBytes32(result);
+  }
+
+  /**
+   * Checks if a scalar is zero.
+   *
+   * @param scalar The scalar to check (32 bytes, big-endian).
+   *
+   * @return {@code true} if the scalar is zero, {@code false} otherwise.
+   */
+  public static boolean isScalarZero(byte[] scalar) {
+    Objects.requireNonNull(scalar, "scalar must not be null");
+    for (byte b : scalar) {
+      if (b != 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Checks if a scalar is valid (non-zero and less than curve order).
    *
    * @param scalar The scalar to check (32 bytes, big-endian).
@@ -543,6 +596,46 @@ public final class Secp256k1Operations {
   // ============================================================================
 
   /**
+   * Generates a vector of N independent NUMS generators.
+   *
+   * <p>Port of {@code secp256k1_mpt_get_generator_vector} from commitments.c.</p>
+   *
+   * <p>Used to populate the G_i and H_i vectors for Bulletproofs. Each point
+   * is derived using the NUMS hash-to-point method with the given label and
+   * sequential indices.</p>
+   *
+   * @param label The label string (e.g., "G" or "H").
+   * @param n     Number of generators to derive.
+   *
+   * @return Array of n generator points.
+   *
+   * @throws NullPointerException  if label is null.
+   * @throws IllegalStateException if any point derivation fails.
+   */
+  public static ECPoint[] getGeneratorVector(String label, int n) {
+    Objects.requireNonNull(label, "label must not be null");
+    byte[] labelBytes = label.getBytes(StandardCharsets.UTF_8);
+    ECPoint[] vec = new ECPoint[n];
+    for (int i = 0; i < n; i++) {
+      vec[i] = hashToPointNums(labelBytes, i);
+    }
+    return vec;
+  }
+
+  /**
+   * Gets the U generator point for IPA (Inner Product Argument).
+   *
+   * <p>Port of the U generator derivation from bulletproof_aggregated.c.</p>
+   *
+   * <p>This is a NUMS point derived using the label "BP_U" at index 0.</p>
+   *
+   * @return The U generator point.
+   */
+  public static ECPoint getU() {
+    return hashToPointNums("BP_U".getBytes(StandardCharsets.UTF_8), 0);
+  }
+
+  /**
    * Deterministically derives a NUMS (Nothing-Up-My-Sleeve) generator point.
    *
    * <p>Port of {@code secp256k1_mpt_hash_to_point_nums} from commitments.c.</p>
@@ -557,7 +650,7 @@ public final class Secp256k1Operations {
    *
    * @throws IllegalStateException if no valid point is found (extremely unlikely).
    */
-  private static ECPoint hashToPointNums(byte[] label, int index) {
+  public static ECPoint hashToPointNums(byte[] label, int index) {
     byte[] domainBytes = NUMS_DOMAIN_SEPARATOR.getBytes(StandardCharsets.UTF_8);
     byte[] curveBytes = NUMS_CURVE_LABEL.getBytes(StandardCharsets.UTF_8);
     byte[] indexBe = ByteUtils.toByteArray(index, 4);

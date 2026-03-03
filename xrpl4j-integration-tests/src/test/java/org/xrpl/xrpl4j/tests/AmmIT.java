@@ -31,9 +31,11 @@ import org.xrpl.xrpl4j.model.client.ledger.AmmLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.flags.AmmClawbackFlags;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.AuctionSlot;
@@ -42,6 +44,7 @@ import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.xrpl.xrpl4j.model.transactions.AmmBid;
@@ -51,6 +54,10 @@ import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
 import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
@@ -1044,6 +1051,361 @@ public class AmmIT extends AbstractIT {
     assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
 
     return ammInfoResult;
+  }
+
+  // =============================================
+  // MPT AMM Integration Tests
+  // =============================================
+
+  /**
+   * Creates an MPT issuance, authorizes a holder, mints tokens to the holder, then creates an AMM with
+   * MPT/XRP as the asset pair. Verifies the AMM via {@code ammInfo} RPC and {@link AmmLedgerEntryParams}.
+   */
+  @Test
+  void mptAmmCreateAndVerifyWithAmmInfoAndLedgerEntry() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    FeeResult feeResult = xrplClient.fee();
+
+    AccountInfoResult issuerAccountInfo = scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    // Create MPT issuance with tfMptCanTrade to allow AMM usage
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptCanTrade(true)
+        .tfMptCanTransfer(true)
+        .build())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedIssuanceCreate = signatureService.sign(
+      issuerKeyPair.privateKey(), issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> issuanceCreateResult = xrplClient.submit(signedIssuanceCreate);
+    assertThat(issuanceCreateResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    scanForFinality(
+      signedIssuanceCreate.hash(),
+      issuanceCreateResult.validatedLedgerIndex(),
+      issuanceCreate.lastLedgerSequence().get(),
+      issuanceCreate.sequence(),
+      issuerKeyPair.publicKey().deriveAddress()
+    );
+
+    // Get the MPT issuance ID from transaction metadata
+    MpTokenIssuanceId mptIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedIssuanceCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("issuance create metadata did not contain issuance ID"));
+
+    // The issuer itself needs to hold MPT to seed the AMM, so authorize issuer as holder too
+    // (actually the issuer is the minter - they can deposit directly from issuance)
+    // Create AMM with MPT as Amount and XRP as Amount2
+    XrpCurrencyAmount reserveAmount = xrplClient.serverInformation().info()
+      .map(
+        rippled -> rippled.closedLedger().orElse(rippled.validatedLedger().get()).reserveIncXrp(),
+        clio -> clio.validatedLedger().get().reserveIncXrp(),
+        reporting -> reporting.closedLedger().orElse(reporting.validatedLedger().get()).reserveIncXrp()
+      );
+
+    MptCurrencyAmount mptAmount = MptCurrencyAmount.builder()
+      .mptIssuanceId(mptIssuanceId)
+      .value("1000")
+      .build();
+
+    AmmCreate ammCreate = AmmCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuanceCreate.sequence().plus(UnsignedInteger.ONE))
+      .fee(reserveAmount)
+      .amount(mptAmount)
+      .amount2(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10)))
+      .tradingFee(TradingFee.ofPercent(BigDecimal.ONE))
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<AmmCreate> signedAmmCreate = signatureService.sign(issuerKeyPair.privateKey(), ammCreate);
+    SubmitResult<AmmCreate> ammCreateResult = xrplClient.submit(signedAmmCreate);
+    assertThat(ammCreateResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    scanForFinality(
+      signedAmmCreate.hash(),
+      ammCreateResult.validatedLedgerIndex(),
+      ammCreate.lastLedgerSequence().get(),
+      ammCreate.sequence(),
+      issuerKeyPair.publicKey().deriveAddress()
+    );
+
+    // Verify AMM via ammInfo RPC by asset pair
+    AmmInfoResult ammInfoByAssets = xrplClient.ammInfo(
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+    );
+
+    assertThat(ammInfoByAssets.amm().account()).isNotNull();
+    assertThat(ammInfoByAssets.amm().amount()).isInstanceOf(MptCurrencyAmount.class);
+    assertThat(((MptCurrencyAmount) ammInfoByAssets.amm().amount()).mptIssuanceId()).isEqualTo(mptIssuanceId);
+    assertThat(ammInfoByAssets.amm().amount2()).isInstanceOf(XrpCurrencyAmount.class);
+
+    // Verify ammInfo by AMM account address
+    AmmInfoResult ammInfoByAccount = xrplClient.ammInfo(
+      AmmInfoRequestParams.from(ammInfoByAssets.amm().account())
+    );
+    assertThat(ammInfoByAccount.amm()).isEqualTo(ammInfoByAssets.amm());
+
+    // Verify AMM ledger entry via AmmLedgerEntryParams with MPT asset
+    LedgerEntryResult<AmmObject> ammObject = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.amm(
+        AmmLedgerEntryParams.builder()
+          .asset(MptIssue.of(mptIssuanceId))
+          .asset2(CurrencyIssue.XRP)
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    );
+
+    assertThat(ammObject.node().account()).isEqualTo(ammInfoByAccount.amm().account());
+    assertThat(ammObject.node().asset()).isEqualTo(MptIssue.of(mptIssuanceId));
+    assertThat(ammObject.node().asset2()).isEqualTo(CurrencyIssue.XRP);
+    assertThat(ammObject.node().lpTokenBalance()).isEqualTo(ammInfoByAccount.amm().lpToken());
+    assertThat(ammObject.node().tradingFee()).isEqualTo(ammInfoByAccount.amm().tradingFee());
+
+    // Verify ledger entry by index
+    LedgerEntryResult<AmmObject> entryByIndex = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(ammObject.index(), AmmObject.class, LedgerSpecifier.VALIDATED)
+    );
+    assertThat(entryByIndex.node()).isEqualTo(ammObject.node());
+
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(ammObject.index(), LedgerSpecifier.VALIDATED)
+    );
+    assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
+  }
+
+  /**
+   * Creates an MPT/XRP AMM, then has a second holder deposit MPT into the pool using
+   * {@link AmmDeposit} with MPT amounts. Verifies the AMM state after deposit via {@code ammInfo}.
+   */
+  @Test
+  void mptAmmDepositAndWithdraw() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair holderKeyPair = createRandomAccountEd25519();
+    FeeResult feeResult = xrplClient.fee();
+
+    AccountInfoResult issuerAccountInfo = scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    AccountInfoResult holderAccountInfo = scanForResult(
+      () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
+    );
+
+    // Create MPT issuance
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptCanTrade(true)
+        .tfMptCanTransfer(true)
+        .build())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedIssuanceCreate = signatureService.sign(
+      issuerKeyPair.privateKey(), issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> issuanceCreateResult = xrplClient.submit(signedIssuanceCreate);
+    assertThat(issuanceCreateResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    scanForFinality(
+      signedIssuanceCreate.hash(),
+      issuanceCreateResult.validatedLedgerIndex(),
+      issuanceCreate.lastLedgerSequence().get(),
+      issuanceCreate.sequence(),
+      issuerKeyPair.publicKey().deriveAddress()
+    );
+
+    MpTokenIssuanceId mptIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedIssuanceCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("issuance create metadata did not contain issuance ID"));
+
+    // Authorize holder to hold this MPT
+    MpTokenAuthorize authorize = MpTokenAuthorize.builder()
+      .account(holderKeyPair.publicKey().deriveAddress())
+      .sequence(holderAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .signingPublicKey(holderKeyPair.publicKey())
+      .lastLedgerSequence(holderAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .mpTokenIssuanceId(mptIssuanceId)
+      .build();
+
+    SingleSignedTransaction<MpTokenAuthorize> signedAuthorize = signatureService.sign(
+      holderKeyPair.privateKey(), authorize
+    );
+    SubmitResult<MpTokenAuthorize> authorizeResult = xrplClient.submit(signedAuthorize);
+    assertThat(authorizeResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    scanForFinality(
+      signedAuthorize.hash(),
+      authorizeResult.validatedLedgerIndex(),
+      authorize.lastLedgerSequence().get(),
+      authorize.sequence(),
+      holderKeyPair.publicKey().deriveAddress()
+    );
+
+    // Mint MPT tokens to holder via Payment from issuer
+    MptCurrencyAmount mintAmount = MptCurrencyAmount.builder()
+      .mptIssuanceId(mptIssuanceId)
+      .value("100000")
+      .build();
+    Payment mint = Payment.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .destination(holderKeyPair.publicKey().deriveAddress())
+      .amount(mintAmount)
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuanceCreate.sequence().plus(UnsignedInteger.ONE))
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(1000)).unsignedIntegerValue())
+      .build();
+
+    SingleSignedTransaction<Payment> signedMint = signatureService.sign(issuerKeyPair.privateKey(), mint);
+    SubmitResult<Payment> mintResult = xrplClient.submit(signedMint);
+    assertThat(mintResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    scanForFinality(
+      signedMint.hash(),
+      mintResult.validatedLedgerIndex(),
+      mint.lastLedgerSequence().get(),
+      mint.sequence(),
+      issuerKeyPair.publicKey().deriveAddress()
+    );
+
+    // Issuer creates AMM with MPT/XRP pair
+    XrpCurrencyAmount reserveAmount = xrplClient.serverInformation().info()
+      .map(
+        rippled -> rippled.closedLedger().orElse(rippled.validatedLedger().get()).reserveIncXrp(),
+        clio -> clio.validatedLedger().get().reserveIncXrp(),
+        reporting -> reporting.closedLedger().orElse(reporting.validatedLedger().get()).reserveIncXrp()
+      );
+
+    AmmCreate ammCreate = AmmCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(mint.sequence().plus(UnsignedInteger.ONE))
+      .fee(reserveAmount)
+      .amount(MptCurrencyAmount.builder().mptIssuanceId(mptIssuanceId).value("5000").build())
+      .amount2(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10)))
+      .tradingFee(TradingFee.ofPercent(BigDecimal.ONE))
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<AmmCreate> signedAmmCreate = signatureService.sign(issuerKeyPair.privateKey(), ammCreate);
+    SubmitResult<AmmCreate> ammCreateResult = xrplClient.submit(signedAmmCreate);
+    assertThat(ammCreateResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    scanForFinality(
+      signedAmmCreate.hash(),
+      ammCreateResult.validatedLedgerIndex(),
+      ammCreate.lastLedgerSequence().get(),
+      ammCreate.sequence(),
+      issuerKeyPair.publicKey().deriveAddress()
+    );
+
+    AmmInfoResult ammInfo = xrplClient.ammInfo(
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+    );
+    assertThat(ammInfo.amm().amount()).isInstanceOf(MptCurrencyAmount.class);
+
+    // Holder deposits XRP into the MPT/XRP AMM (single-asset deposit)
+    AccountInfoResult holderInfoBeforeDeposit = scanForResult(
+      () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
+    );
+
+    XrpCurrencyAmount depositXrpAmount = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5));
+    AmmDeposit deposit = AmmDeposit.builder()
+      .account(holderKeyPair.publicKey().deriveAddress())
+      .asset(MptIssue.of(mptIssuanceId))
+      .asset2(CurrencyIssue.XRP)
+      .amount(depositXrpAmount)
+      .flags(AmmDepositFlags.SINGLE_ASSET)
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(holderInfoBeforeDeposit.accountData().sequence())
+      .signingPublicKey(holderKeyPair.publicKey())
+      .lastLedgerSequence(
+        holderInfoBeforeDeposit.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue()
+      )
+      .build();
+
+    SingleSignedTransaction<AmmDeposit> signedDeposit = signatureService.sign(holderKeyPair.privateKey(), deposit);
+    SubmitResult<AmmDeposit> depositResult = xrplClient.submit(signedDeposit);
+    assertThat(depositResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    scanForFinality(
+      signedDeposit.hash(),
+      depositResult.validatedLedgerIndex(),
+      deposit.lastLedgerSequence().get(),
+      deposit.sequence(),
+      holderKeyPair.publicKey().deriveAddress()
+    );
+
+    // Verify AMM state reflects the deposit - XRP amount should have increased
+    AmmInfoResult ammInfoAfterDeposit = xrplClient.ammInfo(
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+    );
+    assertThat(ammInfoAfterDeposit.amm().amount2()).isInstanceOf(XrpCurrencyAmount.class);
+    assertThat((XrpCurrencyAmount) ammInfoAfterDeposit.amm().amount2())
+      .isGreaterThan((XrpCurrencyAmount) ammInfo.amm().amount2());
+
+    // Holder withdraws XRP from the AMM (single-asset withdraw)
+    AccountInfoResult holderInfoAfterDeposit = scanForResult(
+      () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
+    );
+
+    AmmWithdraw withdraw = AmmWithdraw.builder()
+      .account(holderKeyPair.publicKey().deriveAddress())
+      .asset(MptIssue.of(mptIssuanceId))
+      .asset2(CurrencyIssue.XRP)
+      .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2)))
+      .flags(AmmWithdrawFlags.SINGLE_ASSET)
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(holderInfoAfterDeposit.accountData().sequence())
+      .signingPublicKey(holderKeyPair.publicKey())
+      .lastLedgerSequence(
+        holderInfoAfterDeposit.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue()
+      )
+      .build();
+
+    SingleSignedTransaction<AmmWithdraw> signedWithdraw = signatureService.sign(holderKeyPair.privateKey(), withdraw);
+    SubmitResult<AmmWithdraw> withdrawResult = xrplClient.submit(signedWithdraw);
+    assertThat(withdrawResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    scanForFinality(
+      signedWithdraw.hash(),
+      withdrawResult.validatedLedgerIndex(),
+      withdraw.lastLedgerSequence().get(),
+      withdraw.sequence(),
+      holderKeyPair.publicKey().deriveAddress()
+    );
+
+    // Verify AMM XRP amount decreased after withdrawal
+    AmmInfoResult ammInfoAfterWithdraw = xrplClient.ammInfo(
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+    );
+    assertThat(ammInfoAfterWithdraw.amm().amount2()).isInstanceOf(XrpCurrencyAmount.class);
+    assertThat((XrpCurrencyAmount) ammInfoAfterWithdraw.amm().amount2())
+      .isLessThan((XrpCurrencyAmount) ammInfoAfterDeposit.amm().amount2());
   }
 
   private void enableFlag(KeyPair issuerKeyPair, UnsignedInteger sequence, FeeResult feeResult,

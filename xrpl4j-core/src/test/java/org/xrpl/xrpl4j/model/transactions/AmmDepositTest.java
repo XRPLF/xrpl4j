@@ -14,6 +14,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.MptIssue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -497,5 +498,97 @@ class AmmDepositTest extends AbstractJsonTest {
     assertThat(copied.flags()).isEqualTo(original.flags());
     assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
     assertThat(((AmmDepositFlags) copied.transactionFlags()).tfSingleAsset()).isTrue();
+  }
+
+  @Test
+  void constructMptSingleAssetDepositAndTestJson() throws JSONException, JsonProcessingException {
+    MpTokenIssuanceId mptIssuanceId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+
+    AmmDeposit deposit = AmmDeposit.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(AmmDepositFlags.SINGLE_ASSET)
+      .asset(MptIssue.of(mptIssuanceId))
+      .asset2(Issue.XRP)
+      .amount(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptIssuanceId)
+          .value("100")
+          .build()
+      )
+      .build();
+
+    assertThat(deposit.flags()).isEqualTo(AmmDepositFlags.SINGLE_ASSET);
+
+    String json = "{\n" +
+      "    \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
+      "    \"Amount\" : {\n" +
+      "        \"mpt_issuance_id\" : \"00000002430427B80BD2D09D36B70B969E12801065F22308\",\n" +
+      "        \"value\" : \"100\"\n" +
+      "    },\n" +
+      "    \"Asset\" : {\n" +
+      "        \"mpt_issuance_id\" : \"00000002430427B80BD2D09D36B70B969E12801065F22308\"\n" +
+      "    },\n" +
+      "    \"Asset2\" : {\n" +
+      "        \"currency\" : \"XRP\"\n" +
+      "    },\n" +
+      "    \"Fee\" : \"10\",\n" +
+      "    \"Flags\" : " + AmmDepositFlags.SINGLE_ASSET + ",\n" +
+      "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"TransactionType\" : \"AMMDeposit\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(deposit, json);
+  }
+
+  @Test
+  void constructMptTwoAssetDepositAndTestJson() throws JSONException, JsonProcessingException {
+    MpTokenIssuanceId mptIssuanceId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+
+    AmmDeposit deposit = AmmDeposit.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(AmmDepositFlags.TWO_ASSET)
+      .asset(MptIssue.of(mptIssuanceId))
+      .asset2(Issue.XRP)
+      .amount(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptIssuanceId)
+          .value("100")
+          .build()
+      )
+      .amount2(XrpCurrencyAmount.ofDrops(250000000))
+      .build();
+
+    assertThat(deposit.flags()).isEqualTo(AmmDepositFlags.TWO_ASSET);
+
+    String json = "{\n" +
+      "    \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
+      "    \"Amount\" : {\n" +
+      "        \"mpt_issuance_id\" : \"00000002430427B80BD2D09D36B70B969E12801065F22308\",\n" +
+      "        \"value\" : \"100\"\n" +
+      "    },\n" +
+      "    \"Amount2\" : \"250000000\",\n" +
+      "    \"Asset\" : {\n" +
+      "        \"mpt_issuance_id\" : \"00000002430427B80BD2D09D36B70B969E12801065F22308\"\n" +
+      "    },\n" +
+      "    \"Asset2\" : {\n" +
+      "        \"currency\" : \"XRP\"\n" +
+      "    },\n" +
+      "    \"Fee\" : \"10\",\n" +
+      "    \"Flags\" : " + AmmDepositFlags.TWO_ASSET + ",\n" +
+      "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"TransactionType\" : \"AMMDeposit\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(deposit, json);
   }
 }

@@ -33,6 +33,8 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
+import org.xrpl.xrpl4j.model.transactions.EscrowData;
+import org.xrpl.xrpl4j.model.transactions.FinishFunction;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
@@ -217,5 +219,32 @@ public interface MetaEscrowObject extends MetaLedgerObject {
    */
   @JsonProperty("PreviousTxnLgrSeq")
   Optional<LedgerIndex> previousTransactionLedgerSequence();
+
+  /**
+   * Hex-encoded WebAssembly (WASM) bytecode for a Smart Escrow finish function.
+   *
+   * <p>If present, this WASM code will be executed when an
+   * {@link org.xrpl.xrpl4j.model.transactions.EscrowFinish} transaction is submitted.
+   * The finish function must return a positive value for the escrow to be successfully finished.</p>
+   *
+   * <p>This field is part of the SmartEscrow amendment (XLS-0100).</p>
+   *
+   * @return An {@link Optional} of type {@link FinishFunction} containing the WASM bytecode.
+   */
+  @JsonProperty("FinishFunction")
+  Optional<FinishFunction> finishFunction();
+
+  /**
+   * Hex-encoded data blob for a Smart Escrow.
+   *
+   * <p>This represents up to 4KB of data that can be accessed and potentially modified by the
+   * {@link #finishFunction()} during execution.</p>
+   *
+   * <p>This field is part of the SmartEscrow amendment (XLS-0100).</p>
+   *
+   * @return An {@link Optional} of type {@link EscrowData} containing the data blob.
+   */
+  @JsonProperty("Data")
+  Optional<EscrowData> data();
 
 }

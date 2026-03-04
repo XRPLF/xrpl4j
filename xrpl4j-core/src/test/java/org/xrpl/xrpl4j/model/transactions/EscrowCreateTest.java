@@ -34,13 +34,41 @@ public class EscrowCreateTest {
 
 
   @Test
-  public void testWithNeitherCancelNorFinish() {
+  public void testWithNeitherCancelNorFinishNorFinishFunction() {
+    assertThrows(
+      IllegalStateException.class,
+      () -> EscrowCreate.builder()
+        .sequence(UnsignedInteger.ONE)
+        .fee(XrpCurrencyAmount.ofDrops(1))
+        .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+        .amount(XrpCurrencyAmount.ofDrops(1))
+        .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+        .build(),
+      "EscrowCreate must have at least one of CancelAfter, FinishAfter, or FinishFunction."
+    );
+  }
+
+  @Test
+  public void testWithCancelAfterOnly() {
     EscrowCreate.builder()
       .sequence(UnsignedInteger.ONE)
       .fee(XrpCurrencyAmount.ofDrops(1))
       .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .amount(XrpCurrencyAmount.ofDrops(1))
       .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .cancelAfter(UnsignedLong.valueOf(533257958))
+      .build();
+  }
+
+  @Test
+  public void testWithFinishAfterOnly() {
+    EscrowCreate.builder()
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .amount(XrpCurrencyAmount.ofDrops(1))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .finishAfter(UnsignedLong.valueOf(533171558))
       .build();
   }
 
@@ -99,6 +127,7 @@ public class EscrowCreateTest {
       .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .amount(XrpCurrencyAmount.ofDrops(1))
       .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .cancelAfter(UnsignedLong.valueOf(533257958))
       .build();
 
     assertThat(escrowCreate.transactionFlags()).isEqualTo(escrowCreate.flags());
@@ -113,6 +142,7 @@ public class EscrowCreateTest {
       .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .amount(XrpCurrencyAmount.ofDrops(1))
       .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .cancelAfter(UnsignedLong.valueOf(533257958))
       .build();
 
     EscrowCreate copied = EscrowCreate.builder()
@@ -121,6 +151,74 @@ public class EscrowCreateTest {
 
     assertThat(copied.flags()).isEqualTo(original.flags());
     assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
+
+  @Test
+  public void testSmartEscrowWithFinishFunction() {
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .finishFunction(FinishFunction.of("0061736D01000000"))
+      .cancelAfter(UnsignedLong.valueOf(533257958))
+      .build();
+
+    assertThat(escrowCreate.finishFunction()).isNotEmpty();
+    assertThat(escrowCreate.finishFunction().get().value()).isEqualTo("0061736D01000000");
+    assertThat(escrowCreate.cancelAfter()).isNotEmpty();
+  }
+
+  @Test
+  public void testSmartEscrowWithFinishFunctionAndData() {
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .finishFunction(FinishFunction.of("0061736D01000000"))
+      .data(EscrowData.of("DEADBEEF"))
+      .cancelAfter(UnsignedLong.valueOf(533257958))
+      .build();
+
+    assertThat(escrowCreate.finishFunction()).isNotEmpty();
+    assertThat(escrowCreate.data()).isNotEmpty();
+    assertThat(escrowCreate.data().get().value()).isEqualTo("DEADBEEF");
+  }
+
+  @Test
+  public void testSmartEscrowFinishFunctionWithoutCancelAfter() {
+    assertThrows(
+      IllegalStateException.class,
+      () -> EscrowCreate.builder()
+        .sequence(UnsignedInteger.ONE)
+        .fee(XrpCurrencyAmount.ofDrops(1))
+        .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+        .amount(XrpCurrencyAmount.ofDrops(1000))
+        .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+        .finishFunction(FinishFunction.of("0061736D01000000"))
+        .build(),
+      "If FinishFunction is present, CancelAfter must also be present."
+    );
+  }
+
+  @Test
+  public void testSmartEscrowWithFinishFunctionOnly() {
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .finishFunction(FinishFunction.of("0061736D01000000"))
+      .cancelAfter(UnsignedLong.valueOf(533257958))
+      .build();
+
+    assertThat(escrowCreate.finishFunction()).isNotEmpty();
+    assertThat(escrowCreate.finishAfter()).isEmpty();
+    assertThat(escrowCreate.condition()).isEmpty();
   }
 
 }

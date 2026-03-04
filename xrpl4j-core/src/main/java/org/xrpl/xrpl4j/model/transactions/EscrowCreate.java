@@ -136,7 +136,36 @@ public interface EscrowCreate extends Transaction {
   Optional<Condition> condition();
 
   /**
-   * Validate cancelAfter, finishAfter, and condition fields.
+   * Hex-encoded WebAssembly (WASM) bytecode for a Smart Escrow finish function.
+   *
+   * <p>If present, this WASM code will be executed when an {@link EscrowFinish} transaction is submitted.
+   * The finish function must return a positive value for the escrow to be successfully finished.</p>
+   *
+   * <p>This field is part of the SmartEscrow amendment (XLS-0100).</p>
+   *
+   * <p>If this field is present, {@link #cancelAfter()} must also be present to ensure the escrow can be
+   * canceled if the finish function never succeeds.</p>
+   *
+   * @return An {@link Optional} of type {@link FinishFunction} containing the WASM bytecode.
+   */
+  @JsonProperty("FinishFunction")
+  Optional<FinishFunction> finishFunction();
+
+  /**
+   * Hex-encoded data blob for a Smart Escrow.
+   *
+   * <p>This represents up to 4KB of data that can be accessed and potentially modified by the
+   * {@link #finishFunction()} during execution.</p>
+   *
+   * <p>This field is part of the SmartEscrow amendment (XLS-0100).</p>
+   *
+   * @return An {@link Optional} of type {@link EscrowData} containing the data blob.
+   */
+  @JsonProperty("Data")
+  Optional<EscrowData> data();
+
+  /**
+   * Validate cancelAfter, finishAfter, condition, and finishFunction fields.
    */
   @Value.Check
   default void check() {
@@ -144,6 +173,20 @@ public interface EscrowCreate extends Transaction {
       Preconditions.checkState(
         finishAfter().get().compareTo(cancelAfter().get()) < 0,
         "If both CancelAfter and FinishAfter are specified, the FinishAfter time must be before the CancelAfter time."
+      );
+    }
+
+    // At least one of cancelAfter, finishAfter, or finishFunction must be present
+    Preconditions.checkState(
+      cancelAfter().isPresent() || finishAfter().isPresent() || finishFunction().isPresent(),
+      "EscrowCreate must have at least one of CancelAfter, FinishAfter, or FinishFunction."
+    );
+
+    // If finishFunction is present, cancelAfter must also be present
+    if (finishFunction().isPresent()) {
+      Preconditions.checkState(
+        cancelAfter().isPresent(),
+        "If FinishFunction is present, CancelAfter must also be present."
       );
     }
   }

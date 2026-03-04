@@ -218,6 +218,19 @@ public interface EscrowFinish extends Transaction {
   List<Hash256> credentialIds();
 
   /**
+   * The maximum amount of gas that can be consumed when executing the Smart Escrow's finish function.
+   *
+   * <p>This field is part of the SmartEscrow amendment (XLS-0100).</p>
+   *
+   * <p>This field is required when finishing an escrow that has a {@code FinishFunction}. It specifies
+   * the maximum amount of computational resources (gas) that the WASM function is allowed to consume.</p>
+   *
+   * @return An {@link Optional} of type {@link ComputationAllowance} representing the gas allowance.
+   */
+  @JsonProperty("ComputationAllowance")
+  Optional<ComputationAllowance> computationAllowance();
+
+  /**
    * Validate {@link EscrowFinish#credentialIds} has less than or equal to 8 credentials.
    */
   @Value.Check

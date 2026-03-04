@@ -152,4 +152,34 @@ public interface SetFee extends Transaction {
    */
   @JsonProperty("LedgerSequence")
   Optional<LedgerIndex> ledgerSequence();
+
+  /**
+   * The maximum amount of gas that one extension (Smart Escrow WASM function) can execute.
+   *
+   * <p>This field is part of the SmartEscrow amendment (XLS-0100).</p>
+   *
+   * @return An {@link Optional} of type {@link ExtensionComputeLimit} representing the gas limit.
+   */
+  @JsonProperty("ExtensionComputeLimit")
+  Optional<ExtensionComputeLimit> extensionComputeLimit();
+
+  /**
+   * The maximum size, in bytes, that an extension (Smart Escrow WASM function) can be.
+   *
+   * <p>This field is part of the SmartEscrow amendment (XLS-0100).</p>
+   *
+   * @return An {@link Optional} of type {@link ExtensionSizeLimit} representing the size limit in bytes.
+   */
+  @JsonProperty("ExtensionSizeLimit")
+  Optional<ExtensionSizeLimit> extensionSizeLimit();
+
+  /**
+   * The cost of 1 gas, in micro-drops (1 millionth of a drop).
+   *
+   * <p>This field is part of the SmartEscrow amendment (XLS-0100).</p>
+   *
+   * @return An {@link Optional} of type {@link GasPrice} representing the gas price.
+   */
+  @JsonProperty("GasPrice")
+  Optional<GasPrice> gasPrice();
 }

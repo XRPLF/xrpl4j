@@ -113,6 +113,33 @@ public interface TransactionMetadata {
   @JsonProperty("offer_id")
   Optional<Hash256> offerId();
 
+  /**
+   * The amount of gas consumed when executing a Smart Escrow's finish function.
+   *
+   * <p>This field is part of the SmartEscrow amendment (XLS-0100).</p>
+   *
+   * <p>This field is only present in metadata for {@link EscrowFinish} transactions that executed
+   * a WASM finish function. It represents the actual computational resources consumed during execution.</p>
+   *
+   * @return An {@link Optional} of type {@link GasUsed} representing the gas consumed.
+   */
+  @JsonProperty("GasUsed")
+  Optional<GasUsed> gasUsed();
+
+  /**
+   * The signed return code from executing a Smart Escrow's WASM finish function.
+   *
+   * <p>This field is part of the SmartEscrow amendment (XLS-0100).</p>
+   *
+   * <p>This field is only present in metadata for {@link EscrowFinish} transactions that executed
+   * a WASM finish function. A positive value indicates success, while zero or negative values
+   * indicate failure.</p>
+   *
+   * @return An {@link Optional} of type {@link WasmReturnCode} representing the return code.
+   */
+  @JsonProperty("WasmReturnCode")
+  Optional<WasmReturnCode> wasmReturnCode();
+
   @JsonProperty("AffectedNodes")
   List<AffectedNode> affectedNodes();
 }

@@ -40,6 +40,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ComputationAllowanceDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ComputationAllowanceSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialUriDeserializer;
@@ -50,6 +52,18 @@ import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidUriDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidUriSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.EscrowDataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.EscrowDataSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ExtensionComputeLimitDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ExtensionComputeLimitSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ExtensionSizeLimitDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ExtensionSizeLimitSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.FinishFunctionDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.FinishFunctionSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.GasPriceDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.GasPriceSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.GasUsedDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.GasUsedSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Deserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Serializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
@@ -75,6 +89,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.WasmReturnCodeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.WasmReturnCodeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XChainClaimIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XChainClaimIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XChainCountDeserializer;
@@ -1017,5 +1033,223 @@ public class Wrappers {
       return value().toUpperCase(Locale.ENGLISH).hashCode();
     }
 
+  }
+
+  /**
+   * A wrapped {@link String} containing hex-encoded WebAssembly (WASM) bytecode for a Smart Escrow finish function.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the SmartEscrow amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = FinishFunction.class, using = FinishFunctionSerializer.class)
+  @JsonDeserialize(as = FinishFunction.class, using = FinishFunctionDeserializer.class)
+  @Beta
+  abstract static class _FinishFunction extends Wrapper<String> implements Serializable {
+
+    /**
+     * Validates that a {@link FinishFunction}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("FinishFunction must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof FinishFunction) {
+        String otherValue = ((FinishFunction) obj).value();
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+  }
+
+  /**
+   * A wrapped {@link String} containing hex-encoded data for a Smart Escrow.
+   *
+   * <p>This represents the 4KB data field that can be accessed and modified by the FinishFunction.</p>
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the SmartEscrow amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = EscrowData.class, using = EscrowDataSerializer.class)
+  @JsonDeserialize(as = EscrowData.class, using = EscrowDataDeserializer.class)
+  @Beta
+  abstract static class _EscrowData extends Wrapper<String> implements Serializable {
+
+    /**
+     * Validates that a {@link EscrowData}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("EscrowData must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof EscrowData) {
+        String otherValue = ((EscrowData) obj).value();
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+  }
+
+  /**
+   * A wrapped {@link UnsignedInteger} representing the computation allowance (gas) for Smart Escrow execution.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the SmartEscrow amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = ComputationAllowance.class, using = ComputationAllowanceSerializer.class)
+  @JsonDeserialize(as = ComputationAllowance.class, using = ComputationAllowanceDeserializer.class)
+  @Beta
+  abstract static class _ComputationAllowance extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+  }
+
+  /**
+   * A wrapped {@link UnsignedInteger} representing the actual gas used during Smart Escrow execution.
+   *
+   * <p>This field appears in transaction metadata only.</p>
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the SmartEscrow amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = GasUsed.class, using = GasUsedSerializer.class)
+  @JsonDeserialize(as = GasUsed.class, using = GasUsedDeserializer.class)
+  @Beta
+  abstract static class _GasUsed extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+  }
+
+  /**
+   * A wrapped {@link Integer} representing the return code from a Smart Escrow WASM finish function.
+   *
+   * <p>This is a signed 32-bit integer. Positive values indicate success, zero or negative indicate failure.</p>
+   *
+   * <p>This field appears in transaction metadata only.</p>
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the SmartEscrow amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = WasmReturnCode.class, using = WasmReturnCodeSerializer.class)
+  @JsonDeserialize(as = WasmReturnCode.class, using = WasmReturnCodeDeserializer.class)
+  @Beta
+  abstract static class _WasmReturnCode extends Wrapper<Integer> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+  }
+
+  /**
+   * A wrapped {@link UnsignedInteger} representing the maximum amount of gas that one extension can execute.
+   *
+   * <p>This field is used in FeeSettings ledger object and SetFee transaction.</p>
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the SmartEscrow amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = ExtensionComputeLimit.class, using = ExtensionComputeLimitSerializer.class)
+  @JsonDeserialize(as = ExtensionComputeLimit.class, using = ExtensionComputeLimitDeserializer.class)
+  @Beta
+  abstract static class _ExtensionComputeLimit extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+  }
+
+  /**
+   * A wrapped {@link UnsignedInteger} representing the maximum size, in bytes, that an extension can be.
+   *
+   * <p>This field is used in FeeSettings ledger object and SetFee transaction.</p>
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the SmartEscrow amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = ExtensionSizeLimit.class, using = ExtensionSizeLimitSerializer.class)
+  @JsonDeserialize(as = ExtensionSizeLimit.class, using = ExtensionSizeLimitDeserializer.class)
+  @Beta
+  abstract static class _ExtensionSizeLimit extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+  }
+
+  /**
+   * A wrapped {@link UnsignedInteger} representing the cost of 1 gas, in micro-drops (1 millionth of a drop).
+   *
+   * <p>This field is used in FeeSettings ledger object and SetFee transaction.</p>
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the SmartEscrow amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = GasPrice.class, using = GasPriceSerializer.class)
+  @JsonDeserialize(as = GasPrice.class, using = GasPriceDeserializer.class)
+  @Beta
+  abstract static class _GasPrice extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
   }
 }

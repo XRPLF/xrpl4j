@@ -32,7 +32,9 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
+import org.xrpl.xrpl4j.model.transactions.EscrowData;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
+import org.xrpl.xrpl4j.model.transactions.FinishFunction;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
@@ -116,8 +118,8 @@ public interface EscrowObject extends LedgerObject {
    * ten-thousandths of a basis point) from the MPT issuance's {@code TransferFee} setting at the time of escrow
    * creation.
    *
-   * <p>This value is used during {@link org.xrpl.xrpl4j.model.transactions.EscrowFinish} to apply the correct fee,
-   * even if the issuer changes their transfer rate/fee after the escrow was created.
+   * <p>This value is used during `EscrowFinish` to apply the correct fee, even if the issuer changes their transfer
+   * rate/fee after the escrow was created.
    *
    * @return An {@link Optional} of type {@link UnsignedInteger} representing the locked transfer rate or fee.
    */
@@ -136,9 +138,8 @@ public interface EscrowObject extends LedgerObject {
 
 
   /**
-   * A PREIMAGE-SHA-256 crypto-condition in DER hexadecimal encoding. If present, the
-   * {@link org.xrpl.xrpl4j.model.transactions.EscrowFinish} transaction must contain a fulfillment that satisfies this
-   * condition.
+   * A PREIMAGE-SHA-256 crypto-condition in DER hexadecimal encoding. If present, the `EscrowFinish` transaction must
+   * contain a fulfillment that satisfies this condition.
    *
    * @return An {@link Optional} of type {@link Condition} containing the escrow condition.
    *
@@ -160,9 +161,8 @@ public interface EscrowObject extends LedgerObject {
 
   /**
    * The time, in <a href="https://xrpl.org/basic-data-types.html#specifying-time">seconds since the Ripple Epoch</a>,
-   * after which this held payment can be finished. Any {@link org.xrpl.xrpl4j.model.transactions.EscrowFinish}
-   * transaction before this time fails. (Specifically, this is compared with the close time of the previous validated
-   * ledger.)
+   * after which this held payment can be finished. Any `EscrowFinish` transaction before this time fails.
+   * (Specifically, this is compared with the close time of the previous validated ledger.)
    *
    * @return An {@link Optional} of type {@link UnsignedLong} representing the finish after time.
    */
@@ -236,6 +236,32 @@ public interface EscrowObject extends LedgerObject {
    */
   @JsonProperty("PreviousTxnLgrSeq")
   Optional<UnsignedInteger> previousTransactionLedgerSequence();
+
+  /**
+   * Hex-encoded WebAssembly (WASM) bytecode for a Smart Escrow finish function.
+   *
+   * <p>If present, this WASM code will be executed when an `EscrowFinish` transaction is submitted.
+   * The finish function must return a positive value for the escrow to be successfully finished.</p>
+   *
+   * <p>This field is part of the SmartEscrow amendment (XLS-0100).</p>
+   *
+   * @return An {@link Optional} of type {@link FinishFunction} containing the WASM bytecode.
+   */
+  @JsonProperty("FinishFunction")
+  Optional<FinishFunction> finishFunction();
+
+  /**
+   * Hex-encoded data blob for a Smart Escrow.
+   *
+   * <p>This represents up to 4KB of data that can be accessed and potentially modified by the
+   * {@link #finishFunction()} during execution.</p>
+   *
+   * <p>This field is part of the SmartEscrow amendment (XLS-0100).</p>
+   *
+   * @return An {@link Optional} of type {@link EscrowData} containing the data blob.
+   */
+  @JsonProperty("Data")
+  Optional<EscrowData> data();
 
   /**
    * The unique ID of this {@link EscrowObject}.

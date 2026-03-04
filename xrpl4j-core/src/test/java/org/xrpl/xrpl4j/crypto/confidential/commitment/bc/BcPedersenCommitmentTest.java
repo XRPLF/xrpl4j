@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.confidential.port.bc;
+package org.xrpl.xrpl4j.crypto.confidential.commitment.bc;
 
 /*-
  * ========================LICENSE_START=================================
@@ -139,4 +139,3 @@ class BcPedersenCommitmentTest {
     }
   }
 }
-

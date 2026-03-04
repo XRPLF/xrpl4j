@@ -24,12 +24,14 @@ import com.google.common.primitives.UnsignedLong;
 import org.bouncycastle.math.ec.ECPoint;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.HashingUtils;
+import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.BlindingFactorGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.SecureRandomBlindingFactorGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.confidential.bulletproof.RangeProofGenerator;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -51,17 +53,28 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
   private static final int SCALAR_SIZE = 32;
   private static final int COMPRESSED_POINT_SIZE = 33;
 
-  private final SecureRandom secureRandom;
+  private final BlindingFactorGenerator blindingFactorGenerator;
 
   // Cached generators
   private ECPoint cachedH;
   private ECPoint cachedU;
 
   /**
-   * Constructs a new BcRangeProofGenerator.
+   * Constructs a new BcRangeProofGenerator using {@link SecureRandomBlindingFactorGenerator}.
    */
   public BcRangeProofGenerator() {
-    this.secureRandom = new SecureRandom();
+    this(new SecureRandomBlindingFactorGenerator());
+  }
+
+  /**
+   * Constructs a new BcRangeProofGenerator with the specified blinding factor generator.
+   *
+   * @param blindingFactorGenerator The generator for random scalars.
+   */
+  public BcRangeProofGenerator(final BlindingFactorGenerator blindingFactorGenerator) {
+    this.blindingFactorGenerator = Objects.requireNonNull(
+      blindingFactorGenerator, "blindingFactorGenerator must not be null"
+    );
   }
 
   @Override
@@ -309,11 +322,8 @@ public class BcRangeProofGenerator implements RangeProofGenerator {
   }
 
   private byte[] generateRandomScalar() {
-    byte[] scalar = new byte[SCALAR_SIZE];
-    do {
-      secureRandom.nextBytes(scalar);
-    } while (!Secp256k1Operations.isValidScalar(scalar));
-    return scalar;
+    BlindingFactor bf = blindingFactorGenerator.generate();
+    return bf.value().toByteArray();
   }
 
   private ECPoint getHGenerator() {

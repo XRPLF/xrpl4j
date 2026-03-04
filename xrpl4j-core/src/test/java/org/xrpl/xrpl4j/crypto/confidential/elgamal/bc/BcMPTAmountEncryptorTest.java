@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.confidential.port.bc;
+package org.xrpl.xrpl4j.crypto.confidential.elgamal.bc;
 
 /*-
  * ========================LICENSE_START=================================
@@ -28,7 +28,6 @@ import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.elgamal.bc.BcElGamalEncryptor;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.elgamal.ElGamalEncryptor;
 
@@ -37,7 +36,7 @@ import java.io.InputStream;
 /**
  * Test for {@link BcElGamalEncryptor} comparing output with C implementation.
  */
-public class BcMPTAmountEncryptorPortTest {
+public class BcMPTAmountEncryptorTest {
 
   private static JsonNode testVectors;
   private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -45,7 +44,7 @@ public class BcMPTAmountEncryptorPortTest {
 
   @BeforeAll
   static void loadTestVectors() throws Exception {
-    InputStream is = BcMPTAmountEncryptorPortTest.class.getResourceAsStream("/mpt/port/elgamal_encrypt_vectors.json");
+    InputStream is = BcMPTAmountEncryptorTest.class.getResourceAsStream("/mpt/port/elgamal_encrypt_vectors.json");
     testVectors = objectMapper.readTree(is);
   }
 
@@ -131,4 +130,3 @@ public class BcMPTAmountEncryptorPortTest {
     }
   }
 }
-

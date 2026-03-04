@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.confidential.port.bc;
+package org.xrpl.xrpl4j.crypto.confidential.bulletproof.bc;
 
 /*-
  * ========================LICENSE_START=================================
@@ -157,4 +157,3 @@ class BcPedersenLinkProofVerifierTest {
     }
   }
 }
-

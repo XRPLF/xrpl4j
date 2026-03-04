@@ -22,7 +22,6 @@ package org.xrpl.xrpl4j.crypto.confidential;
 
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.HashingUtils;
@@ -78,15 +77,15 @@ public final class ConfidentialMPTContextUtil {
    * <ul>
    *   <li>txType (2 bytes) - ttCONFIDENTIAL_MPT_CONVERT (85)</li>
    *   <li>account (20 bytes) - sender account</li>
-   *   <li>sequence (4 bytes) - transaction sequence</li>
    *   <li>issuanceId (24 bytes) - MPTokenIssuanceID</li>
-   *   <li>amount (8 bytes) - amount being converted</li>
+   *   <li>sequence (4 bytes) - transaction sequence</li>
+   *   <li>account (20 bytes) - identity (self)</li>
+   *   <li>freshness (4 bytes) - always 0</li>
    * </ul>
    *
    * @param account    The account address.
    * @param sequence   The transaction sequence number.
    * @param issuanceId The MPTokenIssuanceId (24 bytes as hex string).
-   * @param amount     The amount being converted.
    *
    * @return A {@link ConfidentialMPTConvertContext} containing the 32-byte context hash.
    *
@@ -95,36 +94,26 @@ public final class ConfidentialMPTContextUtil {
   public static ConfidentialMPTConvertContext generateConvertContext(
     final Address account,
     final UnsignedInteger sequence,
-    final MpTokenIssuanceId issuanceId,
-    final UnsignedLong amount
+    final MpTokenIssuanceId issuanceId
   ) {
     Objects.requireNonNull(account, "account must not be null");
     Objects.requireNonNull(sequence, "sequence must not be null");
     Objects.requireNonNull(issuanceId, "issuanceId must not be null");
-    Objects.requireNonNull(amount, "amount must not be null");
 
-    // Total: 2 (txType) + 20 (account) + 4 (sequence) + 24 (issuanceId) + 8 (amount) = 58 bytes
-    ByteBuffer buffer = ByteBuffer.allocate(58);
+    UnsignedByteArray accountBytes = ADDRESS_CODEC.decodeAccountId(account);
+    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
+
+    // Total: 2 (txType) + 20 (account) + 24 (issuanceId) + 4 (sequence) + 20 (account) + 4 (freshness) = 74 bytes
+    ByteBuffer buffer = ByteBuffer.allocate(74);
     buffer.order(ByteOrder.BIG_ENDIAN);
 
-    // 1. add16(txType)
     buffer.putShort((short) TT_CONFIDENTIAL_MPT_CONVERT);
-
-    // 2. addBitString(account)
-    UnsignedByteArray accountBytes = ADDRESS_CODEC.decodeAccountId(account);
     buffer.put(accountBytes.toByteArray());
-
-    // 3. add32(sequence)
-    buffer.putInt(sequence.intValue());
-
-    // 4. addBitString(issuanceID)
-    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
     buffer.put(issuanceIdBytes);
+    buffer.putInt(sequence.intValue());
+    buffer.put(accountBytes.toByteArray()); // identity (self)
+    buffer.putInt(0); // freshness (always 0)
 
-    // 5. add64(amount)
-    buffer.putLong(amount.longValue());
-
-    // Compute SHA512Half
     UnsignedByteArray hash = HashingUtils.sha512Half(buffer.array());
 
     return ConfidentialMPTConvertContext.of(hash);
@@ -137,10 +126,10 @@ public final class ConfidentialMPTContextUtil {
    * <ul>
    *   <li>txType (2 bytes) - ttCONFIDENTIAL_MPT_SEND (88)</li>
    *   <li>account (20 bytes) - sender account</li>
-   *   <li>sequence (4 bytes) - transaction sequence</li>
    *   <li>issuanceId (24 bytes) - MPTokenIssuanceID</li>
-   *   <li>destination (20 bytes) - destination account</li>
-   *   <li>version (4 bytes) - confidential balance version</li>
+   *   <li>sequence (4 bytes) - transaction sequence</li>
+   *   <li>destination (20 bytes) - identity</li>
+   *   <li>version (4 bytes) - freshness (balance version counter)</li>
    * </ul>
    *
    * @param account     The sender account address.
@@ -166,14 +155,14 @@ public final class ConfidentialMPTContextUtil {
     Objects.requireNonNull(destination, "destination must not be null");
     Objects.requireNonNull(version, "version must not be null");
 
-    // Total: 2 + 20 + 4 + 24 + 20 + 4 = 74 bytes
+    // Total: 2 + 20 + 24 + 4 + 20 + 4 = 74 bytes
     ByteBuffer buffer = ByteBuffer.allocate(74);
     buffer.order(ByteOrder.BIG_ENDIAN);
 
     buffer.putShort((short) TT_CONFIDENTIAL_MPT_SEND);
     buffer.put(ADDRESS_CODEC.decodeAccountId(account).toByteArray());
-    buffer.putInt(sequence.intValue());
     buffer.put(BaseEncoding.base16().decode(issuanceId.value().toUpperCase()));
+    buffer.putInt(sequence.intValue());
     buffer.put(ADDRESS_CODEC.decodeAccountId(destination).toByteArray());
     buffer.putInt(version.intValue());
 
@@ -188,16 +177,15 @@ public final class ConfidentialMPTContextUtil {
    * <ul>
    *   <li>txType (2 bytes) - ttCONFIDENTIAL_MPT_CONVERT_BACK (87)</li>
    *   <li>account (20 bytes) - sender account</li>
-   *   <li>sequence (4 bytes) - transaction sequence</li>
    *   <li>issuanceId (24 bytes) - MPTokenIssuanceID</li>
-   *   <li>amount (8 bytes) - amount being converted back</li>
-   *   <li>version (4 bytes) - confidential balance version</li>
+   *   <li>sequence (4 bytes) - transaction sequence</li>
+   *   <li>account (20 bytes) - identity (self)</li>
+   *   <li>version (4 bytes) - freshness (balance version counter)</li>
    * </ul>
    *
    * @param account    The account address.
    * @param sequence   The transaction sequence number.
    * @param issuanceId The MPTokenIssuanceId (24 bytes as hex string).
-   * @param amount     The amount being converted back.
    * @param version    The confidential balance version from the MPToken ledger object.
    *
    * @return A {@link ConfidentialMPTConvertBackContext} containing the 32-byte context hash.
@@ -208,40 +196,27 @@ public final class ConfidentialMPTContextUtil {
     final Address account,
     final UnsignedInteger sequence,
     final MpTokenIssuanceId issuanceId,
-    final UnsignedLong amount,
     final UnsignedInteger version
   ) {
     Objects.requireNonNull(account, "account must not be null");
     Objects.requireNonNull(sequence, "sequence must not be null");
     Objects.requireNonNull(issuanceId, "issuanceId must not be null");
-    Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(version, "version must not be null");
 
-    // Total: 2 (txType) + 20 (account) + 4 (sequence) + 24 (issuanceId) + 8 (amount) + 4 (version) = 62 bytes
-    ByteBuffer buffer = ByteBuffer.allocate(62);
+    UnsignedByteArray accountBytes = ADDRESS_CODEC.decodeAccountId(account);
+    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
+
+    // Total: 2 (txType) + 20 (account) + 24 (issuanceId) + 4 (sequence) + 20 (account) + 4 (version) = 74 bytes
+    ByteBuffer buffer = ByteBuffer.allocate(74);
     buffer.order(ByteOrder.BIG_ENDIAN);
 
-    // 1. add16(txType)
     buffer.putShort((short) TT_CONFIDENTIAL_MPT_CONVERT_BACK);
-
-    // 2. addBitString(account)
-    UnsignedByteArray accountBytes = ADDRESS_CODEC.decodeAccountId(account);
     buffer.put(accountBytes.toByteArray());
-
-    // 3. add32(sequence)
-    buffer.putInt(sequence.intValue());
-
-    // 4. addBitString(issuanceID)
-    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
     buffer.put(issuanceIdBytes);
-
-    // 5. add64(amount)
-    buffer.putLong(amount.longValue());
-
-    // 6. add32(version)
+    buffer.putInt(sequence.intValue());
+    buffer.put(accountBytes.toByteArray()); // identity (self)
     buffer.putInt(version.intValue());
 
-    // Compute SHA512Half
     UnsignedByteArray hash = HashingUtils.sha512Half(buffer.array());
 
     return ConfidentialMPTConvertBackContext.of(hash);
@@ -254,16 +229,15 @@ public final class ConfidentialMPTContextUtil {
    * <ul>
    *   <li>txType (2 bytes) - ttCONFIDENTIAL_MPT_CLAWBACK (89)</li>
    *   <li>account (20 bytes) - issuer account</li>
-   *   <li>sequence (4 bytes) - transaction sequence</li>
    *   <li>issuanceId (24 bytes) - MPTokenIssuanceID</li>
-   *   <li>amount (8 bytes) - amount being clawed back</li>
-   *   <li>holder (20 bytes) - holder account from which tokens are clawed back</li>
+   *   <li>sequence (4 bytes) - transaction sequence</li>
+   *   <li>holder (20 bytes) - identity (holder account)</li>
+   *   <li>freshness (4 bytes) - always 0</li>
    * </ul>
    *
    * @param account    The issuer's account address.
    * @param sequence   The transaction sequence number.
    * @param issuanceId The MPTokenIssuanceId (24 bytes as hex string).
-   * @param amount     The amount being clawed back.
    * @param holder     The holder account from which tokens are being clawed back.
    *
    * @return A {@link ConfidentialMPTClawbackContext} containing the 32-byte context hash.
@@ -274,41 +248,24 @@ public final class ConfidentialMPTContextUtil {
     final Address account,
     final UnsignedInteger sequence,
     final MpTokenIssuanceId issuanceId,
-    final UnsignedLong amount,
     final Address holder
   ) {
     Objects.requireNonNull(account, "account must not be null");
     Objects.requireNonNull(sequence, "sequence must not be null");
     Objects.requireNonNull(issuanceId, "issuanceId must not be null");
-    Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(holder, "holder must not be null");
 
-    // Total: 2 (txType) + 20 (account) + 4 (sequence) + 24 (issuanceId) + 8 (amount) + 20 (holder) = 78 bytes
-    ByteBuffer buffer = ByteBuffer.allocate(78);
+    // Total: 2 (txType) + 20 (account) + 24 (issuanceId) + 4 (sequence) + 20 (holder) + 4 (freshness) = 74 bytes
+    ByteBuffer buffer = ByteBuffer.allocate(74);
     buffer.order(ByteOrder.BIG_ENDIAN);
 
-    // 1. add16(txType)
     buffer.putShort((short) TT_CONFIDENTIAL_MPT_CLAWBACK);
-
-    // 2. addBitString(account)
-    UnsignedByteArray accountBytes = ADDRESS_CODEC.decodeAccountId(account);
-    buffer.put(accountBytes.toByteArray());
-
-    // 3. add32(sequence)
+    buffer.put(ADDRESS_CODEC.decodeAccountId(account).toByteArray());
+    buffer.put(BaseEncoding.base16().decode(issuanceId.value().toUpperCase()));
     buffer.putInt(sequence.intValue());
+    buffer.put(ADDRESS_CODEC.decodeAccountId(holder).toByteArray()); // identity
+    buffer.putInt(0); // freshness (always 0)
 
-    // 4. addBitString(issuanceID)
-    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
-    buffer.put(issuanceIdBytes);
-
-    // 5. add64(amount)
-    buffer.putLong(amount.longValue());
-
-    // 6. addBitString(holder)
-    UnsignedByteArray holderBytes = ADDRESS_CODEC.decodeAccountId(holder);
-    buffer.put(holderBytes.toByteArray());
-
-    // Compute SHA512Half
     UnsignedByteArray hash = HashingUtils.sha512Half(buffer.array());
 
     return ConfidentialMPTClawbackContext.of(hash);

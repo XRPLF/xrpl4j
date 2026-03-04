@@ -81,7 +81,6 @@ public class ConfidentialMPTClawbackService {
    * @param account    The issuer's XRPL account address.
    * @param sequence   The issuer's account sequence number.
    * @param issuanceId The MPT issuance ID.
-   * @param amount     The amount being clawed back.
    * @param holder     The holder account from which tokens are being clawed back.
    *
    * @return A {@link ConfidentialMPTClawbackContext} containing the 32-byte context hash.
@@ -90,10 +89,9 @@ public class ConfidentialMPTClawbackService {
     final Address account,
     final UnsignedInteger sequence,
     final MpTokenIssuanceId issuanceId,
-    final UnsignedLong amount,
     final Address holder
   ) {
-    return ConfidentialMPTContextUtil.generateClawbackContext(account, sequence, issuanceId, amount, holder);
+    return ConfidentialMPTContextUtil.generateClawbackContext(account, sequence, issuanceId, holder);
   }
 
   /**

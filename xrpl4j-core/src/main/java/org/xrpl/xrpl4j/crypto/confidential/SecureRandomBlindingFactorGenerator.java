@@ -51,4 +51,3 @@ public class SecureRandomBlindingFactorGenerator implements BlindingFactorGenera
     return BlindingFactor.fromBytes(bytes);
   }
 }
-

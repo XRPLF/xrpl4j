@@ -23,7 +23,6 @@ package org.xrpl.xrpl4j.crypto.confidential.util.bc;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -59,8 +58,7 @@ class BcConfidentialMPTConvertProofGeneratorTest {
     context = ConfidentialMPTContextUtil.generateConvertContext(
       Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"),
       UnsignedInteger.valueOf(12345),
-      MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41"),
-      UnsignedLong.valueOf(500)
+      MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41")
     );
   }
 
@@ -104,12 +102,11 @@ class BcConfidentialMPTConvertProofGeneratorTest {
     // Verify proof is valid with original context
     assertThat(verifier.verifyProof(proof, keyPair.publicKey(), context)).isTrue();
 
-    // Create a different context (different amount)
+    // Create a different context (different sequence)
     ConfidentialMPTConvertContext differentContext = ConfidentialMPTContextUtil.generateConvertContext(
       Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"),
-      UnsignedInteger.valueOf(12345),
-      MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41"),
-      UnsignedLong.valueOf(999)  // Different amount
+      UnsignedInteger.valueOf(99999),  // Different sequence
+      MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41")
     );
 
     // Verify proof is invalid with different context

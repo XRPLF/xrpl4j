@@ -21,7 +21,6 @@ package org.xrpl.xrpl4j.crypto.confidential;
  */
 
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMPTConvertContext;
@@ -77,17 +76,15 @@ public class ConfidentialMPTConvertService {
    * @param account    The holder's XRPL account address.
    * @param sequence   The holder's account sequence number.
    * @param issuanceId The MPT issuance ID.
-   * @param amount     The amount to convert.
    *
    * @return A {@link ConfidentialMPTConvertContext} containing the 32-byte context hash.
    */
   public ConfidentialMPTConvertContext generateContext(
     final Address account,
     final UnsignedInteger sequence,
-    final MpTokenIssuanceId issuanceId,
-    final UnsignedLong amount
+    final MpTokenIssuanceId issuanceId
   ) {
-    return ConfidentialMPTContextUtil.generateConvertContext(account, sequence, issuanceId, amount);
+    return ConfidentialMPTContextUtil.generateConvertContext(account, sequence, issuanceId);
   }
 
   /**

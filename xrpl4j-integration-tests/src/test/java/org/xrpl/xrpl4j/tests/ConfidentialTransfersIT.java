@@ -322,8 +322,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     ConfidentialMPTConvertContext context = convertService.generateContext(holderKeyPair.publicKey().deriveAddress(),
       holderAccountInfoForConvert.accountData().sequence(),
-      mpTokenIssuanceId,
-      amountToConvert
+      mpTokenIssuanceId
     );
 
     ConfidentialMPTConvertProof zkProof = convertService.generateProof(holderElGamalKeyPair, context);
@@ -461,8 +460,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     ConfidentialMPTConvertContext holder2Context = convertService.generateContext(holder2KeyPair.publicKey().deriveAddress(),
       holder2AccountInfoForConvert.accountData().sequence(),
-      mpTokenIssuanceId,
-      holder2AmountToConvert
+      mpTokenIssuanceId
     );
 
     ConfidentialMPTConvertProof holder2ZkProof = convertService.generateProof(holder2ElGamalKeyPair, holder2Context);
@@ -718,7 +716,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holderKeyPair.publicKey().deriveAddress(),
       holderAccountInfoForConvertBack.accountData().sequence(),
       mpTokenIssuanceId,
-      convertBackAmount,
       holder1VersionForConvertBack
     );
 
@@ -857,7 +854,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       issuerKeyPair.publicKey().deriveAddress(),  // issuer account
       issuerAccountInfoForClawback.accountData().sequence(),  // sequence
       mpTokenIssuanceId,  // issuance ID
-      clawbackAmount,  // amount
       holderKeyPair.publicKey().deriveAddress()  // holder
     );
 

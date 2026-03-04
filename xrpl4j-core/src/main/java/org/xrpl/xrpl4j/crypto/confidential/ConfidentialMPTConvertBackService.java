@@ -91,7 +91,6 @@ public class ConfidentialMPTConvertBackService {
    * @param account    The sender's XRPL account address.
    * @param sequence   The sender's account sequence number.
    * @param issuanceId The MPT issuance ID.
-   * @param amount     The amount being converted back to public balance.
    * @param version    The confidential balance version.
    *
    * @return A {@link ConfidentialMPTConvertBackContext} containing the 32-byte context hash.
@@ -100,10 +99,9 @@ public class ConfidentialMPTConvertBackService {
     final Address account,
     final UnsignedInteger sequence,
     final MpTokenIssuanceId issuanceId,
-    final UnsignedLong amount,
     final UnsignedInteger version
   ) {
-    return ConfidentialMPTContextUtil.generateConvertBackContext(account, sequence, issuanceId, amount, version);
+    return ConfidentialMPTContextUtil.generateConvertBackContext(account, sequence, issuanceId, version);
   }
 
   /**

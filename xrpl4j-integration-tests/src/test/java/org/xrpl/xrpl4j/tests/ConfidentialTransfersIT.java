@@ -30,27 +30,27 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
-import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTConvertBackProof;
-import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTConvertProof;
-import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
-import org.xrpl.xrpl4j.crypto.mpt.models.PedersenCommitment;
-import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertBackContext;
-import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTClawbackContext;
-import org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext;
-import org.xrpl.xrpl4j.crypto.mpt.service.ConfidentialMPTClawbackService;
-import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTClawbackProof;
-import org.xrpl.xrpl4j.crypto.mpt.service.ConfidentialMPTConvertBackService;
-import org.xrpl.xrpl4j.crypto.mpt.service.ConfidentialMPTConvertService;
-import org.xrpl.xrpl4j.crypto.mpt.service.ConfidentialMPTSendService;
-import org.xrpl.xrpl4j.crypto.mpt.models.ConfidentialMPTSendProof;
-import org.xrpl.xrpl4j.crypto.mpt.models.MPTConfidentialParty;
-import org.xrpl.xrpl4j.crypto.mpt.models.PedersenProofParams;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.MPTAmountEncryptor;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.bc.BcMPTAmountEncryptor;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.MPTAmountDecryptor;
-import org.xrpl.xrpl4j.crypto.mpt.wrapper.bc.BcMPTAmountDecryptor;
+import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMPTConvertContext;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMPTConvertBackProof;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMPTConvertProof;
+import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMPTSendContext;
+import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
+import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMPTConvertBackContext;
+import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMPTClawbackContext;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMPTClawbackService;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMPTClawbackProof;
+import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMPTConvertBackService;
+import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMPTConvertService;
+import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMPTSendService;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMPTSendProof;
+import org.xrpl.xrpl4j.crypto.confidential.model.MPTConfidentialParty;
+import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.util.MPTAmountEncryptor;
+import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcMPTAmountEncryptor;
+import org.xrpl.xrpl4j.crypto.confidential.util.MPTAmountDecryptor;
+import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcMPTAmountDecryptor;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
@@ -328,9 +328,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     ConfidentialMPTConvertProof zkProof = convertService.generateProof(holderElGamalKeyPair, context);
 
-    ElGamalCiphertext holderEncryptedAmount = encryptor.encrypt(amountToConvert,
+    EncryptedAmount holderEncryptedAmount = encryptor.encrypt(amountToConvert,
       holderElGamalKeyPair.publicKey(), blindingFactor);
-    ElGamalCiphertext issuerEncryptedAmount = encryptor.encrypt(amountToConvert, issuerElGamalKeyPair.publicKey(), blindingFactor);
+    EncryptedAmount issuerEncryptedAmount = encryptor.encrypt(amountToConvert, issuerElGamalKeyPair.publicKey(), blindingFactor);
 
 
 
@@ -467,9 +467,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     ConfidentialMPTConvertProof holder2ZkProof = convertService.generateProof(holder2ElGamalKeyPair, holder2Context);
 
-    ElGamalCiphertext holder2EncryptedAmount = encryptor.encrypt(holder2AmountToConvert, holder2ElGamalKeyPair.publicKey(),
+    EncryptedAmount holder2EncryptedAmount = encryptor.encrypt(holder2AmountToConvert, holder2ElGamalKeyPair.publicKey(),
       holder2BlindingFactor);
-    ElGamalCiphertext issuer2EncryptedAmount = encryptor.encrypt(holder2AmountToConvert, issuerElGamalKeyPair.publicKey(), holder2BlindingFactor);
+    EncryptedAmount issuer2EncryptedAmount = encryptor.encrypt(holder2AmountToConvert, issuerElGamalKeyPair.publicKey(), holder2BlindingFactor);
 
 
     //////////////////////
@@ -549,18 +549,18 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Generate a single transaction blinding factor for all recipients (matching C implementation)
     BlindingFactor txBlindingFactor = BlindingFactor.generate();
 
-    // Encrypt for sender (holder 1) - using wrapper encryptor which returns port's ElGamalCiphertext
-    ElGamalCiphertext senderCiphertext = encryptor.encrypt(
+    // Encrypt for sender (holder 1) - using wrapper encryptor which returns port's EncryptedAmount
+    EncryptedAmount senderCiphertext = encryptor.encrypt(
       sendAmount, holderElGamalKeyPair.publicKey(), txBlindingFactor
     );
 
     // Encrypt for destination (holder 2)
-    ElGamalCiphertext destinationCiphertext = encryptor.encrypt(
+    EncryptedAmount destinationCiphertext = encryptor.encrypt(
       sendAmount, holder2ElGamalKeyPair.publicKey(), txBlindingFactor
     );
 
     // Encrypt for issuer
-    ElGamalCiphertext issuerCiphertextForSend = encryptor.encrypt(
+    EncryptedAmount issuerCiphertextForSend = encryptor.encrypt(
       sendAmount, issuerElGamalKeyPair.publicKey(), txBlindingFactor
     );
 
@@ -578,8 +578,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Get the sender's current encrypted spending balance from the ledger and decrypt it
     String currentEncryptedBalance = holder1MpToken.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance"));
-    org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext currentBalanceCiphertext =
-      org.xrpl.xrpl4j.crypto.mpt.port.ElGamalCiphertext.fromHex(currentEncryptedBalance);
+    EncryptedAmount currentBalanceCiphertext =
+      EncryptedAmount.fromHex(currentEncryptedBalance);
 
     // Decrypt the sender's current spending balance using wrapper decryptor
     UnsignedLong senderCurrentBalance = decryptor.decrypt(
@@ -665,7 +665,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     String senderEncryptedBalanceAfterSend = senderMpTokenAfterSend.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Sender has no confidential balance after send"));
     byte[] senderBalanceBytesAfterSend = BaseEncoding.base16().decode(senderEncryptedBalanceAfterSend);
-    ElGamalCiphertext senderBalanceCiphertextAfterSend = ElGamalCiphertext.fromBytes(
+    EncryptedAmount senderBalanceCiphertextAfterSend = EncryptedAmount.fromBytes(
       senderBalanceBytesAfterSend
     );
 
@@ -704,12 +704,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
     BlindingFactor convertBackBlindingFactor = BlindingFactor.generate();
 
     // Encrypt the convert back amount for holder (to be subtracted from spending balance)
-    ElGamalCiphertext holderConvertBackCiphertext = encryptor.encrypt(
+    EncryptedAmount holderConvertBackCiphertext = encryptor.encrypt(
       convertBackAmount, holderElGamalKeyPair.publicKey(), convertBackBlindingFactor
     );
 
     // Encrypt the convert back amount for issuer (to be subtracted from issuer mirror balance)
-    ElGamalCiphertext issuerConvertBackCiphertext = encryptor.encrypt(
+    EncryptedAmount issuerConvertBackCiphertext = encryptor.encrypt(
       convertBackAmount, issuerElGamalKeyPair.publicKey(), convertBackBlindingFactor
     );
 
@@ -728,7 +728,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     byte[] currentBalanceBytesForConvertBack = BaseEncoding.base16().decode(
       currentEncryptedBalanceForConvertBack
     );
-    ElGamalCiphertext currentBalanceCiphertextForConvertBack = ElGamalCiphertext.fromHex(
+    EncryptedAmount currentBalanceCiphertextForConvertBack = EncryptedAmount.fromHex(
       currentEncryptedBalanceForConvertBack
     );
 
@@ -756,7 +756,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       );
 
     // Get the Pedersen commitment from the params
-    PedersenCommitment convertBackCommitment = org.xrpl.xrpl4j.crypto.mpt.models.PedersenCommitment.of(
+    PedersenCommitment convertBackCommitment = org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment.of(
       convertBackBalanceParams.pedersenCommitment()
     );
 
@@ -813,7 +813,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     String remainingEncryptedBalance = holder1MpTokenAfterConvertBack.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance after convert back"));
     byte[] remainingBalanceBytes = BaseEncoding.base16().decode(remainingEncryptedBalance);
-    ElGamalCiphertext remainingBalanceCiphertext = ElGamalCiphertext.fromHex(remainingEncryptedBalance);
+    EncryptedAmount remainingBalanceCiphertext = EncryptedAmount.fromHex(remainingEncryptedBalance);
 
     UnsignedLong remainingConfidentialBalance = decryptor.decrypt(
       remainingBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, UnsignedLong.valueOf(1_000_000)
@@ -841,7 +841,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Get the issuer's encrypted balance for this holder (IssuerEncryptedBalance)
     String issuerEncryptedBalanceForClawback = holderMpTokenForClawback.issuerEncryptedBalance()
       .orElseThrow(() -> new RuntimeException("No issuer encrypted balance found"));
-    ElGamalCiphertext issuerBalanceCiphertext = ElGamalCiphertext.fromHex(issuerEncryptedBalanceForClawback);
+    EncryptedAmount issuerBalanceCiphertext = EncryptedAmount.fromHex(issuerEncryptedBalanceForClawback);
 
     UnsignedLong issuerDecryptedBalance = decryptor.decrypt(issuerBalanceCiphertext, issuerElGamalKeyPair.privateKey(),
       UnsignedLong.ZERO, UnsignedLong.valueOf(1_000_000));

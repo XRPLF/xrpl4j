@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -67,26 +66,8 @@ import java.util.Optional;
  *   <li>Granular permissions</li>
  *   <li>Verification of DelegateObject ledger entries</li>
  * </ul>
- *
- * <p><b>IMPORTANT:</b> These tests are currently disabled because the PermissionDelegation amendment
- * is not yet implemented in any released version of rippled. The amendment was disabled in rippled 2.6.1
- * due to a bug and has not been re-enabled. These tests will fail with "temDISABLED" until XLS-75 is
- * implemented and enabled on a rippled node.</p>
- *
- * <p>To run these tests (they will fail): mvn test -Dtest=DelegateIT -DenableXLS75Tests=true</p>
  */
-@DisabledIf(value = "shouldNotRun", disabledReason = "XLS-75 PermissionDelegation is not yet implemented in rippled")
 public class DelegateIT extends AbstractIT {
-
-  static boolean shouldNotRun() {
-    // XLS-75 (PermissionDelegation) is not yet implemented in any released version of rippled.
-    // The amendment was disabled in rippled 2.6.1 due to a bug and has not been re-enabled.
-    // These tests will always be skipped until XLS-75 is available in rippled.
-    //
-    // To force run these tests (they will fail with temDISABLED):
-    //   mvn test -Dtest=DelegateIT -DenableXLS75Tests=true
-    return System.getProperty("enableXLS75Tests") == null;
-  }
 
   public static final String SUCCESS_STATUS = "tesSUCCESS";
 

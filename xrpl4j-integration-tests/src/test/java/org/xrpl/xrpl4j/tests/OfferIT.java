@@ -27,6 +27,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -62,6 +63,7 @@ import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
@@ -858,8 +860,16 @@ public class OfferIT extends AbstractIT {
    * Creates an MPT issuance, authorizes a holder, mints tokens, then creates an {@link OfferCreate} with
    * MPT as {@code TakerGets} and XRP as {@code TakerPays}. Verifies the offer is on ledger via
    * {@link OfferLedgerEntryParams} and verifiable via the {@code book_offers} RPC using {@link MptIssue}.
+   *
+   * <p><strong>Note:</strong> This test is currently disabled because MPT support in the DEX (XLS-82d) is not yet
+   * fully implemented in the rippled version being used ({@code rippleci/rippled:develop}). The test will fail with
+   * "invalidTransaction (fails local checks: Amount can not be MPT.)" until XLS-82d is merged and enabled.
+   * Once MPT DEX support is available, remove the {@code @Disabled} annotation to enable this test.</p>
+   *
+   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
    */
   @Test
+  @Disabled("MPT in OfferCreate not yet supported in rippled - requires XLS-82d implementation")
   public void mptOfferCreateAndVerifyWithBookOffers() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     FeeResult feeResult = xrplClient.fee();
@@ -924,7 +934,9 @@ public class OfferIT extends AbstractIT {
       .signingPublicKey(issuerKeyPair.publicKey())
       .takerGets(takerGetsMpt)
       .takerPays(takerPaysXrp)
-      .lastLedgerSequence(issuerInfoForOffer.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
+      .lastLedgerSequence(
+        issuerInfoForOffer.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue()
+      )
       .build();
 
     SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
@@ -971,8 +983,16 @@ public class OfferIT extends AbstractIT {
    * Creates an MPT issuance, authorizes a buyer, mints MPT to a seller, then creates two crossing
    * offers: a sell offer (MPT for XRP) and a buy offer (XRP for MPT). Verifies the offers cross and
    * the buyer receives MPT tokens.
+   *
+   * <p><strong>Note:</strong> This test is currently disabled because MPT support in the DEX (XLS-82d) is not yet
+   * fully implemented in the rippled version being used ({@code rippleci/rippled:develop}). The test will fail with
+   * "invalidTransaction (fails local checks: Amount can not be MPT.)" until XLS-82d is merged and enabled.
+   * Once MPT DEX support is available, remove the {@code @Disabled} annotation to enable this test.</p>
+   *
+   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
    */
   @Test
+  @Disabled("MPT in OfferCreate not yet supported in rippled - requires XLS-82d implementation")
   public void mptOfferCrossing() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     KeyPair buyerKeyPair = createRandomAccountEd25519();
@@ -1057,7 +1077,9 @@ public class OfferIT extends AbstractIT {
       .signingPublicKey(issuerKeyPair.publicKey())
       .takerGets(MptCurrencyAmount.builder().mptIssuanceId(mptIssuanceId).value("100").build())
       .takerPays(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5)))
-      .lastLedgerSequence(issuerInfoForOffer.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
+      .lastLedgerSequence(
+        issuerInfoForOffer.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue()
+      )
       .build();
 
     SingleSignedTransaction<OfferCreate> signedSellOffer = signatureService.sign(
@@ -1098,7 +1120,9 @@ public class OfferIT extends AbstractIT {
       .signingPublicKey(buyerKeyPair.publicKey())
       .takerPays(MptCurrencyAmount.builder().mptIssuanceId(mptIssuanceId).value("100").build())
       .takerGets(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5)))
-      .lastLedgerSequence(buyerInfoForOffer.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
+      .lastLedgerSequence(
+        buyerInfoForOffer.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue()
+      )
       .build();
 
     SingleSignedTransaction<OfferCreate> signedBuyOffer = signatureService.sign(
@@ -1149,6 +1173,199 @@ public class OfferIT extends AbstractIT {
             (state.lowLimit().issuer().equals(issuer)) || state.highLimit().issuer().equals(issuer))
         .findFirst()
         .orElse(null));
+  }
+
+  /**
+   * Creates an MPT issuance and IOU trust line, then creates an {@link OfferCreate} with
+   * MPT as {@code TakerGets} and IOU as {@code TakerPays}. Verifies the offer via {@code book_offers} RPC
+   * using {@link MptIssue} and {@link CurrencyIssue}.
+   *
+   * <p><strong>Note:</strong> This test is currently disabled because MPT support in the DEX (XLS-82d) is not yet
+   * fully implemented in the rippled version being used ({@code rippleci/rippled:develop}). The test will fail with
+   * "invalidTransaction (fails local checks: Amount can not be MPT.)" until XLS-82d is merged and enabled.
+   * Once MPT DEX support is available, remove the {@code @Disabled} annotation to enable this test.</p>
+   *
+   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
+   */
+  @Test
+  @Disabled("MPT in OfferCreate not yet supported in rippled - requires XLS-82d implementation")
+  public void mptOfferCreateWithIouAndVerifyWithBookOffers()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair mptIssuerKeyPair = createRandomAccountEd25519();
+    KeyPair iouIssuerKeyPair = createRandomAccountEd25519();
+    FeeResult feeResult = xrplClient.fee();
+
+    AccountInfoResult mptIssuerAccountInfo = scanForResult(
+      () -> this.getValidatedAccountInfo(mptIssuerKeyPair.publicKey().deriveAddress())
+    );
+    AccountInfoResult iouIssuerAccountInfo = scanForResult(
+      () -> this.getValidatedAccountInfo(iouIssuerKeyPair.publicKey().deriveAddress())
+    );
+
+    // Create MPT issuance with tfMptCanTrade to allow DEX usage
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(mptIssuerKeyPair.publicKey().deriveAddress())
+      .sequence(mptIssuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        mptIssuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(mptIssuerKeyPair.publicKey())
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptCanTrade(true)
+        .tfMptCanTransfer(true)
+        .build())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedIssuanceCreate = signatureService.sign(
+      mptIssuerKeyPair.privateKey(), issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> issuanceCreateResult = xrplClient.submit(signedIssuanceCreate);
+    assertThat(issuanceCreateResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    scanForFinality(
+      signedIssuanceCreate.hash(),
+      issuanceCreateResult.validatedLedgerIndex(),
+      issuanceCreate.lastLedgerSequence().get(),
+      issuanceCreate.sequence(),
+      mptIssuerKeyPair.publicKey().deriveAddress()
+    );
+
+    final MpTokenIssuanceId mptIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedIssuanceCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("issuance create metadata did not contain issuance ID"));
+
+    // Create IOU trust line from MPT issuer to IOU issuer
+    AccountInfoResult mptIssuerInfoBeforeTrust = scanForResult(
+      () -> this.getValidatedAccountInfo(mptIssuerKeyPair.publicKey().deriveAddress())
+    );
+
+    String iouCurrency = "USD";
+    TrustSet trustSet = TrustSet.builder()
+      .account(mptIssuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(mptIssuerInfoBeforeTrust.accountData().sequence())
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .issuer(iouIssuerKeyPair.publicKey().deriveAddress())
+        .currency(iouCurrency)
+        .value("100000")
+        .build())
+      .signingPublicKey(mptIssuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(
+      mptIssuerKeyPair.privateKey(), trustSet
+    );
+    SubmitResult<TrustSet> trustSetResult = xrplClient.submit(signedTrustSet);
+    assertThat(trustSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    scanForFinality(
+      signedTrustSet.hash(),
+      trustSetResult.validatedLedgerIndex(),
+      trustSet.lastLedgerSequence().get(),
+      trustSet.sequence(),
+      mptIssuerKeyPair.publicKey().deriveAddress()
+    );
+
+    // IOU issuer sends IOU to MPT issuer
+    AccountInfoResult iouIssuerInfoBeforePayment = scanForResult(
+      () -> this.getValidatedAccountInfo(iouIssuerKeyPair.publicKey().deriveAddress())
+    );
+
+    Payment iouPayment = Payment.builder()
+      .account(iouIssuerKeyPair.publicKey().deriveAddress())
+      .destination(mptIssuerKeyPair.publicKey().deriveAddress())
+      .amount(IssuedCurrencyAmount.builder()
+        .issuer(iouIssuerKeyPair.publicKey().deriveAddress())
+        .currency(iouCurrency)
+        .value("10000")
+        .build())
+      .sequence(iouIssuerInfoBeforePayment.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .signingPublicKey(iouIssuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<Payment> signedIouPayment = signatureService.sign(
+      iouIssuerKeyPair.privateKey(), iouPayment
+    );
+    SubmitResult<Payment> iouPaymentResult = xrplClient.submit(signedIouPayment);
+    assertThat(iouPaymentResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    scanForFinality(
+      signedIouPayment.hash(),
+      iouPaymentResult.validatedLedgerIndex(),
+      iouPayment.lastLedgerSequence().get(),
+      iouPayment.sequence(),
+      iouIssuerKeyPair.publicKey().deriveAddress()
+    );
+
+    // Create offer: MPT issuer offers MPT (TakerGets) for IOU (TakerPays)
+    AccountInfoResult mptIssuerInfoBeforeOffer = scanForResult(
+      () -> this.getValidatedAccountInfo(mptIssuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MptCurrencyAmount takerGetsMpt = MptCurrencyAmount.builder()
+      .mptIssuanceId(mptIssuanceId)
+      .value("500")
+      .build();
+
+    IssuedCurrencyAmount takerPaysIou = IssuedCurrencyAmount.builder()
+      .issuer(iouIssuerKeyPair.publicKey().deriveAddress())
+      .currency(iouCurrency)
+      .value("100")
+      .build();
+
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(mptIssuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(mptIssuerInfoBeforeOffer.accountData().sequence())
+      .takerGets(takerGetsMpt)
+      .takerPays(takerPaysIou)
+      .signingPublicKey(mptIssuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+      mptIssuerKeyPair.privateKey(), offerCreate
+    );
+    SubmitResult<OfferCreate> offerCreateResult = xrplClient.submit(signedOfferCreate);
+    assertThat(offerCreateResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    UnsignedInteger offerSequence = offerCreate.sequence();
+
+    scanForFinality(
+      signedOfferCreate.hash(),
+      offerCreateResult.validatedLedgerIndex(),
+      offerCreate.lastLedgerSequence().get(),
+      offerSequence,
+      mptIssuerKeyPair.publicKey().deriveAddress()
+    );
+
+    // Verify book_offers with MptIssue as takerGets and CurrencyIssue as takerPays
+    BookOffersResult bookOffersResult = xrplClient.bookOffers(
+      BookOffersRequestParams.builder()
+        .taker(mptIssuerKeyPair.publicKey().deriveAddress())
+        .takerGets(MptIssue.of(mptIssuanceId))
+        .takerPays(CurrencyIssue.builder()
+          .issuer(iouIssuerKeyPair.publicKey().deriveAddress())
+          .currency(iouCurrency)
+          .build())
+        .ledgerSpecifier(LedgerSpecifier.CURRENT)
+        .build()
+    );
+
+    assertThat(bookOffersResult.offers()).asList().isNotEmpty();
+    assertThat(bookOffersResult.offers().get(0).account()).isEqualTo(mptIssuerKeyPair.publicKey().deriveAddress());
+    assertThat(bookOffersResult.offers().get(0).sequence()).isEqualTo(offerSequence);
+    assertThat(bookOffersResult.offers().get(0).takerGets()).isInstanceOf(MptCurrencyAmount.class);
+    assertThat(((MptCurrencyAmount) bookOffersResult.offers().get(0).takerGets()).mptIssuanceId())
+      .isEqualTo(mptIssuanceId);
+    assertThat(bookOffersResult.offers().get(0).takerPays()).isEqualTo(takerPaysIou);
+
+    logger.info("Successfully verified book_offers with MPT/IOU pair");
   }
 
 

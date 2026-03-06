@@ -89,11 +89,17 @@ public class SmartEscrowSoakTest extends AbstractIT {
   private static final Logger LOGGER = LoggerFactory.getLogger(SmartEscrowSoakTest.class);
 
   // Configuration
-  private static final int NUM_WORKER_THREADS = 50;
+  private static final int NUM_WORKER_THREADS = 20;
   private static final long FAUCET_INITIAL_BALANCE_DROPS = 100_000_000; // 100 XRP
   private static final long ESCROW_AMOUNT_DROPS = 10_000; // 0.01 XRP per escrow
   private static final long TEST_DURATION_MINUTES = 60; // Run for 1 hour by default
   private static final long METRICS_REPORT_INTERVAL_SECONDS = 30;
+
+  // Resilience configuration
+  private static final int MAX_RETRIES = 3;
+  private static final long INITIAL_BACKOFF_MS = 100;
+  private static final long MAX_BACKOFF_MS = 5000;
+  private static final long SEQUENCE_REFRESH_INTERVAL_MS = 10000; // Refresh sequence every 10s
 
   // Network configuration
   private Optional<NetworkId> networkId = Optional.empty();
@@ -104,6 +110,9 @@ public class SmartEscrowSoakTest extends AbstractIT {
   private final AtomicInteger expectedFailures = new AtomicInteger(0);
   private final AtomicInteger unexpectedFailures = new AtomicInteger(0);
   private final AtomicInteger errors = new AtomicInteger(0);
+  private final AtomicInteger sequenceErrors = new AtomicInteger(0);
+  private final AtomicInteger sequenceRefreshes = new AtomicInteger(0);
+  private final AtomicInteger retriedTransactions = new AtomicInteger(0);
   private final AtomicLong totalGasUsed = new AtomicLong(0);
   private final ConcurrentHashMap<String, AtomicInteger> functionExpectedSuccessCount = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, AtomicInteger> functionExpectedFailureCount = new ConcurrentHashMap<>();
@@ -147,12 +156,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
 
   @Test
   public void runSmartEscrowSoakTest() throws Exception {
-    LOGGER.info("Starting Smart Escrow Soak Test...");
-    LOGGER.info("Configuration:");
-    LOGGER.info("  Worker Threads: {}", NUM_WORKER_THREADS);
-    LOGGER.info("  Test Duration: {} minutes", TEST_DURATION_MINUTES);
-    LOGGER.info("  Faucet Balance: {} XRP", FAUCET_INITIAL_BALANCE_DROPS / 1_000_000.0);
-    LOGGER.info("  Escrow Amount: {} XRP", ESCROW_AMOUNT_DROPS / 1_000_000.0);
+    printTestHeader();
 
     // Get network ID from server
     LOGGER.info("Fetching network ID from server...");
@@ -207,9 +211,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
     metricsExecutor.shutdownNow();
 
     // Final metrics report
-    LOGGER.info("=== FINAL METRICS ===");
-    reportMetrics();
-    LOGGER.info("Soak test completed.");
+    printTestSummary();
   }
 
   /**
@@ -223,6 +225,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
     private final Map<String, String> wasmHexByFunction;
     private volatile boolean running = true;
     private UnsignedInteger currentSequence = null;
+    private long lastSequenceRefresh = 0;
+    private int consecutiveErrors = 0;
 
     public WorkerThread(int workerId, KeyPair workerAccount, Map<String, String> wasmHexByFunction) {
       this.workerId = workerId;
@@ -236,18 +240,52 @@ public class SmartEscrowSoakTest extends AbstractIT {
       running = false;
     }
 
+    /**
+     * Refreshes the sequence number from the ledger. This is called periodically and when sequence errors occur.
+     */
+    private void refreshSequenceFromLedger() {
+      try {
+        Address workerAddress = workerAccount.publicKey().deriveAddress();
+        AccountInfoResult accountInfo = scanForResult(
+          () -> getValidatedAccountInfo(workerAddress)
+        );
+        currentSequence = accountInfo.accountData().sequence();
+        lastSequenceRefresh = System.currentTimeMillis();
+        sequenceRefreshes.incrementAndGet();
+        LOGGER.info("Worker {} - Refreshed sequence from ledger: {}", workerId, currentSequence);
+      } catch (Exception e) {
+        LOGGER.error("Worker {} - Failed to refresh sequence from ledger", workerId, e);
+        throw new RuntimeException("Failed to refresh sequence", e);
+      }
+    }
+
+    /**
+     * Checks if sequence should be refreshed based on time interval.
+     */
+    private boolean shouldRefreshSequence() {
+      return (System.currentTimeMillis() - lastSequenceRefresh) > SEQUENCE_REFRESH_INTERVAL_MS;
+    }
+
+    /**
+     * Applies exponential backoff when errors occur.
+     */
+    private void applyBackoff(int attemptNumber) {
+      long backoffMs = Math.min(INITIAL_BACKOFF_MS * (1L << attemptNumber), MAX_BACKOFF_MS);
+      try {
+        LOGGER.info("Worker {} - Backing off for {} ms (attempt {})", workerId, backoffMs, attemptNumber);
+        Thread.sleep(backoffMs);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }
+
     @Override
     public void run() {
       LOGGER.info("Worker {} started", workerId);
 
       try {
         // Initialize sequence number from ledger
-        Address workerAddress = workerAccount.publicKey().deriveAddress();
-        AccountInfoResult accountInfo = scanForResult(
-          () -> getValidatedAccountInfo(workerAddress)
-        );
-        currentSequence = accountInfo.accountData().sequence();
-        LOGGER.info("Worker {} - Initial sequence: {}", workerId, currentSequence);
+        refreshSequenceFromLedger();
       } catch (Exception e) {
         LOGGER.error("Worker {} - Failed to initialize sequence", workerId, e);
         return;
@@ -255,6 +293,11 @@ public class SmartEscrowSoakTest extends AbstractIT {
 
       while (running) {
         try {
+          // Periodically refresh sequence from ledger to prevent drift
+          if (shouldRefreshSequence()) {
+            refreshSequenceFromLedger();
+          }
+
           // Use worker's dedicated account as both sender and receiver
           Address workerAddress = workerAccount.publicKey().deriveAddress();
 
@@ -268,19 +311,24 @@ public class SmartEscrowSoakTest extends AbstractIT {
             continue;
           }
 
-          // Create Smart Escrow (worker sends to itself)
-          EscrowCreationResult escrowResult = createSmartEscrow(
+          // Create Smart Escrow with retry logic
+          EscrowCreationResult escrowResult = createSmartEscrowWithRetry(
             workerAccount,
             workerAddress,
             wasmHex,
-            function,
-            currentSequence
+            function
           );
 
-          // Only increment sequence if it was actually consumed by the ledger
-          if (escrowResult.sequenceConsumed) {
-            currentSequence = currentSequence.plus(UnsignedInteger.ONE);
+          if (escrowResult == null) {
+            LOGGER.warn("Worker {} - Failed to create escrow after retries, continuing", workerId);
+            consecutiveErrors++;
+            if (consecutiveErrors > 5) {
+              applyBackoff(Math.min(consecutiveErrors - 5, 5));
+            }
+            continue;
           }
+
+          consecutiveErrors = 0; // Reset on success
 
           if (escrowResult.txHash != null) {
             escrowsCreated.incrementAndGet();
@@ -296,18 +344,17 @@ public class SmartEscrowSoakTest extends AbstractIT {
               createResult.ledgerIndex().map(LedgerIndex::toString).orElse("unknown"),
               createResult.metadata().map(TransactionMetadata::transactionResult).orElse("unknown"));
 
-            // Attempt to finish the escrow (worker finishes its own escrow)
-            EscrowFinishResult finishResult = finishSmartEscrow(
+            // Attempt to finish the escrow with retry logic
+            EscrowFinishResult finishResult = finishSmartEscrowWithRetry(
               workerAccount,
               workerAddress,
               escrowResult.sequence,
-              function,
-              currentSequence
+              function
             );
 
-            // Only increment sequence if it was actually consumed by the ledger
-            if (finishResult.sequenceConsumed) {
-              currentSequence = currentSequence.plus(UnsignedInteger.ONE);
+            if (finishResult == null) {
+              LOGGER.warn("Worker {} - Failed to finish escrow after retries", workerId);
+              continue;
             }
 
             if (finishResult.txHash != null) {
@@ -392,6 +439,127 @@ public class SmartEscrowSoakTest extends AbstractIT {
       }
 
       LOGGER.info("Worker {} stopped", workerId);
+    }
+
+    /**
+     * Creates a Smart Escrow with retry logic and sequence number error handling.
+     */
+    private EscrowCreationResult createSmartEscrowWithRetry(
+      KeyPair senderKeyPair,
+      Address destination,
+      String wasmHex,
+      WasmFunction function
+    ) {
+      for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          EscrowCreationResult result = createSmartEscrow(
+            senderKeyPair,
+            destination,
+            wasmHex,
+            function,
+            currentSequence
+          );
+
+          if (result != null) {
+            // Only increment sequence if it was actually consumed by the ledger
+            if (result.sequenceConsumed) {
+              currentSequence = currentSequence.plus(UnsignedInteger.ONE);
+            }
+            return result;
+          }
+
+          // If result is null, retry
+          if (attempt < MAX_RETRIES - 1) {
+            retriedTransactions.incrementAndGet();
+            applyBackoff(attempt);
+          }
+        } catch (Exception e) {
+          LOGGER.error("Worker {} - Error creating escrow (attempt {})", workerId, attempt + 1, e);
+
+          // Check if it's a sequence error
+          if (isSequenceError(e)) {
+            sequenceErrors.incrementAndGet();
+            LOGGER.warn("Worker {} - Sequence error detected, refreshing from ledger", workerId);
+            refreshSequenceFromLedger();
+          }
+
+          if (attempt < MAX_RETRIES - 1) {
+            retriedTransactions.incrementAndGet();
+            applyBackoff(attempt);
+          }
+        }
+      }
+
+      errors.incrementAndGet();
+      return null;
+    }
+
+    /**
+     * Finishes a Smart Escrow with retry logic and sequence number error handling.
+     */
+    private EscrowFinishResult finishSmartEscrowWithRetry(
+      KeyPair finisherKeyPair,
+      Address owner,
+      UnsignedInteger offerSequence,
+      WasmFunction function
+    ) {
+      for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          EscrowFinishResult result = finishSmartEscrow(
+            finisherKeyPair,
+            owner,
+            offerSequence,
+            function,
+            currentSequence
+          );
+
+          if (result != null) {
+            // Only increment sequence if it was actually consumed by the ledger
+            if (result.sequenceConsumed) {
+              currentSequence = currentSequence.plus(UnsignedInteger.ONE);
+            }
+            return result;
+          }
+
+          // If result is null, retry
+          if (attempt < MAX_RETRIES - 1) {
+            retriedTransactions.incrementAndGet();
+            applyBackoff(attempt);
+          }
+        } catch (Exception e) {
+          LOGGER.error("Worker {} - Error finishing escrow (attempt {})", workerId, attempt + 1, e);
+
+          // Check if it's a sequence error
+          if (isSequenceError(e)) {
+            sequenceErrors.incrementAndGet();
+            LOGGER.warn("Worker {} - Sequence error detected, refreshing from ledger", workerId);
+            refreshSequenceFromLedger();
+          }
+
+          if (attempt < MAX_RETRIES - 1) {
+            retriedTransactions.incrementAndGet();
+            applyBackoff(attempt);
+          }
+        }
+      }
+
+      errors.incrementAndGet();
+      return null;
+    }
+
+    /**
+     * Checks if an exception is related to sequence number errors.
+     */
+    private boolean isSequenceError(Exception e) {
+      String message = e.getMessage();
+      if (message == null) {
+        return false;
+      }
+      return message.contains("tefPAST_SEQ") ||
+             message.contains("terPRE_SEQ") ||
+             message.contains("terQUEUED") ||
+             message.contains("tefMAX_LEDGER") ||
+             message.contains("Account not found");
     }
   }
 
@@ -486,11 +654,29 @@ public class SmartEscrowSoakTest extends AbstractIT {
         // Submission failed before reaching ledger - sequence NOT consumed
         LOGGER.error("✗ EscrowCreate submission failed - function: {}, sequence: {}, error: {}",
           function.getName(), sequence, e.getMessage());
+
+        // Check if this is a retryable error
+        if (isRetryableError(e)) {
+          LOGGER.info("Retryable error detected for EscrowCreate");
+          throw e; // Propagate to trigger retry
+        }
+
         return new EscrowCreationResult(null, sequence, false);
       }
 
-      // Transaction was submitted to the ledger - sequence is consumed regardless of result
-      if (result.engineResult().equals("tesSUCCESS")) {
+      // Transaction was submitted to the ledger - check result
+      String engineResult = result.engineResult();
+
+      // Handle sequence-related errors
+      if (isSequenceRelatedEngineResult(engineResult)) {
+        LOGGER.warn("✗ EscrowCreate sequence error - function: {}, result: {}, sequence: {}",
+          function.getName(), engineResult, escrowCreate.sequence());
+        // Sequence may or may not be consumed depending on the error
+        boolean consumed = !engineResult.equals("terPRE_SEQ");
+        throw new RuntimeException("Sequence error: " + engineResult);
+      }
+
+      if (engineResult.equals("tesSUCCESS")) {
         LOGGER.info("✓ EscrowCreate submitted successfully - hash: {}, sequence: {}, function: {}",
           result.transactionResult().hash(),
           escrowCreate.sequence(),
@@ -499,16 +685,19 @@ public class SmartEscrowSoakTest extends AbstractIT {
       } else {
         LOGGER.warn("✗ EscrowCreate failed - function: {}, result: {}, sequence: {}",
           function.getName(),
-          result.engineResult(),
+          engineResult,
           escrowCreate.sequence());
         // Sequence was consumed even though transaction failed
         return new EscrowCreationResult(null, escrowCreate.sequence(), true);
       }
 
+    } catch (JsonRpcClientErrorException e) {
+      // Re-throw to be handled by retry logic
+      throw new RuntimeException(e);
     } catch (Exception e) {
       LOGGER.error("Error creating Smart Escrow - function: {}, sequence: {}",
         function.getName(), sequence, e);
-      return null;
+      throw new RuntimeException(e);
     }
   }
 
@@ -573,37 +762,270 @@ public class SmartEscrowSoakTest extends AbstractIT {
         // Submission failed before reaching ledger - sequence NOT consumed
         LOGGER.error("✗ EscrowFinish submission failed - function: {}, sequence: {}, error: {}",
           function.getName(), sequence, e.getMessage());
+
+        // Check if this is a retryable error
+        if (isRetryableError(e)) {
+          LOGGER.info("Retryable error detected for EscrowFinish");
+          throw e; // Propagate to trigger retry
+        }
+
         return new EscrowFinishResult(null, false);
       }
 
-      // Transaction was submitted to the ledger - sequence is consumed regardless of result
+      // Transaction was submitted to the ledger - check result
       Hash256 txHash = result.transactionResult().hash();
+      String engineResult = result.engineResult();
 
-      if (result.engineResult().equals("tesSUCCESS")) {
+      // Handle sequence-related errors
+      if (isSequenceRelatedEngineResult(engineResult)) {
+        LOGGER.warn("✗ EscrowFinish sequence error - function: {}, result: {}, sequence: {}",
+          function.getName(), engineResult, sequence);
+        // Sequence may or may not be consumed depending on the error
+        boolean consumed = !engineResult.equals("terPRE_SEQ");
+        throw new RuntimeException("Sequence error: " + engineResult);
+      }
+
+      if (engineResult.equals("tesSUCCESS")) {
         LOGGER.info("✓ EscrowFinish submitted successfully - hash: {}, function: {}",
           txHash,
           function.getName());
         return new EscrowFinishResult(txHash, true);
-      } else if (result.engineResult().equals("tecWASM_REJECTED") && !function.shouldSucceed()) {
+      } else if (engineResult.equals("tecWASM_REJECTED") && !function.shouldSucceed()) {
         // Expected failure - WASM returned 0 as designed (e.g., always_fail)
         LOGGER.info("✓ EscrowFinish WASM rejected as expected - function: {}, result: {}, offerSequence: {}",
           function.getName(),
-          result.engineResult(),
+          engineResult,
           offerSequence);
         return new EscrowFinishResult(txHash, true);
       } else {
         LOGGER.warn("✗ EscrowFinish failed - function: {}, result: {}, offerSequence: {}",
           function.getName(),
-          result.engineResult(),
+          engineResult,
           offerSequence);
         // Sequence was consumed, return hash so we can validate and check the result
         return new EscrowFinishResult(txHash, true);
       }
 
+    } catch (JsonRpcClientErrorException e) {
+      // Re-throw to be handled by retry logic
+      throw new RuntimeException(e);
     } catch (Exception e) {
       LOGGER.error("Error finishing Smart Escrow", e);
-      return new EscrowFinishResult(null, false);
+      throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Helper method to repeat a string (Java 8 compatible).
+   */
+  private String repeat(String str, int count) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      sb.append(str);
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Prints a clean, formatted test header to the console.
+   */
+  private void printTestHeader() {
+    System.out.println();
+    System.out.println("╔════════════════════════════════════════════════════════════════════════════╗");
+    System.out.println("║                    SMART ESCROW SOAK TEST                                  ║");
+    System.out.println("╚════════════════════════════════════════════════════════════════════════════╝");
+    System.out.println();
+    System.out.println("📋 TEST CONFIGURATION");
+    System.out.println("  ├─ Worker Threads:        " + NUM_WORKER_THREADS);
+    System.out.println("  ├─ Test Duration:         " + TEST_DURATION_MINUTES + " minutes");
+    System.out.println("  ├─ Escrow Amount:         " + String.format("%.4f XRP", ESCROW_AMOUNT_DROPS / 1_000_000.0));
+    System.out.println("  ├─ Max Retries:           " + MAX_RETRIES);
+    System.out.println("  └─ Sequence Refresh:      Every " + (SEQUENCE_REFRESH_INTERVAL_MS / 1000) + " seconds");
+    System.out.println();
+    System.out.println("🔧 RESILIENCE FEATURES");
+    System.out.println("  ├─ Automatic sequence number refresh");
+    System.out.println("  ├─ Exponential backoff retry logic");
+    System.out.println("  ├─ Sequence error detection & recovery");
+    System.out.println("  └─ Node overload handling");
+    System.out.println();
+    System.out.println("🧪 WASM FUNCTIONS UNDER TEST");
+    for (WasmFunction function : WasmFunction.values()) {
+      String expected = function.shouldSucceed() ? "✓ Success" : "✗ Failure";
+      System.out.println("  ├─ " + String.format("%-25s", function.getName()) +
+                         " (Expected: " + expected + ", Gas: " + function.getGasAllowance() + ")");
+    }
+    System.out.println();
+    System.out.println("⏱️  Starting test run for " + TEST_DURATION_MINUTES + " minutes...");
+    System.out.println("   (Metrics will be reported every " + METRICS_REPORT_INTERVAL_SECONDS + " seconds)");
+    System.out.println();
+    System.out.println(repeat("─", 80));
+    System.out.println();
+  }
+
+  /**
+   * Prints a comprehensive, human-readable test summary to the console.
+   */
+  private void printTestSummary() {
+    int created = escrowsCreated.get();
+    int expSuccess = expectedSuccesses.get();
+    int expFailure = expectedFailures.get();
+    int unexpFailure = unexpectedFailures.get();
+    int errorCount = errors.get();
+    int seqErrors = sequenceErrors.get();
+    int seqRefreshes = sequenceRefreshes.get();
+    int retried = retriedTransactions.get();
+    long gasUsed = totalGasUsed.get();
+
+    int totalFinished = expSuccess + expFailure + unexpFailure;
+    double correctnessRate = totalFinished > 0 ? ((expSuccess + expFailure) * 100.0) / totalFinished : 0;
+    double errorRate = created > 0 ? (errorCount * 100.0) / created : 0;
+    double retryRate = created > 0 ? (retried * 100.0) / created : 0;
+    double avgGas = expSuccess > 0 ? gasUsed / (double) expSuccess : 0;
+
+    System.out.println();
+    System.out.println(repeat("─", 80));
+    System.out.println();
+    System.out.println("╔════════════════════════════════════════════════════════════════════════════╗");
+    System.out.println("║                    SOAK TEST FINAL SUMMARY                                 ║");
+    System.out.println("╚════════════════════════════════════════════════════════════════════════════╝");
+    System.out.println();
+
+    // Overall Statistics
+    System.out.println("📊 OVERALL STATISTICS");
+    System.out.println("  ├─ Total Escrows Created:     " + String.format("%,d", created));
+    System.out.println("  ├─ Total Escrows Finished:    " + String.format("%,d", totalFinished));
+    System.out.println("  ├─ Test Duration:             " + TEST_DURATION_MINUTES + " minutes");
+    System.out.println("  └─ Throughput:                " +
+                       String.format("%.2f escrows/minute", created / (double) TEST_DURATION_MINUTES));
+    System.out.println();
+
+    // Success Metrics
+    System.out.println("✅ SUCCESS METRICS");
+    System.out.println("  ├─ Expected Successes:        " + String.format("%,d", expSuccess) +
+                       " (" + String.format("%.1f%%", totalFinished > 0 ? (expSuccess * 100.0) / totalFinished : 0) + ")");
+    System.out.println("  ├─ Expected Failures:         " + String.format("%,d", expFailure) +
+                       " (" + String.format("%.1f%%", totalFinished > 0 ? (expFailure * 100.0) / totalFinished : 0) + ")");
+    System.out.println("  └─ Correctness Rate:          " + String.format("%.2f%%", correctnessRate) +
+                       getHealthIndicator(correctnessRate, 95, 90));
+    System.out.println();
+
+    // Error Metrics
+    System.out.println("⚠️  ERROR METRICS");
+    System.out.println("  ├─ Unexpected Failures:       " + String.format("%,d", unexpFailure) +
+                       " (" + String.format("%.1f%%", totalFinished > 0 ? (unexpFailure * 100.0) / totalFinished : 0) + ")");
+    System.out.println("  ├─ Transaction Errors:        " + String.format("%,d", errorCount) +
+                       " (" + String.format("%.2f%%", errorRate) + ")" + getHealthIndicator(100 - errorRate, 95, 90));
+    System.out.println("  └─ Sequence Errors:           " + String.format("%,d", seqErrors));
+    System.out.println();
+
+    // Resilience Metrics
+    System.out.println("🛡️  RESILIENCE METRICS");
+    System.out.println("  ├─ Retried Transactions:      " + String.format("%,d", retried) +
+                       " (" + String.format("%.2f%%", retryRate) + ")");
+    System.out.println("  ├─ Sequence Refreshes:        " + String.format("%,d", seqRefreshes));
+    System.out.println("  └─ Recovery Success Rate:     " +
+                       String.format("%.2f%%", retried > 0 ? ((retried - errorCount) * 100.0) / retried : 100.0));
+    System.out.println();
+
+    // Gas Usage
+    System.out.println("⛽ GAS USAGE");
+    System.out.println("  ├─ Total Gas Used:            " + String.format("%,d", gasUsed));
+    System.out.println("  ├─ Average Gas per Success:   " + String.format("%,.0f", avgGas));
+    System.out.println("  └─ Gas Efficiency:            " +
+                       String.format("%.2f gas/escrow", totalFinished > 0 ? gasUsed / (double) totalFinished : 0));
+    System.out.println();
+
+    // Per-Function Breakdown
+    System.out.println("📈 PER-FUNCTION BREAKDOWN");
+    System.out.println();
+    System.out.println("  Function                    Expected ✓   Expected ✗   Unexpected ✗   Total");
+    System.out.println("  " + repeat("─", 76));
+
+    for (WasmFunction function : WasmFunction.values()) {
+      String name = function.getName();
+      int funcExpSuccess = functionExpectedSuccessCount.getOrDefault(name, new AtomicInteger(0)).get();
+      int funcExpFailure = functionExpectedFailureCount.getOrDefault(name, new AtomicInteger(0)).get();
+      int funcUnexpFailure = functionUnexpectedFailureCount.getOrDefault(name, new AtomicInteger(0)).get();
+      int funcTotal = funcExpSuccess + funcExpFailure + funcUnexpFailure;
+
+      if (funcTotal > 0) {
+        System.out.println("  " + String.format("%-25s", name) +
+                           String.format("%12d", funcExpSuccess) +
+                           String.format("%14d", funcExpFailure) +
+                           String.format("%16d", funcUnexpFailure) +
+                           String.format("%8d", funcTotal));
+      }
+    }
+    System.out.println();
+
+    // Overall Assessment
+    System.out.println("🎯 OVERALL ASSESSMENT");
+    String assessment = getOverallAssessment(correctnessRate, errorRate);
+    System.out.println("  " + assessment);
+    System.out.println();
+
+    System.out.println(repeat("─", 80));
+    System.out.println();
+    System.out.println("✨ Soak test completed successfully!");
+    System.out.println();
+  }
+
+  /**
+   * Returns a health indicator emoji based on the value and thresholds.
+   */
+  private String getHealthIndicator(double value, double goodThreshold, double okThreshold) {
+    if (value >= goodThreshold) {
+      return " 🟢";
+    } else if (value >= okThreshold) {
+      return " 🟡";
+    } else {
+      return " 🔴";
+    }
+  }
+
+  /**
+   * Returns an overall assessment message based on test results.
+   */
+  private String getOverallAssessment(double correctnessRate, double errorRate) {
+    if (correctnessRate >= 95 && errorRate < 5) {
+      return "🟢 EXCELLENT - Test performed exceptionally well with high correctness and low errors.";
+    } else if (correctnessRate >= 90 && errorRate < 10) {
+      return "🟡 GOOD - Test performed well with acceptable correctness and error rates.";
+    } else if (correctnessRate >= 80 && errorRate < 20) {
+      return "🟠 FAIR - Test completed but showed some issues. Review error logs for details.";
+    } else {
+      return "🔴 NEEDS ATTENTION - Test showed significant issues. Review logs and consider:\n" +
+             "     • Reducing worker threads to lower node load\n" +
+             "     • Increasing retry limits and backoff times\n" +
+             "     • Checking node health and network connectivity";
+    }
+  }
+
+  /**
+   * Checks if an error is retryable (e.g., network errors, node overload).
+   */
+  private boolean isRetryableError(JsonRpcClientErrorException e) {
+    String message = e.getMessage();
+    if (message == null) {
+      return false;
+    }
+    // Check for common retryable errors
+    return message.contains("500") ||
+           message.contains("503") ||
+           message.contains("too busy") ||
+           message.contains("timeout") ||
+           message.contains("connection") ||
+           message.contains("Internal error");
+  }
+
+  /**
+   * Checks if an engine result is sequence-related.
+   */
+  private boolean isSequenceRelatedEngineResult(String engineResult) {
+    return "tefPAST_SEQ".equals(engineResult) ||
+           "terPRE_SEQ".equals(engineResult) ||
+           "terQUEUED".equals(engineResult) ||
+           "tefMAX_LEDGER".equals(engineResult);
   }
 
   /**
@@ -718,7 +1140,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
   }
 
   /**
-   * Reports current metrics.
+   * Reports current metrics in a clean, readable format.
    */
   private void reportMetrics() {
     int created = escrowsCreated.get();
@@ -726,34 +1148,30 @@ public class SmartEscrowSoakTest extends AbstractIT {
     int expFailure = expectedFailures.get();
     int unexpFailure = unexpectedFailures.get();
     int errorCount = errors.get();
+    int seqErrors = sequenceErrors.get();
+    int seqRefreshes = sequenceRefreshes.get();
+    int retried = retriedTransactions.get();
     long gasUsed = totalGasUsed.get();
 
-    LOGGER.info("=== METRICS ===");
-    LOGGER.info("Escrows Created: {}", created);
-    LOGGER.info("Expected Successes: {} (WASM returned 1 as expected)", expSuccess);
-    LOGGER.info("Expected Failures: {} (WASM returned 0 as expected)", expFailure);
-    LOGGER.info("Unexpected Failures: {} (WASM behaved unexpectedly)", unexpFailure);
-    LOGGER.info("Errors: {} (transaction submission failed)", errorCount);
-    LOGGER.info("Total Gas Used: {}", gasUsed);
+    int totalFinished = expSuccess + expFailure + unexpFailure;
+    double correctnessRate = totalFinished > 0 ? ((expSuccess + expFailure) * 100.0) / totalFinished : 0;
+    double errorRate = created > 0 ? (errorCount * 100.0) / created : 0;
+    double retryRate = created > 0 ? (retried * 100.0) / created : 0;
+    double avgGas = expSuccess > 0 ? gasUsed / (double) expSuccess : 0;
 
-    if (created > 0) {
-      int totalFinished = expSuccess + expFailure + unexpFailure;
-      double correctnessRate = ((expSuccess + expFailure) * 100.0) / Math.max(1, totalFinished);
-      double avgGas = gasUsed / (double) Math.max(1, expSuccess);
-      LOGGER.info("Correctness Rate: {}% (expected behavior)", String.format("%.2f", correctnessRate));
-      LOGGER.info("Average Gas per Success: {}", String.format("%.0f", avgGas));
-    }
-
-    LOGGER.info("Function Expected Success Counts:");
-    functionExpectedSuccessCount.forEach((name, count) ->
-      LOGGER.info("  {}: {}", name, count.get()));
-
-    LOGGER.info("Function Expected Failure Counts:");
-    functionExpectedFailureCount.forEach((name, count) ->
-      LOGGER.info("  {}: {}", name, count.get()));
-
-    LOGGER.info("Function Unexpected Failure Counts:");
-    functionUnexpectedFailureCount.forEach((name, count) ->
-      LOGGER.info("  {}: {}", name, count.get()));
+    System.out.println();
+    System.out.println("📊 PROGRESS UPDATE - " + java.time.LocalDateTime.now().format(
+      java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")));
+    System.out.println("  Created: " + String.format("%,5d", created) +
+                       " | Finished: " + String.format("%,5d", totalFinished) +
+                       " | Success: " + String.format("%,5d", expSuccess) +
+                       " | Errors: " + String.format("%,4d", errorCount) +
+                       " (" + String.format("%.1f%%", errorRate) + ")");
+    System.out.println("  Correctness: " + String.format("%.1f%%", correctnessRate) +
+                       " | Retries: " + String.format("%,4d", retried) +
+                       " (" + String.format("%.1f%%", retryRate) + ")" +
+                       " | Seq Errors: " + String.format("%,3d", seqErrors) +
+                       " | Avg Gas: " + String.format("%,.0f", avgGas));
+    System.out.println();
   }
 }

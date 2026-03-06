@@ -124,11 +124,10 @@ public class SmartEscrowSoakTest extends AbstractIT {
   private enum WasmFunction {
     // Simple functions - minimal gas needed
     ALWAYS_SUCCEED("always_succeed", true, 1269),
-    // Succeeds after 2 calls (uses data counter)
-    ALWAYS_FAIL("always_fail", true, 1836),
+    // Stateful counter - fails on first call, succeeds on second (simulates data counter)
+    DATA_COUNTER("data_counter", true, 7500),
     CREDENTIAL_CHECK("credential_check", true, 10160),
     TIME_WINDOW("time_window", true, 1836),
-    DATA_COUNTER("data_counter", true, 1836),
     ORACLE_PRICE_CHECK("oracle_price_check", true, 1836),
     // Stress test - maximum gas for 1M iterations
     GAS_STRESS_TEST("gas_stress_test", true, 805000);
@@ -400,9 +399,10 @@ public class SmartEscrowSoakTest extends AbstractIT {
               boolean wasmReturnedFailure = "tecWASM_REJECTED".equals(txResult);
               boolean expectedSuccess = function.shouldSucceed();
 
-              // Special handling for always_fail which requires 2 calls to succeed
-              if ("always_fail".equals(function.getName()) && wasmReturnedFailure) {
-                LOGGER.info("Worker {} - always_fail returned failure on first attempt, retrying...", workerId);
+              // Special handling for data_counter which requires 2 calls to succeed
+              if ("data_counter".equals(function.getName()) && wasmReturnedFailure) {
+                LOGGER.info("Worker {} - data_counter returned failure on first attempt (counter=0), retrying...",
+                  workerId);
                 // Retry the finish - the second call should succeed
                 EscrowFinishResult retryResult = finishSmartEscrowWithRetry(
                   workerAccount,
@@ -423,12 +423,12 @@ public class SmartEscrowSoakTest extends AbstractIT {
                     expectedSuccesses.incrementAndGet();
                     functionExpectedSuccessCount.computeIfAbsent(function.getName(), k -> new AtomicInteger(0))
                       .incrementAndGet();
-                    LOGGER.info("Worker {} - ✓ always_fail succeeded on second attempt as expected", workerId);
+                    LOGGER.info("Worker {} - ✓ data_counter succeeded on second attempt (counter >= 1)", workerId);
                   } else {
                     unexpectedFailures.incrementAndGet();
                     functionUnexpectedFailureCount.computeIfAbsent(function.getName(), k -> new AtomicInteger(0))
                       .incrementAndGet();
-                    LOGGER.warn("Worker {} - ✗ always_fail failed on second attempt: {}", workerId, retryTxResultCode);
+                    LOGGER.warn("Worker {} - ✗ data_counter failed on second attempt: {}", workerId, retryTxResultCode);
                   }
                 }
                 continue; // Skip normal result processing
@@ -592,10 +592,10 @@ public class SmartEscrowSoakTest extends AbstractIT {
         return false;
       }
       return message.contains("tefPAST_SEQ") ||
-             message.contains("terPRE_SEQ") ||
-             message.contains("terQUEUED") ||
-             message.contains("tefMAX_LEDGER") ||
-             message.contains("Account not found");
+        message.contains("terPRE_SEQ") ||
+        message.contains("terQUEUED") ||
+        message.contains("tefMAX_LEDGER") ||
+        message.contains("Account not found");
     }
   }
 
@@ -833,7 +833,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
           function.getName());
         return new EscrowFinishResult(txHash, true);
       } else if (engineResult.equals("tecWASM_REJECTED") && !function.shouldSucceed()) {
-        // Expected failure - WASM returned 0 as designed (e.g., always_fail)
+        // Expected failure - WASM returned 0 as designed
         LOGGER.info("✓ EscrowFinish WASM rejected as expected - function: {}, result: {}, offerSequence: {}",
           function.getName(),
           engineResult,
@@ -894,11 +894,11 @@ public class SmartEscrowSoakTest extends AbstractIT {
     for (WasmFunction function : WasmFunction.values()) {
       String expected = function.shouldSucceed() ? "✓ Success" : "✗ Failure";
       String note = "";
-      if ("always_fail".equals(function.getName())) {
-        note = " [Requires 2 calls]";
+      if ("data_counter".equals(function.getName())) {
+        note = " [Requires 2 calls - simulates stateful counter]";
       }
       System.out.println("  ├─ " + String.format("%-25s", function.getName()) +
-                         " (Expected: " + expected + ", Gas: " + function.getGasAllowance() + ")" + note);
+        " (Expected: " + expected + ", Gas: " + function.getGasAllowance() + ")" + note);
     }
     System.out.println();
     System.out.println("⏱️  Starting test run for " + TEST_DURATION_MINUTES + " minutes...");
@@ -942,35 +942,35 @@ public class SmartEscrowSoakTest extends AbstractIT {
     System.out.println("  ├─ Total Escrows Finished:    " + String.format("%,d", totalFinished));
     System.out.println("  ├─ Test Duration:             " + TEST_DURATION_MINUTES + " minutes");
     System.out.println("  └─ Throughput:                " +
-                       String.format("%.2f escrows/minute", created / (double) TEST_DURATION_MINUTES));
+      String.format("%.2f escrows/minute", created / (double) TEST_DURATION_MINUTES));
     System.out.println();
 
     // Success Metrics
     System.out.println("✅ SUCCESS METRICS");
     System.out.println("  ├─ Expected Successes:        " + String.format("%,d", expSuccess) +
-                       " (" + String.format("%.1f%%", totalFinished > 0 ? (expSuccess * 100.0) / totalFinished : 0) + ")");
+      " (" + String.format("%.1f%%", totalFinished > 0 ? (expSuccess * 100.0) / totalFinished : 0) + ")");
     System.out.println("  ├─ Expected Failures:         " + String.format("%,d", expFailure) +
-                       " (" + String.format("%.1f%%", totalFinished > 0 ? (expFailure * 100.0) / totalFinished : 0) + ")");
+      " (" + String.format("%.1f%%", totalFinished > 0 ? (expFailure * 100.0) / totalFinished : 0) + ")");
     System.out.println("  └─ Correctness Rate:          " + String.format("%.2f%%", correctnessRate) +
-                       getHealthIndicator(correctnessRate, 95, 90));
+      getHealthIndicator(correctnessRate, 95, 90));
     System.out.println();
 
     // Error Metrics
     System.out.println("⚠️  ERROR METRICS");
     System.out.println("  ├─ Unexpected Failures:       " + String.format("%,d", unexpFailure) +
-                       " (" + String.format("%.1f%%", totalFinished > 0 ? (unexpFailure * 100.0) / totalFinished : 0) + ")");
+      " (" + String.format("%.1f%%", totalFinished > 0 ? (unexpFailure * 100.0) / totalFinished : 0) + ")");
     System.out.println("  ├─ Transaction Errors:        " + String.format("%,d", errorCount) +
-                       " (" + String.format("%.2f%%", errorRate) + ")" + getHealthIndicator(100 - errorRate, 95, 90));
+      " (" + String.format("%.2f%%", errorRate) + ")" + getHealthIndicator(100 - errorRate, 95, 90));
     System.out.println("  └─ Sequence Errors:           " + String.format("%,d", seqErrors));
     System.out.println();
 
     // Resilience Metrics
     System.out.println("🛡️  RESILIENCE METRICS");
     System.out.println("  ├─ Retried Transactions:      " + String.format("%,d", retried) +
-                       " (" + String.format("%.2f%%", retryRate) + ")");
+      " (" + String.format("%.2f%%", retryRate) + ")");
     System.out.println("  ├─ Sequence Refreshes:        " + String.format("%,d", seqRefreshes));
     System.out.println("  └─ Recovery Success Rate:     " +
-                       String.format("%.2f%%", retried > 0 ? ((retried - errorCount) * 100.0) / retried : 100.0));
+      String.format("%.2f%%", retried > 0 ? ((retried - errorCount) * 100.0) / retried : 100.0));
     System.out.println();
 
     // Gas Usage
@@ -978,7 +978,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
     System.out.println("  ├─ Total Gas Used:            " + String.format("%,d", gasUsed));
     System.out.println("  ├─ Average Gas per Success:   " + String.format("%,.0f", avgGas));
     System.out.println("  └─ Gas Efficiency:            " +
-                       String.format("%.2f gas/escrow", totalFinished > 0 ? gasUsed / (double) totalFinished : 0));
+      String.format("%.2f gas/escrow", totalFinished > 0 ? gasUsed / (double) totalFinished : 0));
     System.out.println();
 
     // Per-Function Breakdown
@@ -996,10 +996,10 @@ public class SmartEscrowSoakTest extends AbstractIT {
 
       if (funcTotal > 0) {
         System.out.println("  " + String.format("%-25s", name) +
-                           String.format("%12d", funcExpSuccess) +
-                           String.format("%14d", funcExpFailure) +
-                           String.format("%16d", funcUnexpFailure) +
-                           String.format("%8d", funcTotal));
+          String.format("%12d", funcExpSuccess) +
+          String.format("%14d", funcExpFailure) +
+          String.format("%16d", funcUnexpFailure) +
+          String.format("%8d", funcTotal));
       }
     }
     System.out.println();
@@ -1041,9 +1041,9 @@ public class SmartEscrowSoakTest extends AbstractIT {
       return "🟠 FAIR - Test completed but showed some issues. Review error logs for details.";
     } else {
       return "🔴 NEEDS ATTENTION - Test showed significant issues. Review logs and consider:\n" +
-             "     • Reducing worker threads to lower node load\n" +
-             "     • Increasing retry limits and backoff times\n" +
-             "     • Checking node health and network connectivity";
+        "     • Reducing worker threads to lower node load\n" +
+        "     • Increasing retry limits and backoff times\n" +
+        "     • Checking node health and network connectivity";
     }
   }
 
@@ -1057,11 +1057,11 @@ public class SmartEscrowSoakTest extends AbstractIT {
     }
     // Check for common retryable errors
     return message.contains("500") ||
-           message.contains("503") ||
-           message.contains("too busy") ||
-           message.contains("timeout") ||
-           message.contains("connection") ||
-           message.contains("Internal error");
+      message.contains("503") ||
+      message.contains("too busy") ||
+      message.contains("timeout") ||
+      message.contains("connection") ||
+      message.contains("Internal error");
   }
 
   /**
@@ -1069,9 +1069,9 @@ public class SmartEscrowSoakTest extends AbstractIT {
    */
   private boolean isSequenceRelatedEngineResult(String engineResult) {
     return "tefPAST_SEQ".equals(engineResult) ||
-           "terPRE_SEQ".equals(engineResult) ||
-           "terQUEUED".equals(engineResult) ||
-           "tefMAX_LEDGER".equals(engineResult);
+      "terPRE_SEQ".equals(engineResult) ||
+      "terQUEUED".equals(engineResult) ||
+      "tefMAX_LEDGER".equals(engineResult);
   }
 
   /**
@@ -1079,8 +1079,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
    */
   private boolean isReserveRelatedEngineResult(String engineResult) {
     return "tecINSUFFICIENT_RESERVE".equals(engineResult) ||
-           "tecINSUF_RESERVE_LINE".equals(engineResult) ||
-           "tecINSUF_RESERVE_OFFER".equals(engineResult);
+      "tecINSUF_RESERVE_LINE".equals(engineResult) ||
+      "tecINSUF_RESERVE_OFFER".equals(engineResult);
   }
 
   /**
@@ -1113,7 +1113,6 @@ public class SmartEscrowSoakTest extends AbstractIT {
     // Start with simple ones, add more as they work
     Set<String> useRealWasm = new HashSet<>();
     useRealWasm.add("always_succeed");
-    useRealWasm.add("always_fail");
     useRealWasm.add("gas_stress_test");
     useRealWasm.add("balance_check");
     useRealWasm.add("credential_check");
@@ -1218,15 +1217,15 @@ public class SmartEscrowSoakTest extends AbstractIT {
     System.out.println("📊 PROGRESS UPDATE - " + java.time.LocalDateTime.now().format(
       java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")));
     System.out.println("  Created: " + String.format("%,5d", created) +
-                       " | Finished: " + String.format("%,5d", totalFinished) +
-                       " | Success: " + String.format("%,5d", expSuccess) +
-                       " | Errors: " + String.format("%,4d", errorCount) +
-                       " (" + String.format("%.1f%%", errorRate) + ")");
+      " | Finished: " + String.format("%,5d", totalFinished) +
+      " | Success: " + String.format("%,5d", expSuccess) +
+      " | Errors: " + String.format("%,4d", errorCount) +
+      " (" + String.format("%.1f%%", errorRate) + ")");
     System.out.println("  Correctness: " + String.format("%.1f%%", correctnessRate) +
-                       " | Retries: " + String.format("%,4d", retried) +
-                       " (" + String.format("%.1f%%", retryRate) + ")" +
-                       " | Seq Errors: " + String.format("%,3d", seqErrors) +
-                       " | Avg Gas: " + String.format("%,.0f", avgGas));
+      " | Retries: " + String.format("%,4d", retried) +
+      " (" + String.format("%.1f%%", retryRate) + ")" +
+      " | Seq Errors: " + String.format("%,3d", seqErrors) +
+      " | Avg Gas: " + String.format("%,.0f", avgGas));
     System.out.println();
   }
 }

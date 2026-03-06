@@ -37,37 +37,36 @@ wasm-opt -Oz -o optimized.wasm target/wasm32-unknown-unknown/release/smart_escro
 - **Use Case**: Testing basic Smart Escrow execution
 - **Return**: 1
 
-### 2. `always_fail`
-- **Purpose**: Always returns failure (zero or negative value)
-- **Use Case**: Testing escrow cancellation scenarios
-- **Return**: 0
-
-### 3. `balance_check`
+### 2. `balance_check`
 - **Purpose**: Checks if destination account has minimum balance
 - **Use Case**: Conditional release based on account state
 - **Logic**: Reads destination account balance from ledger, returns success if >= threshold
 
-### 4. `time_window`
+### 3. `time_window`
 - **Purpose**: Only succeeds within a specific time window
 - **Use Case**: Time-based conditional release
 - **Logic**: Checks current ledger close time against configured window
 
-### 5. `data_counter`
-- **Purpose**: Increments a counter in escrow data, succeeds after N attempts
-- **Use Case**: Multi-attempt escrow release
-- **Logic**: Reads counter from escrow data, increments, succeeds when counter >= threshold
+### 4. `data_counter`
+- **Purpose**: Stateful counter using escrow data - fails on first call, succeeds on second
+- **Use Case**: Multi-attempt escrow release, demonstrates persistent state management
+- **Logic**:
+  - Reads a u32 counter from the escrow data field (4 bytes, little-endian)
+  - First call (counter=0): Increments counter to 1, writes back to escrow data, returns 0 (tecWASM_REJECTED)
+  - Second call (counter>=1): Returns 1 (tesSUCCESS), escrow released
+- **Note**: This demonstrates true stateful behavior using the escrow data field, replacing the previous `always_fail` function
 
-### 6. `oracle_price_check`
+### 5. `oracle_price_check`
 - **Purpose**: Checks oracle price feed before releasing
 - **Use Case**: Price-conditional escrow release
 - **Logic**: Reads oracle price, compares to threshold
 
-### 7. `credential_check`
+### 6. `credential_check`
 - **Purpose**: Verifies finisher has required credentials
 - **Use Case**: Permission-based escrow release
 - **Logic**: Checks if finisher account has specific credential
 
-### 8. `gas_stress_test`
+### 7. `gas_stress_test`
 - **Purpose**: Consumes significant gas to test limits
 - **Use Case**: Testing gas metering and limits
 - **Logic**: Performs intensive computation
@@ -110,4 +109,3 @@ The Java application:
 - Implement cross-chain bridge integration tests
 - Add fuzzing for edge cases
 - Implement benchmark suite for gas consumption analysis
-

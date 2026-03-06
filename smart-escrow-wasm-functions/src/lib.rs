@@ -40,7 +40,6 @@ pub extern "C" fn finish() -> i32 {
 /// Always succeeds - returns a positive value
 #[cfg(not(any(
     feature = "always_succeed",
-    feature = "always_fail",
     feature = "balance_check",
     feature = "time_window",
     feature = "data_counter",
@@ -53,22 +52,7 @@ pub extern "C" fn finish() -> i32 {
     1
 }
 
-/// Always fails - returns zero
-///
-/// This function always returns 0, indicating failure.
-/// The escrow will not be released when this function is executed.
-///
-/// Per XLS-0100: The function MUST be named "finish"
-#[cfg(feature = "always_fail")]
-#[no_mangle]
-pub extern "C" fn finish() -> i32 {
-    #[cfg(target_arch = "wasm32")]
-    {
-        let _ = trace("Smart Escrow: always_fail");
-        let _ = trace("Result: FAILURE");
-    }
-    0
-}
+
 
 /// Checks if destination account has minimum balance
 ///
@@ -192,17 +176,18 @@ pub extern "C" fn finish() -> i32 {
     1
 }
 
-/// Increments a counter - demonstrates stateless computation
+/// Stateful counter - fails on first call, succeeds on second
 ///
-/// This function demonstrates a simple counter that always succeeds.
-/// In a real implementation with mutable escrow state, this would:
-/// 1. Read the current counter value from escrow data
-/// 2. Increment the counter
-/// 3. Write the new counter value back to escrow data
-/// 4. Return 1 if counter >= threshold, 0 otherwise
+/// This function implements true stateful behavior using escrow data:
+/// 1. Reads the current counter value from escrow data
+/// 2. If counter == 0, increments it to 1, writes back, and returns 0 (failure)
+/// 3. If counter >= 1, returns 1 (success)
 ///
-/// Note: XLS-0100 Smart Escrows are currently stateless, so we simulate
-/// a counter by always succeeding (as if the threshold is always met).
+/// The escrow data field stores a single u32 counter value (4 bytes, little-endian).
+/// On the first call, the counter is 0, so the function increments it and fails.
+/// On the second call, the counter is 1, so the function succeeds and releases the escrow.
+///
+/// This demonstrates multi-attempt escrow release patterns with persistent state.
 ///
 /// Per XLS-0100: The function MUST be named "finish"
 #[cfg(feature = "data_counter")]
@@ -210,18 +195,66 @@ pub extern "C" fn finish() -> i32 {
 pub extern "C" fn finish() -> i32 {
     #[cfg(target_arch = "wasm32")]
     {
+        use xrpl_wasm_stdlib::host::{get_current_ledger_obj_field, update_data};
+        use xrpl_wasm_stdlib::sfield;
+
         let _ = trace("Smart Escrow: data_counter");
-        let _ = trace("Simulating counter increment (stateless)");
 
-        // In a stateful implementation, we would:
-        // - Read counter from escrow data
-        // - Increment it
-        // - Check against threshold
-        // For now, we just succeed to demonstrate the function works
+        // Buffer to read the escrow data (4 bytes for u32 counter)
+        let mut data_buffer = [0u8; 4];
 
-        let _ = trace("Result: SUCCESS (counter check passed)");
+        // Read the current escrow data field
+        let data_len = unsafe {
+            get_current_ledger_obj_field(
+                i32::from(sfield::Data),
+                data_buffer.as_mut_ptr(),
+                data_buffer.len(),
+            )
+        };
+
+        // Parse the counter value (default to 0 if no data or error)
+        let counter = if data_len == 4 {
+            u32::from_le_bytes(data_buffer)
+        } else {
+            let _ = trace("No existing counter data, initializing to 0");
+            0u32
+        };
+
+        let _ = trace_num("Current counter value:", counter as i64);
+
+        if counter == 0 {
+            // First call: increment counter and fail
+            let _ = trace("Counter is 0, incrementing to 1 and failing");
+
+            let new_counter = 1u32;
+            let new_data = new_counter.to_le_bytes();
+
+            // Write the updated counter back to escrow data
+            let update_result = unsafe {
+                update_data(new_data.as_ptr(), new_data.len())
+            };
+
+            if update_result < 0 {
+                let _ = trace_num("ERROR: Failed to update escrow data, code:", update_result as i64);
+                return 0;
+            }
+
+            let _ = trace("Counter updated successfully");
+            let _ = trace("Result: FAILURE (counter incremented, will succeed on next call)");
+            0  // Fail on first call
+        } else {
+            // Second or later call: succeed
+            let _ = trace_num("Counter is >= 1, releasing escrow. Counter value:", counter as i64);
+            let _ = trace("Result: SUCCESS (escrow released)");
+            1  // Succeed on second call
+        }
     }
-    1
+
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        // For testing on non-WASM targets
+        1
+    }
 }
 
 /// Checks oracle price feed before releasing
@@ -280,7 +313,6 @@ pub extern "C" fn finish() -> i32 {
         use xrpl_wasm_stdlib::core::current_tx::escrow_finish::{get_current_escrow_finish, EscrowFinish};
         use xrpl_wasm_stdlib::core::current_tx::traits::TransactionCommonFields;
         use xrpl_wasm_stdlib::core::keylets::account_keylet;
-        use xrpl_wasm_stdlib::core::ledger_objects::account_root::AccountRoot;
         use xrpl_wasm_stdlib::host::cache_ledger_obj;
         use xrpl_wasm_stdlib::host::trace::{trace_data, DataRepr};
         use xrpl_wasm_stdlib::host::Result as WasmResult;

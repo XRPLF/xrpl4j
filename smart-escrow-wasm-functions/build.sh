@@ -26,7 +26,6 @@ mkdir -p "$OUTPUT_DIR"
 # List of all WASM functions to build
 FUNCTIONS=(
     "always_succeed"
-    "always_fail"
     "balance_check"
     "credential_check"
     "time_window"

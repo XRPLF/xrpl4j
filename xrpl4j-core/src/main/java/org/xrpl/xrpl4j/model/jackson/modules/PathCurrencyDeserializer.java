@@ -26,8 +26,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.xrpl.xrpl4j.model.client.path.PathCurrency;
 import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
-import org.xrpl.xrpl4j.model.ledger.ImmutableCurrencyIssue;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
+import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
@@ -36,8 +37,8 @@ import java.io.IOException;
 /**
  * Custom Jackson deserializer for {@link PathCurrency}.
  *
- * <p>This deserializer handles the polymorphic nature of PathCurrency, which can wrap either
- * a {@link CurrencyIssue} (for XRP or IOUs) or an {@link MptIssue} (for MPTokens).</p>
+ * <p>This deserializer handles the polymorphic nature of PathCurrency, which can wrap
+ * {@link XrpIssue} (for XRP), {@link IouIssue} (for IOUs), or {@link MptIssue} (for MPTokens).</p>
  */
 public class PathCurrencyDeserializer extends StdDeserializer<PathCurrency> {
 
@@ -59,16 +60,32 @@ public class PathCurrencyDeserializer extends StdDeserializer<PathCurrency> {
       );
     }
 
-    // Otherwise, it's a currency issue (has currency field, optionally issuer)
+    // Otherwise, it's a currency-based issue (has currency field)
     if (node.has("currency")) {
-      ImmutableCurrencyIssue.Builder builder = CurrencyIssue.builder()
-        .currency(node.get("currency").asText());
+      String currency = node.get("currency").asText();
 
-      if (node.has("issuer")) {
-        builder.issuer(Address.of(node.get("issuer").asText()));
+      // Check if it's XRP
+      if ("XRP".equals(currency)) {
+        return PathCurrency.of(XrpIssue.builder().build());
       }
 
-      return PathCurrency.of(builder.build());
+      // Otherwise, it's an IOU
+      if (node.has("issuer")) {
+        return PathCurrency.of(
+          IouIssue.builder()
+            .currency(currency)
+            .issuer(Address.of(node.get("issuer").asText()))
+            .build()
+        );
+      }
+
+      // For backwards compatibility, if there's no issuer, create a deprecated CurrencyIssue
+      // This allows deserialization of legacy JSON that doesn't include an issuer
+      return PathCurrency.of(
+        CurrencyIssue.builder()
+          .currency(currency)
+          .build()
+      );
     }
 
     throw new IllegalArgumentException(

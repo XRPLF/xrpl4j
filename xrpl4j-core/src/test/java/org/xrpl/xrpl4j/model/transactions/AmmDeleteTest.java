@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
-import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
 
@@ -20,7 +20,7 @@ class AmmDeleteTest extends AbstractJsonTest {
     AmmDelete ammDelete = AmmDelete.builder()
       .asset(Issue.XRP)
       .asset2(
-        CurrencyIssue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -56,7 +56,7 @@ class AmmDeleteTest extends AbstractJsonTest {
     AmmDelete ammDelete = AmmDelete.builder()
       .asset(Issue.XRP)
       .asset2(
-        CurrencyIssue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -94,7 +94,7 @@ class AmmDeleteTest extends AbstractJsonTest {
     AmmDelete ammDelete = AmmDelete.builder()
       .asset(Issue.XRP)
       .asset2(
-        CurrencyIssue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -116,7 +116,7 @@ class AmmDeleteTest extends AbstractJsonTest {
     AmmDelete original = AmmDelete.builder()
       .asset(Issue.XRP)
       .asset2(
-        CurrencyIssue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()

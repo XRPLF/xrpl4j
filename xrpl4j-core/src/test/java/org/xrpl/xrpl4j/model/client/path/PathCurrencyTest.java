@@ -26,8 +26,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
+import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
@@ -38,37 +39,36 @@ public class PathCurrencyTest extends AbstractJsonTest {
 
   @Test
   public void ofCurrencyOnly() {
-    PathCurrency pathCurrency = PathCurrency.of("USD");
-    
-    assertThat(pathCurrency.issue()).isInstanceOf(CurrencyIssue.class);
-    CurrencyIssue currencyIssue = (CurrencyIssue) pathCurrency.issue();
-    assertThat(currencyIssue.currency()).isEqualTo("USD");
-    assertThat(currencyIssue.issuer()).isEmpty();
+    PathCurrency pathCurrency = PathCurrency.of("XRP");
+
+    assertThat(pathCurrency.issue()).isInstanceOf(XrpIssue.class);
+    XrpIssue xrpIssue = (XrpIssue) pathCurrency.issue();
+    assertThat(xrpIssue.currency()).isEqualTo("XRP");
   }
 
   @Test
   public void ofCurrencyAndIssuer() {
     Address issuer = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
     PathCurrency pathCurrency = PathCurrency.of("USD", issuer);
-    
-    assertThat(pathCurrency.issue()).isInstanceOf(CurrencyIssue.class);
-    CurrencyIssue currencyIssue = (CurrencyIssue) pathCurrency.issue();
-    assertThat(currencyIssue.currency()).isEqualTo("USD");
-    assertThat(currencyIssue.issuer()).isPresent().get().isEqualTo(issuer);
+
+    assertThat(pathCurrency.issue()).isInstanceOf(IouIssue.class);
+    IouIssue iouIssue = (IouIssue) pathCurrency.issue();
+    assertThat(iouIssue.currency()).isEqualTo("USD");
+    assertThat(iouIssue.issuer()).isEqualTo(issuer);
   }
 
   @Test
-  public void ofCurrencyIssue() {
+  public void ofIouIssue() {
     Address issuer = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
-    CurrencyIssue currencyIssue = CurrencyIssue.builder()
+    IouIssue iouIssue = IouIssue.builder()
       .currency("EUR")
       .issuer(issuer)
       .build();
-    
-    PathCurrency pathCurrency = PathCurrency.of(currencyIssue);
-    
-    assertThat(pathCurrency.issue()).isEqualTo(currencyIssue);
-    assertThat(pathCurrency.issue()).isInstanceOf(CurrencyIssue.class);
+
+    PathCurrency pathCurrency = PathCurrency.of(iouIssue);
+
+    assertThat(pathCurrency.issue()).isEqualTo(iouIssue);
+    assertThat(pathCurrency.issue()).isInstanceOf(IouIssue.class);
   }
 
   @Test
@@ -126,16 +126,16 @@ public class PathCurrencyTest extends AbstractJsonTest {
   @Test
   public void builder() {
     Address issuer = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
-    CurrencyIssue currencyIssue = CurrencyIssue.builder()
+    IouIssue iouIssue = IouIssue.builder()
       .currency("GBP")
       .issuer(issuer)
       .build();
-    
+
     PathCurrency pathCurrency = PathCurrency.builder()
-      .issue(currencyIssue)
+      .issue(iouIssue)
       .build();
-    
-    assertThat(pathCurrency.issue()).isEqualTo(currencyIssue);
+
+    assertThat(pathCurrency.issue()).isEqualTo(iouIssue);
   }
 }
 

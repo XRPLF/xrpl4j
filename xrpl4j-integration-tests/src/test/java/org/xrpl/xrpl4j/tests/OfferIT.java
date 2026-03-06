@@ -46,12 +46,13 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
 import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
-import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
+import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -137,12 +138,12 @@ public class OfferIT extends AbstractIT {
       BookOffersRequestParams.builder()
         .taker(offerCreate.account())
         .takerGets(
-          CurrencyIssue.builder()
+          IouIssue.builder()
             .currency("USD")
             .issuer(offerCreate.account())
             .build()
         )
-        .takerPays(CurrencyIssue.XRP)
+        .takerPays(XrpIssue.XRP)
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
     );
@@ -400,12 +401,12 @@ public class OfferIT extends AbstractIT {
       BookOffersRequestParams.builder()
         .taker(offerCreate.account())
         .takerGets(
-          CurrencyIssue.builder()
+          IouIssue.builder()
             .currency(CURRENCY)
             .issuer(offerCreate.account())
             .build()
         )
-        .takerPays(CurrencyIssue.XRP)
+        .takerPays(XrpIssue.XRP)
         .domain(permissionedDomainObject.index())
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
@@ -734,12 +735,12 @@ public class OfferIT extends AbstractIT {
       BookOffersRequestParams.builder()
         .taker(offerCreate.account())
         .takerGets(
-          CurrencyIssue.builder()
+          IouIssue.builder()
             .currency(CURRENCY)
             .issuer(offerCreate.account())
             .build()
         )
-        .takerPays(CurrencyIssue.XRP)
+        .takerPays(XrpIssue.XRP)
         .domain(permissionedDomainObject.index())
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
@@ -965,7 +966,7 @@ public class OfferIT extends AbstractIT {
       BookOffersRequestParams.builder()
         .taker(issuerKeyPair.publicKey().deriveAddress())
         .takerGets(MptIssue.of(mptIssuanceId))
-        .takerPays(CurrencyIssue.XRP)
+        .takerPays(XrpIssue.XRP)
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
     );
@@ -1100,7 +1101,7 @@ public class OfferIT extends AbstractIT {
     BookOffersResult bookOffersBeforeCross = xrplClient.bookOffers(
       BookOffersRequestParams.builder()
         .takerGets(MptIssue.of(mptIssuanceId))
-        .takerPays(CurrencyIssue.XRP)
+        .takerPays(XrpIssue.XRP)
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
     );
@@ -1349,7 +1350,7 @@ public class OfferIT extends AbstractIT {
       BookOffersRequestParams.builder()
         .taker(mptIssuerKeyPair.publicKey().deriveAddress())
         .takerGets(MptIssue.of(mptIssuanceId))
-        .takerPays(CurrencyIssue.builder()
+        .takerPays(IouIssue.builder()
           .issuer(iouIssuerKeyPair.publicKey().deriveAddress())
           .currency(iouCurrency)
           .build())

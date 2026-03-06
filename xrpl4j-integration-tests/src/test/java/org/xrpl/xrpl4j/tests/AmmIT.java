@@ -41,10 +41,11 @@ import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.AuctionSlot;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
-import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
+import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.xrpl.xrpl4j.model.transactions.AmmBid;
@@ -107,12 +108,12 @@ public class AmmIT extends AbstractIT {
       .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .signingPublicKey(traderKeyPair.publicKey())
       .asset2(
-        CurrencyIssue.builder()
+        IouIssue.builder()
           .currency(xrpl4jCoin)
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
       )
-      .asset(CurrencyIssue.XRP)
+      .asset(XrpIssue.XRP)
       .tradingFee(newTradingFee)
       .build();
 
@@ -194,12 +195,12 @@ public class AmmIT extends AbstractIT {
       .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .signingPublicKey(traderKeyPair.publicKey())
       .asset2(
-        CurrencyIssue.builder()
+        IouIssue.builder()
           .currency(xrpl4jCoin)
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
       )
-      .asset(CurrencyIssue.XRP)
+      .asset(XrpIssue.XRP)
       .addAuthAccounts(
         AuthAccountWrapper.of(AuthAccount.of(authAccount1.publicKey().deriveAddress()))
       )
@@ -265,12 +266,12 @@ public class AmmIT extends AbstractIT {
       )
       .signingPublicKey(traderKeyPair.publicKey())
       .asset2(
-        CurrencyIssue.builder()
+        IouIssue.builder()
           .currency(xrpl4jCoin)
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
       )
-      .asset(CurrencyIssue.XRP)
+      .asset(XrpIssue.XRP)
       .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(9)))
       .flags(AmmWithdrawFlags.SINGLE_ASSET)
       .build();
@@ -438,11 +439,11 @@ public class AmmIT extends AbstractIT {
     assertThat(submitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // create variables for issued currencies
-    Issue testCurrencyIssue = CurrencyIssue.builder()
+    Issue testCurrencyIssue = IouIssue.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .currency(usd)
       .build();
-    Issue xrpl4jCoinIssue = CurrencyIssue.builder()
+    Issue xrpl4jCoinIssue = IouIssue.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .currency(xrpl4jCoin)
       .build();
@@ -622,11 +623,11 @@ public class AmmIT extends AbstractIT {
     assertThat(submitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // create variables for issued currencies
-    Issue testCurrencyIssue = CurrencyIssue.builder()
+    Issue testCurrencyIssue = IouIssue.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .currency(usd)
       .build();
-    Issue xrpl4jCoinIssue = CurrencyIssue.builder()
+    Issue xrpl4jCoinIssue = IouIssue.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .currency(xrpl4jCoin)
       .build();
@@ -813,11 +814,11 @@ public class AmmIT extends AbstractIT {
     assertThat(submitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // create variables for issued currencies
-    Issue testCurrencyIssue = CurrencyIssue.builder()
+    Issue testCurrencyIssue = IouIssue.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .currency(usd)
       .build();
-    Issue xrpl4jCoinIssue = CurrencyIssue.builder()
+    Issue xrpl4jCoinIssue = IouIssue.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .currency(xrpl4jCoin)
       .build();
@@ -875,12 +876,12 @@ public class AmmIT extends AbstractIT {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(traderAccount.accountData().account())
       .asset2(
-        CurrencyIssue.builder()
+        IouIssue.builder()
           .currency(xrpl4jCoin)
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
       )
-      .asset(CurrencyIssue.XRP)
+      .asset(XrpIssue.XRP)
       .flags(AmmDepositFlags.SINGLE_ASSET)
       .amount(depositAmount)
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -975,8 +976,8 @@ public class AmmIT extends AbstractIT {
   private AmmInfoResult getAmmInfo(KeyPair issuerKeyPair) throws JsonRpcClientErrorException {
     AmmInfoResult ammInfoResult = xrplClient.ammInfo(
       AmmInfoRequestParams.from(
-        CurrencyIssue.XRP,
-        CurrencyIssue.builder()
+        XrpIssue.XRP,
+        IouIssue.builder()
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .currency(xrpl4jCoin)
           .build()
@@ -997,9 +998,9 @@ public class AmmIT extends AbstractIT {
     LedgerEntryResult<AmmObject> ammObject = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.amm(
         AmmLedgerEntryParams.builder()
-          .asset(CurrencyIssue.XRP)
+          .asset(XrpIssue.XRP)
           .asset2(
-            CurrencyIssue.builder()
+            IouIssue.builder()
               .issuer(issuerKeyPair.publicKey().deriveAddress())
               .currency(xrpl4jCoin)
               .build()
@@ -1010,9 +1011,9 @@ public class AmmIT extends AbstractIT {
     );
 
     assertThat(ammObject.node().account()).isEqualTo(ammInfoByAccount.amm().account());
-    assertThat(ammObject.node().asset()).isEqualTo(CurrencyIssue.XRP);
+    assertThat(ammObject.node().asset()).isEqualTo(XrpIssue.XRP);
     assertThat(ammObject.node().asset2()).isEqualTo(
-      CurrencyIssue.builder()
+      IouIssue.builder()
         .issuer(((IssuedCurrencyAmount) ammInfoByAccount.amm().amount2()).issuer())
         .currency(((IssuedCurrencyAmount) ammInfoByAccount.amm().amount2()).currency())
         .build()
@@ -1148,7 +1149,7 @@ public class AmmIT extends AbstractIT {
 
     // Verify AMM via ammInfo RPC by asset pair
     AmmInfoResult ammInfoByAssets = xrplClient.ammInfo(
-      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), XrpIssue.XRP)
     );
 
     assertThat(ammInfoByAssets.amm().account()).isNotNull();
@@ -1167,7 +1168,7 @@ public class AmmIT extends AbstractIT {
       LedgerEntryRequestParams.amm(
         AmmLedgerEntryParams.builder()
           .asset(MptIssue.of(mptIssuanceId))
-          .asset2(CurrencyIssue.XRP)
+          .asset2(XrpIssue.XRP)
           .build(),
         LedgerSpecifier.VALIDATED
       )
@@ -1175,7 +1176,7 @@ public class AmmIT extends AbstractIT {
 
     assertThat(ammObject.node().account()).isEqualTo(ammInfoByAccount.amm().account());
     assertThat(ammObject.node().asset()).isEqualTo(MptIssue.of(mptIssuanceId));
-    assertThat(ammObject.node().asset2()).isEqualTo(CurrencyIssue.XRP);
+    assertThat(ammObject.node().asset2()).isEqualTo(XrpIssue.XRP);
     assertThat(ammObject.node().lpTokenBalance()).isEqualTo(ammInfoByAccount.amm().lpToken());
     assertThat(ammObject.node().tradingFee()).isEqualTo(ammInfoByAccount.amm().tradingFee());
 
@@ -1341,14 +1342,14 @@ public class AmmIT extends AbstractIT {
     logger.info("AmmCreate finalized: hash={}", signedAmmCreate.hash());
 
     AmmInfoResult ammInfo = xrplClient.ammInfo(
-      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), XrpIssue.XRP)
     );
     logger.info("AmmInfo retrieved: account={}", ammInfo.amm().account());
     assertThat(ammInfo.amm().amount()).isInstanceOf(MptCurrencyAmount.class);
 
     // Verify AMM exists by querying it again before deposit
     AmmInfoResult ammInfoBeforeDeposit = xrplClient.ammInfo(
-      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), XrpIssue.XRP)
     );
     logger.info("AmmInfo before deposit: account={}, amount={}, amount2={}",
       ammInfoBeforeDeposit.amm().account(),
@@ -1364,7 +1365,7 @@ public class AmmIT extends AbstractIT {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(holderKeyPair.publicKey().deriveAddress())
       .asset(MptIssue.of(mptIssuanceId))
-      .asset2(CurrencyIssue.XRP)
+      .asset2(XrpIssue.XRP)
       .amount(depositXrpAmount)
       .flags(AmmDepositFlags.SINGLE_ASSET)
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -1389,7 +1390,7 @@ public class AmmIT extends AbstractIT {
 
     // Verify AMM state reflects the deposit - XRP amount should have increased
     AmmInfoResult ammInfoAfterDeposit = xrplClient.ammInfo(
-      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), XrpIssue.XRP)
     );
     assertThat(ammInfoAfterDeposit.amm().amount2()).isInstanceOf(XrpCurrencyAmount.class);
     assertThat((XrpCurrencyAmount) ammInfoAfterDeposit.amm().amount2())
@@ -1403,7 +1404,7 @@ public class AmmIT extends AbstractIT {
     AmmWithdraw withdraw = AmmWithdraw.builder()
       .account(holderKeyPair.publicKey().deriveAddress())
       .asset(MptIssue.of(mptIssuanceId))
-      .asset2(CurrencyIssue.XRP)
+      .asset2(XrpIssue.XRP)
       .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2)))
       .flags(AmmWithdrawFlags.SINGLE_ASSET)
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -1428,7 +1429,7 @@ public class AmmIT extends AbstractIT {
 
     // Verify AMM XRP amount decreased after withdrawal
     AmmInfoResult ammInfoAfterWithdraw = xrplClient.ammInfo(
-      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), XrpIssue.XRP)
     );
     assertThat(ammInfoAfterWithdraw.amm().amount2()).isInstanceOf(XrpCurrencyAmount.class);
     assertThat((XrpCurrencyAmount) ammInfoAfterWithdraw.amm().amount2())
@@ -1528,14 +1529,14 @@ public class AmmIT extends AbstractIT {
     );
 
     AmmInfoResult ammInfo = xrplClient.ammInfo(
-      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), XrpIssue.XRP)
     );
 
     // Trader deposits XRP to get LP tokens
     AmmDeposit deposit = AmmDeposit.builder()
       .account(traderKeyPair.publicKey().deriveAddress())
       .asset(MptIssue.of(mptIssuanceId))
-      .asset2(CurrencyIssue.XRP)
+      .asset2(XrpIssue.XRP)
       .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(50)))
       .flags(AmmDepositFlags.SINGLE_ASSET)
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -1572,7 +1573,7 @@ public class AmmIT extends AbstractIT {
       )
       .signingPublicKey(traderKeyPair.publicKey())
       .asset(MptIssue.of(mptIssuanceId))
-      .asset2(CurrencyIssue.XRP)
+      .asset2(XrpIssue.XRP)
       .bidMin(
         IssuedCurrencyAmount.builder()
           .from(ammInfo.amm().lpToken())
@@ -1597,7 +1598,7 @@ public class AmmIT extends AbstractIT {
 
     // Verify auction slot was won
     AmmInfoResult ammAfterBid = xrplClient.ammInfo(
-      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), XrpIssue.XRP)
     );
 
     assertThat(ammAfterBid.amm().auctionSlot()).isNotEmpty();
@@ -1702,7 +1703,7 @@ public class AmmIT extends AbstractIT {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(traderKeyPair.publicKey().deriveAddress())
       .asset(MptIssue.of(mptIssuanceId))
-      .asset2(CurrencyIssue.XRP)
+      .asset2(XrpIssue.XRP)
       .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(200)))
       .flags(AmmDepositFlags.SINGLE_ASSET)
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -1740,7 +1741,7 @@ public class AmmIT extends AbstractIT {
       )
       .signingPublicKey(traderKeyPair.publicKey())
       .asset(MptIssue.of(mptIssuanceId))
-      .asset2(CurrencyIssue.XRP)
+      .asset2(XrpIssue.XRP)
       .tradingFee(newTradingFee)
       .build();
 
@@ -1764,7 +1765,7 @@ public class AmmIT extends AbstractIT {
     // The weighted average is: (2/3 * 500) + (1/3 * 1000) = 333 + 333 = 666 (approximately)
     // However, the actual formula used by rippled may be different
     AmmInfoResult ammAfterVote = xrplClient.ammInfo(
-      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), XrpIssue.XRP)
     );
 
     // The trading fee should be between the voted fee (500) and the original fee (1000)
@@ -1965,7 +1966,7 @@ public class AmmIT extends AbstractIT {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(holderKeyPair.publicKey().deriveAddress())
       .asset(MptIssue.of(mptIssuanceId))
-      .asset2(CurrencyIssue.XRP)
+      .asset2(XrpIssue.XRP)
       .amount(MptCurrencyAmount.builder().mptIssuanceId(mptIssuanceId).value("5000").build())
       .flags(AmmDepositFlags.SINGLE_ASSET)
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -1999,7 +2000,7 @@ public class AmmIT extends AbstractIT {
       .account(issuerKeyPair.publicKey().deriveAddress())
       .holder(holderKeyPair.publicKey().deriveAddress())
       .asset(MptIssue.of(mptIssuanceId))
-      .asset2(CurrencyIssue.XRP)
+      .asset2(XrpIssue.XRP)
       .amount(MptCurrencyAmount.builder().mptIssuanceId(mptIssuanceId).value("1000").build())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(issuerInfoBeforeClawback.accountData().sequence())
@@ -2025,7 +2026,7 @@ public class AmmIT extends AbstractIT {
 
     // Verify AMM MPT amount decreased after clawback
     AmmInfoResult ammAfterClawback = xrplClient.ammInfo(
-      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), CurrencyIssue.XRP)
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), XrpIssue.XRP)
     );
 
     assertThat(ammAfterClawback.amm().amount()).isInstanceOf(MptCurrencyAmount.class);
@@ -2464,7 +2465,7 @@ public class AmmIT extends AbstractIT {
     );
 
     // Verify AMM via ammInfo with MPT/IOU asset pair
-    CurrencyIssue iouIssue = CurrencyIssue.builder()
+    IouIssue iouIssue = IouIssue.builder()
       .issuer(iouIssuerKeyPair.publicKey().deriveAddress())
       .currency(iouCurrency)
       .build();

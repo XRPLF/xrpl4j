@@ -37,7 +37,17 @@ import java.util.Optional;
  *
  * @see Issue
  * @see MptIssue
+ * @deprecated Use {@link XrpIssue} for XRP or {@link IouIssue} for issued currencies instead.
+ *             This class will be removed in a future version. Migration guide:
+ *             <ul>
+ *               <li>For XRP: Replace {@code CurrencyIssue.XRP} with {@code XrpIssue.XRP}</li>
+ *               <li>For XRP: Replace {@code CurrencyIssue.builder().currency("XRP").build()}
+ *                   with {@code XrpIssue.builder().build()}</li>
+ *               <li>For IOUs: Replace {@code CurrencyIssue.builder().currency(c).issuer(i).build()}
+ *                   with {@code IouIssue.builder().currency(c).issuer(i).build()}</li>
+ *             </ul>
  */
+@Deprecated
 @Value.Immutable
 @JsonSerialize(as = ImmutableCurrencyIssue.class)
 @JsonDeserialize(as = ImmutableCurrencyIssue.class)

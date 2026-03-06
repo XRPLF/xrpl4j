@@ -49,7 +49,7 @@ import org.xrpl.xrpl4j.model.flags.XChainModifyBridgeFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
-import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
@@ -78,19 +78,6 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.ImmutableAmmBid;
-import org.xrpl.xrpl4j.model.transactions.ImmutableAmmCreate;
-import org.xrpl.xrpl4j.model.transactions.ImmutableAmmDelete;
-import org.xrpl.xrpl4j.model.transactions.ImmutableAmmDeposit;
-import org.xrpl.xrpl4j.model.transactions.ImmutableDidDelete;
-import org.xrpl.xrpl4j.model.transactions.ImmutableDidSet;
-import org.xrpl.xrpl4j.model.transactions.ImmutableOracleDelete;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAccountCreateCommit;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateBridge;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateClaimId;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainModifyBridge;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
@@ -1800,7 +1787,7 @@ public class BinarySerializationTests {
           .lockingChainIssue(Issue.XRP)
           .issuingChainDoor(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
           .issuingChainIssue(
-            CurrencyIssue.builder()
+            IouIssue.builder()
               .currency("ETH")
               .issuer(Address.of("rPyfep3gcLzkosKC9XiE77Y8DZWG6iWDT9"))
               .build()
@@ -2282,12 +2269,12 @@ public class BinarySerializationTests {
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
       .flags(AmmWithdrawFlags.LP_TOKEN)
-      .asset(CurrencyIssue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(CurrencyIssue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2341,12 +2328,12 @@ public class BinarySerializationTests {
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A"))
-      .asset(CurrencyIssue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(CurrencyIssue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2423,12 +2410,12 @@ public class BinarySerializationTests {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
-      .asset(CurrencyIssue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(CurrencyIssue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2453,12 +2440,12 @@ public class BinarySerializationTests {
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
       .flags(AmmDepositFlags.SINGLE_ASSET)
-      .asset(CurrencyIssue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(CurrencyIssue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2515,12 +2502,12 @@ public class BinarySerializationTests {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
-      .asset(CurrencyIssue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(CurrencyIssue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()

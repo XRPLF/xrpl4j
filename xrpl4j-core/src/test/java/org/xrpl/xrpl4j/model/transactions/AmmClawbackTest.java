@@ -9,8 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.AmmClawbackFlags;
-import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
+import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 
 /**
  * Unit tests for {@link AmmClawback}.
@@ -30,8 +31,8 @@ public class AmmClawbackTest extends AbstractJsonTest {
           .value("25")
           .build()
       )
-      .asset(CurrencyIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
-      .asset2(CurrencyIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset(IouIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset2(IouIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
       .holder(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(6))
@@ -78,8 +79,8 @@ public class AmmClawbackTest extends AbstractJsonTest {
           .build()
       )
       .holder(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
-      .asset(CurrencyIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
-      .asset2(CurrencyIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset(IouIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset2(IouIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(6))
       .signingPublicKey(
@@ -127,8 +128,8 @@ public class AmmClawbackTest extends AbstractJsonTest {
           .build()
       )
       .holder(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
-      .asset(CurrencyIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
-      .asset2(CurrencyIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset(IouIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset2(IouIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(6))
       .signingPublicKey(
@@ -175,8 +176,8 @@ public class AmmClawbackTest extends AbstractJsonTest {
           .value("25")
           .build()
       )
-      .asset(CurrencyIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
-      .asset2(CurrencyIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset(IouIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset2(IouIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
       .holder(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(6))
@@ -200,8 +201,8 @@ public class AmmClawbackTest extends AbstractJsonTest {
           .value("25")
           .build()
       )
-      .asset(CurrencyIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
-      .asset2(CurrencyIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset(IouIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset2(IouIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
       .holder(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(6))
@@ -226,8 +227,8 @@ public class AmmClawbackTest extends AbstractJsonTest {
           .value("25")
           .build()
       )
-      .asset(CurrencyIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
-      .asset2(CurrencyIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset(IouIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset2(IouIssue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
       .holder(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(6))
@@ -257,7 +258,7 @@ public class AmmClawbackTest extends AbstractJsonTest {
           .build()
       )
       .asset(MptIssue.of(mptIssuanceId))
-      .asset2(CurrencyIssue.builder().currency("XRP").build())
+      .asset2(XrpIssue.builder().build())
       .holder(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(6))

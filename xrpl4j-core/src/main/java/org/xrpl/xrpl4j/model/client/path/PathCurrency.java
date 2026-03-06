@@ -26,15 +26,17 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.jackson.modules.PathCurrencyDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.PathCurrencySerializer;
 import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
  * Represents a currency that an account holds on the XRPL, which can be used to specify the source currencies in
  * {@link RipplePathFindRequestParams}.
  *
- * <p>This class wraps an {@link Issue} to support both traditional currencies (XRP and IOUs) and MPTokens.
- * For traditional currencies, use {@link CurrencyIssue}. For MPTokens, use
+ * <p>This class wraps an {@link Issue} to support XRP, IOUs, and MPTokens.
+ * For XRP, use {@link XrpIssue}. For IOUs, use {@link IouIssue}. For MPTokens, use
  * {@link org.xrpl.xrpl4j.model.ledger.MptIssue}.</p>
  */
 @Value.Immutable
@@ -54,15 +56,26 @@ public interface PathCurrency {
   /**
    * Construct a {@link PathCurrency} with the specified currency code and no issuer.
    *
-   * <p>This is a convenience method for creating a {@link PathCurrency} for XRP or a currency without
-   * specifying an issuer. For IOUs with an issuer or MPTokens, use {@link #of(Issue)} instead.</p>
+   * <p>This is a convenience method for creating a {@link PathCurrency} for XRP.
+   * For IOUs with an issuer, use {@link #of(String, Address)}. For MPTokens, use {@link #of(Issue)} instead.</p>
    *
    * @param currency A {@link String} of either a 3 character currency code, or a 40 character hexadecimal encoded
    *                 currency code value.
    *
    * @return A new {@link PathCurrency}.
+   * @deprecated This method is ambiguous for non-XRP currencies. Use {@link #of(Issue)} with {@link XrpIssue}
+   *             for XRP, or {@link #of(String, Address)} for IOUs with an issuer.
    */
+  @Deprecated
   static PathCurrency of(String currency) {
+    // For backwards compatibility, we still support this method but it's deprecated
+    // The deserializer will handle this properly by checking if currency is XRP
+    if ("XRP".equals(currency)) {
+      return builder()
+        .issue(XrpIssue.builder().build())
+        .build();
+    }
+    // For non-XRP, we need to use the deprecated CurrencyIssue to maintain backwards compatibility
     return builder()
       .issue(CurrencyIssue.builder().currency(currency).build())
       .build();
@@ -71,7 +84,7 @@ public interface PathCurrency {
   /**
    * Construct a {@link PathCurrency} from an {@link Issue}.
    *
-   * <p>This method supports both {@link CurrencyIssue} (for XRP and IOUs) and
+   * <p>This method supports {@link XrpIssue} (for XRP), {@link IouIssue} (for IOUs), and
    * {@link org.xrpl.xrpl4j.model.ledger.MptIssue} (for MPTokens).</p>
    *
    * @param issue An {@link Issue} representing the currency.
@@ -98,19 +111,22 @@ public interface PathCurrency {
    */
   static PathCurrency of(String currency, Address issuer) {
     return builder()
-      .issue(CurrencyIssue.builder().currency(currency).issuer(issuer).build())
+      .issue(IouIssue.builder().currency(currency).issuer(issuer).build())
       .build();
   }
 
   /**
-   * The asset that this path currency represents. This can be either a
-   * {@link org.xrpl.xrpl4j.model.ledger.CurrencyIssue} (for XRP or IOUs) or an
+   * The asset that this path currency represents. This can be a
+   * {@link org.xrpl.xrpl4j.model.ledger.XrpIssue} (for XRP),
+   * {@link org.xrpl.xrpl4j.model.ledger.IouIssue} (for IOUs), or an
    * {@link org.xrpl.xrpl4j.model.ledger.MptIssue} (for MPTokens).
    *
    * <p>The {@link Issue} fields will be unwrapped and serialized directly into the PathCurrency JSON object
    * by the custom {@link org.xrpl.xrpl4j.model.jackson.modules.PathCurrencySerializer}:
    * <ul>
-   *   <li>For {@link org.xrpl.xrpl4j.model.ledger.CurrencyIssue}:
+   *   <li>For {@link org.xrpl.xrpl4j.model.ledger.XrpIssue}:
+   *       {@code {"currency": "XRP"}}</li>
+   *   <li>For {@link org.xrpl.xrpl4j.model.ledger.IouIssue}:
    *       {@code {"currency": "...", "issuer": "..."}}</li>
    *   <li>For {@link org.xrpl.xrpl4j.model.ledger.MptIssue}:
    *       {@code {"mpt_issuance_id": "..."}}</li>

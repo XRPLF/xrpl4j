@@ -29,7 +29,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
 import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
 import org.xrpl.xrpl4j.model.ledger.BridgeObject;
-import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
@@ -40,6 +40,7 @@ import org.xrpl.xrpl4j.model.ledger.XChainCreateAccountAttestation;
 import org.xrpl.xrpl4j.model.ledger.XChainCreateAccountProofSig;
 import org.xrpl.xrpl4j.model.ledger.XChainOwnedClaimIdObject;
 import org.xrpl.xrpl4j.model.ledger.XChainOwnedCreateAccountClaimIdObject;
+import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -392,14 +393,14 @@ public class XChainIT extends AbstractIT {
       XChainBridge.builder()
         .lockingChainDoor(lockingDoor.publicKey().deriveAddress())
         .lockingChainIssue(
-          CurrencyIssue.builder()
+          IouIssue.builder()
             .issuer(lockingChainIssuer.publicKey().deriveAddress())
             .currency("USD")
             .build()
         )
         .issuingChainDoor(lockingChainSource.publicKey().deriveAddress())
         .issuingChainIssue(
-          CurrencyIssue.builder()
+          IouIssue.builder()
             .issuer(lockingChainSource.publicKey().deriveAddress())
             .currency("USD")
             .build()
@@ -453,9 +454,12 @@ public class XChainIT extends AbstractIT {
     );
 
     Address issuer = iouBridge.bridge().issuingChainIssue().map(
-      currencyIssue -> currencyIssue.issuer().get(),
+      xrpIssue -> {
+        throw new IllegalStateException("Expected IouIssue but got XrpIssue");
+      },
+      iouIssue -> iouIssue.issuer(),
       mptIssue -> {
-        throw new IllegalStateException("Expected CurrencyIssue but got MptIssue");
+        throw new IllegalStateException("Expected IouIssue but got MptIssue");
       }
     );
 
@@ -662,9 +666,9 @@ public class XChainIT extends AbstractIT {
       .xChainBridge(
         XChainBridge.builder()
           .lockingChainDoor(source.publicKey().deriveAddress())
-          .lockingChainIssue(CurrencyIssue.XRP)
+          .lockingChainIssue(XrpIssue.XRP)
           .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
-          .issuingChainIssue(CurrencyIssue.XRP)
+          .issuingChainIssue(XrpIssue.XRP)
           .build()
       )
       .signatureReward(XrpCurrencyAmount.ofDrops(200))
@@ -1009,9 +1013,9 @@ public class XChainIT extends AbstractIT {
       doorKeyPair,
       XChainBridge.builder()
         .lockingChainDoor(doorKeyPair.publicKey().deriveAddress())
-        .lockingChainIssue(CurrencyIssue.XRP)
+        .lockingChainIssue(XrpIssue.XRP)
         .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
-        .issuingChainIssue(CurrencyIssue.XRP)
+        .issuingChainIssue(XrpIssue.XRP)
         .build(),
       Optional.of(XrpCurrencyAmount.ofDrops(10000000))
     );

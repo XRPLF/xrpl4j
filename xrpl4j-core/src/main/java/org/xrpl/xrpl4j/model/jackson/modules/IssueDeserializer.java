@@ -24,10 +24,10 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
-import org.xrpl.xrpl4j.model.ledger.ImmutableCurrencyIssue;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
+import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
@@ -39,7 +39,8 @@ import java.io.IOException;
  * <p>This deserializer determines which concrete type of Issue to create based on the JSON fields:
  * <ul>
  *   <li>If the JSON has a "mpt_issuance_id" field, creates an {@link MptIssue}</li>
- *   <li>If the JSON has a "currency" field, creates a {@link CurrencyIssue}</li>
+ *   <li>If the JSON has a "currency" field with value "XRP" and no "issuer", creates an {@link XrpIssue}</li>
+ *   <li>If the JSON has a "currency" field (not "XRP") and an "issuer" field, creates an {@link IouIssue}</li>
  * </ul>
  */
 public class IssueDeserializer extends StdDeserializer<Issue> {
@@ -60,16 +61,26 @@ public class IssueDeserializer extends StdDeserializer<Issue> {
       return MptIssue.of(MpTokenIssuanceId.of(node.get("mpt_issuance_id").asText()));
     }
 
-    // Otherwise, it's a currency issue (has currency field, optionally issuer)
+    // Otherwise, it's a currency-based issue (has currency field)
     if (node.has("currency")) {
-      ImmutableCurrencyIssue.Builder builder = CurrencyIssue.builder()
-        .currency(node.get("currency").asText());
+      String currency = node.get("currency").asText();
 
-      if (node.has("issuer")) {
-        builder.issuer(Address.of(node.get("issuer").asText()));
+      // Check if it's XRP
+      if ("XRP".equals(currency)) {
+        return XrpIssue.builder().build();
       }
 
-      return builder.build();
+      // Otherwise, it's an IOU (must have issuer)
+      if (node.has("issuer")) {
+        return IouIssue.builder()
+          .currency(currency)
+          .issuer(Address.of(node.get("issuer").asText()))
+          .build();
+      }
+
+      throw new IllegalArgumentException(
+        "Invalid Issue JSON: IOU currency '" + currency + "' must have an 'issuer' field"
+      );
     }
 
     throw new IllegalArgumentException(

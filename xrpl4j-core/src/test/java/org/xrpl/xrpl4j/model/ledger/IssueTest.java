@@ -14,21 +14,20 @@ class IssueTest extends AbstractJsonTest {
 
   @Test
   void testXrp() {
-    assertThat(((CurrencyIssue) Issue.XRP).currency()).isEqualTo("XRP");
-    assertThat(((CurrencyIssue) Issue.XRP).issuer()).isEmpty();
+    assertThat(((XrpIssue) Issue.XRP).currency()).isEqualTo("XRP");
   }
 
   @Test
   void testNonXrp() {
     String usd = "USD";
     Address issuer = Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn");
-    CurrencyIssue asset = CurrencyIssue.builder()
+    IouIssue asset = IouIssue.builder()
       .currency(usd)
       .issuer(issuer)
       .build();
 
     assertThat(asset.currency()).isEqualTo(usd);
-    assertThat(asset.issuer()).isNotEmpty().get().isEqualTo(issuer);
+    assertThat(asset.issuer()).isEqualTo(issuer);
   }
 
   @Test
@@ -44,13 +43,13 @@ class IssueTest extends AbstractJsonTest {
   void testJsonForNonXrp() throws JSONException, JsonProcessingException {
     String usd = "USD";
     Address issuer = Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn");
-    CurrencyIssue asset = CurrencyIssue.builder()
+    IouIssue asset = IouIssue.builder()
       .currency(usd)
       .issuer(issuer)
       .build();
     String json = "{" +
       "    \"currency\": \"" + usd + "\"," +
-      "    \"issuer\": \"" + asset.issuer().get().value() + "\"" +
+      "    \"issuer\": \"" + asset.issuer().value() + "\"" +
       "}";
 
     assertCanSerializeAndDeserialize(asset, json, Issue.class);
@@ -99,18 +98,19 @@ class IssueTest extends AbstractJsonTest {
   }
 
   @Test
-  void testMapWithCurrencyIssue() {
-    CurrencyIssue currencyIssue = CurrencyIssue.builder()
+  void testMapWithIouIssue() {
+    IouIssue iouIssue = IouIssue.builder()
       .currency("USD")
       .issuer(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"))
       .build();
 
-    String result = currencyIssue.map(
-      ci -> "CurrencyIssue: " + ci.currency(),
+    String result = iouIssue.map(
+      xi -> "XrpIssue",
+      ii -> "IouIssue: " + ii.currency(),
       mi -> "MptIssue: " + mi.mptIssuanceId()
     );
 
-    assertThat(result).isEqualTo("CurrencyIssue: USD");
+    assertThat(result).isEqualTo("IouIssue: USD");
   }
 
   @Test
@@ -119,7 +119,8 @@ class IssueTest extends AbstractJsonTest {
     MptIssue mptIssue = MptIssue.of(mptId);
 
     String result = mptIssue.map(
-      ci -> "CurrencyIssue: " + ci.currency(),
+      xi -> "XrpIssue",
+      ii -> "IouIssue: " + ii.currency(),
       mi -> "MptIssue: " + mi.mptIssuanceId()
     );
 
@@ -129,7 +130,8 @@ class IssueTest extends AbstractJsonTest {
   @Test
   void testMapWithXrp() {
     String result = Issue.XRP.map(
-      ci -> "XRP",
+      xi -> "XRP",
+      ii -> "IOU",
       mi -> "MPT"
     );
 
@@ -137,15 +139,15 @@ class IssueTest extends AbstractJsonTest {
   }
 
   @Test
-  void testMapWithNullCurrencyIssueMapper() {
-    CurrencyIssue currencyIssue = CurrencyIssue.builder()
+  void testMapWithNullIouIssueMapper() {
+    IouIssue iouIssue = IouIssue.builder()
       .currency("USD")
       .issuer(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"))
       .build();
 
     NullPointerException exception = assertThrows(
       NullPointerException.class,
-      () -> currencyIssue.map(null, mi -> "MPT")
+      () -> iouIssue.map(xi -> "XRP", null, mi -> "MPT")
     );
   }
 
@@ -156,24 +158,25 @@ class IssueTest extends AbstractJsonTest {
 
     NullPointerException exception = assertThrows(
       NullPointerException.class,
-      () -> mptIssue.map(ci -> "Currency", null)
+      () -> mptIssue.map(xi -> "XRP", ii -> "IOU", null)
     );
   }
 
   @Test
-  void testHandleWithCurrencyIssue() {
-    CurrencyIssue currencyIssue = CurrencyIssue.builder()
+  void testHandleWithIouIssue() {
+    IouIssue iouIssue = IouIssue.builder()
       .currency("EUR")
       .issuer(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"))
       .build();
 
     final StringBuilder result = new StringBuilder();
-    currencyIssue.handle(
-      ci -> result.append("Currency: ").append(ci.currency()),
+    iouIssue.handle(
+      xi -> result.append("XRP"),
+      ii -> result.append("IOU: ").append(ii.currency()),
       mi -> result.append("MPT: ").append(mi.mptIssuanceId())
     );
 
-    assertThat(result.toString()).isEqualTo("Currency: EUR");
+    assertThat(result.toString()).isEqualTo("IOU: EUR");
   }
 
   @Test
@@ -183,7 +186,8 @@ class IssueTest extends AbstractJsonTest {
 
     final StringBuilder result = new StringBuilder();
     mptIssue.handle(
-      ci -> result.append("Currency: ").append(ci.currency()),
+      xi -> result.append("XRP"),
+      ii -> result.append("IOU: ").append(ii.currency()),
       mi -> result.append("MPT: ").append(mi.mptIssuanceId())
     );
 
@@ -194,7 +198,8 @@ class IssueTest extends AbstractJsonTest {
   void testHandleWithXrp() {
     final StringBuilder result = new StringBuilder();
     Issue.XRP.handle(
-      ci -> result.append("XRP"),
+      xi -> result.append("XRP"),
+      ii -> result.append("IOU"),
       mi -> result.append("MPT")
     );
 
@@ -202,15 +207,15 @@ class IssueTest extends AbstractJsonTest {
   }
 
   @Test
-  void testHandleWithNullCurrencyIssueHandler() {
-    CurrencyIssue currencyIssue = CurrencyIssue.builder()
+  void testHandleWithNullIouIssueHandler() {
+    IouIssue iouIssue = IouIssue.builder()
       .currency("USD")
       .issuer(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"))
       .build();
 
     NullPointerException exception = assertThrows(
       NullPointerException.class,
-      () -> currencyIssue.handle(null, mi -> { })
+      () -> iouIssue.handle(xi -> { }, null, mi -> { })
     );
   }
 
@@ -221,19 +226,19 @@ class IssueTest extends AbstractJsonTest {
 
     NullPointerException exception = assertThrows(
       NullPointerException.class,
-      () -> mptIssue.handle(ci -> { }, null)
+      () -> mptIssue.handle(xi -> { }, ii -> { }, null)
     );
   }
 
   @Test
   void testMapWithUnsupportedIssueType() {
     Issue unsupportedIssue = new Issue() {
-      // Anonymous implementation that is neither CurrencyIssue nor MptIssue
+      // Anonymous implementation that is neither XrpIssue, IouIssue, nor MptIssue
     };
 
     IllegalStateException exception = assertThrows(
       IllegalStateException.class,
-      () -> unsupportedIssue.map(ci -> "Currency", mi -> "MPT")
+      () -> unsupportedIssue.map(xi -> "XRP", ii -> "IOU", mi -> "MPT")
     );
 
     assertThat(exception.getMessage()).contains("Unsupported Issue Type");
@@ -243,12 +248,12 @@ class IssueTest extends AbstractJsonTest {
   @Test
   void testHandleWithUnsupportedIssueType() {
     Issue unsupportedIssue = new Issue() {
-      // Anonymous implementation that is neither CurrencyIssue nor MptIssue
+      // Anonymous implementation that is neither XrpIssue, IouIssue, nor MptIssue
     };
 
     IllegalStateException exception = assertThrows(
       IllegalStateException.class,
-      () -> unsupportedIssue.handle(ci -> { }, mi -> { })
+      () -> unsupportedIssue.handle(xi -> { }, ii -> { }, mi -> { })
     );
 
     assertThat(exception.getMessage()).contains("Unsupported Issue Type");

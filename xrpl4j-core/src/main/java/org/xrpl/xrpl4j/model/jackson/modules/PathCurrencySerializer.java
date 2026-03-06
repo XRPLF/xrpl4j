@@ -46,25 +46,44 @@ public class PathCurrencySerializer extends StdSerializer<PathCurrency> {
   ) throws IOException {
     gen.writeStartObject();
 
-    pathCurrency.issue().handle(
-      currencyIssue -> {
-        try {
-          gen.writeStringField("currency", currencyIssue.currency());
-          if (currencyIssue.issuer().isPresent()) {
-            gen.writeStringField("issuer", currencyIssue.issuer().get().value());
-          }
-        } catch (IOException e) {
-          throw new RuntimeException("Error serializing CurrencyIssue", e);
+    // Handle deprecated CurrencyIssue for backwards compatibility
+    if (CurrencyIssue.class.isAssignableFrom(pathCurrency.issue().getClass())) {
+      CurrencyIssue currencyIssue = (CurrencyIssue) pathCurrency.issue();
+      try {
+        gen.writeStringField("currency", currencyIssue.currency());
+        if (currencyIssue.issuer().isPresent()) {
+          gen.writeStringField("issuer", currencyIssue.issuer().get().value());
         }
-      },
-      mptIssue -> {
-        try {
-          gen.writeStringField("mpt_issuance_id", mptIssue.mptIssuanceId().value());
-        } catch (IOException e) {
-          throw new RuntimeException("Error serializing MptIssue", e);
-        }
+      } catch (IOException e) {
+        throw new RuntimeException("Error serializing CurrencyIssue", e);
       }
-    );
+    } else {
+      // Handle new Issue types (XrpIssue, IouIssue, MptIssue)
+      pathCurrency.issue().handle(
+        xrpIssue -> {
+          try {
+            gen.writeStringField("currency", xrpIssue.currency());
+          } catch (IOException e) {
+            throw new RuntimeException("Error serializing XrpIssue", e);
+          }
+        },
+        iouIssue -> {
+          try {
+            gen.writeStringField("currency", iouIssue.currency());
+            gen.writeStringField("issuer", iouIssue.issuer().value());
+          } catch (IOException e) {
+            throw new RuntimeException("Error serializing IouIssue", e);
+          }
+        },
+        mptIssue -> {
+          try {
+            gen.writeStringField("mpt_issuance_id", mptIssue.mptIssuanceId().value());
+          } catch (IOException e) {
+            throw new RuntimeException("Error serializing MptIssue", e);
+          }
+        }
+      );
+    }
 
     gen.writeEndObject();
   }

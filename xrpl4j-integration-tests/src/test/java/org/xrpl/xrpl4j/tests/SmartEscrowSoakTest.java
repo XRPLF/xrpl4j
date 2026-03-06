@@ -44,6 +44,8 @@ import org.xrpl.xrpl4j.model.transactions.FinishFunction;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.ImmutableEscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.ImmutableEscrowFinish;
+import org.xrpl.xrpl4j.model.transactions.Memo;
+import org.xrpl.xrpl4j.model.transactions.MemoWrapper;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -770,7 +772,10 @@ public class SmartEscrowSoakTest extends AbstractIT {
         .owner(owner)
         .offerSequence(offerSequence)
         .computationAllowance(ComputationAllowance.of(gasAllowance))
-        .signingPublicKey(finisherKeyPair.publicKey());
+        .signingPublicKey(finisherKeyPair.publicKey())
+        .addMemos(MemoWrapper.builder()
+          .memo(Memo.withPlaintext("WASM: " + function.getName()).build())
+          .build());
 
       // Add network ID if present
       networkId.ifPresent(escrowFinishBuilder::networkId);

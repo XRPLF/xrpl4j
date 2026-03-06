@@ -90,8 +90,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
 
   // Configuration
   private static final int NUM_WORKER_THREADS = 20;
-  private static final long FAUCET_INITIAL_BALANCE_DROPS = 100_000_000; // 100 XRP
-  private static final long ESCROW_AMOUNT_DROPS = 10_000; // 0.01 XRP per escrow
+  private static final long FAUCET_INITIAL_BALANCE_DROPS = 500_000_000; // 500 XRP (increased for reserve requirements)
+  private static final long ESCROW_AMOUNT_DROPS = 1_000; // 0.001 XRP per escrow (reduced to minimize reserve impact)
   private static final long TEST_DURATION_MINUTES = 60; // Run for 1 hour by default
   private static final long METRICS_REPORT_INTERVAL_SECONDS = 30;
 
@@ -122,8 +122,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
   private enum WasmFunction {
     // Simple functions - minimal gas needed
     ALWAYS_SUCCEED("always_succeed", true, 1269),
-    // Disabled
-    ALWAYS_FAIL("always_fail", false, 1269),
+    // Succeeds after 2 calls (uses data counter)
+    ALWAYS_FAIL("always_fail", true, 1836),
     CREDENTIAL_CHECK("credential_check", true, 10160),
     TIME_WINDOW("time_window", true, 1836),
     DATA_COUNTER("data_counter", true, 1836),
@@ -398,6 +398,40 @@ public class SmartEscrowSoakTest extends AbstractIT {
               boolean wasmReturnedFailure = "tecWASM_REJECTED".equals(txResult);
               boolean expectedSuccess = function.shouldSucceed();
 
+              // Special handling for always_fail which requires 2 calls to succeed
+              if ("always_fail".equals(function.getName()) && wasmReturnedFailure) {
+                LOGGER.info("Worker {} - always_fail returned failure on first attempt, retrying...", workerId);
+                // Retry the finish - the second call should succeed
+                EscrowFinishResult retryResult = finishSmartEscrowWithRetry(
+                  workerAccount,
+                  workerAddress,
+                  escrowResult.sequence,
+                  function
+                );
+
+                if (retryResult != null && retryResult.txHash != null) {
+                  TransactionResult<EscrowFinish> retryTxResult = scanForResult(
+                    () -> getValidatedTransaction(retryResult.txHash, EscrowFinish.class)
+                  );
+                  String retryTxResultCode = retryTxResult.metadata()
+                    .map(TransactionMetadata::transactionResult)
+                    .orElse("unknown");
+
+                  if ("tesSUCCESS".equals(retryTxResultCode)) {
+                    expectedSuccesses.incrementAndGet();
+                    functionExpectedSuccessCount.computeIfAbsent(function.getName(), k -> new AtomicInteger(0))
+                      .incrementAndGet();
+                    LOGGER.info("Worker {} - ✓ always_fail succeeded on second attempt as expected", workerId);
+                  } else {
+                    unexpectedFailures.incrementAndGet();
+                    functionUnexpectedFailureCount.computeIfAbsent(function.getName(), k -> new AtomicInteger(0))
+                      .incrementAndGet();
+                    LOGGER.warn("Worker {} - ✗ always_fail failed on second attempt: {}", workerId, retryTxResultCode);
+                  }
+                }
+                continue; // Skip normal result processing
+              }
+
               if (wasmReturnedSuccess && expectedSuccess) {
                 // Expected success - WASM returned 1 as expected
                 expectedSuccesses.incrementAndGet();
@@ -406,7 +440,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
                 LOGGER.info("Worker {} - ✓ Expected success: {} returned success, gas used: {}",
                   workerId, function.getName(), gasUsed != null ? gasUsed : "N/A");
               } else if (wasmReturnedFailure && !expectedSuccess) {
-                // Expected failure - WASM returned 0 as expected (e.g., always_fail)
+                // Expected failure - WASM returned 0 as expected
                 expectedFailures.incrementAndGet();
                 functionExpectedFailureCount.computeIfAbsent(function.getName(), k -> new AtomicInteger(0))
                   .incrementAndGet();
@@ -851,8 +885,12 @@ public class SmartEscrowSoakTest extends AbstractIT {
     System.out.println("🧪 WASM FUNCTIONS UNDER TEST");
     for (WasmFunction function : WasmFunction.values()) {
       String expected = function.shouldSucceed() ? "✓ Success" : "✗ Failure";
+      String note = "";
+      if ("always_fail".equals(function.getName())) {
+        note = " [Requires 2 calls]";
+      }
       System.out.println("  ├─ " + String.format("%-25s", function.getName()) +
-                         " (Expected: " + expected + ", Gas: " + function.getGasAllowance() + ")");
+                         " (Expected: " + expected + ", Gas: " + function.getGasAllowance() + ")" + note);
     }
     System.out.println();
     System.out.println("⏱️  Starting test run for " + TEST_DURATION_MINUTES + " minutes...");
@@ -1026,6 +1064,15 @@ public class SmartEscrowSoakTest extends AbstractIT {
            "terPRE_SEQ".equals(engineResult) ||
            "terQUEUED".equals(engineResult) ||
            "tefMAX_LEDGER".equals(engineResult);
+  }
+
+  /**
+   * Checks if an engine result is reserve-related and should trigger backoff.
+   */
+  private boolean isReserveRelatedEngineResult(String engineResult) {
+    return "tecINSUFFICIENT_RESERVE".equals(engineResult) ||
+           "tecINSUF_RESERVE_LINE".equals(engineResult) ||
+           "tecINSUF_RESERVE_OFFER".equals(engineResult);
   }
 
   /**

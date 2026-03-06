@@ -657,7 +657,10 @@ public class SmartEscrowSoakTest extends AbstractIT {
         .finishFunction(FinishFunction.of(wasmHex))
         .data(EscrowData.of(createEscrowData(function)))
         .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofMinutes(10))))
-        .signingPublicKey(senderKeyPair.publicKey());
+        .signingPublicKey(senderKeyPair.publicKey())
+        .addMemos(MemoWrapper.builder()
+          .memo(Memo.withPlaintext("WASM: " + function.getName()).build())
+          .build());
 
       // Add network ID if present
       networkId.ifPresent(escrowCreateBuilder::networkId);

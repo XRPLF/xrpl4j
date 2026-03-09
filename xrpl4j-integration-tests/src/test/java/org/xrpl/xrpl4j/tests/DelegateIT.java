@@ -75,9 +75,7 @@ public class DelegateIT extends AbstractIT {
 
   @BeforeEach
   public void setUp() throws JsonRpcClientErrorException {
-    // Query the network ID from the server
-    networkId = xrplClient.serverInformation().info().networkId()
-      .orElse(NetworkId.of(UnsignedInteger.ZERO));
+    networkId = xrplClient.serverInformation().info().networkId().orElse(null);
     logger.info("Using NetworkID: {}", networkId);
   }
 
@@ -103,7 +101,6 @@ public class DelegateIT extends AbstractIT {
         AccountPermissionWrapper.builder().permission(AccountPermission.of(TransactionType.TRUST_SET)).build()
       )
       .signingPublicKey(delegatingAccountKeyPair.publicKey())
-      .networkId(networkId)
       .build();
 
     SingleSignedTransaction<DelegateSet> signedDelegateSet = signatureService.sign(
@@ -144,7 +141,6 @@ public class DelegateIT extends AbstractIT {
         .permission(AccountPermission.of(TransactionType.PAYMENT))
         .build())
       .signingPublicKey(delegatingAccountKeyPair.publicKey())
-      .networkId(networkId)
       .build();
 
     SingleSignedTransaction<DelegateSet> signedDelegateSet = signatureService.sign(
@@ -178,7 +174,6 @@ public class DelegateIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .amount(amount)
       .signingPublicKey(delegateKeyPair.publicKey())  // Delegate's public key
-      .networkId(networkId)
       .build();
 
     // Sign with delegate's private key
@@ -238,7 +233,6 @@ public class DelegateIT extends AbstractIT {
         .permission(AccountPermission.of(TransactionType.TRUST_SET))
         .build())
       .signingPublicKey(delegatingAccountKeyPair.publicKey())
-      .networkId(networkId)
       .build();
 
     SingleSignedTransaction<DelegateSet> signedDelegateSet = signatureService.sign(
@@ -271,7 +265,6 @@ public class DelegateIT extends AbstractIT {
       .limitAmount(limitAmount)
       .flags(TrustSetFlags.empty())
       .signingPublicKey(delegateKeyPair.publicKey())  // Delegate's public key
-      .networkId(networkId)
       .build();
 
     // Sign with delegate's private key
@@ -317,7 +310,6 @@ public class DelegateIT extends AbstractIT {
           .build()
       )
       .signingPublicKey(delegatingAccountKeyPair.publicKey())
-      .networkId(networkId)
       .build();
 
     SingleSignedTransaction<DelegateSet> signedDelegateSet = signatureService.sign(
@@ -365,7 +357,6 @@ public class DelegateIT extends AbstractIT {
       .signingPublicKey(delegatorKeyPair.publicKey())
       .authorize(delegateKeyPair.publicKey().deriveAddress())
       .permissions(permissions)
-      .networkId(networkId)
       .build();
 
     SingleSignedTransaction<DelegateSet> signedDelegateSet = this.signatureService.sign(
@@ -440,7 +431,6 @@ public class DelegateIT extends AbstractIT {
       .signingPublicKey(delegatorKeyPair.publicKey())
       .authorize(delegateKeyPair.publicKey().deriveAddress())
       .permissions(permissions)
-      .networkId(networkId)
       .build();
 
     SingleSignedTransaction<DelegateSet> signedCreateDelegateSet = this.signatureService.sign(
@@ -486,7 +476,6 @@ public class DelegateIT extends AbstractIT {
       .signingPublicKey(delegatorKeyPair.publicKey())
       .authorize(delegateKeyPair.publicKey().deriveAddress())
       .permissions(Collections.emptyList())
-      .networkId(networkId)
       .build();
 
     SingleSignedTransaction<DelegateSet> signedRemoveDelegateSet = this.signatureService.sign(
@@ -549,7 +538,6 @@ public class DelegateIT extends AbstractIT {
       .signingPublicKey(delegatorKeyPair.publicKey())
       .authorize(delegateKeyPair.publicKey().deriveAddress())
       .permissions(initialPermissions)
-      .networkId(networkId)
       .build();
 
     SingleSignedTransaction<DelegateSet> signedInitialDelegateSet = this.signatureService.sign(
@@ -589,7 +577,6 @@ public class DelegateIT extends AbstractIT {
       .signingPublicKey(delegatorKeyPair.publicKey())
       .authorize(delegateKeyPair.publicKey().deriveAddress())
       .permissions(updatedPermissions)
-      .networkId(networkId)
       .build();
 
     SingleSignedTransaction<DelegateSet> signedUpdateDelegateSet = this.signatureService.sign(
@@ -661,7 +648,6 @@ public class DelegateIT extends AbstractIT {
       .signingPublicKey(delegatorKeyPair.publicKey())
       .authorize(delegateKeyPair.publicKey().deriveAddress())
       .permissions(permissions)
-      .networkId(networkId)
       .build();
 
     SingleSignedTransaction<DelegateSet> signedDelegateSet = this.signatureService.sign(
@@ -763,7 +749,6 @@ public class DelegateIT extends AbstractIT {
         .permission(AccountPermission.of(TransactionType.PAYMENT))
         .build())
       .signingPublicKey(delegatingAccountKeyPair.publicKey())
-      .networkId(networkId)
       .build();
 
     SingleSignedTransaction<DelegateSet> signedDelegateSet = signatureService.sign(
@@ -796,7 +781,6 @@ public class DelegateIT extends AbstractIT {
       .limitAmount(limitAmount)
       .flags(TrustSetFlags.empty())
       .signingPublicKey(delegateKeyPair.publicKey())  // Delegate's public key
-      .networkId(networkId)
       .build();
 
     // Sign with delegate's private key
@@ -837,7 +821,6 @@ public class DelegateIT extends AbstractIT {
         .permission(AccountPermission.of(TransactionType.PAYMENT))
         .build())
       .signingPublicKey(delegatingAccountKeyPair.publicKey())
-      .networkId(networkId)
       .build();
 
     SingleSignedTransaction<DelegateSet> signedDelegateSet = signatureService.sign(
@@ -865,7 +848,6 @@ public class DelegateIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .amount(amount)
       .signingPublicKey(unauthorizedDelegateKeyPair.publicKey())  // Wrong delegate's public key
-      .networkId(networkId)
       .build();
 
     // Sign with wrong delegate's private key
@@ -896,25 +878,25 @@ public class DelegateIT extends AbstractIT {
     );
 
     // Try to create a DelegateSet where Account == Authorize (self-delegation)
-    DelegateSet delegateSet = DelegateSet.builder()
-      .account(accountKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .sequence(accountInfo.accountData().sequence())
-      .authorize(accountKeyPair.publicKey().deriveAddress())  // Same as Account - self delegation
-      .addPermissions(AccountPermissionWrapper.builder()
-        .permission(AccountPermission.of(TransactionType.PAYMENT))
-        .build())
-      .signingPublicKey(accountKeyPair.publicKey())
-      .networkId(networkId)
-      .build();
+    // This should throw IllegalArgumentException during build() due to client-side validation
+    try {
+      DelegateSet delegateSet = DelegateSet.builder()
+        .account(accountKeyPair.publicKey().deriveAddress())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .sequence(accountInfo.accountData().sequence())
+        .authorize(accountKeyPair.publicKey().deriveAddress())  // Same as Account - self delegation
+        .addPermissions(AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
+          .build())
+        .signingPublicKey(accountKeyPair.publicKey())
+        .build();
 
-    SingleSignedTransaction<DelegateSet> signedDelegateSet = signatureService.sign(
-      accountKeyPair.privateKey(), delegateSet
-    );
-    SubmitResult<DelegateSet> delegateSetResult = xrplClient.submit(signedDelegateSet);
-
-    // Should fail with temBAD_SIGNER (cannot delegate to self)
-    assertThat(delegateSetResult.engineResult()).isEqualTo("temBAD_SIGNER");
-    logger.info("Self-delegation correctly failed with: {}", delegateSetResult.engineResult());
+      // If we get here, the validation didn't work
+      throw new AssertionError("Expected IllegalArgumentException for self-delegation");
+    } catch (IllegalArgumentException e) {
+      // Expected - client-side validation caught the self-delegation attempt
+      assertThat(e.getMessage()).contains("Authorize and Account must be different");
+      logger.info("Self-delegation correctly prevented by client-side validation: {}", e.getMessage());
+    }
   }
 }

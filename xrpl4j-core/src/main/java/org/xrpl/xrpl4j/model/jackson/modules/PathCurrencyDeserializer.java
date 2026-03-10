@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.xrpl.xrpl4j.model.client.path.PathCurrency;
-import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.ledger.XrpIssue;
@@ -69,7 +68,7 @@ public class PathCurrencyDeserializer extends StdDeserializer<PathCurrency> {
         return PathCurrency.of(XrpIssue.builder().build());
       }
 
-      // Otherwise, it's an IOU
+      // Otherwise, it's an IOU - issuer is REQUIRED for non-XRP currencies
       if (node.has("issuer")) {
         return PathCurrency.of(
           IouIssue.builder()
@@ -79,12 +78,9 @@ public class PathCurrencyDeserializer extends StdDeserializer<PathCurrency> {
         );
       }
 
-      // For backwards compatibility, if there's no issuer, create a deprecated CurrencyIssue
-      // This allows deserialization of legacy JSON that doesn't include an issuer
-      return PathCurrency.of(
-        CurrencyIssue.builder()
-          .currency(currency)
-          .build()
+      // If no issuer and not XRP, this is invalid
+      throw new IllegalArgumentException(
+        "Non-XRP currency '" + currency + "' must have an 'issuer' field in PathCurrency JSON"
       );
     }
 

@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.jackson.modules.PathCurrencyDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.PathCurrencySerializer;
-import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.XrpIssue;
@@ -56,29 +55,28 @@ public interface PathCurrency {
   /**
    * Construct a {@link PathCurrency} with the specified currency code and no issuer.
    *
-   * <p>This is a convenience method for creating a {@link PathCurrency} for XRP.
+   * <p>This is a convenience method for creating a {@link PathCurrency} for XRP only.
    * For IOUs with an issuer, use {@link #of(String, Address)}. For MPTokens, use {@link #of(Issue)} instead.</p>
    *
-   * @param currency A {@link String} of either a 3 character currency code, or a 40 character hexadecimal encoded
-   *                 currency code value.
+   * @param currency A {@link String} currency code. Must be "XRP".
    *
-   * @return A new {@link PathCurrency}.
-   * @deprecated This method is ambiguous for non-XRP currencies. Use {@link #of(Issue)} with {@link XrpIssue}
-   *             for XRP, or {@link #of(String, Address)} for IOUs with an issuer.
+   * @return A new {@link PathCurrency} for XRP.
+   * @throws IllegalArgumentException if currency is not "XRP"
+   * @deprecated Use {@link #of(Issue)} with {@link XrpIssue} for XRP,
+   *             or {@link #of(String, Address)} for IOUs with an issuer.
    */
   @Deprecated
   static PathCurrency of(String currency) {
-    // For backwards compatibility, we still support this method but it's deprecated
-    // The deserializer will handle this properly by checking if currency is XRP
     if ("XRP".equals(currency)) {
       return builder()
         .issue(XrpIssue.builder().build())
         .build();
     }
-    // For non-XRP, we need to use the deprecated CurrencyIssue to maintain backwards compatibility
-    return builder()
-      .issue(CurrencyIssue.builder().currency(currency).build())
-      .build();
+    throw new IllegalArgumentException(
+      "PathCurrency.of(String) only supports 'XRP'. " +
+      "For IOUs, use PathCurrency.of(String, Address) or PathCurrency.of(IouIssue). " +
+      "Received: " + currency
+    );
   }
 
   /**

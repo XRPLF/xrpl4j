@@ -862,15 +862,12 @@ public class OfferIT extends AbstractIT {
    * MPT as {@code TakerGets} and XRP as {@code TakerPays}. Verifies the offer is on ledger via
    * {@link OfferLedgerEntryParams} and verifiable via the {@code book_offers} RPC using {@link MptIssue}.
    *
-   * <p><strong>Note:</strong> This test is currently disabled because MPT support in the DEX (XLS-82d) is not yet
-   * fully implemented in the rippled version being used ({@code rippleci/rippled:develop}). The test will fail with
-   * "invalidTransaction (fails local checks: Amount can not be MPT.)" until XLS-82d is merged and enabled.
-   * Once MPT DEX support is available, remove the {@code @Disabled} annotation to enable this test.</p>
+   * <p><strong>Note:</strong> This test requires rippled built from the MPT DEX feature branch with XLS-82d support.
+   * MPT support in the DEX is available in the feature branch and will be merged to develop soon.</p>
    *
    * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
    */
   @Test
-  @Disabled("MPT in OfferCreate not yet supported in rippled - requires XLS-82d implementation")
   public void mptOfferCreateAndVerifyWithBookOffers() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     FeeResult feeResult = xrplClient.fee();
@@ -985,15 +982,12 @@ public class OfferIT extends AbstractIT {
    * offers: a sell offer (MPT for XRP) and a buy offer (XRP for MPT). Verifies the offers cross and
    * the buyer receives MPT tokens.
    *
-   * <p><strong>Note:</strong> This test is currently disabled because MPT support in the DEX (XLS-82d) is not yet
-   * fully implemented in the rippled version being used ({@code rippleci/rippled:develop}). The test will fail with
-   * "invalidTransaction (fails local checks: Amount can not be MPT.)" until XLS-82d is merged and enabled.
-   * Once MPT DEX support is available, remove the {@code @Disabled} annotation to enable this test.</p>
+   * <p><strong>Note:</strong> This test requires rippled built from the MPT DEX feature branch with XLS-82d support.
+   * MPT support in the DEX is available in the feature branch and will be merged to develop soon.</p>
    *
    * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
    */
   @Test
-  @Disabled("MPT in OfferCreate not yet supported in rippled - requires XLS-82d implementation")
   public void mptOfferCrossing() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     KeyPair buyerKeyPair = createRandomAccountEd25519();
@@ -1181,15 +1175,12 @@ public class OfferIT extends AbstractIT {
    * MPT as {@code TakerGets} and IOU as {@code TakerPays}. Verifies the offer via {@code book_offers} RPC
    * using {@link MptIssue} and {@link CurrencyIssue}.
    *
-   * <p><strong>Note:</strong> This test is currently disabled because MPT support in the DEX (XLS-82d) is not yet
-   * fully implemented in the rippled version being used ({@code rippleci/rippled:develop}). The test will fail with
-   * "invalidTransaction (fails local checks: Amount can not be MPT.)" until XLS-82d is merged and enabled.
-   * Once MPT DEX support is available, remove the {@code @Disabled} annotation to enable this test.</p>
+   * <p><strong>Note:</strong> This test requires rippled built from the MPT DEX feature branch with XLS-82d support.
+   * MPT support in the DEX is available in the feature branch and will be merged to develop soon.</p>
    *
    * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
    */
   @Test
-  @Disabled("MPT in OfferCreate not yet supported in rippled - requires XLS-82d implementation")
   public void mptOfferCreateWithIouAndVerifyWithBookOffers()
     throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair mptIssuerKeyPair = createRandomAccountEd25519();
@@ -1250,6 +1241,9 @@ public class OfferIT extends AbstractIT {
       .account(mptIssuerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(mptIssuerInfoBeforeTrust.accountData().sequence())
+      .lastLedgerSequence(
+        mptIssuerInfoBeforeTrust.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
       .limitAmount(IssuedCurrencyAmount.builder()
         .issuer(iouIssuerKeyPair.publicKey().deriveAddress())
         .currency(iouCurrency)
@@ -1287,6 +1281,9 @@ public class OfferIT extends AbstractIT {
         .build())
       .sequence(iouIssuerInfoBeforePayment.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        iouIssuerInfoBeforePayment.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
       .signingPublicKey(iouIssuerKeyPair.publicKey())
       .build();
 
@@ -1324,6 +1321,9 @@ public class OfferIT extends AbstractIT {
       .account(mptIssuerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(mptIssuerInfoBeforeOffer.accountData().sequence())
+      .lastLedgerSequence(
+        mptIssuerInfoBeforeOffer.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
       .takerGets(takerGetsMpt)
       .takerPays(takerPaysIou)
       .signingPublicKey(mptIssuerKeyPair.publicKey())

@@ -65,8 +65,8 @@ public class IssueDeserializer extends StdDeserializer<Issue> {
     if (node.has("currency")) {
       String currency = node.get("currency").asText();
 
-      // Check if it's XRP
-      if ("XRP".equals(currency)) {
+      // Check if it's XRP (case-insensitive)
+      if ("XRP".equalsIgnoreCase(currency)) {
         return XrpIssue.builder().build();
       }
 

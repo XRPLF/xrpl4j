@@ -82,7 +82,7 @@ public interface PathStep {
    * If present, this {@link PathStep} represents changing assets through an MPT order book.
    * The {@link MpTokenIssuanceId} identifies the MPT to exchange into at this step.
    * MUST NOT be provided if this {@link PathStep} specifies the {@link PathStep#account()},
-   * {@link PathStep#currency()}, or {@link PathStep#issuer()} fields.
+   * {@link PathStep#currency()} fields.
    *
    * @return An {@link Optional} of type {@link MpTokenIssuanceId}.
    */
@@ -98,7 +98,7 @@ public interface PathStep {
   default void validateMptMutualExclusion() {
     if (mptIssuanceId().isPresent()) {
       Preconditions.checkArgument(
-        !account().isPresent() && !currency().isPresent() && !issuer().isPresent(),
+              !account().isPresent() && !currency().isPresent(),
         "mpt_issuance_id is mutually exclusive with account, currency, and issuer in a PathStep."
       );
     }

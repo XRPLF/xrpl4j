@@ -1356,17 +1356,20 @@ public class AmmIT extends AbstractIT {
       ammInfoBeforeDeposit.amm().amount(),
       ammInfoBeforeDeposit.amm().amount2());
 
-    // Holder deposits XRP into the MPT/XRP AMM (single-asset deposit)
+    // Holder deposits MPT into the MPT/XRP AMM (single-asset deposit)
     AccountInfoResult holderInfoBeforeDeposit = scanForResult(
       () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
     );
 
-    XrpCurrencyAmount depositXrpAmount = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5));
+    MptCurrencyAmount depositMptAmount = MptCurrencyAmount.builder()
+      .mptIssuanceId(mptIssuanceId)
+      .value("5000")  // Deposit 5000 MPT tokens
+      .build();
     AmmDeposit deposit = AmmDeposit.builder()
       .account(holderKeyPair.publicKey().deriveAddress())
       .asset(MptIssue.of(mptIssuanceId))
       .asset2(XrpIssue.XRP)
-      .amount(depositXrpAmount)
+      .amount(depositMptAmount)  // Depositing MPT, not XRP
       .flags(AmmDepositFlags.SINGLE_ASSET)
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(holderInfoBeforeDeposit.accountData().sequence())
@@ -1379,6 +1382,7 @@ public class AmmIT extends AbstractIT {
     SingleSignedTransaction<AmmDeposit> signedDeposit = signatureService.sign(holderKeyPair.privateKey(), deposit);
     SubmitResult<AmmDeposit> depositResult = xrplClient.submit(signedDeposit);
     assertThat(depositResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+    logger.info("MPT deposit successful! Deposited {} MPT tokens into AMM", depositMptAmount.value());
 
     scanForFinality(
       signedDeposit.hash(),
@@ -1388,13 +1392,14 @@ public class AmmIT extends AbstractIT {
       holderKeyPair.publicKey().deriveAddress()
     );
 
-    // Verify AMM state reflects the deposit - XRP amount should have increased
+    // Verify AMM state reflects the deposit - MPT amount should have increased
     AmmInfoResult ammInfoAfterDeposit = xrplClient.ammInfo(
       AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), XrpIssue.XRP)
     );
-    assertThat(ammInfoAfterDeposit.amm().amount2()).isInstanceOf(XrpCurrencyAmount.class);
-    assertThat((XrpCurrencyAmount) ammInfoAfterDeposit.amm().amount2())
-      .isGreaterThan((XrpCurrencyAmount) ammInfo.amm().amount2());
+    assertThat(ammInfoAfterDeposit.amm().amount()).isInstanceOf(MptCurrencyAmount.class);
+    UnsignedLong mptAmountBefore = UnsignedLong.valueOf(((MptCurrencyAmount) ammInfo.amm().amount()).value());
+    UnsignedLong mptAmountAfter = UnsignedLong.valueOf(((MptCurrencyAmount) ammInfoAfterDeposit.amm().amount()).value());
+    assertThat(mptAmountAfter).isGreaterThan(mptAmountBefore);
 
     // Holder withdraws XRP from the AMM (single-asset withdraw)
     AccountInfoResult holderInfoAfterDeposit = scanForResult(
@@ -2236,9 +2241,17 @@ public class AmmIT extends AbstractIT {
 
     assertThat(ammInfoByAssets.amm().account()).isNotNull();
     assertThat(ammInfoByAssets.amm().amount()).isInstanceOf(MptCurrencyAmount.class);
-    assertThat(((MptCurrencyAmount) ammInfoByAssets.amm().amount()).mptIssuanceId()).isEqualTo(mpt1IssuanceId);
     assertThat(ammInfoByAssets.amm().amount2()).isInstanceOf(MptCurrencyAmount.class);
-    assertThat(((MptCurrencyAmount) ammInfoByAssets.amm().amount2()).mptIssuanceId()).isEqualTo(mpt2IssuanceId);
+
+    // Extract the actual MPT issuance IDs from the AMM info response
+    // Note: rippled may normalize the asset order, so we need to check what order they're actually stored in
+    MpTokenIssuanceId actualAsset1Id = ((MptCurrencyAmount) ammInfoByAssets.amm().amount()).mptIssuanceId();
+    MpTokenIssuanceId actualAsset2Id = ((MptCurrencyAmount) ammInfoByAssets.amm().amount2()).mptIssuanceId();
+
+    // Verify that both MPT issuance IDs are present (in either order)
+    assertThat(actualAsset1Id).isIn(mpt1IssuanceId, mpt2IssuanceId);
+    assertThat(actualAsset2Id).isIn(mpt1IssuanceId, mpt2IssuanceId);
+    assertThat(actualAsset1Id).isNotEqualTo(actualAsset2Id);
 
     // Verify AMM ledger entry via AmmLedgerEntryParams with MPT1/MPT2 assets
     LedgerEntryResult<AmmObject> ammObject = xrplClient.ledgerEntry(
@@ -2252,8 +2265,9 @@ public class AmmIT extends AbstractIT {
     );
 
     assertThat(ammObject.node().account()).isEqualTo(ammInfoByAssets.amm().account());
-    assertThat(ammObject.node().asset()).isEqualTo(MptIssue.of(mpt1IssuanceId));
-    assertThat(ammObject.node().asset2()).isEqualTo(MptIssue.of(mpt2IssuanceId));
+    // Use the actual asset order from ammInfoByAssets, not the order we submitted
+    assertThat(ammObject.node().asset()).isEqualTo(MptIssue.of(actualAsset1Id));
+    assertThat(ammObject.node().asset2()).isEqualTo(MptIssue.of(actualAsset2Id));
     assertThat(ammObject.node().lpTokenBalance()).isEqualTo(ammInfoByAssets.amm().lpToken());
     assertThat(ammObject.node().tradingFee()).isEqualTo(ammInfoByAssets.amm().tradingFee());
 

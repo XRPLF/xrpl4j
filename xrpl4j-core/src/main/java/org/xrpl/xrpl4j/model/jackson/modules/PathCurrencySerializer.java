@@ -24,8 +24,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.xrpl.xrpl4j.model.client.path.PathCurrency;
-import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
-import org.xrpl.xrpl4j.model.ledger.MptIssue;
 
 import java.io.IOException;
 
@@ -46,44 +44,31 @@ public class PathCurrencySerializer extends StdSerializer<PathCurrency> {
   ) throws IOException {
     gen.writeStartObject();
 
-    // Handle deprecated CurrencyIssue for backwards compatibility
-    if (CurrencyIssue.class.isAssignableFrom(pathCurrency.issue().getClass())) {
-      CurrencyIssue currencyIssue = (CurrencyIssue) pathCurrency.issue();
-      try {
-        gen.writeStringField("currency", currencyIssue.currency());
-        if (currencyIssue.issuer().isPresent()) {
-          gen.writeStringField("issuer", currencyIssue.issuer().get().value());
+    // Use 3-way split: XrpIssue, IouIssue, MptIssue
+    pathCurrency.issue().handle(
+      xrpIssue -> {
+        try {
+          gen.writeStringField("currency", xrpIssue.currency());
+        } catch (IOException e) {
+          throw new RuntimeException("Error serializing XrpIssue", e);
         }
-      } catch (IOException e) {
-        throw new RuntimeException("Error serializing CurrencyIssue", e);
+      },
+      iouIssue -> {
+        try {
+          gen.writeStringField("currency", iouIssue.currency());
+          gen.writeStringField("issuer", iouIssue.issuer().value());
+        } catch (IOException e) {
+          throw new RuntimeException("Error serializing IouIssue", e);
+        }
+      },
+      mptIssue -> {
+        try {
+          gen.writeStringField("mpt_issuance_id", mptIssue.mptIssuanceId().value());
+        } catch (IOException e) {
+          throw new RuntimeException("Error serializing MptIssue", e);
+        }
       }
-    } else {
-      // Handle new Issue types (XrpIssue, IouIssue, MptIssue)
-      pathCurrency.issue().handle(
-        xrpIssue -> {
-          try {
-            gen.writeStringField("currency", xrpIssue.currency());
-          } catch (IOException e) {
-            throw new RuntimeException("Error serializing XrpIssue", e);
-          }
-        },
-        iouIssue -> {
-          try {
-            gen.writeStringField("currency", iouIssue.currency());
-            gen.writeStringField("issuer", iouIssue.issuer().value());
-          } catch (IOException e) {
-            throw new RuntimeException("Error serializing IouIssue", e);
-          }
-        },
-        mptIssue -> {
-          try {
-            gen.writeStringField("mpt_issuance_id", mptIssue.mptIssuanceId().value());
-          } catch (IOException e) {
-            throw new RuntimeException("Error serializing MptIssue", e);
-          }
-        }
-      );
-    }
+    );
 
     gen.writeEndObject();
   }

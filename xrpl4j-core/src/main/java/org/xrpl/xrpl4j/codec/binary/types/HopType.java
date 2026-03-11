@@ -39,6 +39,7 @@ public class HopType extends SerializedType<HopType> {
   public static final byte TYPE_ACCOUNT = 0x01;
   public static final byte TYPE_CURRENCY = 0x10;
   public static final byte TYPE_ISSUER = 0x20;
+  public static final byte TYPE_MPT = 0x40;
 
   private static final ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
@@ -55,12 +56,21 @@ public class HopType extends SerializedType<HopType> {
     int type = parser.readUInt8().intValue();
     UnsignedByteArray byteArray = UnsignedByteArray.of(UnsignedByte.of(type));
 
+    // Validate that currency and MPT are mutually exclusive
+    if ((type & TYPE_CURRENCY) > 0 && (type & TYPE_MPT) > 0) {
+      throw new IllegalArgumentException(
+        "Invalid binary input: Currency and mpt_issuance_id are mutually exclusive in a path hop"
+      );
+    }
+
     if ((type & TYPE_ACCOUNT) > 0) {
       byteArray.append(parser.read(AccountIdType.WIDTH));
     }
 
     if ((type & TYPE_CURRENCY) > 0) {
       byteArray.append(parser.read(CurrencyType.WIDTH));
+    } else if ((type & TYPE_MPT) > 0) {
+      byteArray.append(parser.read(Hash192Type.WIDTH));
     }
 
     if ((type & TYPE_ISSUER) > 0) {
@@ -80,6 +90,13 @@ public class HopType extends SerializedType<HopType> {
 
     Hop hop = objectMapper.treeToValue(node, Hop.class);
 
+    // Validate that currency and mptIssuanceId are mutually exclusive
+    if (hop.currency().isPresent() && hop.mptIssuanceId().isPresent()) {
+      throw new IllegalArgumentException(
+        "Currency and mpt_issuance_id are mutually exclusive in a path hop"
+      );
+    }
+
     hop.account().ifPresent(account -> {
       byteArray.append(new AccountIdType().fromJson(account).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_ACCOUNT)));
@@ -88,6 +105,11 @@ public class HopType extends SerializedType<HopType> {
     hop.currency().ifPresent(currency -> {
       byteArray.append(new CurrencyType().fromJson(currency).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_CURRENCY)));
+    });
+
+    hop.mptIssuanceId().ifPresent(mptIssuanceId -> {
+      byteArray.append(new Hash192Type().fromJson(mptIssuanceId).value());
+      byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_MPT)));
     });
 
     hop.issuer().ifPresent(issuer -> {
@@ -113,8 +135,12 @@ public class HopType extends SerializedType<HopType> {
       builder.currency(new CurrencyType().fromParser(parser).toJson());
     }
 
+    if ((type & TYPE_MPT) > 0) {
+      builder.mptIssuanceId(new Hash192Type().fromParser(parser).toJson());
+    }
+
     if ((type & TYPE_ISSUER) > 0) {
-      builder.account(new AccountIdType().fromParser(parser).toJson());
+      builder.issuer(new AccountIdType().fromParser(parser).toJson());
     }
 
     return objectMapper.valueToTree(builder.build());

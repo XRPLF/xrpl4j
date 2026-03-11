@@ -80,6 +80,7 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
@@ -2538,26 +2539,23 @@ public class BinarySerializationTests {
       )
       .amount(XrpCurrencyAmount.ofDrops(1000000))
       .amount2(
-        IssuedCurrencyAmount.builder()
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptId)
           .value("200")
-          .currency("LPT")
-          .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
           .build()
       )
       .tradingFee(TradingFee.of(UnsignedInteger.ONE))
       .build();
 
-    // TODO: Replace this placeholder with actual binary from rippled IT
-    // Run the integration test and capture the binary encoding from rippled
-    String expectedBinary = "PLACEHOLDER_BINARY_FROM_RIPPLED_IT";
-
-    // Temporarily skip assertion until we get the actual binary from IT
-    // assertSerializesAndDeserializes(ammCreate, expectedBinary);
-
-    // For now, just verify it serializes without error
+    // Verify it serializes and deserializes correctly
     String transactionJson = objectMapper.writeValueAsString(ammCreate);
     String transactionBinary = binaryCodec.encode(transactionJson);
     assertThat(transactionBinary).isNotEmpty();
+
+    // Verify deserialization
+    String decodedJson = binaryCodec.decode(transactionBinary);
+    AmmCreate decoded = objectMapper.readValue(decodedJson, AmmCreate.class);
+    assertThat(decoded).isEqualTo(ammCreate);
   }
 
   @Test
@@ -2575,33 +2573,22 @@ public class BinarySerializationTests {
       .asset(MptIssue.of(mptId))
       .asset2(Issue.XRP)
       .amount(
-        IssuedCurrencyAmount.builder()
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptId)
           .value("200")
-          .currency("LPT")
-          .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
           .build()
       )
-      .lpTokenOut(
-        IssuedCurrencyAmount.builder()
-          .value("100")
-          .currency("LPT")
-          .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
-          .build()
-      )
-      .tradingFee(TradingFee.ofPercent(BigDecimal.ONE))
       .build();
 
-    // TODO: Replace this placeholder with actual binary from rippled IT
-    // Run the integration test and capture the binary encoding from rippled
-    String expectedBinary = "PLACEHOLDER_BINARY_FROM_RIPPLED_IT";
-
-    // Temporarily skip assertion until we get the actual binary from IT
-    // assertSerializesAndDeserializes(ammDeposit, expectedBinary);
-
-    // For now, just verify it serializes without error
+    // Verify it serializes and deserializes correctly
     String transactionJson = objectMapper.writeValueAsString(ammDeposit);
     String transactionBinary = binaryCodec.encode(transactionJson);
     assertThat(transactionBinary).isNotEmpty();
+
+    // Verify deserialization
+    String decodedJson = binaryCodec.decode(transactionBinary);
+    AmmDeposit decoded = objectMapper.readValue(decodedJson, AmmDeposit.class);
+    assertThat(decoded).isEqualTo(ammDeposit);
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

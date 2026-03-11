@@ -20,33 +20,37 @@ package org.xrpl.xrpl4j.codec.binary.types;
  * =========================LICENSE_END==================================
  */
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
-import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
- * Model object a Hop object inside a XRPL {@link PathType} object.
+ * Codec for XRPL Hash192 type (24 bytes).
+ * Used for MPT issuance IDs in path-set serialization.
  */
-@Immutable
-@JsonSerialize(as = ImmutableHop.class)
-@JsonDeserialize(as = ImmutableHop.class)
-public interface Hop {
+public class Hash192Type extends HashType<Hash192Type> {
 
-  static ImmutableHop.Builder builder() {
-    return ImmutableHop.builder();
+  public static final int WIDTH = 24;
+  protected static final Pattern HEX_REGEX = Pattern.compile("^[A-F0-9]{48}$");
+
+  public Hash192Type() {
+    this(UnsignedByteArray.ofSize(WIDTH));
   }
 
-  Optional<JsonNode> issuer();
+  public Hash192Type(UnsignedByteArray list) {
+    super(list, WIDTH);
+  }
 
-  Optional<JsonNode> account();
+  @Override
+  public Hash192Type fromParser(BinaryParser parser) {
+    return new Hash192Type(parser.read(WIDTH));
+  }
 
-  Optional<JsonNode> currency();
-
-  @JsonProperty("mpt_issuance_id")
-  Optional<JsonNode> mptIssuanceId();
-
+  @Override
+  public Hash192Type fromJson(JsonNode node) {
+    return new Hash192Type(UnsignedByteArray.fromHex(node.asText()));
+  }
 }
+

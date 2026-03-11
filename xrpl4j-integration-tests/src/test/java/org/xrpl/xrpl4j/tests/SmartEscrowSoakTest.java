@@ -31,7 +31,10 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
@@ -91,10 +94,10 @@ public class SmartEscrowSoakTest extends AbstractIT {
   private static final Logger LOGGER = LoggerFactory.getLogger(SmartEscrowSoakTest.class);
 
   // Configuration
-  private static final int NUM_WORKER_THREADS = 20;
+  private static final int NUM_WORKER_THREADS = 75;
   private static final long FAUCET_INITIAL_BALANCE_DROPS = 500_000_000; // 500 XRP (increased for reserve requirements)
   private static final long ESCROW_AMOUNT_DROPS = 1_000; // 0.001 XRP per escrow (reduced to minimize reserve impact)
-  private static final long TEST_DURATION_MINUTES = 60; // Run for 1 hour by default
+  private static final long TEST_DURATION_MINUTES = 240; // Run for 4 hours by default
   private static final long METRICS_REPORT_INTERVAL_SECONDS = 30;
 
   // Resilience configuration
@@ -102,6 +105,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
   private static final long INITIAL_BACKOFF_MS = 100;
   private static final long MAX_BACKOFF_MS = 5000;
   private static final long SEQUENCE_REFRESH_INTERVAL_MS = 10000; // Refresh sequence every 10s
+  private static final long BALANCE_CHECK_INTERVAL_MS = 30000; // Check balance every 30s
+  private static final long MIN_BALANCE_DROPS = 50_000_000; // Refund if below 50 XRP
 
   // Network configuration
   private Optional<NetworkId> networkId = Optional.empty();
@@ -119,6 +124,10 @@ public class SmartEscrowSoakTest extends AbstractIT {
   private final ConcurrentHashMap<String, AtomicInteger> functionExpectedSuccessCount = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, AtomicInteger> functionExpectedFailureCount = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, AtomicInteger> functionUnexpectedFailureCount = new ConcurrentHashMap<>();
+
+  // Throughput tracking
+  private volatile UnsignedInteger startLedgerIndex = null;
+  private volatile long startTimeMillis = 0;
 
   // WASM function types to test
   private enum WasmFunction {
@@ -158,6 +167,17 @@ public class SmartEscrowSoakTest extends AbstractIT {
   @Test
   public void runSmartEscrowSoakTest() throws Exception {
     printTestHeader();
+
+    // Capture start time and ledger index for throughput calculations
+    startTimeMillis = System.currentTimeMillis();
+    LOGGER.info("Capturing initial ledger index for throughput tracking...");
+    LedgerResult startLedger = xrplClient.ledger(
+      LedgerRequestParams.builder()
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+        .build()
+    );
+    startLedgerIndex = startLedger.ledgerIndexSafe().unsignedIntegerValue();
+    LOGGER.info("Test starting at ledger index: {}", startLedgerIndex);
 
     // Get network ID from server
     LOGGER.info("Fetching network ID from server...");
@@ -227,7 +247,9 @@ public class SmartEscrowSoakTest extends AbstractIT {
     private volatile boolean running = true;
     private UnsignedInteger currentSequence = null;
     private long lastSequenceRefresh = 0;
+    private long lastBalanceCheck = 0;
     private int consecutiveErrors = 0;
+    private int consecutiveReserveErrors = 0;
 
     public WorkerThread(int workerId, KeyPair workerAccount, Map<String, String> wasmHexByFunction) {
       this.workerId = workerId;
@@ -268,6 +290,52 @@ public class SmartEscrowSoakTest extends AbstractIT {
     }
 
     /**
+     * Checks if balance should be checked based on time interval.
+     */
+    private boolean shouldCheckBalance() {
+      return (System.currentTimeMillis() - lastBalanceCheck) > BALANCE_CHECK_INTERVAL_MS;
+    }
+
+    /**
+     * Checks account balance and refunds from faucet if needed.
+     */
+    private void checkAndRefundBalance() {
+      try {
+        Address workerAddress = workerAccount.publicKey().deriveAddress();
+        AccountInfoResult accountInfo = scanForResult(
+          () -> getValidatedAccountInfo(workerAddress)
+        );
+
+        XrpCurrencyAmount balance = accountInfo.accountData().balance();
+        long balanceDrops = balance.value().longValue();
+
+        LOGGER.info("Worker {} - Current balance: {} XRP ({} drops)",
+          workerId,
+          balanceDrops / 1_000_000.0,
+          balanceDrops);
+
+        if (balanceDrops < MIN_BALANCE_DROPS) {
+          LOGGER.warn("Worker {} - Balance low ({} XRP), refunding from faucet...",
+            workerId,
+            balanceDrops / 1_000_000.0);
+
+          // Fund the account from the faucet
+          fundAccount(workerAddress);
+
+          // Refresh sequence after funding
+          refreshSequenceFromLedger();
+
+          LOGGER.info("Worker {} - Account refunded successfully", workerId);
+          consecutiveReserveErrors = 0; // Reset reserve error counter
+        }
+
+        lastBalanceCheck = System.currentTimeMillis();
+      } catch (Exception e) {
+        LOGGER.error("Worker {} - Failed to check/refund balance", workerId, e);
+      }
+    }
+
+    /**
      * Applies exponential backoff when errors occur.
      */
     private void applyBackoff(int attemptNumber) {
@@ -297,6 +365,11 @@ public class SmartEscrowSoakTest extends AbstractIT {
           // Periodically refresh sequence from ledger to prevent drift
           if (shouldRefreshSequence()) {
             refreshSequenceFromLedger();
+          }
+
+          // Periodically check balance and refund if needed
+          if (shouldCheckBalance()) {
+            checkAndRefundBalance();
           }
 
           // Use worker's dedicated account as both sender and receiver
@@ -330,6 +403,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
           }
 
           consecutiveErrors = 0; // Reset on success
+          consecutiveReserveErrors = 0; // Reset reserve errors on successful escrow creation
 
           if (escrowResult.txHash != null) {
             escrowsCreated.incrementAndGet();
@@ -512,6 +586,29 @@ public class SmartEscrowSoakTest extends AbstractIT {
         } catch (Exception e) {
           LOGGER.error("Worker {} - Error creating escrow (attempt {})", workerId, attempt + 1, e);
 
+          // Check if it's a reserve error
+          if (isReserveError(e)) {
+            consecutiveReserveErrors++;
+            LOGGER.warn("Worker {} - Reserve error detected (consecutive: {}), checking balance and refunding",
+              workerId, consecutiveReserveErrors);
+
+            // Increment sequence since reserve errors consume it
+            currentSequence = currentSequence.plus(UnsignedInteger.ONE);
+
+            // Immediately check and refund balance
+            checkAndRefundBalance();
+
+            // If we've had multiple consecutive reserve errors, apply backoff
+            if (consecutiveReserveErrors > 3) {
+              LOGGER.warn("Worker {} - Multiple consecutive reserve errors, applying backoff", workerId);
+              applyBackoff(Math.min(consecutiveReserveErrors - 3, 5));
+            }
+
+            // Don't retry, return null to continue to next iteration
+            errors.incrementAndGet();
+            return null;
+          }
+
           // Check if it's a sequence error
           if (isSequenceError(e)) {
             sequenceErrors.incrementAndGet();
@@ -565,6 +662,29 @@ public class SmartEscrowSoakTest extends AbstractIT {
         } catch (Exception e) {
           LOGGER.error("Worker {} - Error finishing escrow (attempt {})", workerId, attempt + 1, e);
 
+          // Check if it's a reserve error
+          if (isReserveError(e)) {
+            consecutiveReserveErrors++;
+            LOGGER.warn("Worker {} - Reserve error detected on finish (consecutive: {}), checking balance and refunding",
+              workerId, consecutiveReserveErrors);
+
+            // Increment sequence since reserve errors consume it
+            currentSequence = currentSequence.plus(UnsignedInteger.ONE);
+
+            // Immediately check and refund balance
+            checkAndRefundBalance();
+
+            // If we've had multiple consecutive reserve errors, apply backoff
+            if (consecutiveReserveErrors > 3) {
+              LOGGER.warn("Worker {} - Multiple consecutive reserve errors, applying backoff", workerId);
+              applyBackoff(Math.min(consecutiveReserveErrors - 3, 5));
+            }
+
+            // Don't retry, return null to continue to next iteration
+            errors.incrementAndGet();
+            return null;
+          }
+
           // Check if it's a sequence error
           if (isSequenceError(e)) {
             sequenceErrors.incrementAndGet();
@@ -596,6 +716,20 @@ public class SmartEscrowSoakTest extends AbstractIT {
         message.contains("terQUEUED") ||
         message.contains("tefMAX_LEDGER") ||
         message.contains("Account not found");
+    }
+
+    /**
+     * Checks if an exception is related to reserve errors.
+     */
+    private boolean isReserveError(Exception e) {
+      String message = e.getMessage();
+      if (message == null) {
+        return false;
+      }
+      return message.contains("Reserve error") ||
+        message.contains("tecINSUFFICIENT_RESERVE") ||
+        message.contains("tecINSUF_RESERVE_LINE") ||
+        message.contains("tecINSUF_RESERVE_OFFER");
     }
   }
 
@@ -715,6 +849,14 @@ public class SmartEscrowSoakTest extends AbstractIT {
         throw new RuntimeException("Sequence error: " + engineResult);
       }
 
+      // Handle reserve-related errors
+      if (isReserveRelatedEngineResult(engineResult)) {
+        LOGGER.warn("✗ EscrowCreate reserve error - function: {}, result: {}, sequence: {}",
+          function.getName(), engineResult, escrowCreate.sequence());
+        // Sequence was consumed, throw special exception to trigger balance check
+        throw new RuntimeException("Reserve error: " + engineResult);
+      }
+
       if (engineResult.equals("tesSUCCESS")) {
         LOGGER.info("✓ EscrowCreate submitted successfully - hash: {}, sequence: {}, function: {}",
           result.transactionResult().hash(),
@@ -827,6 +969,14 @@ public class SmartEscrowSoakTest extends AbstractIT {
         throw new RuntimeException("Sequence error: " + engineResult);
       }
 
+      // Handle reserve-related errors
+      if (isReserveRelatedEngineResult(engineResult)) {
+        LOGGER.warn("✗ EscrowFinish reserve error - function: {}, result: {}, sequence: {}",
+          function.getName(), engineResult, sequence);
+        // Sequence was consumed, throw special exception to trigger balance check
+        throw new RuntimeException("Reserve error: " + engineResult);
+      }
+
       if (engineResult.equals("tesSUCCESS")) {
         LOGGER.info("✓ EscrowFinish submitted successfully - hash: {}, function: {}",
           txHash,
@@ -928,6 +1078,36 @@ public class SmartEscrowSoakTest extends AbstractIT {
     double retryRate = created > 0 ? (retried * 100.0) / created : 0;
     double avgGas = expSuccess > 0 ? gasUsed / (double) expSuccess : 0;
 
+    // Calculate final throughput metrics
+    double txPerSecond = 0;
+    double txPerLedger = 0;
+    long ledgersPassed = 0;
+    double elapsedSeconds = 0;
+    try {
+      // Get final ledger index
+      LedgerResult endLedger = xrplClient.ledger(
+        LedgerRequestParams.builder()
+          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+          .build()
+      );
+      UnsignedInteger endLedgerIndex = endLedger.ledgerIndexSafe().unsignedIntegerValue();
+
+      // Calculate elapsed time and ledgers
+      long elapsedTimeMillis = System.currentTimeMillis() - startTimeMillis;
+      elapsedSeconds = elapsedTimeMillis / 1000.0;
+      ledgersPassed = endLedgerIndex.minus(startLedgerIndex).longValue();
+
+      // Calculate throughput
+      if (elapsedSeconds > 0) {
+        txPerSecond = totalFinished / elapsedSeconds;
+      }
+      if (ledgersPassed > 0) {
+        txPerLedger = totalFinished / (double) ledgersPassed;
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Failed to calculate final throughput metrics", e);
+    }
+
     System.out.println();
     System.out.println(repeat("─", 80));
     System.out.println();
@@ -940,9 +1120,11 @@ public class SmartEscrowSoakTest extends AbstractIT {
     System.out.println("📊 OVERALL STATISTICS");
     System.out.println("  ├─ Total Escrows Created:     " + String.format("%,d", created));
     System.out.println("  ├─ Total Escrows Finished:    " + String.format("%,d", totalFinished));
-    System.out.println("  ├─ Test Duration:             " + TEST_DURATION_MINUTES + " minutes");
-    System.out.println("  └─ Throughput:                " +
-      String.format("%.2f escrows/minute", created / (double) TEST_DURATION_MINUTES));
+    System.out.println("  ├─ Test Duration:             " + TEST_DURATION_MINUTES + " minutes" +
+      " (" + String.format("%.1f", elapsedSeconds) + " seconds)");
+    System.out.println("  ├─ Ledgers Processed:         " + String.format("%,d", ledgersPassed));
+    System.out.println("  ├─ Throughput (time):         " + String.format("%.2f tx/sec", txPerSecond));
+    System.out.println("  └─ Throughput (ledger):       " + String.format("%.2f tx/ledger", txPerLedger));
     System.out.println();
 
     // Success Metrics
@@ -1213,6 +1395,34 @@ public class SmartEscrowSoakTest extends AbstractIT {
     double retryRate = created > 0 ? (retried * 100.0) / created : 0;
     double avgGas = expSuccess > 0 ? gasUsed / (double) expSuccess : 0;
 
+    // Calculate throughput metrics
+    double txPerSecond = 0;
+    double txPerLedger = 0;
+    try {
+      // Get current ledger index
+      LedgerResult currentLedger = xrplClient.ledger(
+        LedgerRequestParams.builder()
+          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+          .build()
+      );
+      UnsignedInteger currentLedgerIndex = currentLedger.ledgerIndexSafe().unsignedIntegerValue();
+
+      // Calculate elapsed time and ledgers
+      long elapsedTimeMillis = System.currentTimeMillis() - startTimeMillis;
+      double elapsedSeconds = elapsedTimeMillis / 1000.0;
+      long ledgersPassed = currentLedgerIndex.minus(startLedgerIndex).longValue();
+
+      // Calculate throughput
+      if (elapsedSeconds > 0) {
+        txPerSecond = totalFinished / elapsedSeconds;
+      }
+      if (ledgersPassed > 0) {
+        txPerLedger = totalFinished / (double) ledgersPassed;
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Failed to calculate throughput metrics", e);
+    }
+
     System.out.println();
     System.out.println("📊 PROGRESS UPDATE - " + java.time.LocalDateTime.now().format(
       java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")));
@@ -1226,6 +1436,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
       " (" + String.format("%.1f%%", retryRate) + ")" +
       " | Seq Errors: " + String.format("%,3d", seqErrors) +
       " | Avg Gas: " + String.format("%,.0f", avgGas));
+    System.out.println("  Throughput: " + String.format("%.2f tx/sec", txPerSecond) +
+      " | " + String.format("%.2f tx/ledger", txPerLedger));
     System.out.println();
   }
 }

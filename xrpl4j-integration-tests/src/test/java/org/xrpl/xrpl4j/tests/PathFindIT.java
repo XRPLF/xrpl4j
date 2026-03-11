@@ -48,7 +48,6 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
  * Integration tests for ripple_path_find and path_find RPC methods with MPT (Multi-Purpose Token) support.
  * Tests path finding functionality for MPT as destination asset.
  */
-@DisabledIf(value = "shouldNotRun", disabledReason = "PathFindIT only runs on local rippled node or devnet.")
 public class PathFindIT extends AbstractIT {
 
   static boolean shouldNotRun() {

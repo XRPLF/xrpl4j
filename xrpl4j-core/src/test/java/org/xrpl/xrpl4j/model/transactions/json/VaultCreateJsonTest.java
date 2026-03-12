@@ -52,22 +52,22 @@ public class VaultCreateJsonTest extends AbstractJsonTest {
       .build();
 
     String json = "{" +
-      "\"Account\":\"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
-      "\"Asset\":{" +
-      "\"currency\":\"USD\"," +
-      "\"issuer\":\"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"" +
-      "}," +
-      "\"AssetsMaximum\":\"1000000\"," +
-      "\"MPTokenMetadata\":\"AABB\"," +
-      "\"DomainID\":\"0000000000000000000000000000000000000000000000000000000000000001\"," +
-      "\"WithdrawalPolicy\":1," +
-      "\"Data\":\"48656C6C6F\"," +
-      "\"Scale\":8," +
-      "\"Flags\":196608," +
-      "\"Fee\":\"10\"," +
-      "\"Sequence\":1," +
-      "\"SigningPubKey\":\"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
-      "\"TransactionType\":\"VaultCreate\"" +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"Asset\": {" +
+      "    \"currency\": \"USD\"," +
+      "    \"issuer\": \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"" +
+      "  }," +
+      "  \"AssetsMaximum\": \"1000000\"," +
+      "  \"MPTokenMetadata\": \"AABB\"," +
+      "  \"DomainID\": \"0000000000000000000000000000000000000000000000000000000000000001\"," +
+      "  \"WithdrawalPolicy\": 1," +
+      "  \"Data\": \"48656C6C6F\"," +
+      "  \"Scale\": 8," +
+      "  \"Flags\": 196608," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultCreate\"" +
       "}";
 
     assertCanSerializeAndDeserialize(vaultCreate, json);
@@ -86,14 +86,14 @@ public class VaultCreateJsonTest extends AbstractJsonTest {
       .build();
 
     String json = "{" +
-      "\"Account\":\"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
-      "\"Asset\":{" +
-      "\"currency\":\"XRP\"" +
-      "}," +
-      "\"Fee\":\"10\"," +
-      "\"Sequence\":1," +
-      "\"SigningPubKey\":\"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
-      "\"TransactionType\":\"VaultCreate\"" +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"Asset\": {" +
+      "    \"currency\": \"XRP\"" +
+      "  }," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultCreate\"" +
       "}";
 
     assertCanSerializeAndDeserialize(vaultCreate, json);
@@ -113,15 +113,15 @@ public class VaultCreateJsonTest extends AbstractJsonTest {
       .build();
 
     String json = "{" +
-      "\"Account\":\"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
-      "\"Asset\":{" +
-      "\"currency\":\"XRP\"" +
-      "}," +
-      "\"Flags\":0," +
-      "\"Fee\":\"10\"," +
-      "\"Sequence\":1," +
-      "\"SigningPubKey\":\"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
-      "\"TransactionType\":\"VaultCreate\"" +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"Asset\": {" +
+      "    \"currency\": \"XRP\"" +
+      "  }," +
+      "  \"Flags\": 0," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultCreate\"" +
       "}";
 
     assertCanSerializeAndDeserialize(vaultCreate, json);
@@ -141,15 +141,15 @@ public class VaultCreateJsonTest extends AbstractJsonTest {
       .build();
 
     String json = "{" +
-      "\"Foo\":\"Bar\"," +
-      "\"Account\":\"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
-      "\"Asset\":{" +
-      "\"currency\":\"XRP\"" +
-      "}," +
-      "\"Fee\":\"10\"," +
-      "\"Sequence\":1," +
-      "\"SigningPubKey\":\"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
-      "\"TransactionType\":\"VaultCreate\"" +
+      "  \"Foo\": \"Bar\"," +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"Asset\": {" +
+      "    \"currency\": \"XRP\"" +
+      "  }," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultCreate\"" +
       "}";
 
     assertCanSerializeAndDeserialize(vaultCreate, json);
@@ -172,14 +172,14 @@ public class VaultCreateJsonTest extends AbstractJsonTest {
       .build();
 
     String json = "{" +
-      "\"Account\":\"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
-      "\"Asset\":{" +
-      "\"mpt_issuance_id\":\"000004C463C52827307480341125DA0577DEFC38405B0E3E\"" +
-      "}," +
-      "\"Fee\":\"10\"," +
-      "\"Sequence\":1," +
-      "\"SigningPubKey\":\"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
-      "\"TransactionType\":\"VaultCreate\"" +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"Asset\": {" +
+      "    \"mpt_issuance_id\": \"000004C463C52827307480341125DA0577DEFC38405B0E3E\"" +
+      "  }," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultCreate\"" +
       "}";
 
     assertCanSerializeAndDeserialize(vaultCreate, json);

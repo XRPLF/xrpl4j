@@ -40,18 +40,18 @@ public class VaultClawbackJsonTest extends AbstractJsonTest {
       .build();
 
     String json = "{" +
-      "\"Account\":\"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
-      "\"VaultID\":\"0000000000000000000000000000000000000000000000000000000000000001\"," +
-      "\"Holder\":\"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"," +
-      "\"Amount\":{" +
-      "\"currency\":\"USD\"," +
-      "\"issuer\":\"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
-      "\"value\":\"50\"" +
-      "}," +
-      "\"Fee\":\"10\"," +
-      "\"Sequence\":1," +
-      "\"SigningPubKey\":\"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
-      "\"TransactionType\":\"VaultClawback\"" +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"VaultID\": \"0000000000000000000000000000000000000000000000000000000000000001\"," +
+      "  \"Holder\": \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"," +
+      "  \"Amount\": {" +
+      "    \"currency\": \"USD\"," +
+      "    \"issuer\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "    \"value\": \"50\"" +
+      "  }," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultClawback\"" +
       "}";
 
     assertCanSerializeAndDeserialize(vaultClawback, json);
@@ -71,13 +71,13 @@ public class VaultClawbackJsonTest extends AbstractJsonTest {
       .build();
 
     String json = "{" +
-      "\"Account\":\"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
-      "\"VaultID\":\"0000000000000000000000000000000000000000000000000000000000000001\"," +
-      "\"Holder\":\"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"," +
-      "\"Fee\":\"10\"," +
-      "\"Sequence\":1," +
-      "\"SigningPubKey\":\"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
-      "\"TransactionType\":\"VaultClawback\"" +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"VaultID\": \"0000000000000000000000000000000000000000000000000000000000000001\"," +
+      "  \"Holder\": \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultClawback\"" +
       "}";
 
     assertCanSerializeAndDeserialize(vaultClawback, json);
@@ -98,14 +98,14 @@ public class VaultClawbackJsonTest extends AbstractJsonTest {
       .build();
 
     String json = "{" +
-      "\"Account\":\"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
-      "\"VaultID\":\"0000000000000000000000000000000000000000000000000000000000000001\"," +
-      "\"Holder\":\"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"," +
-      "\"Amount\":\"100000\"," +
-      "\"Fee\":\"10\"," +
-      "\"Sequence\":1," +
-      "\"SigningPubKey\":\"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
-      "\"TransactionType\":\"VaultClawback\"" +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"VaultID\": \"0000000000000000000000000000000000000000000000000000000000000001\"," +
+      "  \"Holder\": \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"," +
+      "  \"Amount\": \"100000\"," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultClawback\"" +
       "}";
 
     assertCanSerializeAndDeserialize(vaultClawback, json);
@@ -131,17 +131,17 @@ public class VaultClawbackJsonTest extends AbstractJsonTest {
       .build();
 
     String json = "{" +
-      "\"Account\":\"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
-      "\"VaultID\":\"0000000000000000000000000000000000000000000000000000000000000001\"," +
-      "\"Holder\":\"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"," +
-      "\"Amount\":{" +
-      "\"mpt_issuance_id\":\"000004C463C52827307480341125DA0577DEFC38405B0E3E\"," +
-      "\"value\":\"1000\"" +
-      "}," +
-      "\"Fee\":\"10\"," +
-      "\"Sequence\":1," +
-      "\"SigningPubKey\":\"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
-      "\"TransactionType\":\"VaultClawback\"" +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"VaultID\": \"0000000000000000000000000000000000000000000000000000000000000001\"," +
+      "  \"Holder\": \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"," +
+      "  \"Amount\": {" +
+      "    \"mpt_issuance_id\": \"000004C463C52827307480341125DA0577DEFC38405B0E3E\"," +
+      "    \"value\": \"1000\"" +
+      "  }," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultClawback\"" +
       "}";
 
     assertCanSerializeAndDeserialize(vaultClawback, json);

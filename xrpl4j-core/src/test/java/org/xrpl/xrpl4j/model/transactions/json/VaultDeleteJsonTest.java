@@ -29,12 +29,12 @@ public class VaultDeleteJsonTest extends AbstractJsonTest {
       .build();
 
     String json = "{" +
-      "\"Account\":\"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
-      "\"VaultID\":\"0000000000000000000000000000000000000000000000000000000000000001\"," +
-      "\"Fee\":\"10\"," +
-      "\"Sequence\":1," +
-      "\"SigningPubKey\":\"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
-      "\"TransactionType\":\"VaultDelete\"" +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"VaultID\": \"0000000000000000000000000000000000000000000000000000000000000001\"," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultDelete\"" +
       "}";
 
     assertCanSerializeAndDeserialize(vaultDelete, json);

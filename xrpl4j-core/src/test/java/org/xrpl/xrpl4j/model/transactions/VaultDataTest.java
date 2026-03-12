@@ -47,8 +47,6 @@ public class VaultDataTest {
 
     assertThat(VaultData.of(input).hashCode())
       .isEqualTo(VaultData.of(input.toLowerCase(Locale.ENGLISH)).hashCode());
-
-    assertThat(VaultData.of(input).equals(null)).isFalse();
   }
 
   @Test

@@ -78,4 +78,14 @@ public interface MpTokenIssuanceCreate extends Transaction {
   @JsonProperty("MPTokenMetadata")
   Optional<MpTokenMetadata> mpTokenMetadata();
 
+  /**
+   * The {@link Hash256} of a {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} that restricts
+   * who can hold this MPT. If present, the {@code tfMPTRequireAuth} flag must be set, making the issuance
+   * non-public.
+   *
+   * @return An optionally present {@link Hash256} representing the domain ID.
+   */
+  @JsonProperty("DomainID")
+  Optional<Hash256> domainId();
+
 }

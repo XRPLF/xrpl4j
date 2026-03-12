@@ -40,8 +40,6 @@ public interface SingleSignedTransaction<T extends Transaction> extends SignedTr
   /**
    * A builder.
    *
-   * @param <T> An instance of {@link T}.
-   *
    * @return An {@link ImmutableSingleSignedTransaction.Builder}.
    */
   static <T extends Transaction> ImmutableSingleSignedTransaction.Builder<T> builder() {

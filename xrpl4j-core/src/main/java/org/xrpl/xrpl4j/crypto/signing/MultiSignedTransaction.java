@@ -50,8 +50,6 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
   /**
    * A builder.
    *
-   * @param <T> An instance of {@link T}.
-   *
    * @return An {@link ImmutableMultiSignedTransaction.Builder}.
    */
   static <T extends Transaction> ImmutableMultiSignedTransaction.Builder<T> builder() {

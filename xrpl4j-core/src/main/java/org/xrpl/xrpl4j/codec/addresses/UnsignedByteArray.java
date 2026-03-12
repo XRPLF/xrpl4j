@@ -216,6 +216,18 @@ public class UnsignedByteArray implements Destroyable {
     return new UnsignedByteArray(unsignedBytes.subList(startIndex, endIndex));
   }
 
+  /**
+   * Returns a new {@link UnsignedByteArray} with the bytes in reversed order.
+   * This is useful for converting between big-endian and little-endian byte order.
+   *
+   * @return A new {@link UnsignedByteArray} with bytes in reversed order.
+   */
+  public UnsignedByteArray reverse() {
+    List<UnsignedByte> reversed = new ArrayList<>(unsignedBytes);
+    Collections.reverse(reversed);
+    return new UnsignedByteArray(reversed);
+  }
+
   @Override
   public boolean equals(Object object) {
     if (this == object) {

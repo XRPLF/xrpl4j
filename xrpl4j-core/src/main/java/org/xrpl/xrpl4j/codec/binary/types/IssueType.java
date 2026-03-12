@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
@@ -13,16 +12,8 @@ public class IssueType extends SerializedType<IssueType> {
 
   private static final ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
-  /**
-   * 20 bytes representing the "noAccount" sentinel in rippled: AccountID(1).
-   * This is 19 zero bytes followed by 0x01.
-   */
-  private static final UnsignedByteArray NO_ACCOUNT;
-
-  static {
-    NO_ACCOUNT = UnsignedByteArray.ofSize(20);
-    NO_ACCOUNT.set(19, UnsignedByte.of(1));
-  }
+  private static final UnsignedByteArray NO_ACCOUNT =
+    UnsignedByteArray.fromHex("0000000000000000000000000000000000000001");
 
   public IssueType() {
     this(UnsignedByteArray.ofSize(20));
@@ -41,22 +32,17 @@ public class IssueType extends SerializedType<IssueType> {
     Issue issue = objectMapper.treeToValue(node, Issue.class);
 
     if (issue.mptIssuanceId().isPresent()) {
-      // MPT binary format: issuer (20 bytes) + noAccount sentinel (20 bytes) + sequence (4 bytes) = 44 bytes
+      // MPT binary format: issuer (20 bytes) + NO_ACCOUNT (20 bytes) + sequence (4 bytes) = 44 bytes
       // MPTID hex is 48 chars (24 bytes): sequence (4 bytes big-endian) + issuer AccountID (20 bytes)
       String mptIdHex = issue.mptIssuanceId().get().asText();
       UnsignedByteArray mptIdBytes = UnsignedByteArray.fromHex(mptIdHex);
 
-      // Extract issuer (bytes 4-24 of MPTID) and sequence (bytes 0-4 of MPTID, big-endian)
-      UnsignedByteArray issuerBytes = mptIdBytes.slice(4, 24);
+      // Extract sequence (bytes 0-4 of MPTID, big-endian) and issuer (bytes 4-24 of MPTID)
       UnsignedByteArray sequenceBE = mptIdBytes.slice(0, 4);
+      UnsignedByteArray issuerBytes = mptIdBytes.slice(4, 24);
 
       // Convert sequence from big-endian (MPTID hex) to little-endian (wire format)
-      UnsignedByteArray sequenceLE = UnsignedByteArray.of(
-        sequenceBE.get(3),
-        sequenceBE.get(2),
-        sequenceBE.get(1),
-        sequenceBE.get(0)
-      );
+      UnsignedByteArray sequenceLE = sequenceBE.reverse();
 
       UnsignedByteArray noAccountCopy = NO_ACCOUNT.slice(0, 20);
       UnsignedByteArray byteArray = issuerBytes.append(noAccountCopy).append(sequenceLE);
@@ -111,12 +97,7 @@ public class IssueType extends SerializedType<IssueType> {
       // MPT: read 4-byte sequence (little-endian on wire), reconstruct MPTID
       UnsignedByteArray sequenceLE = parser.read(4);
       // Convert sequence from little-endian (wire) to big-endian (MPTID hex)
-      UnsignedByteArray sequenceBE = UnsignedByteArray.of(
-        sequenceLE.get(3),
-        sequenceLE.get(2),
-        sequenceLE.get(1),
-        sequenceLE.get(0)
-      );
+      UnsignedByteArray sequenceBE = sequenceLE.reverse();
       // MPTID = sequence (4 bytes BE) + issuer AccountID (20 bytes)
       // The "currency" bytes hold the issuer when it's an MPT
       UnsignedByteArray mptId = sequenceBE.append(currency.value());

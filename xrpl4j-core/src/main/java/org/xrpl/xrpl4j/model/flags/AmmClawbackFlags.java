@@ -26,6 +26,7 @@ import org.xrpl.xrpl4j.model.transactions.AmmClawback;
  * {@link TransactionFlags} for {@link AmmClawback} transactions.
  */
 public class AmmClawbackFlags extends TransactionFlags {
+
   /**
    * Constant {@link AmmDepositFlags} for the {@code tfClawTwoAssets} flag.
    */
@@ -36,6 +37,12 @@ public class AmmClawbackFlags extends TransactionFlags {
    */
   public static final AmmClawbackFlags UNSET = new AmmClawbackFlags(0L);
 
+  /**
+   * Constant {@link AmmClawbackFlags} for the {@code tfInnerBatchTxn} flag.
+   */
+  public static final AmmClawbackFlags INNER_BATCH_TXN = new AmmClawbackFlags(
+    TransactionFlags.INNER_BATCH_TXN.getValue());
+
   private AmmClawbackFlags(long value) {
     super(value);
   }
@@ -44,8 +51,8 @@ public class AmmClawbackFlags extends TransactionFlags {
   }
 
   /**
-   * Construct an empty instance of {@link AmmClawbackFlags}. Transactions with empty flags will
-   * not be serialized with a {@code Flags} field.
+   * Construct an empty instance of {@link AmmClawbackFlags}. Transactions with empty flags will not be serialized with
+   * a {@code Flags} field.
    *
    * @return An empty {@link AmmClawbackFlags}.
    */
@@ -60,5 +67,14 @@ public class AmmClawbackFlags extends TransactionFlags {
    */
   public boolean tfClawTwoAssets() {
     return this.isSet(CLAW_TWO_ASSETS);
+  }
+
+  /**
+   * Whether the {@code tfInnerBatchTxn} flag is set.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(INNER_BATCH_TXN);
   }
 }

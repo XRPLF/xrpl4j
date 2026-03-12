@@ -32,4 +32,45 @@ class TransactionFlagsTest {
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
     assertThat(flags.isEmpty()).isTrue();
   }
+
+  @Test
+  void testOfWithValue() {
+    TransactionFlags flags = TransactionFlags.of(0x80000000L);
+    assertThat(flags.tfFullyCanonicalSig()).isTrue();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0x80000000L);
+  }
+
+  @Test
+  void testOfWithInnerBatchTxnValue() {
+    TransactionFlags flags = TransactionFlags.of(0x40000000L);
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.getValue()).isEqualTo(0x40000000L);
+  }
+
+  @Test
+  void testOfWithCombinedValue() {
+    TransactionFlags flags = TransactionFlags.of(0x80000000L | 0x40000000L);
+    assertThat(flags.tfFullyCanonicalSig()).isTrue();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.getValue()).isEqualTo(0xC0000000L);
+  }
+
+  @Test
+  void testOfWithZeroValue() {
+    TransactionFlags flags = TransactionFlags.of(0L);
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0L);
+  }
+
+  @Test
+  void testTfInnerBatchTxn() {
+    TransactionFlags flags = TransactionFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0x40000000L);
+  }
 }

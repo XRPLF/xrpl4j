@@ -22,6 +22,7 @@ package org.xrpl.xrpl4j.codec.binary.types;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.common.base.Strings;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
@@ -29,12 +30,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
-/**
- * Codec for XRPL Number type. A Number is serialized as a 12-byte value: an 8-byte signed mantissa followed by a
- * 4-byte signed exponent. The unsigned mantissa is normalized to the "large" range [10^18, 10^19-1] used by rippled.
- * If the normalized unsigned mantissa exceeds Long.MAX_VALUE, the external (wire) representation divides by 10 and
- * increments the exponent by 1. In JSON, Number fields are represented as decimal strings (e.g. "1000000").
- */
 public class NumberType extends SerializedType<NumberType> {
 
   /**
@@ -48,9 +43,6 @@ public class NumberType extends SerializedType<NumberType> {
   private static final int MIN_EXPONENT = -32768;
   private static final int MAX_EXPONENT = 32768;
 
-  /**
-   * Canonical zero exponent per rippled/xrpl.js: Integer.MIN_VALUE (-2147483648).
-   */
   private static final int DEFAULT_VALUE_EXPONENT = Integer.MIN_VALUE;
 
   public NumberType() {
@@ -192,7 +184,7 @@ public class NumberType extends SerializedType<NumberType> {
     int padSuffix = rangeLog + 8;  // 26
 
     String mantissaStr = mantissaAbs.toString();
-    String rawValue = repeat('0', padPrefix) + mantissaStr + repeat('0', padSuffix);
+    String rawValue = Strings.repeat("0", padPrefix) + mantissaStr + Strings.repeat("0", padSuffix);
     int offset = exponent + padPrefix + rangeLog + 1; // exponent + 49
 
     String integerPart = rawValue.substring(0, offset).replaceFirst("^0+", "");
@@ -203,13 +195,5 @@ public class NumberType extends SerializedType<NumberType> {
 
     String result = (negative ? "-" : "") + integerPart + (fractionPart.isEmpty() ? "" : "." + fractionPart);
     return new TextNode(result);
-  }
-
-  private static String repeat(char character, int count) {
-    StringBuilder sb = new StringBuilder(count);
-    for (int i = 0; i < count; i++) {
-      sb.append(character);
-    }
-    return sb.toString();
   }
 }

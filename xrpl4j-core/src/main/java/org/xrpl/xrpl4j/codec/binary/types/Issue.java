@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.codec.binary.types;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -9,7 +10,7 @@ import org.immutables.value.Value;
 import java.util.Optional;
 
 /**
- * JSON mapping object for the Issue serializable type.
+ * JSON mapping object for the Issue serializable type. Handles XRP, IOU, and MPT assets.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableIssue.class)
@@ -26,26 +27,46 @@ public interface Issue {
   }
 
   /**
-   * The currency code of the Issue.
+   * The currency code of the Issue. Present for XRP and IOU assets.
    *
-   * @return A {@link JsonNode} containing the currency code.
+   * @return An optionally present {@link JsonNode} containing the currency code.
    */
-  JsonNode currency();
+  Optional<JsonNode> currency();
 
   /**
-   * The address of the issuer of this currency. Will be empty if {@link #currency()} is XRP.
+   * The address of the issuer of this currency. Present for IOU assets.
    *
    * @return An optionally present {@link JsonNode}.
    */
   Optional<JsonNode> issuer();
 
   /**
-   * Validate that {@link #issuer()} is empty if {@link #currency()} is "XRP".
+   * The MPT issuance ID. Present for MPT assets.
+   *
+   * @return An optionally present {@link JsonNode}.
+   */
+  @JsonProperty("mpt_issuance_id")
+  Optional<JsonNode> mptIssuanceId();
+
+  /**
+   * Validate that the Issue fields are consistent.
    */
   @Value.Check
-  default void checkIssuerEmptyForXrp() {
-    if (currency().asText().equals("XRP")) {
-      Preconditions.checkState(!issuer().isPresent(), "If Issue is XRP, issuer must be empty.");
+  default void checkFields() {
+    if (currency().isPresent()) {
+      Preconditions.checkState(
+        !mptIssuanceId().isPresent(),
+        "Issue cannot have both currency and mpt_issuance_id."
+      );
+      if (currency().get().asText().equals("XRP")) {
+        Preconditions.checkState(!issuer().isPresent(), "If Issue is XRP, issuer must be empty.");
+      }
+    } else {
+      Preconditions.checkState(
+        mptIssuanceId().isPresent(),
+        "Issue must have either currency or mpt_issuance_id."
+      );
+      Preconditions.checkState(!issuer().isPresent(), "MPT Issue must not have an issuer.");
     }
   }
 

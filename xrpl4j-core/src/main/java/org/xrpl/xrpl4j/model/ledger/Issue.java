@@ -21,46 +21,83 @@ package org.xrpl.xrpl4j.model.ledger;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.jackson.modules.IssueDeserializer;
 
-import java.util.Optional;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
- * Represents an asset on the ledger without an amount.
+ * Represents an asset on the ledger without an amount. Can be one of:
+ * <ul>
+ *   <li>{@link XrpIssue} — the native XRP asset</li>
+ *   <li>{@link IouIssue} — an issued currency (IOU) with a currency code and issuer</li>
+ *   <li>{@link MptIssue} — a multi-purpose token identified by its issuance ID</li>
+ * </ul>
  */
-@Value.Immutable
-@JsonSerialize(as = ImmutableIssue.class)
-@JsonDeserialize(as = ImmutableIssue.class)
+@JsonDeserialize(using = IssueDeserializer.class)
 public interface Issue {
 
   /**
    * Constant {@link Issue} representing XRP.
    */
-  Issue XRP = Issue.builder().currency("XRP").build();
+  Issue XRP = XrpIssue.XRP;
 
   /**
-   * Construct a {@code Asset} builder.
+   * Handle this {@link Issue} depending on its actual polymorphic subtype.
    *
-   * @return An {@link ImmutableIssue.Builder}.
+   * @param xrpIssueHandler A {@link Consumer} that is called if this instance is of type {@link XrpIssue}.
+   * @param iouIssueHandler A {@link Consumer} that is called if this instance is of type {@link IouIssue}.
+   * @param mptIssueHandler A {@link Consumer} that is called if this instance is of type {@link MptIssue}.
    */
-  static ImmutableIssue.Builder builder() {
-    return ImmutableIssue.builder();
+  default void handle(
+    final Consumer<XrpIssue> xrpIssueHandler,
+    final Consumer<IouIssue> iouIssueHandler,
+    final Consumer<MptIssue> mptIssueHandler
+  ) {
+    Objects.requireNonNull(xrpIssueHandler);
+    Objects.requireNonNull(iouIssueHandler);
+    Objects.requireNonNull(mptIssueHandler);
+
+    if (XrpIssue.class.isAssignableFrom(this.getClass())) {
+      xrpIssueHandler.accept((XrpIssue) this);
+    } else if (IouIssue.class.isAssignableFrom(this.getClass())) {
+      iouIssueHandler.accept((IouIssue) this);
+    } else if (MptIssue.class.isAssignableFrom(this.getClass())) {
+      mptIssueHandler.accept((MptIssue) this);
+    } else {
+      throw new IllegalStateException(String.format("Unsupported Issue Type: %s", this.getClass()));
+    }
   }
 
   /**
-   * Either a 3 character currency code, or a 40 character hexadecimal encoded currency code value.
+   * Map this {@link Issue} to an instance of {@link R}, depending on its actual polymorphic subtype.
    *
-   * @return A {@link String} containing the currency code.
+   * @param xrpIssueMapper A {@link Function} that is called if this instance is of type {@link XrpIssue}.
+   * @param iouIssueMapper A {@link Function} that is called if this instance is of type {@link IouIssue}.
+   * @param mptIssueMapper A {@link Function} that is called if this instance is of type {@link MptIssue}.
+   * @param <R>            The type of object to return after mapping.
+   *
+   * @return A {@link R} that is constructed by the appropriate mapper function.
    */
-  String currency();
+  default <R> R map(
+    final Function<XrpIssue, R> xrpIssueMapper,
+    final Function<IouIssue, R> iouIssueMapper,
+    final Function<MptIssue, R> mptIssueMapper
+  ) {
+    Objects.requireNonNull(xrpIssueMapper);
+    Objects.requireNonNull(iouIssueMapper);
+    Objects.requireNonNull(mptIssueMapper);
 
-  /**
-   * The {@link Address} of the issuer of the currency, or empty if the currency is XRP.
-   *
-   * @return The {@link Address} of the issuer account.
-   */
-  Optional<Address> issuer();
+    if (XrpIssue.class.isAssignableFrom(this.getClass())) {
+      return xrpIssueMapper.apply((XrpIssue) this);
+    } else if (IouIssue.class.isAssignableFrom(this.getClass())) {
+      return iouIssueMapper.apply((IouIssue) this);
+    } else if (MptIssue.class.isAssignableFrom(this.getClass())) {
+      return mptIssueMapper.apply((MptIssue) this);
+    } else {
+      throw new IllegalStateException(String.format("Unsupported Issue Type: %s", this.getClass()));
+    }
+  }
 
 }

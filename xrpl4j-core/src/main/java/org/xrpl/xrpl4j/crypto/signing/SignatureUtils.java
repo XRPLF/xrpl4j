@@ -79,6 +79,12 @@ import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
+import org.xrpl.xrpl4j.model.transactions.VaultClawback;
+import org.xrpl.xrpl4j.model.transactions.VaultCreate;
+import org.xrpl.xrpl4j.model.transactions.VaultDelete;
+import org.xrpl.xrpl4j.model.transactions.VaultDeposit;
+import org.xrpl.xrpl4j.model.transactions.VaultSet;
+import org.xrpl.xrpl4j.model.transactions.VaultWithdraw;
 import org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit;
 import org.xrpl.xrpl4j.model.transactions.XChainAddAccountCreateAttestation;
 import org.xrpl.xrpl4j.model.transactions.XChainAddClaimAttestation;
@@ -489,6 +495,30 @@ public class SignatureUtils {
       transactionWithSignature = PermissionedDomainDelete.builder().from((PermissionedDomainDelete) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (VaultCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = VaultCreate.builder().from((VaultCreate) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (VaultSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = VaultSet.builder().from((VaultSet) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (VaultDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = VaultDelete.builder().from((VaultDelete) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (VaultDeposit.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = VaultDeposit.builder().from((VaultDeposit) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (VaultWithdraw.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = VaultWithdraw.builder().from((VaultWithdraw) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (VaultClawback.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = VaultClawback.builder().from((VaultClawback) transaction)
+        .transactionSignature(signature)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -742,6 +772,30 @@ public class SignatureUtils {
         .build();
     } else if (PermissionedDomainDelete.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = PermissionedDomainDelete.builder().from((PermissionedDomainDelete) transaction)
+        .signers(signers)
+        .build();
+    } else if (VaultCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = VaultCreate.builder().from((VaultCreate) transaction)
+        .signers(signers)
+        .build();
+    } else if (VaultSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = VaultSet.builder().from((VaultSet) transaction)
+        .signers(signers)
+        .build();
+    } else if (VaultDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = VaultDelete.builder().from((VaultDelete) transaction)
+        .signers(signers)
+        .build();
+    } else if (VaultDeposit.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = VaultDeposit.builder().from((VaultDeposit) transaction)
+        .signers(signers)
+        .build();
+    } else if (VaultWithdraw.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = VaultWithdraw.builder().from((VaultWithdraw) transaction)
+        .signers(signers)
+        .build();
+    } else if (VaultClawback.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = VaultClawback.builder().from((VaultClawback) transaction)
         .signers(signers)
         .build();
     } else {

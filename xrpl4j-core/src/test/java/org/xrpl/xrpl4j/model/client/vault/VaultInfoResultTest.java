@@ -15,11 +15,11 @@ import org.xrpl.xrpl4j.model.flags.VaultFlags;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.AssetAmount;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
-import org.xrpl.xrpl4j.model.transactions.NumberAmount;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 
 class VaultInfoResultTest extends AbstractJsonTest {
@@ -36,10 +36,10 @@ class VaultInfoResultTest extends AbstractJsonTest {
           .owner(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
           .account(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
           .asset(Issue.XRP)
-          .assetsTotal(NumberAmount.of("1000000"))
-          .assetsAvailable(NumberAmount.of("800000"))
-          .assetsMaximum(NumberAmount.of("0"))
-          .lossUnrealized(NumberAmount.of("0"))
+          .assetsTotal(AssetAmount.of("1000000"))
+          .assetsAvailable(AssetAmount.of("800000"))
+          .assetsMaximum(AssetAmount.of("0"))
+          .lossUnrealized(AssetAmount.of("0"))
           .shareMptId(MpTokenIssuanceId.of("00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836"))
           .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
           .scale(AssetScale.of(UnsignedInteger.valueOf(6)))

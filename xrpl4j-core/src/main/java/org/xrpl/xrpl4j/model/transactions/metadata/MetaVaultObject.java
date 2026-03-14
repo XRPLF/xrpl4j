@@ -9,10 +9,10 @@ import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.VaultFlags;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.AssetAmount;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
-import org.xrpl.xrpl4j.model.transactions.NumberAmount;
 import org.xrpl.xrpl4j.model.transactions.VaultData;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 
@@ -105,34 +105,34 @@ public interface MetaVaultObject extends MetaLedgerObject {
   /**
    * The total value of the vault.
    *
-   * @return An optionally-present {@link NumberAmount}.
+   * @return An optionally-present {@link AssetAmount}.
    */
   @JsonProperty("AssetsTotal")
-  Optional<NumberAmount> assetsTotal();
+  Optional<AssetAmount> assetsTotal();
 
   /**
    * The available assets in the vault.
    *
-   * @return An optionally-present {@link NumberAmount}.
+   * @return An optionally-present {@link AssetAmount}.
    */
   @JsonProperty("AssetsAvailable")
-  Optional<NumberAmount> assetsAvailable();
+  Optional<AssetAmount> assetsAvailable();
 
   /**
    * The maximum amount of assets the vault can hold.
    *
-   * @return An optionally-present {@link NumberAmount}.
+   * @return An optionally-present {@link AssetAmount}.
    */
   @JsonProperty("AssetsMaximum")
-  Optional<NumberAmount> assetsMaximum();
+  Optional<AssetAmount> assetsMaximum();
 
   /**
    * The potential unrealized loss.
    *
-   * @return An optionally-present {@link NumberAmount}.
+   * @return An optionally-present {@link AssetAmount}.
    */
   @JsonProperty("LossUnrealized")
-  Optional<NumberAmount> lossUnrealized();
+  Optional<AssetAmount> lossUnrealized();
 
   /**
    * The ID of the share MPTokenIssuance.

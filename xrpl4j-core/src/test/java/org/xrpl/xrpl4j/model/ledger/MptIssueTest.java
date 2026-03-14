@@ -38,7 +38,8 @@ class MptIssueTest {
 
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 
-  private static final MpTokenIssuanceId MPT_ID = MpTokenIssuanceId.of("00000001A407AF5856CFF3379945D823561023E8E5CED9C9");
+  private static final MpTokenIssuanceId MPT_ID =
+      MpTokenIssuanceId.of("00000001A407AF5856CFF3379945D823561023E8E5CED9C9");
 
   @Test
   void testEquals() {

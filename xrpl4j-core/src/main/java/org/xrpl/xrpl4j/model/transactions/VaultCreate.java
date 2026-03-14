@@ -54,10 +54,10 @@ public interface VaultCreate extends Transaction {
   /**
    * The maximum amount of assets the vault can hold. 0 means no cap.
    *
-   * @return An optionally-present {@link NumberAmount}.
+   * @return An optionally-present {@link AssetAmount}.
    */
   @JsonProperty("AssetsMaximum")
-  Optional<NumberAmount> assetsMaximum();
+  Optional<AssetAmount> assetsMaximum();
 
   /**
    * Metadata for the share MPToken, in hex format. Limited to 1024 bytes.

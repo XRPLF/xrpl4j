@@ -53,10 +53,10 @@ public interface VaultSet extends Transaction {
   /**
    * The maximum amount of assets the vault can hold. 0 means no cap.
    *
-   * @return An optionally-present {@link NumberAmount}.
+   * @return An optionally-present {@link AssetAmount}.
    */
   @JsonProperty("AssetsMaximum")
-  Optional<NumberAmount> assetsMaximum();
+  Optional<AssetAmount> assetsMaximum();
 
   /**
    * The PermissionedDomain object ID for private vaults.

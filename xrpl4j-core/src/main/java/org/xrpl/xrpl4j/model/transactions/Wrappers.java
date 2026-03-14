@@ -36,6 +36,8 @@ import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetAmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetAmountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
@@ -65,8 +67,6 @@ import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenUriSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.NumberAmountDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.NumberAmountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.OracleDocumentIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.OracleDocumentIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.OracleProviderDeserializer;
@@ -847,10 +847,10 @@ public class Wrappers {
 
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = NumberAmount.class, using = NumberAmountSerializer.class)
-  @JsonDeserialize(as = NumberAmount.class, using = NumberAmountDeserializer.class)
+  @JsonSerialize(as = AssetAmount.class, using = AssetAmountSerializer.class)
+  @JsonDeserialize(as = AssetAmount.class, using = AssetAmountDeserializer.class)
   @Beta
-  abstract static class _NumberAmount extends Wrapper<String> implements Serializable {
+  abstract static class _AssetAmount extends Wrapper<String> implements Serializable {
 
     @Override
     public String toString() {

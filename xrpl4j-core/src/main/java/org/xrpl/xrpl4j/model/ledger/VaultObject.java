@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.client.vault.VaultInfoShares;
 import org.xrpl.xrpl4j.model.flags.VaultFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetAmount;
@@ -184,10 +183,10 @@ public interface VaultObject extends LedgerObject {
   /**
    * The share MPTokenIssuance information for this vault. Only present in {@code vault_info} RPC responses.
    *
-   * @return An optionally-present {@link VaultInfoShares}.
+   * @return An optionally-present {@link MpTokenIssuanceObject}.
    */
   @JsonProperty("shares")
-  Optional<VaultInfoShares> shares();
+  Optional<MpTokenIssuanceObject> shares();
 
   /**
    * The unique ID of this {@link VaultObject}.

@@ -13,6 +13,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
 import org.xrpl.xrpl4j.model.flags.VaultFlags;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetAmount;
@@ -44,7 +45,8 @@ class VaultInfoResultTest extends AbstractJsonTest {
           .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
           .scale(AssetScale.of(UnsignedInteger.valueOf(6)))
           .shares(
-            VaultInfoShares.builder()
+            MpTokenIssuanceObject.builder()
+              .flags(MpTokenIssuanceFlags.UNSET)
               .issuer(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
               .outstandingAmount(MpTokenNumericAmount.of(1000000))
               .previousTransactionId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000010"))

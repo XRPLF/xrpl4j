@@ -28,8 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
 /**
- * Unit tests for {@link NumberType} that mirror the xrpl.js STNumber test suite.
- * These tests verify encoding, decoding, normalization, rounding, and edge cases.
+ * Unit tests for {@link NumberType}
  */
 class NumberTypeTest {
 
@@ -275,5 +274,38 @@ class NumberTypeTest {
     );
     // BigDecimal will throw NumberFormatException which gets wrapped
     assertThat(exception).isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void throwsMantissaAndExponentAreTooLarge() {
+    // A value where mantissa > MAX_MANTISSA and exponent >= MAX_EXPONENT simultaneously
+    // in the shrink loop. 99999999999999999999e32768 has 20-digit mantissa (> MAX_MANTISSA)
+    // and exponent = 32768 (= MAX_EXPONENT), triggering the error before shrinking.
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class,
+      () -> codec.fromJson(new TextNode("99999999999999999999e32768"))
+    );
+    assertThat(exception.getMessage()).isEqualTo("Mantissa and exponent are too large");
+  }
+
+  @Test
+  void throwsExponentOverflowWhenMantissaExceedsInt64AtMaxExponent() {
+    // A value where after shrinking to MAX_MANTISSA range, the mantissa still exceeds MAX_INT64,
+    // and exponent is already at MAX_EXPONENT so it cannot shrink further.
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class,
+      () -> codec.fromJson(new TextNode("9.3e32786"))
+    );
+    assertThat(exception.getMessage()).isEqualTo("Exponent overflow: value too large to represent");
+  }
+
+  @Test
+  void throwsUnderflowWhenMantissaTooSmallAfterGrow() {
+    // A value where the mantissa can't grow to MIN_MANTISSA because exponent hits MIN_EXPONENT.
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class,
+      () -> codec.fromJson(new TextNode("1e-32768"))
+    );
+    assertThat(exception.getMessage()).isEqualTo("Underflow: value too small to represent");
   }
 }

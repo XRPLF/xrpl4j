@@ -33,7 +33,7 @@ import org.immutables.value.Value;
 public interface XrpIssue extends Issue {
 
   /**
-   * Singleton instance representing XRP.
+   * The singleton XrpIssue instance.
    */
   XrpIssue XRP = ImmutableXrpIssue.builder().build();
 

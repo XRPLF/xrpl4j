@@ -58,6 +58,7 @@ public class NumberType extends SerializedType<NumberType> {
     return new NumberType(parser.read(WIDTH));
   }
 
+  // xrpld implementation: src/libxrpl/basics/Number.cpp -> doNormalize
   @Override
   public NumberType fromJson(JsonNode node) {
     String value = node.isInt() || node.isLong() ? String.valueOf(node.asLong()) : node.asText();
@@ -74,13 +75,6 @@ public class NumberType extends SerializedType<NumberType> {
       BigDecimal abs = decimal.abs();
       BigInteger absMantissa = abs.unscaledValue();
       exponent = -abs.scale();
-
-      // Strip trailing zeros from mantissa and adjust exponent
-      while (absMantissa.compareTo(BigInteger.ONE) > 0 &&
-        absMantissa.mod(BigInteger.TEN).equals(BigInteger.ZERO)) {
-        absMantissa = absMantissa.divide(BigInteger.TEN);
-        exponent++;
-      }
 
       // Grow mantissa until it reaches MIN_MANTISSA
       while (absMantissa.compareTo(MIN_MANTISSA) < 0 && exponent > MIN_EXPONENT) {
@@ -99,9 +93,12 @@ public class NumberType extends SerializedType<NumberType> {
         exponent++;
       }
 
+      // Handle underflow: if exponent too small or mantissa too small, throw error
       if (exponent < MIN_EXPONENT || absMantissa.compareTo(MIN_MANTISSA) < 0) {
         throw new IllegalArgumentException("Underflow: value too small to represent");
       }
+
+      // Handle overflow: if exponent exceeds MAX_EXPONENT after growing.
       if (exponent > MAX_EXPONENT) {
         throw new IllegalArgumentException("Exponent overflow: value too large to represent");
       }
@@ -142,6 +139,7 @@ public class NumberType extends SerializedType<NumberType> {
     return new NumberType(UnsignedByteArray.of(buffer.array()));
   }
 
+  // xrpld implementation: src/libxrpl/basics/Number.cpp -> to_string
   @Override
   public JsonNode toJson() {
     byte[] bytes = toBytes();

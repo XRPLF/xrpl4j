@@ -84,7 +84,7 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
       )
       .collect(Collectors.toList());
 
-    return SignatureUtils.getInstance().addMultiSignaturesToTransaction(unsignedTransaction(), signers);
+    return (T) this.unsignedTransaction().withSigners(signers);
   }
 
   /**
@@ -96,7 +96,6 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
    */
   @Check
   default void check() {
-
     Preconditions.checkArgument(
       !this.unsignedTransaction().transactionSignature().isPresent(),
       "Transactions to be signed must not already include a signature."

@@ -30,6 +30,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
+import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,8 +45,10 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -87,7 +91,17 @@ public class AbstractSignatureServiceTest {
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toSignableInnerBytes(any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableInnerBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
-    when(signatureUtilsMock.addSignatureToTransaction(any(), any())).thenReturn(signedTransactionMock);
+
+    // Mock signatures need to return valid values for serialization
+    UnsignedByteArray ed25519SigBytes = UnsignedByteArray.of(new byte[64]);
+    when(ed25519SignatureMock.value()).thenReturn(ed25519SigBytes);
+    when(ed25519SignatureMock.base16Value()).thenReturn(ed25519SigBytes.hexValue());
+    when(ed25519SignatureMock.hexValue()).thenReturn(ed25519SigBytes.hexValue());
+
+    UnsignedByteArray secp256k1SigBytes = UnsignedByteArray.of(new byte[64]);
+    when(secp256k1SignatureMock.value()).thenReturn(secp256k1SigBytes);
+    when(secp256k1SignatureMock.base16Value()).thenReturn(secp256k1SigBytes.hexValue());
+    when(secp256k1SignatureMock.hexValue()).thenReturn(secp256k1SigBytes.hexValue());
 
     this.signatureService = new AbstractSignatureService<PrivateKeyable>(signatureUtilsMock) {
 
@@ -121,9 +135,9 @@ public class AbstractSignatureServiceTest {
     };
   }
 
-  ///////////////////
+  // /////////////////
   // Sign (privateKey, Transaction)
-  ///////////////////
+  // /////////////////
 
   @Test
   public void nullConstructorSigner() {
@@ -187,9 +201,9 @@ public class AbstractSignatureServiceTest {
       });
   }
 
-  ///////////////////
+  // /////////////////
   // Sign (privateKey, Transaction)
-  ///////////////////
+  // /////////////////
 
   @Test
   public void signWithNullPrivateKey() {
@@ -204,21 +218,41 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void signEd25519() {
-    signatureService.sign(TestConstants.getEdPrivateKey(), transactionMock);
+    Payment payment = Payment.builder()
+      .account(TestConstants.ED_ADDRESS)
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .destination(TestConstants.EC_ADDRESS)
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .signingPublicKey(TestConstants.ED_PUBLIC_KEY)
+      .build();
 
+    SingleSignedTransaction<Payment> result = signatureService.sign(TestConstants.getEdPrivateKey(), payment);
+
+    assertThat(result.unsignedTransaction()).isEqualTo(payment);
+    assertThat(result.signature()).isEqualTo(ed25519SignatureMock);
     verify(signatureUtilsMock, times(0)).toMultiSignableBytes(any(), any());
-    verify(signatureUtilsMock).toSignableBytes(transactionMock);
-    verify(signatureUtilsMock).addSignatureToTransaction(transactionMock, ed25519SignatureMock);
+    verify(signatureUtilsMock).toSignableBytes(payment);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   public void signSecp256k1() {
-    signatureService.sign(TestConstants.getEcPrivateKey(), transactionMock);
+    Payment payment = Payment.builder()
+      .account(TestConstants.EC_ADDRESS)
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .destination(TestConstants.ED_ADDRESS)
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .signingPublicKey(TestConstants.EC_PUBLIC_KEY)
+      .build();
 
+    SingleSignedTransaction<Payment> result = signatureService.sign(TestConstants.getEcPrivateKey(), payment);
+
+    assertThat(result.unsignedTransaction()).isEqualTo(payment);
+    assertThat(result.signature()).isEqualTo(secp256k1SignatureMock);
     verify(signatureUtilsMock, times(0)).toMultiSignableBytes(any(), any());
-    verify(signatureUtilsMock).toSignableBytes(transactionMock);
-    verify(signatureUtilsMock).addSignatureToTransaction(transactionMock, secp256k1SignatureMock);
+    verify(signatureUtilsMock).toSignableBytes(payment);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -246,9 +280,9 @@ public class AbstractSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // Sign (privateKey, UnsignedClaim)
-  ///////////////////
+  // /////////////////
 
   @Test
   public void signUnsignedClaimWithNullPrivateKey() {
@@ -274,9 +308,9 @@ public class AbstractSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // Sign (privateKey, Attestation)
-  ///////////////////
+  // /////////////////
 
   @Test
   public void signAttestationWithNullPrivateKey() {
@@ -302,9 +336,9 @@ public class AbstractSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // verify
-  ///////////////////
+  // /////////////////
 
   @Test
   public void verifyWithNullSigPubKey() {
@@ -378,9 +412,9 @@ public class AbstractSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // EdDsaSign
-  ///////////////////
+  // /////////////////
 
   @Test
   public void edDsaSign() {
@@ -392,9 +426,9 @@ public class AbstractSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // EcDsaSign
-  ///////////////////
+  // /////////////////
 
   @Test
   public void ecDsaSign() {
@@ -407,9 +441,9 @@ public class AbstractSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // edDsaVerify
-  ///////////////////
+  // /////////////////
 
   @Test
   public void edDsaVerify() {
@@ -423,9 +457,9 @@ public class AbstractSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // ecDsaVerify
-  ///////////////////
+  // /////////////////
 
   @Test
   public void ecDsaVerify() {
@@ -439,9 +473,9 @@ public class AbstractSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // signInner
-  ///////////////////
+  // /////////////////
 
   @Test
   public void signInnerWithNullPrivateKey() {
@@ -474,9 +508,9 @@ public class AbstractSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // multiSignInner
-  ///////////////////
+  // /////////////////
 
   @Test
   public void multiSignInnerWithNullPrivateKey() {

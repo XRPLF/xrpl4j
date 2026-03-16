@@ -22,8 +22,11 @@ package org.xrpl.xrpl4j.crypto.signing;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Check;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -47,8 +50,6 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
   /**
    * A builder.
    *
-   * @param <T> An instance of {@link Transaction}.
-   *
    * @return An {@link ImmutableMultiSignedTransaction.Builder}.
    */
   static <T extends Transaction> ImmutableMultiSignedTransaction.Builder<T> builder() {
@@ -63,15 +64,16 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
   Set<Signer> signerSet();
 
   /**
-   * The transaction with all signers in {@link #signerSet()} added to the {@link Transaction#signers()}
-   * field in the correct order.
+   * The transaction with all signers in {@link #signerSet()} added to the {@link Transaction#signers()} field in the
+   * correct order.
    *
    * @return A {@link T}.
    */
+  @SuppressWarnings("unchecked")
   @Override
   @Value.Derived
   default T signedTransaction() {
-    List<SignerWrapper> signers = signerSet().stream()
+    final List<SignerWrapper> signers = signerSet().stream()
       .map(SignerWrapper::of)
       .sorted(
         Comparator.comparing(
@@ -85,4 +87,26 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
     return SignatureUtils.getInstance().addMultiSignaturesToTransaction(unsignedTransaction(), signers);
   }
 
+  /**
+   * Validates the state of the current `MultiSignedTransaction` instance to ensure it meets the requirements for
+   * properly forming a multi-signed XRP Ledger transaction.
+   *
+   * @throws IllegalArgumentException If the transaction already has a signature in the `TxnSignature` field or if the
+   *                                  `signingPublicKey` is not set to the empty public key constant.
+   */
+  @Check
+  default void check() {
+
+    Preconditions.checkArgument(
+      !this.unsignedTransaction().transactionSignature().isPresent(),
+      "Transactions to be signed must not already include a signature."
+    );
+
+    // TODO: Once https://github.com/XRPLF/xrpl4j/pull/684 is merged, we should update this check to use the new
+    // empty public key constant (and update the error message).
+    Preconditions.checkArgument(
+      this.unsignedTransaction().signingPublicKey().equals(PublicKey.MULTI_SIGN_PUBLIC_KEY),
+      "Transactions to be multisigned must set `signingPublicKey` to an empty public key."
+    );
+  }
 }

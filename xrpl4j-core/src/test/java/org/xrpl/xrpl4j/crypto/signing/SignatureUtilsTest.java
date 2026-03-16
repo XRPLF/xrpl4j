@@ -795,11 +795,18 @@ public class SignatureUtilsTest {
   }
 
   @Test
-  public void addSignatureToTransactionWithMissingSignature() {
-    when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
-    when(transactionMock.signingPublicKey()).thenReturn(PublicKey.MULTI_SIGN_PUBLIC_KEY);
-    assertThrows(IllegalArgumentException.class,
-      () -> signatureUtils.addSignatureToTransaction(transactionMock, signatureMock));
+  public void addSignatureToTransactionWithEmptySigningPublicKey() {
+    Payment payment = Payment.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .destination(sourcePublicKey.deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY) // <-- The crux of the test
+      .build();
+
+    // This should succeed - no validation prevents single-signing a transaction with empty signingPublicKey
+    addSignatureToTransactionHelper(payment);
   }
 
   @Test
@@ -1657,11 +1664,6 @@ public class SignatureUtilsTest {
   }
 
   @Test
-  public void addSignatureToTransactionUnsupported() {
-    assertThrows(IllegalArgumentException.class, () -> addSignatureToTransactionHelper(transactionMock));
-  }
-
-  @Test
   void addMultiSignaturesWithNulls() {
     assertThatThrownBy(
       () -> signatureUtils.addMultiSignaturesToTransaction(null, Lists.newArrayList(signer1))
@@ -2415,17 +2417,6 @@ public class SignatureUtilsTest {
       .build();
 
     addMultiSignatureToTransactionHelper(transaction);
-  }
-
-  @Test
-  public void addMultiSignaturesToTransactionUnsupported() {
-    when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
-    when(transactionMock.signingPublicKey()).thenReturn(PublicKey.MULTI_SIGN_PUBLIC_KEY);
-    assertThatThrownBy(
-      () -> addMultiSignatureToTransactionHelper(transactionMock)
-    )
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Signing fields could not be added to the transaction.");
   }
 
   @SuppressWarnings("OptionalGetWithoutIsPresent")

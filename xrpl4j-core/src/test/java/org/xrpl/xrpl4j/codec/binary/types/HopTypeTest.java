@@ -215,5 +215,54 @@ class HopTypeTest {
     assertThat(typeByte & HopType.TYPE_ISSUER).isEqualTo(HopType.TYPE_ISSUER);
     assertThat(hopType.value().length()).isEqualTo(45);
   }
+
+  @Test
+  void testFromParserWithInvalidTypeByteDoesNotThrow() {
+    // Test that fromParser is permissive and doesn't throw on unexpected type bytes
+    // Type byte: 0x00 (no flags set - technically invalid but should be handled gracefully)
+    String hex = "00";
+    BinaryParser parser = new BinaryParser(hex);
+
+    // Should not throw - codec should be permissive when reading ledger data
+    HopType hopType = new HopType().fromParser(parser);
+
+    // Verify it created a hop with just the type byte
+    assertThat(hopType.value().length()).isEqualTo(1);
+    assertThat(hopType.value().get(0).asInt()).isEqualTo(0x00);
+  }
+
+  @Test
+  void testFromParserWithAllFlagsSet() {
+    // Type byte: 0x71 (TYPE_ACCOUNT | TYPE_CURRENCY | TYPE_ISSUER | TYPE_MPT)
+    // This is invalid per spec (CURRENCY and MPT are mutually exclusive)
+    // But fromParser should handle it gracefully
+    String account = "B5F762798A53D543A014CAF8B297CFF8F2F937E8";
+    String currency = "0000000000000000000000005553440000000000";
+    String issuer = "B5F762798A53D543A014CAF8B297CFF8F2F937E8";
+    String hex = "71" + account + currency + issuer;
+    BinaryParser parser = new BinaryParser(hex);
+
+    // Should not throw - codec should be permissive
+    HopType hopType = new HopType().fromParser(parser);
+
+    // Due to else-if precedence, it reads ACCOUNT + CURRENCY + ISSUER (not MPT)
+    // 1 byte type + 20 bytes account + 20 bytes currency + 20 bytes issuer = 61 bytes
+    assertThat(hopType.value().length()).isEqualTo(61);
+  }
+
+  @Test
+  void testFromParserWithTruncatedData() {
+    // Type byte indicates ACCOUNT (20 bytes) but only 10 bytes provided
+    // This simulates corrupted or truncated ledger data
+    String hex = "01" + "B5F762798A53D543A014CA"; // Only 10 bytes instead of 20
+    BinaryParser parser = new BinaryParser(hex);
+
+    // This will throw StringIndexOutOfBoundsException because BinaryParser.read() will fail
+    // when there's not enough data. This demonstrates that the codec WILL fail on truly
+    // corrupted data, but it's a low-level parsing error, not a validation error.
+    assertThatThrownBy(() -> new HopType().fromParser(parser))
+      .isInstanceOf(StringIndexOutOfBoundsException.class)
+      .hasMessageContaining("begin 24, end 26, length 24");
+  }
 }
 

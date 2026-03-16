@@ -41,9 +41,13 @@ import org.immutables.value.Value;
 public interface XrpIssue extends Issue {
 
   /**
-   * Singleton constant {@link XrpIssue} representing XRP.
+   * Construct a {@code XrpIssue} instance.
+   *
+   * @return A {@link XrpIssue}.
    */
-  XrpIssue XRP = XrpIssue.builder().build();
+  static XrpIssue of() {
+    return ImmutableXrpIssue.builder().build();
+  }
 
   /**
    * Construct a {@code XrpIssue} builder.
@@ -60,19 +64,9 @@ public interface XrpIssue extends Issue {
    * @return A {@link String} containing "XRP".
    */
   @JsonProperty("currency")
-  @Value.Default
+  @Value.Derived
   default String currency() {
     return "XRP";
-  }
-
-  /**
-   * Validate that the currency is "XRP".
-   */
-  @Value.Check
-  default void checkCurrencyIsXrp() {
-    if (!"XRP".equals(currency())) {
-      throw new IllegalStateException("XrpIssue currency must be 'XRP', but was: " + currency());
-    }
   }
 }
 

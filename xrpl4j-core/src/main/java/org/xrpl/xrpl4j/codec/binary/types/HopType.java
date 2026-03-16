@@ -56,12 +56,9 @@ public class HopType extends SerializedType<HopType> {
     int type = parser.readUInt8().intValue();
     UnsignedByteArray byteArray = UnsignedByteArray.of(UnsignedByte.of(type));
 
-    // Validate that currency and MPT are mutually exclusive
-    if ((type & TYPE_CURRENCY) > 0 && (type & TYPE_MPT) > 0) {
-      throw new IllegalArgumentException(
-        "Invalid binary input: Currency and mpt_issuance_id are mutually exclusive in a path hop"
-      );
-    }
+    // Note: We don't validate mutual exclusivity here to be permissive when reading ledger data.
+    // If both TYPE_CURRENCY and TYPE_MPT flags are set (which violates the spec), we prefer
+    // TYPE_CURRENCY to maintain backward compatibility and avoid breaking on unexpected data.
 
     if ((type & TYPE_ACCOUNT) > 0) {
       byteArray.append(parser.read(AccountIdType.WIDTH));
@@ -70,7 +67,7 @@ public class HopType extends SerializedType<HopType> {
     if ((type & TYPE_CURRENCY) > 0) {
       byteArray.append(parser.read(CurrencyType.WIDTH));
     } else if ((type & TYPE_MPT) > 0) {
-      byteArray.append(parser.read(Hash192Type.WIDTH));
+      byteArray.append(parser.read(UInt192Type.WIDTH_BYTES));
     }
 
     if ((type & TYPE_ISSUER) > 0) {
@@ -108,7 +105,7 @@ public class HopType extends SerializedType<HopType> {
     });
 
     hop.mptIssuanceId().ifPresent(mptIssuanceId -> {
-      byteArray.append(new Hash192Type().fromJson(mptIssuanceId).value());
+      byteArray.append(new UInt192Type().fromJson(mptIssuanceId).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_MPT)));
     });
 
@@ -136,7 +133,7 @@ public class HopType extends SerializedType<HopType> {
     }
 
     if ((type & TYPE_MPT) > 0) {
-      builder.mptIssuanceId(new Hash192Type().fromParser(parser).toJson());
+      builder.mptIssuanceId(new UInt192Type().fromParser(parser).toJson());
     }
 
     if ((type & TYPE_ISSUER) > 0) {

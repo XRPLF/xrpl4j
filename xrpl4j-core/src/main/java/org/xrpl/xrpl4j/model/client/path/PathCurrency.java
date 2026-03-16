@@ -30,13 +30,14 @@ import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
+import java.util.Objects;
+
 /**
  * Represents a currency that an account holds on the XRPL, which can be used to specify the source currencies in
  * {@link RipplePathFindRequestParams}.
  *
- * <p>This class wraps an {@link Issue} to support XRP, IOUs, and MPTokens.
- * For XRP, use {@link XrpIssue}. For IOUs, use {@link IouIssue}. For MPTokens, use
- * {@link org.xrpl.xrpl4j.model.ledger.MptIssue}.</p>
+ * <p>This class wraps an {@link Issue} to support XRP, IOUs, and MPTokens. For XRP, use {@link XrpIssue}.
+ * For IOUs, use {@link IouIssue}. For MPTokens, use {@link org.xrpl.xrpl4j.model.ledger.MptIssue}.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutablePathCurrency.class, using = PathCurrencySerializer.class)
@@ -68,9 +69,7 @@ public interface PathCurrency {
   @Deprecated
   static PathCurrency of(String currency) {
     if ("XRP".equals(currency)) {
-      return builder()
-        .issue(XrpIssue.builder().build())
-        .build();
+      return of(XrpIssue.of());
     }
     throw new IllegalArgumentException(
       "PathCurrency.of(String) only supports 'XRP'. " +
@@ -89,7 +88,8 @@ public interface PathCurrency {
    *
    * @return A new {@link PathCurrency}.
    */
-  static PathCurrency of(Issue issue) {
+  static PathCurrency of(final Issue issue) {
+    Objects.requireNonNull(issue);
     return builder()
       .issue(issue)
       .build();
@@ -107,7 +107,7 @@ public interface PathCurrency {
    *
    * @return A new {@link PathCurrency}.
    */
-  static PathCurrency of(String currency, Address issuer) {
+  static PathCurrency of(final String currency, final Address issuer) {
     return builder()
       .issue(IouIssue.builder().currency(currency).issuer(issuer).build())
       .build();

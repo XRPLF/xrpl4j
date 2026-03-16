@@ -93,7 +93,8 @@ class PathCurrencySerializerTest {
   @Test
   void testSerializeCurrencyIssueThrowsIoException() throws IOException {
     JsonGenerator jsonGeneratorMock = mock(JsonGenerator.class);
-    PathCurrency pathCurrency = PathCurrency.of("USD");
+    Address issuer = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
+    PathCurrency pathCurrency = PathCurrency.of("USD", issuer);
 
     // Mock IOException when writing currency field
     doThrow(new IOException("Test IOException")).when(jsonGeneratorMock).writeStringField("currency", "USD");
@@ -103,7 +104,7 @@ class PathCurrencySerializerTest {
       () -> serializer.serialize(pathCurrency, jsonGeneratorMock, mock(SerializerProvider.class))
     );
 
-    assertThat(exception.getMessage()).isEqualTo("Error serializing CurrencyIssue");
+    assertThat(exception.getMessage()).isEqualTo("Error serializing IouIssue");
     assertThat(exception.getCause()).isInstanceOf(IOException.class);
     assertThat(exception.getCause().getMessage()).isEqualTo("Test IOException");
   }

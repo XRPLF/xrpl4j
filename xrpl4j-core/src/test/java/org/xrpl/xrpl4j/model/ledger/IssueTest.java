@@ -98,6 +98,22 @@ class IssueTest extends AbstractJsonTest {
   }
 
   @Test
+  void testDeserializeIouWithoutIssuerThrowsException() {
+    String iouWithoutIssuer = "{" +
+      "    \"currency\": \"USD\"" +
+      "}";
+
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class,
+      () -> objectMapper.readValue(iouWithoutIssuer, Issue.class)
+    );
+
+    assertThat(exception.getMessage()).isEqualTo(
+      "Invalid Issue JSON: IOU currency 'USD' must have an 'issuer' field"
+    );
+  }
+
+  @Test
   void testMapWithIouIssue() {
     IouIssue iouIssue = IouIssue.builder()
       .currency("USD")

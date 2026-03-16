@@ -82,12 +82,16 @@ public class RippledContainer {
    * No-args constructor.
    */
   public RippledContainer() {
-    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:develop")) {
+    // Use MPT-enabled rippled image for testing MPT features
+    String dockerImage = System.getProperty("rippled.docker.image", "rippled:mpt-v2e");
+    LOGGER.info("Using rippled Docker image: {}", dockerImage);
+
+    try (GenericContainer<?> container = new GenericContainer<>(dockerImage)) {
       this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
           cmd.withEntrypoint("/opt/xrpld/bin/xrpld"))
         .withCommand("-a --start --conf /config/xrpld.cfg")
         .withExposedPorts(5005)
-        .withImagePullPolicy(PullPolicy.alwaysPull())
+        .withImagePullPolicy(PullPolicy.defaultPolicy())
         .withClasspathResourceMapping("xrpld",
           "/config",
           BindMode.READ_ONLY)

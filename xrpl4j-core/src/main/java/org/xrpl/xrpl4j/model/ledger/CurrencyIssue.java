@@ -31,21 +31,21 @@ import java.util.Optional;
 /**
  * Represents a currency-based asset (XRP or IOU) on the ledger without an amount.
  *
- * <p>This is one of the two implementations of {@link Issue}. A {@link CurrencyIssue} identifies
- * an asset by its currency code and optional issuer address. XRP is represented by the currency
- * code "XRP" with no issuer. IOUs are represented by a currency code and an issuer address.</p>
+ * <p>This is one of the two implementations of {@link Issue}. A {@link CurrencyIssue} identifies an asset by its
+ * currency code and optional issuer address. XRP is represented by the currency code "XRP" with no issuer. IOUs are
+ * represented by a currency code and an issuer address.</p>
  *
  * @see Issue
  * @see MptIssue
- * @deprecated Use {@link XrpIssue} for XRP or {@link IouIssue} for issued currencies instead.
- *             This class will be removed in a future version. Migration guide:
- *             <ul>
- *               <li>For XRP: Replace {@code CurrencyIssue.XRP} with {@code XrpIssue.XRP}</li>
- *               <li>For XRP: Replace {@code CurrencyIssue.builder().currency("XRP").build()}
- *                   with {@code XrpIssue.builder().build()}</li>
- *               <li>For IOUs: Replace {@code CurrencyIssue.builder().currency(c).issuer(i).build()}
- *                   with {@code IouIssue.builder().currency(c).issuer(i).build()}</li>
- *             </ul>
+ * @deprecated Use {@link XrpIssue} for XRP or {@link IouIssue} for issued currencies instead. This class will be
+ *   removed in a future version. Migration guide:
+ *   <ul>
+ *     <li>For XRP: Replace {@code CurrencyIssue.XRP} with {@code XrpIssue.XRP}</li>
+ *     <li>For XRP: Replace {@code CurrencyIssue.builder().currency("XRP").build()} with
+ *       {@code XrpIssue.builder().build()}</li>
+ *     <li>For IOUs: Replace {@code CurrencyIssue.builder().currency(c).issuer(i).build()} with
+ *       {@code IouIssue.builder().currency(c).issuer(i).build()}</li>
+ *   </ul>
  */
 @Deprecated
 @Value.Immutable

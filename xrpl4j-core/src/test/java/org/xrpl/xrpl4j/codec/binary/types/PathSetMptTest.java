@@ -72,10 +72,8 @@ class PathSetMptTest {
   void testTwoMptHops() throws JsonProcessingException {
     String mptId1 = "00000001B5F762798A53D543A014CAF8B297CFF8F2F937E8";
     String mptId2 = "000004C463C52827307480341125DA0577DEFC38405B0E3E";
-    
+
     // Create path set with two MPT hops
-    ArrayNode pathSet = objectMapper.createArrayNode();
-    
     ArrayNode path1 = objectMapper.createArrayNode();
     ObjectNode hop1 = objectMapper.createObjectNode();
     hop1.put("mpt_issuance_id", mptId1);
@@ -85,7 +83,8 @@ class PathSetMptTest {
     ObjectNode hop2 = objectMapper.createObjectNode();
     hop2.put("mpt_issuance_id", mptId2);
     path2.add(hop2);
-    
+
+    ArrayNode pathSet = objectMapper.createArrayNode();
     pathSet.add(path1);
     pathSet.add(path2);
     
@@ -194,9 +193,9 @@ class PathSetMptTest {
   }
 
   @Test
-  void testHash192TypeWidth() {
-    // Verify Hash192Type has correct width (24 bytes)
-    assertThat(Hash192Type.WIDTH).isEqualTo(24);
+  void testUInt192TypeWidth() {
+    // Verify UInt192Type has correct width (24 bytes)
+    assertThat(UInt192Type.WIDTH_BYTES).isEqualTo(24);
   }
 }
 

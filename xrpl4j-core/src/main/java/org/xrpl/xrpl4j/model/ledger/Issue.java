@@ -48,7 +48,7 @@ public interface Issue {
   /**
    * Constant {@link Issue} representing XRP.
    */
-  Issue XRP = XrpIssue.XRP;
+  Issue XRP = XrpIssue.of();
 
   /**
    * Handle this {@link Issue} depending on its actual polymorphic subtype.

@@ -21,13 +21,17 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.MpTokenLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
+import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.MpTokenAuthorizeFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
+import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
+import org.xrpl.xrpl4j.model.transactions.CredentialType;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
@@ -383,4 +387,224 @@ public class MpTokenIT extends AbstractIT {
     ).isInstanceOf(JsonRpcClientErrorException.class)
       .hasMessageContaining("entryNotFound");
   }
+
+  @Test
+  void mptIssuanceWithPermissionedDomainSuccessAndFailure()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+
+    // Step 1: Create accounts for domain owner, credential issuer, MPT issuer, and two potential holders
+    KeyPair domainOwnerKeyPair = createRandomAccountEd25519();
+    KeyPair credentialIssuerKeyPair = createRandomAccountEd25519();
+    KeyPair mptIssuerKeyPair = createRandomAccountEd25519();
+    KeyPair authorizedHolderKeyPair = createRandomAccountEd25519();
+    final KeyPair unauthorizedHolderKeyPair = createRandomAccountEd25519();
+
+    // Step 2: Create a Permissioned Domain with a specific credential type requirement
+    CredentialType credentialType = CredentialType.ofPlainText("KYC");
+    createPermissionedDomain(domainOwnerKeyPair, credentialIssuerKeyPair, new CredentialType[]{credentialType});
+
+    // Step 3: Fetch the Permissioned Domain object to get its ID
+    PermissionedDomainObject domainObject = getPermissionedDomainObject(domainOwnerKeyPair.publicKey().deriveAddress());
+    Hash256 domainId = domainObject.index();
+
+    // Step 4: Issue a credential to the authorized holder
+    createAndAcceptCredentials(credentialIssuerKeyPair, authorizedHolderKeyPair, new CredentialType[]{credentialType});
+
+    // Step 5: Create an MPToken issuance linked to the Permissioned Domain via DomainID
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult mptIssuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(mptIssuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceCreateFlags flags = MpTokenIssuanceCreateFlags.builder()
+      .tfMptCanLock(true)
+      .tfMptCanTransfer(true)
+      .tfMptRequireAuth(true)
+      .build();
+
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(mptIssuerKeyPair.publicKey().deriveAddress())
+      .sequence(mptIssuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        mptIssuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(mptIssuerKeyPair.publicKey())
+      .assetScale(AssetScale.of(UnsignedInteger.valueOf(2)))
+      .transferFee(TransferFee.ofPercent(BigDecimal.valueOf(0.01)))
+      .maximumAmount(MpTokenNumericAmount.of(Long.MAX_VALUE))
+      .domainId(domainId)
+      .flags(flags)
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedIssuanceCreate = signatureService.sign(
+      mptIssuerKeyPair.privateKey(),
+      issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> issuanceCreateSubmitResult = xrplClient.submit(signedIssuanceCreate);
+    assertThat(issuanceCreateSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    // Step 6: Wait for the transaction to be validated
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedIssuanceCreate.hash(),
+        issuanceCreateSubmitResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        mptIssuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    // Step 7: Retrieve the MPToken issuance ID from the transaction metadata
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedIssuanceCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("issuance create metadata did not contain issuance ID"));
+
+    // Step 8: Verify the issuance object contains the DomainID
+    MpTokenIssuanceObject issuanceFromLedgerEntry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(
+        mpTokenIssuanceId,
+        LedgerSpecifier.VALIDATED
+      )
+    ).node();
+
+    assertThat(issuanceFromLedgerEntry.domainId()).isPresent();
+    assertThat(issuanceFromLedgerEntry.domainId().get()).isEqualTo(domainId);
+    assertThat(issuanceFromLedgerEntry.issuer()).isEqualTo(mptIssuerKeyPair.publicKey().deriveAddress());
+
+    // Step 9: SUCCESS CASE - Authorized holder (with credential) can authorize and receive MPTokens
+    AccountInfoResult authorizedHolderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(authorizedHolderKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenAuthorize authorizedHolderAuthorize = MpTokenAuthorize.builder()
+      .account(authorizedHolderKeyPair.publicKey().deriveAddress())
+      .sequence(authorizedHolderAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .signingPublicKey(authorizedHolderKeyPair.publicKey())
+      .lastLedgerSequence(
+        authorizedHolderAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .build();
+
+    SingleSignedTransaction<MpTokenAuthorize> signedAuthorizedHolderAuthorize = signatureService.sign(
+      authorizedHolderKeyPair.privateKey(),
+      authorizedHolderAuthorize
+    );
+    SubmitResult<MpTokenAuthorize> authorizedHolderAuthorizeSubmitResult = xrplClient.submit(
+      signedAuthorizedHolderAuthorize
+    );
+    assertThat(authorizedHolderAuthorizeSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedAuthorizedHolderAuthorize.hash(),
+        authorizedHolderAuthorizeSubmitResult.validatedLedgerIndex(),
+        authorizedHolderAuthorize.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        authorizedHolderAuthorize.sequence(),
+        authorizedHolderKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    // Step 10: Send MPTokens to the authorized holder - this should succeed
+    MptCurrencyAmount mintAmount = MptCurrencyAmount.builder()
+      .mptIssuanceId(mpTokenIssuanceId)
+      .value("100000")
+      .build();
+
+    Payment mintToAuthorizedHolder = Payment.builder()
+      .account(mptIssuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(mptIssuerAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
+      .destination(authorizedHolderKeyPair.publicKey().deriveAddress())
+      .amount(mintAmount)
+      .signingPublicKey(mptIssuerKeyPair.publicKey())
+      .lastLedgerSequence(
+        mptIssuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(1000)).unsignedIntegerValue()
+      )
+      .build();
+
+    SingleSignedTransaction<Payment> signedMintToAuthorizedHolder = signatureService.sign(
+      mptIssuerKeyPair.privateKey(),
+      mintToAuthorizedHolder
+    );
+    SubmitResult<Payment> mintToAuthorizedHolderSubmitResult = xrplClient.submit(signedMintToAuthorizedHolder);
+    assertThat(mintToAuthorizedHolderSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> this.getValidatedTransaction(
+        signedMintToAuthorizedHolder.hash(),
+        MpTokenAuthorize.class
+      )
+    );
+
+    // Step 11: FAILURE CASE - Unauthorized holder (without credential) cannot authorize for the MPToken
+    AccountInfoResult unauthorizedHolderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(unauthorizedHolderKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenAuthorize unauthorizedHolderAuthorize = MpTokenAuthorize.builder()
+      .account(unauthorizedHolderKeyPair.publicKey().deriveAddress())
+      .sequence(unauthorizedHolderAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .signingPublicKey(unauthorizedHolderKeyPair.publicKey())
+      .lastLedgerSequence(
+        unauthorizedHolderAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .build();
+
+    SingleSignedTransaction<MpTokenAuthorize> signedUnauthorizedHolderAuthorize = signatureService.sign(
+      unauthorizedHolderKeyPair.privateKey(),
+      unauthorizedHolderAuthorize
+    );
+    SubmitResult<MpTokenAuthorize> unauthorizedHolderAuthorizeSubmitResult = xrplClient.submit(
+      signedUnauthorizedHolderAuthorize
+    );
+    assertThat(unauthorizedHolderAuthorizeSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    // Wait until the transaction gets committed to a validated ledger
+    TransactionResult<MpTokenAuthorize> validatedUnauthorizedAuthorize = this.scanForResult(
+      () -> this.getValidatedTransaction(
+        signedUnauthorizedHolderAuthorize.hash(),
+        MpTokenAuthorize.class
+      )
+    );
+
+    // Assert the transaction result from validated ledger
+    assertThat(validatedUnauthorizedAuthorize.metadata().get().transactionResult()).isEqualTo(SUCCESS_STATUS);
+
+    // Step 12: Try to send MPTokens to the unauthorized holder - this should fail
+    MptCurrencyAmount mintAmountUnauthorized = MptCurrencyAmount.builder()
+      .mptIssuanceId(mpTokenIssuanceId)
+      .value("50000")
+      .build();
+
+    Payment mintToUnauthorizedHolder = Payment.builder()
+      .account(mptIssuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(mptIssuerAccountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
+      .destination(unauthorizedHolderKeyPair.publicKey().deriveAddress())
+      .amount(mintAmountUnauthorized)
+      .signingPublicKey(mptIssuerKeyPair.publicKey())
+      .lastLedgerSequence(
+        mptIssuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(1000)).unsignedIntegerValue()
+      )
+      .build();
+
+    SingleSignedTransaction<Payment> signedMintToUnauthorizedHolder = signatureService.sign(
+      mptIssuerKeyPair.privateKey(),
+      mintToUnauthorizedHolder
+    );
+    SubmitResult<Payment> mintToUnauthorizedHolderSubmitResult = xrplClient.submit(signedMintToUnauthorizedHolder);
+    assertThat(mintToUnauthorizedHolderSubmitResult.engineResult()).isEqualTo("tecNO_AUTH");
+  }
 }
+

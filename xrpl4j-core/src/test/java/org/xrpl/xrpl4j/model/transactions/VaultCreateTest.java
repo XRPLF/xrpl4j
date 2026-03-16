@@ -27,8 +27,6 @@ class VaultCreateTest {
     assertThat(flags.tfInnerBatchTxn()).isFalse();
   }
 
-  // ---- Precondition tests (mirrors rippled VaultCreate::preflight checks) ----
-
   @Test
   void domainIdRequiresVaultPrivateFlag() {
     assertThatThrownBy(() -> baseBuilder()

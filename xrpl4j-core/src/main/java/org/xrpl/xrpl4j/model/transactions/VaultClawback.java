@@ -58,11 +58,24 @@ public interface VaultClawback extends Transaction {
   Address holder();
 
   /**
-   * The amount to clawback. If absent or 0, claws back all shares from the holder.
+   * The amount to clawback. When Amount is 0 clawback all funds, up to the total shares the Holder owns.
    *
    * @return An optionally-present {@link CurrencyAmount}.
    */
   @JsonProperty("Amount")
   Optional<CurrencyAmount> amount();
+
+  @Value.Check
+  default void check() {
+    amount().ifPresent(amt -> amt.handle(
+      xrpAmount -> {
+        throw new IllegalArgumentException(
+          "VaultClawback amount cannot be XRP."
+        );
+      },
+      issuedCurrencyAmount -> {},
+      mptCurrencyAmount -> {}
+    ));
+  }
 
 }

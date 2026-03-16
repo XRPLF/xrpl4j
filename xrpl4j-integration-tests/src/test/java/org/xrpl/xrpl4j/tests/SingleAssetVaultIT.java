@@ -71,8 +71,8 @@ public class SingleAssetVaultIT extends AbstractIT {
   void vaultWithIouAsset() throws Exception {
     // Step 1: Create accounts
     KeyPair issuerKeyPair = createRandomAccountEd25519();
-    KeyPair vaultOwnerKeyPair = createRandomAccountEd25519();
-    KeyPair depositorKeyPair = createRandomAccountEd25519();
+    final KeyPair vaultOwnerKeyPair = createRandomAccountEd25519();
+    final KeyPair depositorKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
 
@@ -236,7 +236,8 @@ public class SingleAssetVaultIT extends AbstractIT {
     assertThat(vaultInfoAfterDeposit.vault().assetsTotal()).isNotEmpty().get().isEqualTo(AssetAmount.of("10000"));
     assertThat(vaultInfoAfterDeposit.vault().assetsAvailable()).isNotEmpty().get().isEqualTo(AssetAmount.of("10000"));
     // scale of 2, so 10000 * 100 = 1000000
-    assertThat(vaultInfoAfterDeposit.vault().shares().get().outstandingAmount()).isEqualTo(MpTokenNumericAmount.of(1000000));
+    assertThat(vaultInfoAfterDeposit.vault().shares().get().outstandingAmount())
+      .isEqualTo(MpTokenNumericAmount.of(1000000));
 
     // Step 11: Withdraw from vault
     depositorAccountInfo = this.scanForResult(
@@ -412,7 +413,7 @@ public class SingleAssetVaultIT extends AbstractIT {
     // Step 1: Create accounts
     KeyPair mptIssuerKeyPair = createRandomAccountEd25519();
     KeyPair vaultOwnerKeyPair = createRandomAccountEd25519();
-    KeyPair depositorKeyPair = createRandomAccountEd25519();
+    final KeyPair depositorKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
 
@@ -510,7 +511,10 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Verify vault_info (query by owner and seq)
     VaultInfoResult vaultInfoByOwnerSeqResult = xrplClient.vaultInfo(
-      VaultInfoRequestParams.of(vaultOwnerKeyPair.publicKey().deriveAddress(), vaultOwnerAccountInfo.accountData().sequence())
+      VaultInfoRequestParams.of(
+        vaultOwnerKeyPair.publicKey().deriveAddress(),
+        vaultOwnerAccountInfo.accountData().sequence()
+      )
     );
     assertThat(vaultInfoByOwnerSeqResult.vault()).isEqualTo(vaultFromInfoById);
 
@@ -780,7 +784,7 @@ public class SingleAssetVaultIT extends AbstractIT {
   void vaultWithXrpAsset() throws Exception {
     // Step 1: Create accounts
     KeyPair vaultOwnerKeyPair = createRandomAccountEd25519();
-    KeyPair depositorKeyPair = createRandomAccountEd25519();
+    final KeyPair depositorKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
 
@@ -840,7 +844,10 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Verify vault_info (query by owner and seq)
     VaultInfoResult vaultInfoByOwnerSeqResult = xrplClient.vaultInfo(
-      VaultInfoRequestParams.of(vaultOwnerKeyPair.publicKey().deriveAddress(), vaultOwnerAccountInfo.accountData().sequence())
+      VaultInfoRequestParams.of(
+        vaultOwnerKeyPair.publicKey().deriveAddress(),
+        vaultOwnerAccountInfo.accountData().sequence()
+      )
     );
     assertThat(vaultInfoByOwnerSeqResult.vault()).isEqualTo(vaultFromInfoById);
 
@@ -1008,7 +1015,7 @@ public class SingleAssetVaultIT extends AbstractIT {
     KeyPair credentialIssuerKeyPair = createRandomAccountEd25519();
     KeyPair domainOwnerKeyPair = createRandomAccountEd25519();
     KeyPair issuerKeyPair = createRandomAccountEd25519();
-    KeyPair vaultOwnerKeyPair = createRandomAccountEd25519();
+    final KeyPair vaultOwnerKeyPair = createRandomAccountEd25519();
     KeyPair authorizedDepositorKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
@@ -1019,10 +1026,12 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Get the domain ID from the permissioned domain object
     PermissionedDomainObject domainObject = getPermissionedDomainObject(domainOwnerKeyPair.publicKey().deriveAddress());
-    Hash256 domainId = domainObject.index();
+    final Hash256 domainId = domainObject.index();
 
     // Step 3: Create and accept credential for authorized depositor
-    createAndAcceptCredentials(credentialIssuerKeyPair, authorizedDepositorKeyPair, new CredentialType[]{credentialType});
+    createAndAcceptCredentials(
+      credentialIssuerKeyPair, authorizedDepositorKeyPair, new CredentialType[]{credentialType}
+    );
 
     // Step 4: Enable clawback and default ripple on issuer account
     AccountInfoResult issuerAccountInfo = this.scanForResult(
@@ -1141,7 +1150,10 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Verify vault_info (query by owner and seq)
     VaultInfoResult vaultInfoByOwnerSeqResult = xrplClient.vaultInfo(
-      VaultInfoRequestParams.of(vaultOwnerKeyPair.publicKey().deriveAddress(), vaultOwnerAccountInfo.accountData().sequence())
+      VaultInfoRequestParams.of(
+        vaultOwnerKeyPair.publicKey().deriveAddress(),
+        vaultOwnerAccountInfo.accountData().sequence()
+      )
     );
     assertThat(vaultInfoByOwnerSeqResult.vault()).isEqualTo(vaultFromInfoById);
 

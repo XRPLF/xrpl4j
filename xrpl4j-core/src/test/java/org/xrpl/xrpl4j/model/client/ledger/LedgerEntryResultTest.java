@@ -51,8 +51,8 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.VaultData;
-import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 import org.xrpl.xrpl4j.model.transactions.VoteWeight;
+import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Collections;

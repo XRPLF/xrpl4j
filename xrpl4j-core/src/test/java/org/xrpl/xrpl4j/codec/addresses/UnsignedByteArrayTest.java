@@ -166,19 +166,11 @@ public class UnsignedByteArrayTest {
     UnsignedByteArray array2 = UnsignedByteArray.of(new byte[] {3, 2, 1, 0});
     assertThat(array1.reverse()).isEqualTo(array2);
 
-    // Test that original is unchanged
     assertThat(array1).isEqualTo(UnsignedByteArray.of(new byte[] {0, 1, 2, 3}));
-
-    // Test hex representation
     assertThat(UnsignedByteArray.fromHex("01020304").reverse().hexValue()).isEqualTo("04030201");
-
-    // Test single byte (should be unchanged)
     assertThat(UnsignedByteArray.of(new byte[] {5}).reverse()).isEqualTo(UnsignedByteArray.of(new byte[] {5}));
-
-    // Test empty array
     assertThat(UnsignedByteArray.empty().reverse()).isEqualTo(UnsignedByteArray.empty());
 
-    // Test double reversal returns to original
     UnsignedByteArray original = UnsignedByteArray.fromHex("ABCDEF0123");
     assertThat(original.reverse().reverse()).isEqualTo(original);
   }

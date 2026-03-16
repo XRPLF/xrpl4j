@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions.json;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -84,31 +86,22 @@ public class VaultClawbackJsonTest extends AbstractJsonTest {
   }
 
   @Test
-  public void testVaultClawbackJsonWithXrpAmount() throws JsonProcessingException, JSONException {
-    VaultClawback vaultClawback = VaultClawback.builder()
-      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.valueOf(1))
-      .vaultId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000001"))
-      .holder(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
-      .amount(XrpCurrencyAmount.ofDrops(100000))
-      .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
-      )
-      .build();
-
-    String json = "{" +
-      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
-      "  \"VaultID\": \"0000000000000000000000000000000000000000000000000000000000000001\"," +
-      "  \"Holder\": \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"," +
-      "  \"Amount\": \"100000\"," +
-      "  \"Fee\": \"10\"," +
-      "  \"Sequence\": 1," +
-      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
-      "  \"TransactionType\": \"VaultClawback\"" +
-      "}";
-
-    assertCanSerializeAndDeserialize(vaultClawback, json);
+  public void testVaultClawbackJsonWithXrpAmountThrows() {
+    assertThrows(IllegalArgumentException.class, () ->
+      VaultClawback.builder()
+        .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .sequence(UnsignedInteger.valueOf(1))
+        .vaultId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000001"))
+        .holder(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+        .amount(XrpCurrencyAmount.ofDrops(100000))
+        .signingPublicKey(
+          PublicKey.fromBase16EncodedPublicKey(
+            "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC"
+          )
+        )
+        .build()
+    );
   }
 
   @Test

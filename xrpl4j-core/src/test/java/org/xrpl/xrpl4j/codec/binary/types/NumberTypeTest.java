@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
 /**
- * Unit tests for {@link NumberType}
+ * Unit tests for {@link NumberType}.
  */
 class NumberTypeTest {
 

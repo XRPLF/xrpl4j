@@ -397,7 +397,7 @@ public class MpTokenIT extends AbstractIT {
     KeyPair credentialIssuerKeyPair = createRandomAccountEd25519();
     KeyPair mptIssuerKeyPair = createRandomAccountEd25519();
     KeyPair authorizedHolderKeyPair = createRandomAccountEd25519();
-    KeyPair unauthorizedHolderKeyPair = createRandomAccountEd25519();
+    final KeyPair unauthorizedHolderKeyPair = createRandomAccountEd25519();
 
     // Step 2: Create a Permissioned Domain with a specific credential type requirement
     CredentialType credentialType = CredentialType.ofPlainText("KYC");
@@ -426,7 +426,9 @@ public class MpTokenIT extends AbstractIT {
       .account(mptIssuerKeyPair.publicKey().deriveAddress())
       .sequence(mptIssuerAccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .lastLedgerSequence(mptIssuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .lastLedgerSequence(
+        mptIssuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
       .signingPublicKey(mptIssuerKeyPair.publicKey())
       .assetScale(AssetScale.of(UnsignedInteger.valueOf(2)))
       .transferFee(TransferFee.ofPercent(BigDecimal.valueOf(0.01)))

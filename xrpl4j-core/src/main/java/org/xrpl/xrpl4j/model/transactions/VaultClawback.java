@@ -65,6 +65,9 @@ public interface VaultClawback extends Transaction {
   @JsonProperty("Amount")
   Optional<CurrencyAmount> amount();
 
+  /**
+   * Validates that the amount, if present, is not XRP.
+   */
   @Value.Check
   default void check() {
     amount().ifPresent(amt -> amt.handle(
@@ -73,8 +76,8 @@ public interface VaultClawback extends Transaction {
           "VaultClawback amount cannot be XRP."
         );
       },
-      issuedCurrencyAmount -> {},
-      mptCurrencyAmount -> {}
+      issuedCurrencyAmount -> { },
+      mptCurrencyAmount -> { }
     ));
   }
 

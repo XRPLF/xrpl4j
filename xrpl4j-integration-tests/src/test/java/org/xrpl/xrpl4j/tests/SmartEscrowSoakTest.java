@@ -132,13 +132,11 @@ public class SmartEscrowSoakTest extends AbstractIT {
   // WASM function types to test
   private enum WasmFunction {
     // Simple functions - minimal gas needed
-    ALWAYS_SUCCEED("always_succeed", true, 1269),
-    // Stateful counter - fails on first call, succeeds on second (simulates data counter)
-    DATA_COUNTER("data_counter", true, 7500),
-    CREDENTIAL_CHECK("credential_check", true, 10160),
-    TIME_WINDOW("time_window", true, 1836),
-    ORACLE_PRICE_CHECK("oracle_price_check", true, 1836),
-    // Stress test - maximum gas for 1M iterations
+    ALWAYS_SUCCEED("always_succeed", true,
+      1269), // Stateful counter - fails on first call, succeeds on second (simulates data counter)
+    DATA_COUNTER("data_counter", true, 7500), CREDENTIAL_CHECK("credential_check", true, 10160), TIME_WINDOW(
+      "time_window", true, 1836), ORACLE_PRICE_CHECK("oracle_price_check", true,
+      1836), // Stress test - maximum gas for 1M iterations
     GAS_STRESS_TEST("gas_stress_test", true, 805000);
 
     private final String name;
@@ -172,10 +170,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
     startTimeMillis = System.currentTimeMillis();
     LOGGER.info("Capturing initial ledger index for throughput tracking...");
     LedgerResult startLedger = xrplClient.ledger(
-      LedgerRequestParams.builder()
-        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-        .build()
-    );
+      LedgerRequestParams.builder().ledgerSpecifier(LedgerSpecifier.VALIDATED).build());
     startLedgerIndex = startLedger.ledgerIndexSafe().unsignedIntegerValue();
     LOGGER.info("Test starting at ledger index: {}", startLedgerIndex);
 
@@ -255,8 +250,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
       this.workerId = workerId;
       this.workerAccount = workerAccount;
       this.wasmHexByFunction = wasmHexByFunction;
-      LOGGER.info("Worker {} using dedicated account: {}", workerId,
-        workerAccount.publicKey().deriveAddress());
+      LOGGER.info("Worker {} using dedicated account: {}", workerId, workerAccount.publicKey().deriveAddress());
     }
 
     public void stop() {
@@ -269,9 +263,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
     private void refreshSequenceFromLedger() {
       try {
         Address workerAddress = workerAccount.publicKey().deriveAddress();
-        AccountInfoResult accountInfo = scanForResult(
-          () -> getValidatedAccountInfo(workerAddress)
-        );
+        AccountInfoResult accountInfo = scanForResult(() -> getValidatedAccountInfo(workerAddress));
         currentSequence = accountInfo.accountData().sequence();
         lastSequenceRefresh = System.currentTimeMillis();
         sequenceRefreshes.incrementAndGet();
@@ -302,21 +294,16 @@ public class SmartEscrowSoakTest extends AbstractIT {
     private void checkAndRefundBalance() {
       try {
         Address workerAddress = workerAccount.publicKey().deriveAddress();
-        AccountInfoResult accountInfo = scanForResult(
-          () -> getValidatedAccountInfo(workerAddress)
-        );
+        AccountInfoResult accountInfo = scanForResult(() -> getValidatedAccountInfo(workerAddress));
 
         XrpCurrencyAmount balance = accountInfo.accountData().balance();
         long balanceDrops = balance.value().longValue();
 
-        LOGGER.info("Worker {} - Current balance: {} XRP ({} drops)",
-          workerId,
-          balanceDrops / 1_000_000.0,
+        LOGGER.info("Worker {} - Current balance: {} XRP ({} drops)", workerId, balanceDrops / 1_000_000.0,
           balanceDrops);
 
         if (balanceDrops < MIN_BALANCE_DROPS) {
-          LOGGER.warn("Worker {} - Balance low ({} XRP), refunding from faucet...",
-            workerId,
+          LOGGER.warn("Worker {} - Balance low ({} XRP), refunding from faucet...", workerId,
             balanceDrops / 1_000_000.0);
 
           // Fund the account from the faucet
@@ -386,12 +373,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
           }
 
           // Create Smart Escrow with retry logic
-          EscrowCreationResult escrowResult = createSmartEscrowWithRetry(
-            workerAccount,
-            workerAddress,
-            wasmHex,
-            function
-          );
+          EscrowCreationResult escrowResult = createSmartEscrowWithRetry(workerAccount, workerAddress, wasmHex,
+            function);
 
           if (escrowResult == null) {
             LOGGER.warn("Worker {} - Failed to create escrow after retries, continuing", workerId);
@@ -411,21 +394,14 @@ public class SmartEscrowSoakTest extends AbstractIT {
             // Wait for the escrow creation to be validated in a ledger
             LOGGER.info("Worker {} - Waiting for EscrowCreate validation - hash: {}", workerId, escrowResult.txHash);
             TransactionResult<EscrowCreate> createResult = scanForResult(
-              () -> getValidatedTransaction(escrowResult.txHash, EscrowCreate.class)
-            );
-            LOGGER.info("Worker {} - ✓ EscrowCreate validated - hash: {}, ledger: {}, result: {}",
-              workerId,
-              escrowResult.txHash,
-              createResult.ledgerIndex().map(LedgerIndex::toString).orElse("unknown"),
+              () -> getValidatedTransaction(escrowResult.txHash, EscrowCreate.class));
+            LOGGER.info("Worker {} - ✓ EscrowCreate validated - hash: {}, ledger: {}, result: {}", workerId,
+              escrowResult.txHash, createResult.ledgerIndex().map(LedgerIndex::toString).orElse("unknown"),
               createResult.metadata().map(TransactionMetadata::transactionResult).orElse("unknown"));
 
             // Attempt to finish the escrow with retry logic
-            EscrowFinishResult finishResult = finishSmartEscrowWithRetry(
-              workerAccount,
-              workerAddress,
-              escrowResult.sequence,
-              function
-            );
+            EscrowFinishResult finishResult = finishSmartEscrowWithRetry(workerAccount, workerAddress,
+              escrowResult.sequence, function);
 
             if (finishResult == null) {
               LOGGER.warn("Worker {} - Failed to finish escrow after retries", workerId);
@@ -436,33 +412,23 @@ public class SmartEscrowSoakTest extends AbstractIT {
               // Wait for the finish transaction to be validated
               LOGGER.info("Worker {} - Waiting for EscrowFinish validation - hash: {}", workerId, finishResult.txHash);
               TransactionResult<EscrowFinish> finishTxResult = scanForResult(
-                () -> getValidatedTransaction(finishResult.txHash, EscrowFinish.class)
-              );
+                () -> getValidatedTransaction(finishResult.txHash, EscrowFinish.class));
 
               // Check the transaction result to determine success/failure
-              String txResult = finishTxResult.metadata()
-                .map(TransactionMetadata::transactionResult)
-                .orElse("unknown");
+              String txResult = finishTxResult.metadata().map(TransactionMetadata::transactionResult).orElse("unknown");
 
-              LOGGER.info("Worker {} - ✓ EscrowFinish validated - hash: {}, ledger: {}, result: {}",
-                workerId,
-                finishResult.txHash,
-                finishTxResult.ledgerIndex().map(LedgerIndex::toString).orElse("unknown"),
+              LOGGER.info("Worker {} - ✓ EscrowFinish validated - hash: {}, ledger: {}, result: {}", workerId,
+                finishResult.txHash, finishTxResult.ledgerIndex().map(LedgerIndex::toString).orElse("unknown"),
                 txResult);
 
               // Extract gas used from metadata (for both success and failure)
-              Long gasUsed = finishTxResult.metadata()
-                .flatMap(TransactionMetadata::gasUsed)
-                .map(gas -> gas.value().longValue())
-                .orElse(null);
+              Long gasUsed = finishTxResult.metadata().flatMap(TransactionMetadata::gasUsed)
+                .map(gas -> gas.value().longValue()).orElse(null);
 
               if (gasUsed != null) {
                 totalGasUsed.addAndGet(gasUsed);
-                LOGGER.info("Worker {} - Gas used for function {}: {} (total: {})",
-                  workerId,
-                  function.getName(),
-                  gasUsed,
-                  totalGasUsed.get());
+                LOGGER.info("Worker {} - Gas used for function {}: {} (total: {})", workerId, function.getName(),
+                  gasUsed, totalGasUsed.get());
               }
 
               // Categorize the result based on expected vs actual outcome
@@ -478,19 +444,13 @@ public class SmartEscrowSoakTest extends AbstractIT {
                 LOGGER.info("Worker {} - data_counter returned failure on first attempt (counter=0), retrying...",
                   workerId);
                 // Retry the finish - the second call should succeed
-                EscrowFinishResult retryResult = finishSmartEscrowWithRetry(
-                  workerAccount,
-                  workerAddress,
-                  escrowResult.sequence,
-                  function
-                );
+                EscrowFinishResult retryResult = finishSmartEscrowWithRetry(workerAccount, workerAddress,
+                  escrowResult.sequence, function);
 
                 if (retryResult != null && retryResult.txHash != null) {
                   TransactionResult<EscrowFinish> retryTxResult = scanForResult(
-                    () -> getValidatedTransaction(retryResult.txHash, EscrowFinish.class)
-                  );
-                  String retryTxResultCode = retryTxResult.metadata()
-                    .map(TransactionMetadata::transactionResult)
+                    () -> getValidatedTransaction(retryResult.txHash, EscrowFinish.class));
+                  String retryTxResultCode = retryTxResult.metadata().map(TransactionMetadata::transactionResult)
                     .orElse("unknown");
 
                   if ("tesSUCCESS".equals(retryTxResultCode)) {
@@ -513,8 +473,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
                 expectedSuccesses.incrementAndGet();
                 functionExpectedSuccessCount.computeIfAbsent(function.getName(), k -> new AtomicInteger(0))
                   .incrementAndGet();
-                LOGGER.info("Worker {} - ✓ Expected success: {} returned success, gas used: {}",
-                  workerId, function.getName(), gasUsed != null ? gasUsed : "N/A");
+                LOGGER.info("Worker {} - ✓ Expected success: {} returned success, gas used: {}", workerId,
+                  function.getName(), gasUsed != null ? gasUsed : "N/A");
               } else if (wasmReturnedFailure && !expectedSuccess) {
                 // Expected failure - WASM returned 0 as expected
                 expectedFailures.incrementAndGet();
@@ -527,11 +487,9 @@ public class SmartEscrowSoakTest extends AbstractIT {
                 unexpectedFailures.incrementAndGet();
                 functionUnexpectedFailureCount.computeIfAbsent(function.getName(), k -> new AtomicInteger(0))
                   .incrementAndGet();
-                LOGGER.warn("Worker {} - ✗ Unexpected result: {} expected {}, got {} ({})",
-                  workerId, function.getName(),
-                  expectedSuccess ? "success" : "failure",
-                  wasmReturnedSuccess ? "success" : (wasmReturnedFailure ? "failure" : "error"),
-                  txResult);
+                LOGGER.warn("Worker {} - ✗ Unexpected result: {} expected {}, got {} ({})", workerId,
+                  function.getName(), expectedSuccess ? "success" : "failure",
+                  wasmReturnedSuccess ? "success" : (wasmReturnedFailure ? "failure" : "error"), txResult);
               }
             } else {
               // Transaction submission failed
@@ -554,21 +512,12 @@ public class SmartEscrowSoakTest extends AbstractIT {
     /**
      * Creates a Smart Escrow with retry logic and sequence number error handling.
      */
-    private EscrowCreationResult createSmartEscrowWithRetry(
-      KeyPair senderKeyPair,
-      Address destination,
-      String wasmHex,
-      WasmFunction function
-    ) {
+    private EscrowCreationResult createSmartEscrowWithRetry(KeyPair senderKeyPair, Address destination, String wasmHex,
+      WasmFunction function) {
       for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
         try {
-          EscrowCreationResult result = createSmartEscrow(
-            senderKeyPair,
-            destination,
-            wasmHex,
-            function,
-            currentSequence
-          );
+          EscrowCreationResult result = createSmartEscrow(senderKeyPair, destination, wasmHex, function,
+            currentSequence);
 
           if (result != null) {
             // Only increment sequence if it was actually consumed by the ledger
@@ -630,21 +579,12 @@ public class SmartEscrowSoakTest extends AbstractIT {
     /**
      * Finishes a Smart Escrow with retry logic and sequence number error handling.
      */
-    private EscrowFinishResult finishSmartEscrowWithRetry(
-      KeyPair finisherKeyPair,
-      Address owner,
-      UnsignedInteger offerSequence,
-      WasmFunction function
-    ) {
+    private EscrowFinishResult finishSmartEscrowWithRetry(KeyPair finisherKeyPair, Address owner,
+      UnsignedInteger offerSequence, WasmFunction function) {
       for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
         try {
-          EscrowFinishResult result = finishSmartEscrow(
-            finisherKeyPair,
-            owner,
-            offerSequence,
-            function,
-            currentSequence
-          );
+          EscrowFinishResult result = finishSmartEscrow(finisherKeyPair, owner, offerSequence, function,
+            currentSequence);
 
           if (result != null) {
             // Only increment sequence if it was actually consumed by the ledger
@@ -665,7 +605,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
           // Check if it's a reserve error
           if (isReserveError(e)) {
             consecutiveReserveErrors++;
-            LOGGER.warn("Worker {} - Reserve error detected on finish (consecutive: {}), checking balance and refunding",
+            LOGGER.warn(
+              "Worker {} - Reserve error detected on finish (consecutive: {}), checking balance and refunding",
               workerId, consecutiveReserveErrors);
 
             // Increment sequence since reserve errors consume it
@@ -711,11 +652,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
       if (message == null) {
         return false;
       }
-      return message.contains("tefPAST_SEQ") ||
-        message.contains("terPRE_SEQ") ||
-        message.contains("terQUEUED") ||
-        message.contains("tefMAX_LEDGER") ||
-        message.contains("Account not found");
+      return message.contains("tefPAST_SEQ") || message.contains("terPRE_SEQ") || message.contains("terQUEUED") ||
+        message.contains("tefMAX_LEDGER") || message.contains("Account not found");
     }
 
     /**
@@ -726,10 +664,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
       if (message == null) {
         return false;
       }
-      return message.contains("Reserve error") ||
-        message.contains("tecINSUFFICIENT_RESERVE") ||
-        message.contains("tecINSUF_RESERVE_LINE") ||
-        message.contains("tecINSUF_RESERVE_OFFER");
+      return message.contains("Reserve error") || message.contains("tecINSUFFICIENT_RESERVE") ||
+        message.contains("tecINSUF_RESERVE_LINE") || message.contains("tecINSUF_RESERVE_OFFER");
     }
   }
 
@@ -768,13 +704,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
    *
    * @return EscrowCreationResult with sequenceConsumed=true if sequence was used, false if not submitted
    */
-  private EscrowCreationResult createSmartEscrow(
-    KeyPair senderKeyPair,
-    Address destination,
-    String wasmHex,
-    WasmFunction function,
-    UnsignedInteger sequence
-  ) {
+  private EscrowCreationResult createSmartEscrow(KeyPair senderKeyPair, Address destination, String wasmHex,
+    WasmFunction function, UnsignedInteger sequence) {
     try {
       FeeResult feeResult = xrplClient.fee();
 
@@ -785,18 +716,13 @@ public class SmartEscrowSoakTest extends AbstractIT {
       long smartEscrowFee = (baseFee * 10) + (5 * wasmBytes);
 
       ImmutableEscrowCreate.Builder escrowCreateBuilder = EscrowCreate.builder()
-        .account(senderKeyPair.publicKey().deriveAddress())
-        .sequence(sequence)
-        .fee(XrpCurrencyAmount.ofDrops(smartEscrowFee))
-        .amount(XrpCurrencyAmount.ofDrops(ESCROW_AMOUNT_DROPS))
-        .destination(destination)
-        .finishFunction(FinishFunction.of(wasmHex))
+        .account(senderKeyPair.publicKey().deriveAddress()).sequence(sequence)
+        .fee(XrpCurrencyAmount.ofDrops(smartEscrowFee)).amount(XrpCurrencyAmount.ofDrops(ESCROW_AMOUNT_DROPS))
+        .destination(destination).finishFunction(FinishFunction.of(wasmHex))
         .data(EscrowData.of(createEscrowData(function)))
         .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofMinutes(10))))
         .signingPublicKey(senderKeyPair.publicKey())
-        .addMemos(MemoWrapper.builder()
-          .memo(Memo.withPlaintext("WASM: " + function.getName()).build())
-          .build());
+        .addMemos(MemoWrapper.builder().memo(Memo.withPlaintext("WASM: " + function.getName()).build()).build());
 
       // Add network ID if present
       networkId.ifPresent(escrowCreateBuilder::networkId);
@@ -805,28 +731,21 @@ public class SmartEscrowSoakTest extends AbstractIT {
 
       LOGGER.info(
         "Submitting EscrowCreate - account: {}, sequence: {}, function: {}, amount: {} drops, fee: {} drops, wasm bytes: {}",
-        escrowCreate.account(),
-        escrowCreate.sequence(),
-        function.getName(),
-        ESCROW_AMOUNT_DROPS,
-        smartEscrowFee,
+        escrowCreate.account(), escrowCreate.sequence(), function.getName(), ESCROW_AMOUNT_DROPS, smartEscrowFee,
         wasmBytes);
 
       LOGGER.debug("Creating EscrowCreate - function: {}, sequence: {}, WASM size: {} bytes, WASM hex prefix: {}",
         function.getName(), sequence, wasmBytes, wasmHex.substring(0, Math.min(40, wasmHex.length())));
 
-      SingleSignedTransaction<EscrowCreate> signedTx = signatureService.sign(
-        senderKeyPair.privateKey(),
-        escrowCreate
-      );
+      SingleSignedTransaction<EscrowCreate> signedTx = signatureService.sign(senderKeyPair.privateKey(), escrowCreate);
 
       SubmitResult<EscrowCreate> result;
       try {
         result = xrplClient.submit(signedTx);
       } catch (JsonRpcClientErrorException e) {
         // Submission failed before reaching ledger - sequence NOT consumed
-        LOGGER.error("✗ EscrowCreate submission failed - function: {}, sequence: {}, error: {}",
-          function.getName(), sequence, e.getMessage());
+        LOGGER.error("✗ EscrowCreate submission failed - function: {}, sequence: {}, error: {}", function.getName(),
+          sequence, e.getMessage());
 
         // Check if this is a retryable error
         if (isRetryableError(e)) {
@@ -842,8 +761,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
 
       // Handle sequence-related errors
       if (isSequenceRelatedEngineResult(engineResult)) {
-        LOGGER.warn("✗ EscrowCreate sequence error - function: {}, result: {}, sequence: {}",
-          function.getName(), engineResult, escrowCreate.sequence());
+        LOGGER.warn("✗ EscrowCreate sequence error - function: {}, result: {}, sequence: {}", function.getName(),
+          engineResult, escrowCreate.sequence());
         // Sequence may or may not be consumed depending on the error
         boolean consumed = !engineResult.equals("terPRE_SEQ");
         throw new RuntimeException("Sequence error: " + engineResult);
@@ -851,22 +770,18 @@ public class SmartEscrowSoakTest extends AbstractIT {
 
       // Handle reserve-related errors
       if (isReserveRelatedEngineResult(engineResult)) {
-        LOGGER.warn("✗ EscrowCreate reserve error - function: {}, result: {}, sequence: {}",
-          function.getName(), engineResult, escrowCreate.sequence());
+        LOGGER.warn("✗ EscrowCreate reserve error - function: {}, result: {}, sequence: {}", function.getName(),
+          engineResult, escrowCreate.sequence());
         // Sequence was consumed, throw special exception to trigger balance check
         throw new RuntimeException("Reserve error: " + engineResult);
       }
 
       if (engineResult.equals("tesSUCCESS")) {
         LOGGER.info("✓ EscrowCreate submitted successfully - hash: {}, sequence: {}, function: {}",
-          result.transactionResult().hash(),
-          escrowCreate.sequence(),
-          function.getName());
+          result.transactionResult().hash(), escrowCreate.sequence(), function.getName());
         return new EscrowCreationResult(result.transactionResult().hash(), escrowCreate.sequence(), true);
       } else {
-        LOGGER.warn("✗ EscrowCreate failed - function: {}, result: {}, sequence: {}",
-          function.getName(),
-          engineResult,
+        LOGGER.warn("✗ EscrowCreate failed - function: {}, result: {}, sequence: {}", function.getName(), engineResult,
           escrowCreate.sequence());
         // Sequence was consumed even though transaction failed
         return new EscrowCreationResult(null, escrowCreate.sequence(), true);
@@ -876,8 +791,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
       // Re-throw to be handled by retry logic
       throw new RuntimeException(e);
     } catch (Exception e) {
-      LOGGER.error("Error creating Smart Escrow - function: {}, sequence: {}",
-        function.getName(), sequence, e);
+      LOGGER.error("Error creating Smart Escrow - function: {}, sequence: {}", function.getName(), sequence, e);
       throw new RuntimeException(e);
     }
   }
@@ -887,13 +801,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
    *
    * @return EscrowFinishResult with sequenceConsumed=true if sequence was used
    */
-  private EscrowFinishResult finishSmartEscrow(
-    KeyPair finisherKeyPair,
-    Address owner,
-    UnsignedInteger offerSequence,
-    WasmFunction function,
-    UnsignedInteger sequence
-  ) {
+  private EscrowFinishResult finishSmartEscrow(KeyPair finisherKeyPair, Address owner, UnsignedInteger offerSequence,
+    WasmFunction function, UnsignedInteger sequence) {
     try {
 
       FeeResult feeResult = xrplClient.fee();
@@ -908,16 +817,10 @@ public class SmartEscrowSoakTest extends AbstractIT {
       long smartEscrowFinishFee = (baseFee * 100) + gasAllowance.longValue();
 
       ImmutableEscrowFinish.Builder escrowFinishBuilder = EscrowFinish.builder()
-        .account(finisherKeyPair.publicKey().deriveAddress())
-        .sequence(sequence)
-        .fee(XrpCurrencyAmount.ofDrops(smartEscrowFinishFee))
-        .owner(owner)
-        .offerSequence(offerSequence)
-        .computationAllowance(ComputationAllowance.of(gasAllowance))
-        .signingPublicKey(finisherKeyPair.publicKey())
-        .addMemos(MemoWrapper.builder()
-          .memo(Memo.withPlaintext("WASM: " + function.getName()).build())
-          .build());
+        .account(finisherKeyPair.publicKey().deriveAddress()).sequence(sequence)
+        .fee(XrpCurrencyAmount.ofDrops(smartEscrowFinishFee)).owner(owner).offerSequence(offerSequence)
+        .computationAllowance(ComputationAllowance.of(gasAllowance)).signingPublicKey(finisherKeyPair.publicKey())
+        .addMemos(MemoWrapper.builder().memo(Memo.withPlaintext("WASM: " + function.getName()).build()).build());
 
       // Add network ID if present
       networkId.ifPresent(escrowFinishBuilder::networkId);
@@ -926,26 +829,19 @@ public class SmartEscrowSoakTest extends AbstractIT {
 
       LOGGER.info(
         "Submitting EscrowFinish - account: {}, sequence: {}, function: {}, owner: {}, offerSequence: {}, fee: {} drops, gas allowance: {}",
-        escrowFinish.account(),
-        escrowFinish.sequence(),
-        function.getName(),
-        owner,
-        offerSequence,
-        smartEscrowFinishFee,
+        escrowFinish.account(), escrowFinish.sequence(), function.getName(), owner, offerSequence, smartEscrowFinishFee,
         gasAllowance);
 
-      SingleSignedTransaction<EscrowFinish> signedTx = signatureService.sign(
-        finisherKeyPair.privateKey(),
-        escrowFinish
-      );
+      SingleSignedTransaction<EscrowFinish> signedTx = signatureService.sign(finisherKeyPair.privateKey(),
+        escrowFinish);
 
       SubmitResult<EscrowFinish> result;
       try {
         result = xrplClient.submit(signedTx);
       } catch (JsonRpcClientErrorException e) {
         // Submission failed before reaching ledger - sequence NOT consumed
-        LOGGER.error("✗ EscrowFinish submission failed - function: {}, sequence: {}, error: {}",
-          function.getName(), sequence, e.getMessage());
+        LOGGER.error("✗ EscrowFinish submission failed - function: {}, sequence: {}, error: {}", function.getName(),
+          sequence, e.getMessage());
 
         // Check if this is a retryable error
         if (isRetryableError(e)) {
@@ -962,8 +858,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
 
       // Handle sequence-related errors
       if (isSequenceRelatedEngineResult(engineResult)) {
-        LOGGER.warn("✗ EscrowFinish sequence error - function: {}, result: {}, sequence: {}",
-          function.getName(), engineResult, sequence);
+        LOGGER.warn("✗ EscrowFinish sequence error - function: {}, result: {}, sequence: {}", function.getName(),
+          engineResult, sequence);
         // Sequence may or may not be consumed depending on the error
         boolean consumed = !engineResult.equals("terPRE_SEQ");
         throw new RuntimeException("Sequence error: " + engineResult);
@@ -971,29 +867,23 @@ public class SmartEscrowSoakTest extends AbstractIT {
 
       // Handle reserve-related errors
       if (isReserveRelatedEngineResult(engineResult)) {
-        LOGGER.warn("✗ EscrowFinish reserve error - function: {}, result: {}, sequence: {}",
-          function.getName(), engineResult, sequence);
+        LOGGER.warn("✗ EscrowFinish reserve error - function: {}, result: {}, sequence: {}", function.getName(),
+          engineResult, sequence);
         // Sequence was consumed, throw special exception to trigger balance check
         throw new RuntimeException("Reserve error: " + engineResult);
       }
 
       if (engineResult.equals("tesSUCCESS")) {
-        LOGGER.info("✓ EscrowFinish submitted successfully - hash: {}, function: {}",
-          txHash,
-          function.getName());
+        LOGGER.info("✓ EscrowFinish submitted successfully - hash: {}, function: {}", txHash, function.getName());
         return new EscrowFinishResult(txHash, true);
       } else if (engineResult.equals("tecWASM_REJECTED") && !function.shouldSucceed()) {
         // Expected failure - WASM returned 0 as designed
         LOGGER.info("✓ EscrowFinish WASM rejected as expected - function: {}, result: {}, offerSequence: {}",
-          function.getName(),
-          engineResult,
-          offerSequence);
+          function.getName(), engineResult, offerSequence);
         return new EscrowFinishResult(txHash, true);
       } else {
-        LOGGER.warn("✗ EscrowFinish failed - function: {}, result: {}, offerSequence: {}",
-          function.getName(),
-          engineResult,
-          offerSequence);
+        LOGGER.warn("✗ EscrowFinish failed - function: {}, result: {}, offerSequence: {}", function.getName(),
+          engineResult, offerSequence);
         // Sequence was consumed, return hash so we can validate and check the result
         return new EscrowFinishResult(txHash, true);
       }
@@ -1047,8 +937,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
       if ("data_counter".equals(function.getName())) {
         note = " [Requires 2 calls - simulates stateful counter]";
       }
-      System.out.println("  ├─ " + String.format("%-25s", function.getName()) +
-        " (Expected: " + expected + ", Gas: " + function.getGasAllowance() + ")" + note);
+      System.out.println("  ├─ " + String.format("%-25s", function.getName()) + " (Expected: " + expected + ", Gas: " +
+        function.getGasAllowance() + ")" + note);
     }
     System.out.println();
     System.out.println("⏱️  Starting test run for " + TEST_DURATION_MINUTES + " minutes...");
@@ -1086,10 +976,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
     try {
       // Get final ledger index
       LedgerResult endLedger = xrplClient.ledger(
-        LedgerRequestParams.builder()
-          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-          .build()
-      );
+        LedgerRequestParams.builder().ledgerSpecifier(LedgerSpecifier.VALIDATED).build());
       UnsignedInteger endLedgerIndex = endLedger.ledgerIndexSafe().unsignedIntegerValue();
 
       // Calculate elapsed time and ledgers
@@ -1120,8 +1007,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
     System.out.println("📊 OVERALL STATISTICS");
     System.out.println("  ├─ Total Escrows Created:     " + String.format("%,d", created));
     System.out.println("  ├─ Total Escrows Finished:    " + String.format("%,d", totalFinished));
-    System.out.println("  ├─ Test Duration:             " + TEST_DURATION_MINUTES + " minutes" +
-      " (" + String.format("%.1f", elapsedSeconds) + " seconds)");
+    System.out.println("  ├─ Test Duration:             " + TEST_DURATION_MINUTES + " minutes" + " (" +
+      String.format("%.1f", elapsedSeconds) + " seconds)");
     System.out.println("  ├─ Ledgers Processed:         " + String.format("%,d", ledgersPassed));
     System.out.println("  ├─ Throughput (time):         " + String.format("%.2f tx/sec", txPerSecond));
     System.out.println("  └─ Throughput (ledger):       " + String.format("%.2f tx/ledger", txPerLedger));
@@ -1129,27 +1016,28 @@ public class SmartEscrowSoakTest extends AbstractIT {
 
     // Success Metrics
     System.out.println("✅ SUCCESS METRICS");
-    System.out.println("  ├─ Expected Successes:        " + String.format("%,d", expSuccess) +
-      " (" + String.format("%.1f%%", totalFinished > 0 ? (expSuccess * 100.0) / totalFinished : 0) + ")");
-    System.out.println("  ├─ Expected Failures:         " + String.format("%,d", expFailure) +
-      " (" + String.format("%.1f%%", totalFinished > 0 ? (expFailure * 100.0) / totalFinished : 0) + ")");
+    System.out.println("  ├─ Expected Successes:        " + String.format("%,d", expSuccess) + " (" +
+      String.format("%.1f%%", totalFinished > 0 ? (expSuccess * 100.0) / totalFinished : 0) + ")");
+    System.out.println("  ├─ Expected Failures:         " + String.format("%,d", expFailure) + " (" +
+      String.format("%.1f%%", totalFinished > 0 ? (expFailure * 100.0) / totalFinished : 0) + ")");
     System.out.println("  └─ Correctness Rate:          " + String.format("%.2f%%", correctnessRate) +
       getHealthIndicator(correctnessRate, 95, 90));
     System.out.println();
 
     // Error Metrics
     System.out.println("⚠️  ERROR METRICS");
-    System.out.println("  ├─ Unexpected Failures:       " + String.format("%,d", unexpFailure) +
-      " (" + String.format("%.1f%%", totalFinished > 0 ? (unexpFailure * 100.0) / totalFinished : 0) + ")");
-    System.out.println("  ├─ Transaction Errors:        " + String.format("%,d", errorCount) +
-      " (" + String.format("%.2f%%", errorRate) + ")" + getHealthIndicator(100 - errorRate, 95, 90));
+    System.out.println("  ├─ Unexpected Failures:       " + String.format("%,d", unexpFailure) + " (" +
+      String.format("%.1f%%", totalFinished > 0 ? (unexpFailure * 100.0) / totalFinished : 0) + ")");
+    System.out.println("  ├─ Transaction Errors:        " + String.format("%,d", errorCount) + " (" +
+      String.format("%.2f%%", errorRate) + ")" + getHealthIndicator(100 - errorRate, 95, 90));
     System.out.println("  └─ Sequence Errors:           " + String.format("%,d", seqErrors));
     System.out.println();
 
     // Resilience Metrics
     System.out.println("🛡️  RESILIENCE METRICS");
-    System.out.println("  ├─ Retried Transactions:      " + String.format("%,d", retried) +
-      " (" + String.format("%.2f%%", retryRate) + ")");
+    System.out.println(
+      "  ├─ Retried Transactions:      " + String.format("%,d", retried) + " (" + String.format("%.2f%%", retryRate) +
+        ")");
     System.out.println("  ├─ Sequence Refreshes:        " + String.format("%,d", seqRefreshes));
     System.out.println("  └─ Recovery Success Rate:     " +
       String.format("%.2f%%", retried > 0 ? ((retried - errorCount) * 100.0) / retried : 100.0));
@@ -1177,10 +1065,8 @@ public class SmartEscrowSoakTest extends AbstractIT {
       int funcTotal = funcExpSuccess + funcExpFailure + funcUnexpFailure;
 
       if (funcTotal > 0) {
-        System.out.println("  " + String.format("%-25s", name) +
-          String.format("%12d", funcExpSuccess) +
-          String.format("%14d", funcExpFailure) +
-          String.format("%16d", funcUnexpFailure) +
+        System.out.println("  " + String.format("%-25s", name) + String.format("%12d", funcExpSuccess) +
+          String.format("%14d", funcExpFailure) + String.format("%16d", funcUnexpFailure) +
           String.format("%8d", funcTotal));
       }
     }
@@ -1223,8 +1109,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
       return "🟠 FAIR - Test completed but showed some issues. Review error logs for details.";
     } else {
       return "🔴 NEEDS ATTENTION - Test showed significant issues. Review logs and consider:\n" +
-        "     • Reducing worker threads to lower node load\n" +
-        "     • Increasing retry limits and backoff times\n" +
+        "     • Reducing worker threads to lower node load\n" + "     • Increasing retry limits and backoff times\n" +
         "     • Checking node health and network connectivity";
     }
   }
@@ -1238,30 +1123,23 @@ public class SmartEscrowSoakTest extends AbstractIT {
       return false;
     }
     // Check for common retryable errors
-    return message.contains("500") ||
-      message.contains("503") ||
-      message.contains("too busy") ||
-      message.contains("timeout") ||
-      message.contains("connection") ||
-      message.contains("Internal error");
+    return message.contains("500") || message.contains("503") || message.contains("too busy") ||
+      message.contains("timeout") || message.contains("connection") || message.contains("Internal error");
   }
 
   /**
    * Checks if an engine result is sequence-related.
    */
   private boolean isSequenceRelatedEngineResult(String engineResult) {
-    return "tefPAST_SEQ".equals(engineResult) ||
-      "terPRE_SEQ".equals(engineResult) ||
-      "terQUEUED".equals(engineResult) ||
-      "tefMAX_LEDGER".equals(engineResult);
+    return "tefPAST_SEQ".equals(engineResult) || "terPRE_SEQ".equals(engineResult) ||
+      "terQUEUED".equals(engineResult) || "tefMAX_LEDGER".equals(engineResult);
   }
 
   /**
    * Checks if an engine result is reserve-related and should trigger backoff.
    */
   private boolean isReserveRelatedEngineResult(String engineResult) {
-    return "tecINSUFFICIENT_RESERVE".equals(engineResult) ||
-      "tecINSUF_RESERVE_LINE".equals(engineResult) ||
+    return "tecINSUFFICIENT_RESERVE".equals(engineResult) || "tecINSUF_RESERVE_LINE".equals(engineResult) ||
       "tecINSUF_RESERVE_OFFER".equals(engineResult);
   }
 
@@ -1349,8 +1227,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
   private byte[] createMinimalWasmStub(int returnValue) {
     // Minimal WASM module: (module (func (export "finish") (result i32) i32.const <returnValue>))
     // The function MUST be named "finish" per XLS-0100 specification
-    return new byte[] {
-      0x00, 0x61, 0x73, 0x6d, // Magic number
+    return new byte[] {0x00, 0x61, 0x73, 0x6d, // Magic number
       0x01, 0x00, 0x00, 0x00, // Version
       0x01, 0x05, 0x01, 0x60, 0x00, 0x01, 0x7f, // Type section: function type (no params, returns i32)
       0x03, 0x02, 0x01, 0x00, // Function section: 1 function with type 0
@@ -1401,10 +1278,7 @@ public class SmartEscrowSoakTest extends AbstractIT {
     try {
       // Get current ledger index
       LedgerResult currentLedger = xrplClient.ledger(
-        LedgerRequestParams.builder()
-          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-          .build()
-      );
+        LedgerRequestParams.builder().ledgerSpecifier(LedgerSpecifier.VALIDATED).build());
       UnsignedInteger currentLedgerIndex = currentLedger.ledgerIndexSafe().unsignedIntegerValue();
 
       // Calculate elapsed time and ledgers
@@ -1424,20 +1298,18 @@ public class SmartEscrowSoakTest extends AbstractIT {
     }
 
     System.out.println();
-    System.out.println("📊 PROGRESS UPDATE - " + java.time.LocalDateTime.now().format(
-      java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")));
-    System.out.println("  Created: " + String.format("%,5d", created) +
-      " | Finished: " + String.format("%,5d", totalFinished) +
-      " | Success: " + String.format("%,5d", expSuccess) +
-      " | Errors: " + String.format("%,4d", errorCount) +
-      " (" + String.format("%.1f%%", errorRate) + ")");
-    System.out.println("  Correctness: " + String.format("%.1f%%", correctnessRate) +
-      " | Retries: " + String.format("%,4d", retried) +
-      " (" + String.format("%.1f%%", retryRate) + ")" +
-      " | Seq Errors: " + String.format("%,3d", seqErrors) +
-      " | Avg Gas: " + String.format("%,.0f", avgGas));
-    System.out.println("  Throughput: " + String.format("%.2f tx/sec", txPerSecond) +
-      " | " + String.format("%.2f tx/ledger", txPerLedger));
+    System.out.println("📊 PROGRESS UPDATE - " +
+      java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")));
+    System.out.println(
+      "  Created: " + String.format("%,5d", created) + " | Finished: " + String.format("%,5d", totalFinished) +
+        " | Success: " + String.format("%,5d", expSuccess) + " | Errors: " + String.format("%,4d", errorCount) + " (" +
+        String.format("%.1f%%", errorRate) + ")");
+    System.out.println(
+      "  Correctness: " + String.format("%.1f%%", correctnessRate) + " | Retries: " + String.format("%,4d", retried) +
+        " (" + String.format("%.1f%%", retryRate) + ")" + " | Seq Errors: " + String.format("%,3d", seqErrors) +
+        " | Avg Gas: " + String.format("%,.0f", avgGas));
+    System.out.println("  Throughput: " + String.format("%.2f tx/sec", txPerSecond) + " | " +
+      String.format("%.2f tx/ledger", txPerLedger));
     System.out.println();
   }
 }

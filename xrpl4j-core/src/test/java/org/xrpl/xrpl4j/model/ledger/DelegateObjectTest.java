@@ -45,8 +45,10 @@ public class DelegateObjectTest extends AbstractJsonTest {
 
   private static final Address ACCOUNT = Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8");
   private static final Address AUTHORIZE = Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de");
-  private static final Hash256 PREVIOUS_TXN_ID = Hash256.of("3E8964D5A86B3CD6B9ECB33310D4E073D64C865A5B866200AD2B7E29F8326702");
-  private static final Hash256 INDEX = Hash256.of("4A255038CC3ADCC1A9C91509279B59908251728D0DAADB248FFE297D0F7E068C");
+  private static final Hash256 PREVIOUS_TXN_ID =
+    Hash256.of("3E8964D5A86B3CD6B9ECB33310D4E073D64C865A5B866200AD2B7E29F8326702");
+  private static final Hash256 INDEX =
+    Hash256.of("4A255038CC3ADCC1A9C91509279B59908251728D0DAADB248FFE297D0F7E068C");
   private static final UnsignedInteger PREVIOUS_TXN_LEDGER_SEQ = UnsignedInteger.valueOf(7);
   private static final String OWNER_NODE = "0";
 

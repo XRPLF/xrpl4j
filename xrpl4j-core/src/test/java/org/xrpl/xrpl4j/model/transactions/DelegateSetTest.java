@@ -66,8 +66,8 @@ public class DelegateSetTest {
   }
 
   @Test
-  public void testDelegateSetWithoutPermissions() {
-    // DelegateSet without permissions should work (removes delegation)
+  public void testDelegateSetWithEmptyPermissions() {
+    // DelegateSet with empty permissions list should work (removes delegation)
     Address authorize = Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de");
 
     DelegateSet delegateSet = DelegateSet.builder()
@@ -76,6 +76,23 @@ public class DelegateSetTest {
       .sequence(UnsignedInteger.valueOf(2))
       .authorize(authorize)
       .permissions(Collections.emptyList())
+      .build();
+
+    assertThat(delegateSet.authorize()).isEqualTo(authorize);
+    assertThat(delegateSet.permissions()).isEmpty();
+  }
+
+  @Test
+  public void testDelegateSetWithoutPermissions() {
+    // DelegateSet without permissions field (omitted entirely) should work
+    Address authorize = Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de");
+
+    DelegateSet delegateSet = DelegateSet.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .authorize(authorize)
+      // Note: .permissions() call is intentionally omitted
       .build();
 
     assertThat(delegateSet.authorize()).isEqualTo(authorize);

@@ -27,6 +27,8 @@ import com.google.common.io.Resources;
 import org.xrpl.xrpl4j.model.transactions.GranularPermission;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -54,21 +56,22 @@ public class DefaultDefinitionsProvider implements DefinitionsProvider {
     Objects.requireNonNull(objectMapper);
 
     this.supplier = Suppliers.memoize(() -> {
-      try {
-        Definitions baseDefinitions = objectMapper.readerFor(Definitions.class)
-          .readValue(Resources.getResource(DefaultDefinitionsProvider.class, "/definitions.json"));
-
-        // Generate PERMISSION_VALUES dynamically from TRANSACTION_TYPES
-        Map<String, Integer> permissionValues = generatePermissionValues(baseDefinitions);
-
-        // Return a new Definitions object with the generated PERMISSION_VALUES
-        return ImmutableDefinitions.builder()
-          .from(baseDefinitions)
-          .permissionValues(permissionValues)
-          .build();
+      final URL resource = Resources.getResource(DefaultDefinitionsProvider.class, "/definitions.json");
+      final Definitions baseDefinitions;
+      try (InputStream inputStream = resource.openStream()) {
+        baseDefinitions = objectMapper.readerFor(Definitions.class).readValue(inputStream);
       } catch (IOException e) {
         throw new IllegalStateException("Cannot read definition.json file", e);
       }
+
+      // Generate PERMISSION_VALUES dynamically from TRANSACTION_TYPES
+      final Map<String, Integer> permissionValues = generatePermissionValues(baseDefinitions);
+
+      // Return a new Definitions object with the generated PERMISSION_VALUES
+      return ImmutableDefinitions.builder()
+              .from(baseDefinitions)
+              .permissionValues(permissionValues)
+              .build();
     });
   }
 

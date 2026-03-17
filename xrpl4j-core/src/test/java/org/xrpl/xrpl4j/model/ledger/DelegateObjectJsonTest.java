@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Unit tests for {@link DelegateObject}.
@@ -38,16 +39,39 @@ import java.util.Arrays;
 public class DelegateObjectJsonTest extends AbstractJsonTest {
 
   @Test
-  public void testDelegateObjectJsonWithPermissions() throws JsonProcessingException, JSONException {
+  public void testDelegateObjectJsonWithNoPermissions() throws JsonProcessingException, JSONException {
     DelegateObject delegateObject = DelegateObject.builder()
       .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
       .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
-      .permissions(Arrays.asList(
+      .ownerNode("0")
+      .previousTransactionId(Hash256.of("3E8964D5A86B3CD6B9ECB33310D4E073D64C865A5B866200AD2B7E29F8326702"))
+      .previousTransactionLedgerSequence(UnsignedInteger.valueOf(7))
+      .index(Hash256.of("4A255038CC3ADCC1A9C91509279B59908251728D0DAADB248FFE297D0F7E068C"))
+      .build();
+
+    // Note: Empty permissions list is not serialized to JSON
+    String json = "{" +
+      "  \"LedgerEntryType\":\"Delegate\"," +
+      "  \"Account\":\"rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8\"," +
+      "  \"Authorize\":\"rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de\"," +
+      "  \"Flags\":0," +
+      "  \"OwnerNode\":\"0\"," +
+      "  \"PreviousTxnID\":\"3E8964D5A86B3CD6B9ECB33310D4E073D64C865A5B866200AD2B7E29F8326702\"," +
+      "  \"PreviousTxnLgrSeq\":7," +
+      "  \"index\":\"4A255038CC3ADCC1A9C91509279B59908251728D0DAADB248FFE297D0F7E068C\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(delegateObject, json);
+  }
+
+  @Test
+  public void testDelegateObjectJsonWithSinglePermission() throws JsonProcessingException, JSONException {
+    DelegateObject delegateObject = DelegateObject.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
+      .permissions(Collections.singletonList(
         AccountPermissionWrapper.builder()
           .permission(AccountPermission.builder().permissionValue("Payment").build())
-          .build(),
-        AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("TrustSet").build())
           .build()
       ))
       .ownerNode("0")
@@ -61,8 +85,7 @@ public class DelegateObjectJsonTest extends AbstractJsonTest {
       "  \"Account\":\"rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8\"," +
       "  \"Authorize\":\"rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de\"," +
       "  \"Permissions\":[" +
-      "    {\"Permission\":{\"PermissionValue\":\"Payment\"}}," +
-      "    {\"Permission\":{\"PermissionValue\":\"TrustSet\"}}" +
+      "    {\"Permission\":{\"PermissionValue\":\"Payment\"}}" +
       "  ]," +
       "  \"Flags\":0," +
       "  \"OwnerNode\":\"0\"," +
@@ -119,4 +142,3 @@ public class DelegateObjectJsonTest extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(delegateObject, json);
   }
 }
-

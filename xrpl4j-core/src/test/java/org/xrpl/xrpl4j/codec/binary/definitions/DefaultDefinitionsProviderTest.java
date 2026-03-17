@@ -111,8 +111,6 @@ class DefaultDefinitionsProviderTest {
     });
   }
 
-
-
   @Test
   void permissionValuesDoesNotContainNegativeTransactionCodes() {
     Map<String, Integer> permissionValues = definitions.permissionValues();

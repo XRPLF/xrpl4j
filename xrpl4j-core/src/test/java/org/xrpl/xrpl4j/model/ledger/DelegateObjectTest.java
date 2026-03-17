@@ -33,6 +33,7 @@ import org.xrpl.xrpl4j.model.transactions.AccountPermission;
 import org.xrpl.xrpl4j.model.transactions.AccountPermissionWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.TransactionType;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,7 +60,7 @@ public class DelegateObjectTest extends AbstractJsonTest {
       .authorize(AUTHORIZE)
       .permissions(Collections.singletonList(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("Payment").build())
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
           .build()
       ))
       .ownerNode(OWNER_NODE)
@@ -93,13 +94,13 @@ public class DelegateObjectTest extends AbstractJsonTest {
   void testWithMultiplePermissions() {
     List<AccountPermissionWrapper> permissions = Arrays.asList(
       AccountPermissionWrapper.builder()
-        .permission(AccountPermission.builder().permissionValue("Payment").build())
+        .permission(AccountPermission.of(TransactionType.PAYMENT))
         .build(),
       AccountPermissionWrapper.builder()
-        .permission(AccountPermission.builder().permissionValue("TrustSet").build())
+        .permission(AccountPermission.of(TransactionType.TRUST_SET))
         .build(),
       AccountPermissionWrapper.builder()
-        .permission(AccountPermission.builder().permissionValue("OfferCreate").build())
+        .permission(AccountPermission.of(TransactionType.OFFER_CREATE))
         .build()
     );
 
@@ -114,16 +115,16 @@ public class DelegateObjectTest extends AbstractJsonTest {
       .build();
 
     assertThat(delegateObject.permissions()).hasSize(3);
-    assertThat(delegateObject.permissions().get(0).permission().permissionValue()).isEqualTo("Payment");
-    assertThat(delegateObject.permissions().get(1).permission().permissionValue()).isEqualTo("TrustSet");
-    assertThat(delegateObject.permissions().get(2).permission().permissionValue()).isEqualTo("OfferCreate");
+    assertThat(delegateObject.permissions().get(0).permission().permissionValue().value()).isEqualTo("Payment");
+    assertThat(delegateObject.permissions().get(1).permission().permissionValue().value()).isEqualTo("TrustSet");
+    assertThat(delegateObject.permissions().get(2).permission().permissionValue().value()).isEqualTo("OfferCreate");
   }
 
   @Test
   void testWithSinglePermission() {
     DelegateObject delegateObject = createMinimalDelegateObject();
     assertThat(delegateObject.permissions()).hasSize(1);
-    assertThat(delegateObject.permissions().get(0).permission().permissionValue()).isEqualTo("Payment");
+    assertThat(delegateObject.permissions().get(0).permission().permissionValue().value()).isEqualTo("Payment");
   }
 
   @Test
@@ -143,7 +144,7 @@ public class DelegateObjectTest extends AbstractJsonTest {
       .authorize(AUTHORIZE)
       .permissions(Collections.singletonList(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("Payment").build())
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
           .build()
       ))
       .ownerNode(OWNER_NODE)
@@ -162,7 +163,7 @@ public class DelegateObjectTest extends AbstractJsonTest {
       .authorize(AUTHORIZE)
       .permissions(Collections.singletonList(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("Payment").build())
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
           .build()
       ))
       .ownerNode("ABCD1234")
@@ -182,7 +183,7 @@ public class DelegateObjectTest extends AbstractJsonTest {
       .authorize(AUTHORIZE)
       .permissions(Collections.singletonList(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("Payment").build())
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
           .build()
       ))
       .ownerNode(OWNER_NODE)
@@ -198,7 +199,7 @@ public class DelegateObjectTest extends AbstractJsonTest {
   void testImmutability() {
     List<AccountPermissionWrapper> permissions = Arrays.asList(
       AccountPermissionWrapper.builder()
-        .permission(AccountPermission.builder().permissionValue("Payment").build())
+        .permission(AccountPermission.of(TransactionType.PAYMENT))
         .build()
     );
 
@@ -216,7 +217,7 @@ public class DelegateObjectTest extends AbstractJsonTest {
     assertThrows(UnsupportedOperationException.class, () -> {
       delegateObject.permissions().add(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("TrustSet").build())
+          .permission(AccountPermission.of(TransactionType.TRUST_SET))
           .build()
       );
     });
@@ -259,7 +260,7 @@ public class DelegateObjectTest extends AbstractJsonTest {
       .authorize(AUTHORIZE)
       .permissions(Collections.singletonList(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("Payment").build())
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
           .build()
       ))
       .ownerNode(OWNER_NODE)
@@ -303,7 +304,7 @@ public class DelegateObjectTest extends AbstractJsonTest {
       .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
       .permissions(Collections.singletonList(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("Payment").build())
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
           .build()
       ))
       .ownerNode("0")
@@ -334,13 +335,13 @@ public class DelegateObjectTest extends AbstractJsonTest {
       .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
       .permissions(Arrays.asList(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("Payment").build())
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
           .build(),
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("TrustSet").build())
+          .permission(AccountPermission.of(TransactionType.TRUST_SET))
           .build(),
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("OfferCreate").build())
+          .permission(AccountPermission.of(TransactionType.OFFER_CREATE))
           .build()
       ))
       .ownerNode("0")

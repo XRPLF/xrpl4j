@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.model.transactions.AccountPermission;
 import org.xrpl.xrpl4j.model.transactions.AccountPermissionWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.TransactionType;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,7 +72,7 @@ public class DelegateObjectJsonTest extends AbstractJsonTest {
       .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
       .permissions(Collections.singletonList(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("Payment").build())
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
           .build()
       ))
       .ownerNode("0")
@@ -104,16 +105,16 @@ public class DelegateObjectJsonTest extends AbstractJsonTest {
       .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
       .permissions(Arrays.asList(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("Payment").build())
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
           .build(),
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("TrustSet").build())
+          .permission(AccountPermission.of(TransactionType.TRUST_SET))
           .build(),
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("OfferCreate").build())
+          .permission(AccountPermission.of(TransactionType.OFFER_CREATE))
           .build(),
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("OfferCancel").build())
+          .permission(AccountPermission.of(TransactionType.OFFER_CANCEL))
           .build()
       ))
       .ownerNode("0")

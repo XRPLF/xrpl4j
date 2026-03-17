@@ -140,7 +140,7 @@ public interface DelegateSet extends Transaction {
   default void validateNoDuplicatePermissions() {
     Set<String> permissionValues = new HashSet<>();
     for (AccountPermissionWrapper wrapper : permissions()) {
-      String permissionValue = wrapper.permission().permissionValue();
+      String permissionValue = wrapper.permission().permissionValue().value();
       Preconditions.checkArgument(
         permissionValues.add(permissionValue),
         "DelegateSet: Permissions array cannot contain duplicate values"
@@ -154,37 +154,47 @@ public interface DelegateSet extends Transaction {
   @Value.Check
   default void validateNoNonDelegatableTransactions() {
     for (AccountPermissionWrapper wrapper : permissions()) {
-      String permissionValue = wrapper.permission().permissionValue();
-      boolean isNonDelegatable = NON_DELEGABLE_TRANSACTIONS.stream()
-        .anyMatch(txType -> txType.value().equals(permissionValue));
-      Preconditions.checkArgument(
-        !isNonDelegatable,
-        String.format("DelegateSet: PermissionValue contains a non-delegatable transaction %s", permissionValue)
+      Permission permission = wrapper.permission().permissionValue();
+      // Only check transaction type permissions for non-delegatable transactions
+      permission.handle(
+        transactionTypePermission -> {
+          boolean isNonDelegatable = NON_DELEGABLE_TRANSACTIONS.contains(transactionTypePermission.transactionType());
+          Preconditions.checkArgument(
+            !isNonDelegatable,
+            String.format("DelegateSet: PermissionValue contains a non-delegatable transaction %s",
+              transactionTypePermission.value())
+          );
+        },
+        granularPermissionValue -> {
+          // Granular permissions are always delegatable, no validation needed
+        }
       );
     }
   }
 
   /**
    * Validate that each permission value corresponds to either a valid TransactionType or GranularPermission.
+   * This validation is now handled by the Permission deserializer, so this method is no longer needed.
+   * However, we keep it for additional runtime validation.
    */
   @Value.Check
   default void validatePermissionValuesAreValid() {
     for (AccountPermissionWrapper wrapper : permissions()) {
-      String permissionValue = wrapper.permission().permissionValue();
+      Permission permission = wrapper.permission().permissionValue();
 
-      // Check if it's a valid TransactionType
-      TransactionType transactionType = TransactionType.forValue(permissionValue);
-      boolean isValidTransactionType = transactionType != TransactionType.UNKNOWN;
-
-      // Check if it's a valid GranularPermission
-      boolean isValidGranularPermission = GranularPermission.forValue(permissionValue).isPresent();
-
-      Preconditions.checkArgument(
-        isValidTransactionType || isValidGranularPermission,
-        String.format(
-          "DelegateSet: PermissionValue '%s' is not a valid TransactionType or GranularPermission",
-          permissionValue
-        )
+      // The Permission type guarantees that it's either a TransactionTypePermission or GranularPermissionValue
+      // Additional validation: ensure TransactionTypePermission doesn't wrap UNKNOWN
+      permission.handle(
+        transactionTypePermission -> {
+          Preconditions.checkArgument(
+            transactionTypePermission.transactionType() != TransactionType.UNKNOWN,
+            String.format("DelegateSet: PermissionValue %s is not a valid TransactionType",
+              transactionTypePermission.value())
+          );
+        },
+        granularPermissionValue -> {
+          // GranularPermissionValue is always valid if it exists
+        }
       );
     }
   }

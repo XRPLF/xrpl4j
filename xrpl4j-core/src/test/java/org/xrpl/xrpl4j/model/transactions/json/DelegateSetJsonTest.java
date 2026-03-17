@@ -32,6 +32,7 @@ import org.xrpl.xrpl4j.model.transactions.AccountPermissionWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.DelegateSet;
 import org.xrpl.xrpl4j.model.transactions.GranularPermission;
+import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Arrays;
@@ -47,10 +48,10 @@ public class DelegateSetJsonTest extends AbstractJsonTest {
       .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
       .permissions(Arrays.asList(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("Payment").build())
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
           .build(),
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("TrustSet").build())
+          .permission(AccountPermission.of(TransactionType.TRUST_SET))
           .build()
       ))
       .sequence(UnsignedInteger.valueOf(2))
@@ -83,7 +84,7 @@ public class DelegateSetJsonTest extends AbstractJsonTest {
       .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
       .permissions(Arrays.asList(
         AccountPermissionWrapper.builder()
-          .permission(AccountPermission.builder().permissionValue("Payment").build())
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
           .build()
       ))
       .sequence(UnsignedInteger.valueOf(2))

@@ -342,10 +342,10 @@ public class DelegateIT extends AbstractIT {
     // Create a DelegateSet transaction with permissions
     List<AccountPermissionWrapper> permissions = Arrays.asList(
       AccountPermissionWrapper.builder()
-        .permission(AccountPermission.builder().permissionValue("Payment").build())
+        .permission(AccountPermission.of(TransactionType.PAYMENT))
         .build(),
       AccountPermissionWrapper.builder()
-        .permission(AccountPermission.builder().permissionValue("TrustSet").build())
+        .permission(AccountPermission.of(TransactionType.TRUST_SET))
         .build()
     );
 
@@ -398,8 +398,8 @@ public class DelegateIT extends AbstractIT {
     assertThat(delegateObject.get().account()).isEqualTo(delegatorKeyPair.publicKey().deriveAddress());
     assertThat(delegateObject.get().authorize()).isEqualTo(delegateKeyPair.publicKey().deriveAddress());
     assertThat(delegateObject.get().permissions()).hasSize(2);
-    assertThat(delegateObject.get().permissions().get(0).permission().permissionValue()).isEqualTo("Payment");
-    assertThat(delegateObject.get().permissions().get(1).permission().permissionValue()).isEqualTo("TrustSet");
+    assertThat(delegateObject.get().permissions().get(0).permission().permissionValue().value()).isEqualTo("Payment");
+    assertThat(delegateObject.get().permissions().get(1).permission().permissionValue().value()).isEqualTo("TrustSet");
 
     logger.info("Delegate object verified successfully");
   }
@@ -419,7 +419,7 @@ public class DelegateIT extends AbstractIT {
     // First, create a delegation
     List<AccountPermissionWrapper> permissions = Arrays.asList(
       AccountPermissionWrapper.builder()
-        .permission(AccountPermission.builder().permissionValue("Payment").build())
+        .permission(AccountPermission.of(TransactionType.PAYMENT))
         .build()
     );
 
@@ -526,7 +526,7 @@ public class DelegateIT extends AbstractIT {
     // Create initial delegation with Payment permission
     List<AccountPermissionWrapper> initialPermissions = Arrays.asList(
       AccountPermissionWrapper.builder()
-        .permission(AccountPermission.builder().permissionValue("Payment").build())
+        .permission(AccountPermission.of(TransactionType.PAYMENT))
         .build()
     );
 
@@ -563,10 +563,10 @@ public class DelegateIT extends AbstractIT {
     // Update delegation with different permissions
     List<AccountPermissionWrapper> updatedPermissions = Arrays.asList(
       AccountPermissionWrapper.builder()
-        .permission(AccountPermission.builder().permissionValue("TrustSet").build())
+        .permission(AccountPermission.of(TransactionType.TRUST_SET))
         .build(),
       AccountPermissionWrapper.builder()
-        .permission(AccountPermission.builder().permissionValue("OfferCreate").build())
+        .permission(AccountPermission.of(TransactionType.OFFER_CREATE))
         .build()
     );
 
@@ -610,9 +610,9 @@ public class DelegateIT extends AbstractIT {
 
     assertThat(delegateObjectAfterUpdate).isPresent();
     assertThat(delegateObjectAfterUpdate.get().permissions()).hasSize(2);
-    assertThat(delegateObjectAfterUpdate.get().permissions().get(0).permission().permissionValue())
+    assertThat(delegateObjectAfterUpdate.get().permissions().get(0).permission().permissionValue().value())
       .isEqualTo("TrustSet");
-    assertThat(delegateObjectAfterUpdate.get().permissions().get(1).permission().permissionValue())
+    assertThat(delegateObjectAfterUpdate.get().permissions().get(1).permission().permissionValue().value())
       .isEqualTo("OfferCreate");
 
     logger.info("Delegate object permissions updated successfully");
@@ -633,10 +633,10 @@ public class DelegateIT extends AbstractIT {
     // Create a delegation
     List<AccountPermissionWrapper> permissions = Arrays.asList(
       AccountPermissionWrapper.builder()
-        .permission(AccountPermission.builder().permissionValue("Payment").build())
+        .permission(AccountPermission.of(TransactionType.PAYMENT))
         .build(),
       AccountPermissionWrapper.builder()
-        .permission(AccountPermission.builder().permissionValue("TrustSet").build())
+        .permission(AccountPermission.of(TransactionType.TRUST_SET))
         .build()
     );
 

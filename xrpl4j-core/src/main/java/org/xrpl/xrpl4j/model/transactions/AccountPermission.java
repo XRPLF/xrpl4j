@@ -50,18 +50,13 @@ public interface AccountPermission {
   /**
    * Create a {@link AccountPermission} from a {@link TransactionType}.
    *
-   * <p>The permission value is calculated as the transaction type code + 1.</p>
-   *
    * @param transactionType The {@link TransactionType} to create a permission for.
    *
-   * @return A {@link AccountPermission} with the permission value set to the transaction type code + 1.
+   * @return A {@link AccountPermission} with the permission value set to the transaction type.
    */
   static AccountPermission of(TransactionType transactionType) {
-    // Transaction type permissions are the transaction type code + 1
-    // We need to get the numeric code from definitions.json
-    // For now, we'll use the string value directly as the permissionValue
     return builder()
-      .permissionValue(transactionType.value())
+      .permissionValue(TransactionTypePermission.of(transactionType))
       .build();
   }
 
@@ -70,21 +65,34 @@ public interface AccountPermission {
    *
    * @param granularPermission The {@link GranularPermission} to create a permission for.
    *
-   * @return A {@link AccountPermission} with the permission value set to the granular permission's string value.
+   * @return A {@link AccountPermission} with the permission value set to the granular permission.
    */
   static AccountPermission of(GranularPermission granularPermission) {
     return builder()
-      .permissionValue(granularPermission.value())
+      .permissionValue(GranularPermissionValue.of(granularPermission))
       .build();
   }
 
   /**
-   * The transaction type that is being delegated, represented as a string.
+   * Create a {@link AccountPermission} from a {@link Permission}.
    *
-   * @return A {@link String} representing the transaction type.
+   * @param permission The {@link Permission} to create an account permission for.
+   *
+   * @return A {@link AccountPermission} with the specified permission value.
+   */
+  static AccountPermission of(Permission permission) {
+    return builder()
+      .permissionValue(permission)
+      .build();
+  }
+
+  /**
+   * The permission value that is being delegated.
+   *
+   * @return A {@link Permission} representing either a transaction type or granular permission.
    */
   @JsonProperty("PermissionValue")
-  String permissionValue();
+  Permission permissionValue();
 }
 
 

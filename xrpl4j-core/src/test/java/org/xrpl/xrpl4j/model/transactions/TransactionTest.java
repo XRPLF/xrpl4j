@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -187,5 +188,87 @@ public class TransactionTest {
     TransactionFlags result = mockTransaction.transactionFlags();
 
     assertThat(result).isEqualTo(TransactionFlags.EMPTY);
+  }
+
+  @Test
+  void delegateFieldCanBeSet() {
+    Address delegateAddress = Address.of("rDelegate1234567890123456789012");
+
+    Payment payment = Payment.builder()
+      .account(Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .delegate(delegateAddress)
+      .build();
+
+    assertThat(payment.delegate()).isPresent();
+    assertThat(payment.delegate().get()).isEqualTo(delegateAddress);
+  }
+
+  @Test
+  void delegateFieldIsOptional() {
+    Payment payment = Payment.builder()
+      .account(Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .build();
+
+    assertThat(payment.delegate()).isEmpty();
+  }
+
+  @Test
+  void delegateCannotBeSameAsAccount() {
+    Address sameAddress = Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH");
+
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+      Payment.builder()
+        .account(sameAddress)
+        .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+        .amount(XrpCurrencyAmount.ofDrops(1000))
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .delegate(sameAddress)
+        .build();
+    });
+
+    assertThat(exception.getMessage()).contains("Delegate and Account must be different");
+  }
+
+  @Test
+  void delegateWorksOnDifferentTransactionTypes() {
+    Address delegateAddress = Address.of("rDelegate1234567890123456789012");
+    Address accountAddress = Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH");
+
+    // Test with TrustSet
+    TrustSet trustSet = TrustSet.builder()
+      .account(accountAddress)
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rIssuer123456789012345678901234"))
+        .value("1000")
+        .build())
+      .delegate(delegateAddress)
+      .build();
+
+    assertThat(trustSet.delegate()).isPresent();
+    assertThat(trustSet.delegate().get()).isEqualTo(delegateAddress);
+
+    // Test with OfferCreate
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(accountAddress)
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .takerGets(XrpCurrencyAmount.ofDrops(1000))
+      .takerPays(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rIssuer123456789012345678901234"))
+        .value("100")
+        .build())
+      .delegate(delegateAddress)
+      .build();
+
+    assertThat(offerCreate.delegate()).isPresent();
+    assertThat(offerCreate.delegate().get()).isEqualTo(delegateAddress);
   }
 }

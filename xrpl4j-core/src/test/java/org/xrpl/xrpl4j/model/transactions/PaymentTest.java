@@ -185,4 +185,38 @@ public class PaymentTest {
         Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba")).value("500").build()
       ).build();
   }
+
+  @Test
+  public void buildPaymentWithSponsorCreatedAccountFlag() {
+    Payment payment = Payment.builder()
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .flags(PaymentFlags.builder().tfSponsorCreatedAccount(true).build())
+      .build();
+
+    assertThat(payment.flags().tfSponsorCreatedAccount()).isTrue();
+    assertThat(payment.flags().getValue()).isEqualTo(0x80080000L);
+  }
+
+  @Test
+  public void buildPaymentWithMultipleFlagsIncludingSponsorCreatedAccount() {
+    Payment payment = Payment.builder()
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .flags(PaymentFlags.builder()
+        .tfSponsorCreatedAccount(true)
+        .tfPartialPayment(true)
+        .build())
+      .build();
+
+    assertThat(payment.flags().tfSponsorCreatedAccount()).isTrue();
+    assertThat(payment.flags().tfPartialPayment()).isTrue();
+    assertThat(payment.flags().tfFullyCanonicalSig()).isTrue();
+  }
 }

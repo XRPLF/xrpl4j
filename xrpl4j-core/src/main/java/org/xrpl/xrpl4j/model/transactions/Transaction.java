@@ -108,6 +108,7 @@ public interface Transaction {
       .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
       .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
       .put(ImmutableBatch.class, TransactionType.BATCH)
+      .put(ImmutableSponsorshipTransfer.class, TransactionType.SPONSORSHIP_TRANSFER)
       .build();
 
   /**
@@ -238,6 +239,49 @@ public interface Transaction {
 
   @JsonProperty("NetworkID")
   Optional<NetworkId> networkId();
+
+  /**
+   * The account that is sponsoring the transaction fee and/or reserve requirements. If specified, the sponsor
+   * will pay the transaction fee and/or cover reserve requirements instead of the transaction sender.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An {@link Optional} {@link Address} of the sponsoring account.
+   */
+  @com.google.common.annotations.Beta
+  @JsonProperty("Sponsor")
+  Optional<Address> sponsor();
+
+  /**
+   * Flags indicating what type of sponsorship this transaction uses. The flags are:
+   * <ul>
+   *   <li>tfSponsorFee (1) - The sponsor is paying the transaction fee</li>
+   *   <li>tfSponsorReserve (2) - The sponsor is covering reserve requirements</li>
+   * </ul>
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An {@link Optional} {@link UnsignedInteger} containing the sponsor flags.
+   */
+  @com.google.common.annotations.Beta
+  @JsonProperty("SponsorFlags")
+  Optional<UnsignedInteger> sponsorFlags();
+
+  /**
+   * Contains the signing information for the sponsor. This field is required if the transaction is sponsored
+   * and the sponsor is not using a pre-funded Sponsorship object. The sponsor can sign with either a single
+   * signature or multi-signature.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An {@link Optional} {@link SponsorSignature} containing the sponsor's signature information.
+   */
+  @com.google.common.annotations.Beta
+  @JsonProperty("SponsorSignature")
+  Optional<SponsorSignature> sponsorSignature();
 
   @JsonAnyGetter
   @JsonInclude(Include.NON_ABSENT)

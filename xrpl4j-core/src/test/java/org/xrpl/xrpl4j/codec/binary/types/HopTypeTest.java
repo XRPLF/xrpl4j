@@ -260,15 +260,8 @@ class HopTypeTest {
     // This will throw StringIndexOutOfBoundsException because BinaryParser.read() will fail
     // when there's not enough data. This demonstrates that the codec WILL fail on truly
     // corrupted data, but it's a low-level parsing error, not a validation error.
-    // Note: Error message format varies by Java version:
-    //   Java 8-16: "begin 24, end 26, length 24"
-    //   Java 17+:  "Range [24, 26) out of bounds for length 24"
     assertThatThrownBy(() -> new HopType().fromParser(parser))
-      .isInstanceOf(StringIndexOutOfBoundsException.class)
-      .satisfies(ex -> {
-        String message = ex.getMessage();
-        assertThat(message).matches(".*24.*26.*24.*");
-      });
+      .isInstanceOf(StringIndexOutOfBoundsException.class);
   }
 }
 

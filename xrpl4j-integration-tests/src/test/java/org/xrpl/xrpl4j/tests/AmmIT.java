@@ -1398,7 +1398,8 @@ public class AmmIT extends AbstractIT {
     );
     assertThat(ammInfoAfterDeposit.amm().amount()).isInstanceOf(MptCurrencyAmount.class);
     UnsignedLong mptAmountBefore = UnsignedLong.valueOf(((MptCurrencyAmount) ammInfo.amm().amount()).value());
-    UnsignedLong mptAmountAfter = UnsignedLong.valueOf(((MptCurrencyAmount) ammInfoAfterDeposit.amm().amount()).value());
+    UnsignedLong mptAmountAfter =
+      UnsignedLong.valueOf(((MptCurrencyAmount) ammInfoAfterDeposit.amm().amount()).value());
     assertThat(mptAmountAfter).isGreaterThan(mptAmountBefore);
 
     // Holder withdraws XRP from the AMM (single-asset withdraw)

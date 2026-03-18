@@ -49,12 +49,6 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
  * Tests path finding functionality for MPT as destination asset.
  */
 public class PathFindIT extends AbstractIT {
-
-  static boolean shouldNotRun() {
-    return System.getProperty("useTestnet") != null ||
-      System.getProperty("useClioTestnet") != null;
-  }
-
   /**
    * Tests ripple_path_find with MPT as the destination amount.
    * Creates an MPT issuance, authorizes a holder, and attempts to find paths to deliver MPT.

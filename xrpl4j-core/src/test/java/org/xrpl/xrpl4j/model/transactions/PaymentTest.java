@@ -155,6 +155,47 @@ public class PaymentTest {
       .hasMessage("CredentialIDs should have unique values.");
   }
 
+  @Test
+  public void testMptIssuanceIdMutualExclusionWithAccount() {
+    assertThatThrownBy(() -> PathStep.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308"))
+      .account(Address.of("razqQKzJRdB4UxFPWf5NEpEG3WMkmwgcXA"))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("mpt_issuance_id is mutually exclusive with account, currency, and issuer in a PathStep.");
+  }
+
+  @Test
+  public void testMptIssuanceIdMutualExclusionWithCurrency() {
+    assertThatThrownBy(() -> PathStep.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308"))
+      .currency("USD")
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("mpt_issuance_id is mutually exclusive with account, currency, and issuer in a PathStep.");
+  }
+
+  @Test
+  public void testMptIssuanceIdMutualExclusionWithIssuer() {
+    assertThatThrownBy(() -> PathStep.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308"))
+      .issuer(Address.of("razqQKzJRdB4UxFPWf5NEpEG3WMkmwgcXA"))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("mpt_issuance_id is mutually exclusive with account, currency, and issuer in a PathStep.");
+  }
+
+  @Test
+  public void testMptPathStepBuildsSuccessfully() {
+    PathStep step = PathStep.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308"))
+      .build();
+    assertThat(step.mptIssuanceId()).isPresent();
+    assertThat(step.account()).isEmpty();
+    assertThat(step.currency()).isEmpty();
+    assertThat(step.issuer()).isEmpty();
+  }
+
   //////////////////
   // Private Helpers
 

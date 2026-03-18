@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 
 class XChainAccountCreateCommitTest extends AbstractJsonTest {
@@ -29,7 +30,7 @@ class XChainAccountCreateCommitTest extends AbstractJsonTest {
           .lockingChainIssue(Issue.XRP)
           .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
           .issuingChainIssue(
-            Issue.builder()
+            IouIssue.builder()
               .currency("TST")
               .issuer(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
               .build()
@@ -79,7 +80,7 @@ class XChainAccountCreateCommitTest extends AbstractJsonTest {
           .lockingChainIssue(Issue.XRP)
           .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
           .issuingChainIssue(
-            Issue.builder()
+            IouIssue.builder()
               .currency("TST")
               .issuer(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
               .build()
@@ -131,7 +132,7 @@ class XChainAccountCreateCommitTest extends AbstractJsonTest {
           .lockingChainIssue(Issue.XRP)
           .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
           .issuingChainIssue(
-            Issue.builder()
+            IouIssue.builder()
               .currency("TST")
               .issuer(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
               .build()
@@ -182,7 +183,7 @@ class XChainAccountCreateCommitTest extends AbstractJsonTest {
           .lockingChainIssue(Issue.XRP)
           .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
           .issuingChainIssue(
-            Issue.builder()
+            IouIssue.builder()
               .currency("TST")
               .issuer(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
               .build()
@@ -231,7 +232,7 @@ class XChainAccountCreateCommitTest extends AbstractJsonTest {
           .lockingChainIssue(Issue.XRP)
           .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
           .issuingChainIssue(
-            Issue.builder()
+            IouIssue.builder()
               .currency("TST")
               .issuer(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
               .build()

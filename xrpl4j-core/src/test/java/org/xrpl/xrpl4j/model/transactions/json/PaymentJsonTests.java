@@ -218,7 +218,7 @@ public class PaymentJsonTests extends AbstractJsonTest {
       "  \"TransactionType\": \"Payment\"," +
       "  \"Amount\": \"25000000\"," +
       "  \"Fee\": \"10\"," +
-      "  \"Flags\": 2147999744," +
+      "  \"Flags\": 2148007936," +
       "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
       "  \"Sequence\": 2" +
       "}";

@@ -109,6 +109,7 @@ public interface Transaction {
       .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
       .put(ImmutableBatch.class, TransactionType.BATCH)
       .put(ImmutableSponsorshipTransfer.class, TransactionType.SPONSORSHIP_TRANSFER)
+      .put(ImmutableSponsorshipSet.class, TransactionType.SPONSORSHIP_SET)
       .build();
 
   /**

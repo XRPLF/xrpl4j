@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.model.client.accounts;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -77,6 +78,46 @@ public interface AccountSponsoringResult extends XrplResult {
   @Value.Default
   default boolean validated() {
     return false;
+  }
+
+  /**
+   * Gets {@link #ledgerHash()}, or throws an {@link IllegalStateException} if {@link #ledgerHash()} is empty.
+   *
+   * @return The value of {@link #ledgerHash()}.
+   * @throws IllegalStateException If {@link #ledgerHash()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default Hash256 ledgerHashSafe() {
+    return ledgerHash()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerHash."));
+  }
+
+  /**
+   * Gets {@link #ledgerIndex()}, or throws an {@link IllegalStateException} if {@link #ledgerIndex()} is empty.
+   *
+   * @return The value of {@link #ledgerIndex()}.
+   * @throws IllegalStateException If {@link #ledgerIndex()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default LedgerIndex ledgerIndexSafe() {
+    return ledgerIndex()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerIndex."));
+  }
+
+  /**
+   * Gets {@link #ledgerCurrentIndex()}, or throws an {@link IllegalStateException} if {@link #ledgerCurrentIndex()}
+   * is empty.
+   *
+   * @return The value of {@link #ledgerCurrentIndex()}.
+   * @throws IllegalStateException If {@link #ledgerCurrentIndex()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default LedgerIndex ledgerCurrentIndexSafe() {
+    return ledgerCurrentIndex()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerCurrentIndex."));
   }
 
 }

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.flags.SponsorshipTransferFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
@@ -38,8 +39,17 @@ import java.util.Optional;
  * <ul>
  *   <li>tfSponsorshipEnd - End a sponsorship, transferring reserve burden back to the sponsee</li>
  *   <li>tfSponsorshipCreate - Create a new sponsorship for an unsponsored object/account</li>
- *   <li>tfSponsorshipReassign - Transfer sponsorship from one sponsor to another</li>
+ *   <li>tfSponsorshipReassign - Transfer sponsorship from one sponsor to another. In this scenario,
+ *       the {@link Transaction#sponsor()} field identifies the new sponsor who will take over the
+ *       sponsorship responsibility. The transaction must be signed by both the current sponsor
+ *       (via {@link Transaction#signingPublicKey()}) and the new sponsor (via {@link Transaction#sponsorSignature()}).</li>
  * </ul>
+ *
+ * <p><strong>Note on Reassign Semantics:</strong> When using tfSponsorshipReassign, the {@link Transaction#sponsor()}
+ * field serves a dual purpose: it identifies both who is paying the transaction fee AND who will become the new
+ * sponsor of the object. This design reuses the existing sponsor field rather than introducing a separate
+ * "newSponsor" field. The current sponsor must sign the transaction normally, and the new sponsor must provide
+ * a {@link Transaction#sponsorSignature()} to authorize taking over the sponsorship.</p>
  *
  * <p>This class will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
  * Its API is subject to change.</p>
@@ -80,6 +90,33 @@ public interface SponsorshipTransfer extends Transaction {
    */
   @JsonProperty("ObjectID")
   Optional<Hash256> objectId();
+
+  /**
+   * Validates that exactly one mode flag is set (tfSponsorshipEnd, tfSponsorshipCreate, or tfSponsorshipReassign).
+   * These flags are mutually exclusive and define the operation mode of the transaction.
+   *
+   * @throws IllegalStateException if validation fails.
+   */
+  @Value.Check
+  default void check() {
+    SponsorshipTransferFlags txFlags = flags();
+
+    int modeCount = 0;
+    if (txFlags.tfSponsorshipEnd()) {
+      modeCount++;
+    }
+    if (txFlags.tfSponsorshipCreate()) {
+      modeCount++;
+    }
+    if (txFlags.tfSponsorshipReassign()) {
+      modeCount++;
+    }
+
+    Preconditions.checkState(
+      modeCount == 1,
+      "SponsorshipTransfer must have exactly one mode flag set (tfSponsorshipEnd, tfSponsorshipCreate, or tfSponsorshipReassign)"
+    );
+  }
 
 }
 

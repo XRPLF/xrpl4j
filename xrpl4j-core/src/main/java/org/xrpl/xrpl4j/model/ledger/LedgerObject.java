@@ -66,6 +66,7 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableOracleObject.class, name = "Oracle"),
   @JsonSubTypes.Type(value = ImmutableMpTokenIssuanceObject.class, name = "MPTokenIssuance"),
   @JsonSubTypes.Type(value = ImmutableMpTokenObject.class, name = "MPToken"),
+  @JsonSubTypes.Type(value = ImmutableSponsorshipObject.class, name = "Sponsorship"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -222,7 +223,16 @@ public interface LedgerObject {
     MP_TOKEN_ISSUANCE("MPTokenIssuance"),
 
     @Beta
-    MP_TOKEN("MPToken");
+    MP_TOKEN("MPToken"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Sponsorship} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    SPONSORSHIP("Sponsorship");
 
     private final String value;
 

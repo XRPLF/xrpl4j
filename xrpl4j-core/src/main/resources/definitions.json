@@ -851,6 +851,56 @@
       }
     ],
     [
+      "SponsoredOwnerCount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 69,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "SponsoringOwnerCount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 70,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "SponsoringAccountCount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 71,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "ReserveCount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 72,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "SponsorFlags",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 73,
+        "type": "UInt32"
+      }
+    ],
+    [
       "IndexNext",
       {
         "isSerialized": true,
@@ -1507,6 +1557,16 @@
         "isSigningField": true,
         "isVLEncoded": false,
         "nth": 38,
+        "type": "Hash256"
+      }
+    ],
+    [
+      "ObjectID",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 39,
         "type": "Hash256"
       }
     ],
@@ -2311,6 +2371,56 @@
       }
     ],
     [
+      "Sponsor",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 27,
+        "type": "AccountID"
+      }
+    ],
+    [
+      "HighSponsor",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 28,
+        "type": "AccountID"
+      }
+    ],
+    [
+      "LowSponsor",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 29,
+        "type": "AccountID"
+      }
+    ],
+    [
+      "CounterpartySponsor",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 30,
+        "type": "AccountID"
+      }
+    ],
+    [
+      "Sponsee",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 31,
+        "type": "AccountID"
+      }
+    ],
+    [
       "Number",
       {
         "isSerialized": true,
@@ -2837,6 +2947,16 @@
         "isSigningField": false,
         "isVLEncoded": false,
         "nth": 37,
+        "type": "STObject"
+      }
+    ],
+    [
+      "SponsorSignature",
+      {
+        "isSerialized": true,
+        "isSigningField": false,
+        "isVLEncoded": false,
+        "nth": 38,
         "type": "STObject"
       }
     ],
@@ -3459,6 +3579,7 @@
     "PermissionedDomain": 130,
     "RippleState": 114,
     "SignerList": 83,
+    "Sponsorship": 144,
     "Ticket": 84,
     "Vault": 132,
     "XChainOwnedClaimID": 113,
@@ -3715,6 +3836,8 @@
     "SetFee": 101,
     "SetRegularKey": 5,
     "SignerListSet": 12,
+    "SponsorshipSet": 86,
+    "SponsorshipTransfer": 85,
     "TicketCreate": 10,
     "TrustSet": 20,
     "UNLModify": 102,

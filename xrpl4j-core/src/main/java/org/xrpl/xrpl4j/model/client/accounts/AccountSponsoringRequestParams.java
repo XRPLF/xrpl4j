@@ -59,6 +59,20 @@ public interface AccountSponsoringRequestParams extends XrplRequestParams {
   }
 
   /**
+   * Construct an {@link AccountSponsoringRequestParams} for a given account and otherwise default parameters.
+   *
+   * @param classicAddress The classic {@link Address} of the account to request sponsored objects for.
+   *
+   * @return An {@link AccountSponsoringRequestParams} for the given {@link Address}.
+   */
+  static AccountSponsoringRequestParams of(Address classicAddress) {
+    return builder()
+      .account(classicAddress)
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
+      .build();
+  }
+
+  /**
    * The unique {@link Address} for the account that is sponsoring other accounts or objects.
    *
    * @return The unique {@link Address} of the account.
@@ -73,18 +87,19 @@ public interface AccountSponsoringRequestParams extends XrplRequestParams {
    * @return {@code true} if only deletion blockers should be returned, otherwise {@code false}.
    */
   @JsonProperty("deletion_blockers_only")
-  Optional<Boolean> deletionBlockersOnly();
+  @Value.Default
+  default boolean deletionBlockersOnly() {
+    return false;
+  }
 
   /**
-   * A 20-byte hex string for the ledger version to use.
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
+   * or a shortcut value. Defaults to {@link LedgerSpecifier#CURRENT}.
    *
    * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */
   @JsonUnwrapped
-  @Value.Default
-  default LedgerSpecifier ledgerSpecifier() {
-    return LedgerSpecifier.VALIDATED;
-  }
+  LedgerSpecifier ledgerSpecifier();
 
   /**
    * Limit the number of ledger objects to retrieve. The server is not required to honor this value.
@@ -97,18 +112,17 @@ public interface AccountSponsoringRequestParams extends XrplRequestParams {
   /**
    * Value from a previous paginated response. Resume retrieving data where that response left off.
    *
-   * @return An optionally-present {@link String} containing the marker.
+   * @return An optionally-present {@link Marker} containing the marker.
    */
   @JsonProperty("marker")
   Optional<Marker> marker();
 
   /**
-   * Filter results by a ledger entry type. Some examples are {@code offer} and {@code escrow}.
+   * Filter results by a ledger entry type.
    *
-   * @return An optionally-present {@link String} representing the ledger entry type filter.
+   * @return An optionally-present {@link AccountObjectsRequestParams.AccountObjectType} to filter by.
    */
-  @JsonProperty("type")
-  Optional<String> type();
+  Optional<AccountObjectsRequestParams.AccountObjectType> type();
 
 }
 

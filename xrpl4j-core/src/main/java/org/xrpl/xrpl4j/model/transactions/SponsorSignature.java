@@ -86,5 +86,40 @@ public interface SponsorSignature {
   @JsonProperty("Signers")
   Optional<List<SignerWrapper>> signers();
 
+  /**
+   * Validates that the SponsorSignature has exactly one signature type (either single-signature or multi-signature)
+   * and that the fields are consistent with the chosen signature type.
+   *
+   * @throws IllegalStateException if validation fails.
+   */
+  @Value.Check
+  default void check() {
+    boolean hasSingleSignature = transactionSignature().isPresent();
+    boolean hasMultiSignature = signers().isPresent();
+
+    // Must have exactly one signature type
+    if (hasSingleSignature && hasMultiSignature) {
+      throw new IllegalStateException("SponsorSignature must have either TxnSignature or Signers, but not both");
+    }
+
+    if (!hasSingleSignature && !hasMultiSignature) {
+      throw new IllegalStateException("SponsorSignature must have either TxnSignature or Signers");
+    }
+
+    // If using single signature, SigningPubKey must be non-empty
+    if (hasSingleSignature) {
+      if (!signingPublicKey().isPresent() || signingPublicKey().get().equals(PublicKey.MULTI_SIGN_PUBLIC_KEY)) {
+        throw new IllegalStateException("SigningPubKey must be non-empty when using TxnSignature");
+      }
+    }
+
+    // If using multi-signature, SigningPubKey must be empty (the multi-sign marker)
+    if (hasMultiSignature) {
+      if (!signingPublicKey().isPresent() || !signingPublicKey().get().equals(PublicKey.MULTI_SIGN_PUBLIC_KEY)) {
+        throw new IllegalStateException("SigningPubKey must be empty when using Signers");
+      }
+    }
+  }
+
 }
 

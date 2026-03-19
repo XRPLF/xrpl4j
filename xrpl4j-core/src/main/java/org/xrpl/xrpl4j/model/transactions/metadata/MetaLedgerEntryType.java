@@ -52,7 +52,6 @@ public interface MetaLedgerEntryType {
   MetaLedgerEntryType MP_TOKEN_ISSUANCE = MetaLedgerEntryType.of("MPTokenIssuance");
   MetaLedgerEntryType MP_TOKEN = MetaLedgerEntryType.of("MPToken");
 
-
   /**
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.
    *

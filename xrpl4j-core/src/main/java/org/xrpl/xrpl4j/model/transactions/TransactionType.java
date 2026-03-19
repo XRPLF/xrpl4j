@@ -382,6 +382,24 @@ public enum TransactionType {
   BATCH("Batch"),
 
   /**
+   * The {@link TransactionType} for the {@link SponsorshipTransfer} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  SPONSORSHIP_TRANSFER("SponsorshipTransfer"),
+
+  /**
+   * The {@link TransactionType} for the {@link SponsorshipSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  SPONSORSHIP_SET("SponsorshipSet"),
+
+  /**
    * The {@link TransactionType} for any transaction that is unrecognized/unsupported by xrpl4j.
    */
   UNKNOWN("Unknown");

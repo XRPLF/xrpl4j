@@ -168,7 +168,14 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
     /**
      * MPToken object type.
      */
-    MP_TOKEN("mptoken");
+    MP_TOKEN("mptoken"),
+    /**
+     * Sponsorship object type.
+     *
+     * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
+     */
+    @com.google.common.annotations.Beta
+    SPONSORSHIP("sponsorship");
 
     private final String value;
 

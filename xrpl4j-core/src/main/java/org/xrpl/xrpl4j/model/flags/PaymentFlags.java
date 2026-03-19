@@ -48,6 +48,16 @@ public class PaymentFlags extends TransactionFlags {
   protected static final PaymentFlags LIMIT_QUALITY = new PaymentFlags(0x00040000L);
 
   /**
+   * Constant {@link PaymentFlags} for the {@code tfSponsorCreatedAccount} flag. This flag is only valid if the
+   * Payment is used to create an account. If enabled, the created account will be sponsored by the transaction sender.
+   *
+   * <p>This constant will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   */
+  @com.google.common.annotations.Beta
+  protected static final PaymentFlags SPONSOR_CREATED_ACCOUNT = new PaymentFlags(0x00080000L);
+
+  /**
    * Constant {@link PaymentFlags} for the {@code tfInnerBatchTxn} flag. This flag is used to indicate that a
    * transaction is an inner transaction of a Batch.
    *
@@ -87,6 +97,7 @@ public class PaymentFlags extends TransactionFlags {
     boolean tfNoDirectRipple,
     boolean tfPartialPayment,
     boolean tfLimitQuality,
+    boolean tfSponsorCreatedAccount,
     boolean tfInnerBatchTxn
   ) {
     return new PaymentFlags(of(
@@ -94,6 +105,7 @@ public class PaymentFlags extends TransactionFlags {
       tfNoDirectRipple ? NO_DIRECT_RIPPLE : UNSET,
       tfPartialPayment ? PARTIAL_PAYMENT : UNSET,
       tfLimitQuality ? LIMIT_QUALITY : UNSET,
+      tfSponsorCreatedAccount ? SPONSOR_CREATED_ACCOUNT : UNSET,
       tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN : UNSET
     ).getValue());
   }
@@ -141,6 +153,20 @@ public class PaymentFlags extends TransactionFlags {
   }
 
   /**
+   * This flag is only valid if the Payment is used to create an account. If enabled, the created account will be
+   * sponsored by the transaction sender.
+   *
+   * <p>This method will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return {@code true} if {@code tfSponsorCreatedAccount} is set, otherwise {@code false}.
+   */
+  @com.google.common.annotations.Beta
+  public boolean tfSponsorCreatedAccount() {
+    return this.isSet(PaymentFlags.SPONSOR_CREATED_ACCOUNT);
+  }
+
+  /**
    * Indicates that this transaction is an inner transaction of a Batch transaction.
    *
    * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
@@ -159,6 +185,7 @@ public class PaymentFlags extends TransactionFlags {
     private boolean tfNoDirectRipple = false;
     private boolean tfPartialPayment = false;
     private boolean tfLimitQuality = false;
+    private boolean tfSponsorCreatedAccount = false;
     private boolean tfInnerBatchTxn = false;
 
     /**
@@ -198,6 +225,22 @@ public class PaymentFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfSponsorCreatedAccount} to the given value.
+     *
+     * <p>This method will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+     * is enabled on mainnet. Its API is subject to change.</p>
+     *
+     * @param tfSponsorCreatedAccount A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    @com.google.common.annotations.Beta
+    public Builder tfSponsorCreatedAccount(boolean tfSponsorCreatedAccount) {
+      this.tfSponsorCreatedAccount = tfSponsorCreatedAccount;
+      return this;
+    }
+
+    /**
      * Set {@code tfInnerBatchTxn} to the given value.
      *
      * @param tfInnerBatchTxn A boolean value.
@@ -215,7 +258,7 @@ public class PaymentFlags extends TransactionFlags {
      * @return A new {@link PaymentFlags}.
      */
     public PaymentFlags build() {
-      return PaymentFlags.of(true, tfNoDirectRipple, tfPartialPayment, tfLimitQuality, tfInnerBatchTxn);
+      return PaymentFlags.of(true, tfNoDirectRipple, tfPartialPayment, tfLimitQuality, tfSponsorCreatedAccount, tfInnerBatchTxn);
     }
   }
 }

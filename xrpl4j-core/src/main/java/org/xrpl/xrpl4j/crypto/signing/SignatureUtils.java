@@ -54,6 +54,15 @@ import org.xrpl.xrpl4j.model.transactions.DidSet;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
+import org.xrpl.xrpl4j.model.transactions.LoanBrokerCoverClawback;
+import org.xrpl.xrpl4j.model.transactions.LoanBrokerCoverDeposit;
+import org.xrpl.xrpl4j.model.transactions.LoanBrokerCoverWithdraw;
+import org.xrpl.xrpl4j.model.transactions.LoanBrokerDelete;
+import org.xrpl.xrpl4j.model.transactions.LoanBrokerSet;
+import org.xrpl.xrpl4j.model.transactions.LoanDelete;
+import org.xrpl.xrpl4j.model.transactions.LoanManage;
+import org.xrpl.xrpl4j.model.transactions.LoanPay;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
@@ -519,6 +528,42 @@ public class SignatureUtils {
       transactionWithSignature = VaultClawback.builder().from((VaultClawback) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (LoanBrokerSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = LoanBrokerSet.builder().from((LoanBrokerSet) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (LoanBrokerDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = LoanBrokerDelete.builder().from((LoanBrokerDelete) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (LoanBrokerCoverDeposit.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = LoanBrokerCoverDeposit.builder().from((LoanBrokerCoverDeposit) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (LoanBrokerCoverWithdraw.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = LoanBrokerCoverWithdraw.builder().from((LoanBrokerCoverWithdraw) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (LoanBrokerCoverClawback.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = LoanBrokerCoverClawback.builder().from((LoanBrokerCoverClawback) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (LoanSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = LoanSet.builder().from((LoanSet) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (LoanDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = LoanDelete.builder().from((LoanDelete) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (LoanManage.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = LoanManage.builder().from((LoanManage) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (LoanPay.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = LoanPay.builder().from((LoanPay) transaction)
+        .transactionSignature(signature)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -796,6 +841,42 @@ public class SignatureUtils {
         .build();
     } else if (VaultClawback.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = VaultClawback.builder().from((VaultClawback) transaction)
+        .signers(signers)
+        .build();
+    } else if (LoanBrokerSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = LoanBrokerSet.builder().from((LoanBrokerSet) transaction)
+        .signers(signers)
+        .build();
+    } else if (LoanBrokerDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = LoanBrokerDelete.builder().from((LoanBrokerDelete) transaction)
+        .signers(signers)
+        .build();
+    } else if (LoanBrokerCoverDeposit.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = LoanBrokerCoverDeposit.builder().from((LoanBrokerCoverDeposit) transaction)
+        .signers(signers)
+        .build();
+    } else if (LoanBrokerCoverWithdraw.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = LoanBrokerCoverWithdraw.builder().from((LoanBrokerCoverWithdraw) transaction)
+        .signers(signers)
+        .build();
+    } else if (LoanBrokerCoverClawback.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = LoanBrokerCoverClawback.builder().from((LoanBrokerCoverClawback) transaction)
+        .signers(signers)
+        .build();
+    } else if (LoanSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = LoanSet.builder().from((LoanSet) transaction)
+        .signers(signers)
+        .build();
+    } else if (LoanDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = LoanDelete.builder().from((LoanDelete) transaction)
+        .signers(signers)
+        .build();
+    } else if (LoanManage.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = LoanManage.builder().from((LoanManage) transaction)
+        .signers(signers)
+        .build();
+    } else if (LoanPay.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = LoanPay.builder().from((LoanPay) transaction)
         .signers(signers)
         .build();
     } else {

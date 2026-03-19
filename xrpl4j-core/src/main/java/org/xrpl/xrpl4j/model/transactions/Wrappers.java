@@ -54,6 +54,10 @@ import org.xrpl.xrpl4j.model.jackson.modules.DidUriDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidUriSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Deserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Serializer;
+import org.xrpl.xrpl4j.model.jackson.modules.LoanBrokerDataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.LoanBrokerDataSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.LoanDataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.LoanDataSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdDeserializer;
@@ -963,6 +967,142 @@ public class Wrappers {
     public boolean equals(Object obj) {
       if (obj instanceof VaultData) {
         String otherValue = ((VaultData) obj).value();
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing loan broker metadata in hex format, limited to 256 bytes.
+   *
+   * <p>This class will be marked Beta until the LendingProtocol amendment is enabled on mainnet. Its API is
+   * subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = LoanBrokerData.class, using = LoanBrokerDataSerializer.class)
+  @JsonDeserialize(as = LoanBrokerData.class, using = LoanBrokerDataDeserializer.class)
+  @Beta
+  abstract static class _LoanBrokerData extends Wrapper<String> implements Serializable {
+
+    /**
+     * Constructs a {@link LoanBrokerData} from a plaintext string by hex-encoding it.
+     *
+     * @param plaintext A string value representing the loan broker data in plaintext.
+     *
+     * @return A {@link LoanBrokerData} of hex-encoded plaintext.
+     */
+    public static LoanBrokerData ofPlainText(String plaintext) {
+      return LoanBrokerData.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * Validates that a {@link LoanBrokerData}'s value is not empty and does not exceed 256 bytes (512 hex characters).
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(!this.value().isEmpty(), "LoanBrokerData must not be empty.");
+      Preconditions.checkArgument(
+        this.value().length() <= 512,
+        "LoanBrokerData must be <= 256 bytes or <= 512 hex characters.");
+    }
+
+    /**
+     * Validates that a {@link LoanBrokerData}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("LoanBrokerData must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof LoanBrokerData) {
+        String otherValue = ((LoanBrokerData) obj).value();
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing loan metadata in hex format, limited to 256 bytes.
+   *
+   * <p>This class will be marked Beta until the LendingProtocol amendment is enabled on mainnet. Its API is
+   * subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = LoanData.class, using = LoanDataSerializer.class)
+  @JsonDeserialize(as = LoanData.class, using = LoanDataDeserializer.class)
+  @Beta
+  abstract static class _LoanData extends Wrapper<String> implements Serializable {
+
+    /**
+     * Constructs a {@link LoanData} from a plaintext string by hex-encoding it.
+     *
+     * @param plaintext A string value representing the loan data in plaintext.
+     *
+     * @return A {@link LoanData} of hex-encoded plaintext.
+     */
+    public static LoanData ofPlainText(String plaintext) {
+      return LoanData.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * Validates that a {@link LoanData}'s value is not empty and does not exceed 256 bytes (512 hex characters).
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(!this.value().isEmpty(), "LoanData must not be empty.");
+      Preconditions.checkArgument(
+        this.value().length() <= 512,
+        "LoanData must be <= 256 bytes or <= 512 hex characters.");
+    }
+
+    /**
+     * Validates that a {@link LoanData}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("LoanData must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof LoanData) {
+        String otherValue = ((LoanData) obj).value();
         return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;

@@ -124,6 +124,7 @@ public interface Transaction {
       .put(ImmutableLoanManage.class, TransactionType.LOAN_MANAGE)
       .put(ImmutableLoanPay.class, TransactionType.LOAN_PAY)
       .put(ImmutableSponsorshipTransfer.class, TransactionType.SPONSORSHIP_TRANSFER)
+      .put(ImmutableSponsorshipSet.class, TransactionType.SPONSORSHIP_SET)
       .build();
 
   /**

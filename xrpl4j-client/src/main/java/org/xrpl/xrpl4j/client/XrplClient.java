@@ -53,6 +53,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountSponsoringRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountSponsoringResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
@@ -618,6 +620,31 @@ public class XrplClient {
       .build();
 
     return jsonRpcClient.send(request, AccountOffersResult.class);
+  }
+
+  /**
+   * Get the {@link AccountSponsoringResult} for the account specified in {@code params} by making an account_sponsoring
+   * method call.
+   *
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param params The {@link AccountSponsoringRequestParams} to send in the request.
+   *
+   * @return The {@link AccountSponsoringResult} returned by the account_sponsoring method call.
+   *
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
+   */
+  @Beta
+  public AccountSponsoringResult accountSponsoring(AccountSponsoringRequestParams params)
+    throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.ACCOUNT_SPONSORING)
+      .addParams(params)
+      .build();
+    return jsonRpcClient.send(request, AccountSponsoringResult.class);
   }
 
   /**

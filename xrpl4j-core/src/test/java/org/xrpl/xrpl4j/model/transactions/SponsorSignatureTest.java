@@ -25,6 +25,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 
 import java.util.Collections;
 
@@ -35,50 +37,56 @@ public class SponsorSignatureTest {
 
   @Test
   public void buildWithSingleSignature() {
-    SponsorSignature signature = SponsorSignature.builder()
-      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-      .transactionSignature("3045022100D184EB4AE5956FF600E7536EE459345C7BBCF097A84CC61A93B9AF7197EDB98702201E" +
-        "F0EBFB08929B1C1171B4D4B943774D6388B3B2F1F1E2F3E4F5F6F7F8F9FA")
+    PublicKey publicKey = PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A");
+    Signature signature = Signature.fromBase16("3045022100D184EB4AE5956FF600E7536EE459345C7BBCF097A84CC61A93B9AF7197EDB98702201E" +
+        "F0EBFB08929B1C1171B4D4B943774D6388B3B2F1F1E2F3E4F5F6F7F8F9FA");
+
+    SponsorSignature sponsorSignature = SponsorSignature.builder()
+      .signingPublicKey(publicKey)
+      .transactionSignature(signature)
       .build();
 
-    assertThat(signature.signingPublicKey()).isEqualTo("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A");
-    assertThat(signature.transactionSignature()).isPresent();
-    assertThat(signature.signers()).isEmpty();
+    assertThat(sponsorSignature.signingPublicKey()).isPresent();
+    assertThat(sponsorSignature.signingPublicKey().get()).isEqualTo(publicKey);
+    assertThat(sponsorSignature.transactionSignature()).isPresent();
+    assertThat(sponsorSignature.signers()).isEmpty();
   }
 
   @Test
   public void buildWithMultiSignature() {
     Signer signer = Signer.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-      .transactionSignature("3045022100D184EB4AE5956FF600E7536EE459345C7BBCF097A84CC61A93B9AF7197EDB98702201E" +
-        "F0EBFB08929B1C1171B4D4B943774D6388B3B2F1F1E2F3E4F5F6F7F8F9FA")
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A"))
+      .transactionSignature(Signature.fromBase16("3045022100D184EB4AE5956FF600E7536EE459345C7BBCF097A84CC61A93B9AF7197EDB98702201E" +
+        "F0EBFB08929B1C1171B4D4B943774D6388B3B2F1F1E2F3E4F5F6F7F8F9FA"))
       .build();
 
     SponsorSignature signature = SponsorSignature.builder()
-      .signingPublicKey("")
-      .signers(Collections.singletonList(signer))
+      .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
+      .signers(Collections.singletonList(SignerWrapper.of(signer)))
       .build();
 
-    assertThat(signature.signingPublicKey()).isEqualTo("");
+    assertThat(signature.signingPublicKey()).isPresent();
+    assertThat(signature.signingPublicKey().get()).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
     assertThat(signature.transactionSignature()).isEmpty();
-    assertThat(signature.signers()).isPresent().get().hasSize(1);
+    assertThat(signature.signers()).isPresent();
+    assertThat(signature.signers().get()).hasSize(1);
   }
 
   @Test
   public void buildWithBothSignatureTypesFails() {
     assertThatThrownBy(() ->
       SponsorSignature.builder()
-        .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-        .transactionSignature("3045022100D184EB4AE5956FF600E7536EE459345C7BBCF097A84CC61A93B9AF7197EDB98702201E" +
-          "F0EBFB08929B1C1171B4D4B943774D6388B3B2F1F1E2F3E4F5F6F7F8F9FA")
+        .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A"))
+        .transactionSignature(Signature.fromBase16("3045022100D184EB4AE5956FF600E7536EE459345C7BBCF097A84CC61A93B9AF7197EDB98702201E" +
+          "F0EBFB08929B1C1171B4D4B943774D6388B3B2F1F1E2F3E4F5F6F7F8F9FA"))
         .signers(Collections.singletonList(
-          Signer.builder()
+          SignerWrapper.of(Signer.builder()
             .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-            .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-            .transactionSignature("3045022100D184EB4AE5956FF600E7536EE459345C7BBCF097A84CC61A93B9AF7197EDB98702201E" +
-              "F0EBFB08929B1C1171B4D4B943774D6388B3B2F1F1E2F3E4F5F6F7F8F9FA")
-            .build()
+            .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A"))
+            .transactionSignature(Signature.fromBase16("3045022100D184EB4AE5956FF600E7536EE459345C7BBCF097A84CC61A93B9AF7197EDB98702201E" +
+              "F0EBFB08929B1C1171B4D4B943774D6388B3B2F1F1E2F3E4F5F6F7F8F9FA"))
+            .build())
         ))
         .build()
     ).isInstanceOf(IllegalStateException.class)
@@ -89,7 +97,7 @@ public class SponsorSignatureTest {
   public void buildWithNeitherSignatureTypeFails() {
     assertThatThrownBy(() ->
       SponsorSignature.builder()
-        .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
+        .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A"))
         .build()
     ).isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("SponsorSignature must have either TxnSignature or Signers");
@@ -99,9 +107,9 @@ public class SponsorSignatureTest {
   public void buildWithEmptySigningPublicKeyAndSingleSignatureFails() {
     assertThatThrownBy(() ->
       SponsorSignature.builder()
-        .signingPublicKey("")
-        .transactionSignature("3045022100D184EB4AE5956FF600E7536EE459345C7BBCF097A84CC61A93B9AF7197EDB98702201E" +
-          "F0EBFB08929B1C1171B4D4B943774D6388B3B2F1F1E2F3E4F5F6F7F8F9FA")
+        .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
+        .transactionSignature(Signature.fromBase16("3045022100D184EB4AE5956FF600E7536EE459345C7BBCF097A84CC61A93B9AF7197EDB98702201E" +
+          "F0EBFB08929B1C1171B4D4B943774D6388B3B2F1F1E2F3E4F5F6F7F8F9FA"))
         .build()
     ).isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("SigningPubKey must be non-empty when using TxnSignature");
@@ -111,14 +119,14 @@ public class SponsorSignatureTest {
   public void buildWithNonEmptySigningPublicKeyAndMultiSignatureFails() {
     assertThatThrownBy(() ->
       SponsorSignature.builder()
-        .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
+        .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A"))
         .signers(Collections.singletonList(
-          Signer.builder()
+          SignerWrapper.of(Signer.builder()
             .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-            .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-            .transactionSignature("3045022100D184EB4AE5956FF600E7536EE459345C7BBCF097A84CC61A93B9AF7197EDB98702201E" +
-              "F0EBFB08929B1C1171B4D4B943774D6388B3B2F1F1E2F3E4F5F6F7F8F9FA")
-            .build()
+            .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A"))
+            .transactionSignature(Signature.fromBase16("3045022100D184EB4AE5956FF600E7536EE459345C7BBCF097A84CC61A93B9AF7197EDB98702201E" +
+              "F0EBFB08929B1C1171B4D4B943774D6388B3B2F1F1E2F3E4F5F6F7F8F9FA"))
+            .build())
         ))
         .build()
     ).isInstanceOf(IllegalStateException.class)

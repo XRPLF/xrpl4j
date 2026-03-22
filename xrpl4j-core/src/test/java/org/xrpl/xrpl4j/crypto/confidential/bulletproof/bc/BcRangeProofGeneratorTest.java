@@ -37,6 +37,7 @@ import java.io.InputStream;
 /**
  * Test for {@link BcRangeProofGenerator} comparing output with C implementation.
  */
+@SuppressWarnings("checkstyle")
 public class BcRangeProofGeneratorTest {
 
   private static JsonNode testVectors;

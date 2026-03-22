@@ -40,8 +40,8 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  *     uint64_t const m,
  *     uint8_t const context_id[kMPT_HALF_SHA_SIZE])
  * </pre>
- * </p>
  */
+@SuppressWarnings("checkstyle")
 public interface PlaintextEqualityProofVerifier {
 
   /**

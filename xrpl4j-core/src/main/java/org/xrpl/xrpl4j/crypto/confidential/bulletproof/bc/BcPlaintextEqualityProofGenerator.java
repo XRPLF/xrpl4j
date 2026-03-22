@@ -39,6 +39,7 @@ import java.util.Objects;
  *
  * <p>Port of {@code secp256k1_equality_plaintext_prove} from proof_equality_plaintext.c.</p>
  */
+@SuppressWarnings("checkstyle")
 public class BcPlaintextEqualityProofGenerator implements PlaintextEqualityProofGenerator {
 
   private final BlindingFactorGenerator blindingFactorGenerator;

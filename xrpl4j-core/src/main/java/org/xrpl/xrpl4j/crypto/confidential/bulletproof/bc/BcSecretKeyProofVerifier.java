@@ -34,6 +34,7 @@ import java.util.Arrays;
  *
  * <p>Port of {@code secp256k1_mpt_pok_sk_verify} from proof_pok_sk.c.</p>
  */
+@SuppressWarnings("checkstyle")
 public class BcSecretKeyProofVerifier implements SecretKeyProofVerifier {
 
   @Override

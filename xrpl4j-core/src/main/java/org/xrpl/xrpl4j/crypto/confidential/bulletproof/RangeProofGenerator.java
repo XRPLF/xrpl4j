@@ -39,6 +39,7 @@ import org.xrpl.xrpl4j.crypto.confidential.Secp256k1Operations;
  *   <li>m=2 (two values): 754 bytes (rounds=7)</li>
  * </ul>
  */
+@SuppressWarnings("checkstyle")
 public interface RangeProofGenerator {
 
   /**

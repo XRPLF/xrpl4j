@@ -29,6 +29,7 @@ import java.util.List;
  *
  * <p>Verifies a Zero-Knowledge Proof that N ElGamal ciphertexts all encrypt the same plaintext amount.</p>
  */
+@SuppressWarnings("checkstyle")
 public interface SamePlaintextProofVerifier {
 
   /**

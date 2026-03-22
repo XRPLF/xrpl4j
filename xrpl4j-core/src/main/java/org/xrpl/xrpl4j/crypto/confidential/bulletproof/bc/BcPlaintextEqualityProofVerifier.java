@@ -35,6 +35,7 @@ import java.util.Arrays;
  *
  * <p>Port of {@code secp256k1_equality_plaintext_verify} from proof_equality_plaintext.c.</p>
  */
+@SuppressWarnings("checkstyle")
 public class BcPlaintextEqualityProofVerifier implements PlaintextEqualityProofVerifier {
 
   private static final int PROOF_LENGTH = 98;

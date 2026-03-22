@@ -28,6 +28,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  * <p>Verifies a Schnorr Proof of Knowledge (PoK) that proves possession of the secret key
  * corresponding to a public key.</p>
  */
+@SuppressWarnings("checkstyle")
 public interface SecretKeyProofVerifier {
 
   /**

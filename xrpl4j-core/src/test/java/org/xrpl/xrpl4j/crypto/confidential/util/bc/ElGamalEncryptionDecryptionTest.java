@@ -29,12 +29,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.SecureRandomBlindingFactorGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.keys.Entropy;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
-import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.confidential.SecureRandomBlindingFactorGenerator;
 
 /**
  * Integration tests for ElGamal encryption and decryption roundtrip.
@@ -44,8 +44,8 @@ import org.xrpl.xrpl4j.crypto.confidential.SecureRandomBlindingFactorGenerator;
  */
 public class ElGamalEncryptionDecryptionTest {
 
-  private BcMPTAmountEncryptor encryptor;
-  private BcMPTAmountDecryptor decryptor;
+  private BcMptAmountEncryptor encryptor;
+  private BcMptAmountDecryptor decryptor;
 
   private KeyPair keyPair;
   private BlindingFactor blindingFactor;
@@ -55,8 +55,8 @@ public class ElGamalEncryptionDecryptionTest {
   void setUp() {
 
 
-    encryptor = new BcMPTAmountEncryptor();
-    decryptor = new BcMPTAmountDecryptor();
+    encryptor = new BcMptAmountEncryptor();
+    decryptor = new BcMptAmountDecryptor();
     blindingFactorGenerator = new SecureRandomBlindingFactorGenerator();
 
     // Generate a fresh key pair for each test using ElGamal seed (32-byte entropy)
@@ -104,8 +104,12 @@ public class ElGamalEncryptionDecryptionTest {
     assertThat(ct1.toHex()).isNotEqualTo(ct2.toHex());
 
     // But both should decrypt to the same amount
-    UnsignedLong decrypted1 = decryptor.decrypt(ct1, keyPair.privateKey(), UnsignedLong.ZERO, UnsignedLong.valueOf(1000));
-    UnsignedLong decrypted2 = decryptor.decrypt(ct2, keyPair.privateKey(), UnsignedLong.ZERO, UnsignedLong.valueOf(1000));
+    UnsignedLong decrypted1 = decryptor.decrypt(
+      ct1, keyPair.privateKey(), UnsignedLong.ZERO, UnsignedLong.valueOf(1000)
+    );
+    UnsignedLong decrypted2 = decryptor.decrypt(
+      ct2, keyPair.privateKey(), UnsignedLong.ZERO, UnsignedLong.valueOf(1000)
+    );
 
     assertThat(decrypted1).isEqualTo(amount);
     assertThat(decrypted2).isEqualTo(amount);

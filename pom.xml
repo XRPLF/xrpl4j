@@ -271,6 +271,7 @@
 
     <!-- org.apache.maven.plugins:maven-checkstyle-plugin -->
     <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
+    <checkstyle.suppressions.location>checkstyle-suppressions.xml</checkstyle.suppressions.location>
     <checkstyle.violationSeverity>warning</checkstyle.violationSeverity>
 
     <cryptoconditions.version>1.0.5</cryptoconditions.version>

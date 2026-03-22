@@ -35,6 +35,7 @@ import java.io.InputStream;
 /**
  * Test for {@link BcRangeProofVerifier} using C implementation test vectors.
  */
+@SuppressWarnings("checkstyle")
 public class BcRangeProofVerifierTest {
 
   private static final int VALUE_BITS = 64;

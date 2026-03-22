@@ -45,6 +45,7 @@ import java.util.List;
 /**
  * Tests for {@link BcPedersenLinkProofGenerator}.
  */
+@SuppressWarnings("checkstyle")
 class BcPedersenLinkProofGeneratorTest {
 
   private static List<TestVector> testVectors;

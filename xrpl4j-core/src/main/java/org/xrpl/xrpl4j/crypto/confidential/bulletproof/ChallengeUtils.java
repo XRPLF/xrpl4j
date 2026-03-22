@@ -36,6 +36,7 @@ import java.util.List;
  *
  * <p>All intermediate byte arrays are cleared after use to match C's OPENSSL_cleanse behavior.</p>
  */
+@SuppressWarnings("checkstyle")
 public final class ChallengeUtils {
 
   private static final String POK_SK_DOMAIN = "MPT_POK_SK_REGISTER";

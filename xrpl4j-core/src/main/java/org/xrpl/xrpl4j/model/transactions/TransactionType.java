@@ -382,7 +382,7 @@ public enum TransactionType {
   BATCH("Batch"),
 
   /**
-   * The {@link TransactionType} for the {@link ConfidentialMPTConvert} transaction.
+   * The {@link TransactionType} for the {@link ConfidentialMptConvert} transaction.
    *
    * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
    * Its API is subject to change.</p>
@@ -391,7 +391,7 @@ public enum TransactionType {
   CONFIDENTIAL_MPT_CONVERT("ConfidentialMPTConvert"),
 
   /**
-   * The {@link TransactionType} for the {@link ConfidentialMPTSend} transaction.
+   * The {@link TransactionType} for the {@link ConfidentialMptSend} transaction.
    *
    * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
    * Its API is subject to change.</p>
@@ -400,7 +400,7 @@ public enum TransactionType {
   CONFIDENTIAL_MPT_SEND("ConfidentialMPTSend"),
 
   /**
-   * The {@link TransactionType} for the {@link ConfidentialMPTMergeInbox} transaction.
+   * The {@link TransactionType} for the {@link ConfidentialMptMergeInbox} transaction.
    *
    * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
    * Its API is subject to change.</p>
@@ -409,7 +409,7 @@ public enum TransactionType {
   CONFIDENTIAL_MPT_MERGE_INBOX("ConfidentialMPTMergeInbox"),
 
   /**
-   * The {@link TransactionType} for the {@link ConfidentialMPTConvertBack} transaction.
+   * The {@link TransactionType} for the {@link ConfidentialMptConvertBack} transaction.
    *
    * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
    * </p>
@@ -418,7 +418,7 @@ public enum TransactionType {
   CONFIDENTIAL_MPT_CONVERT_BACK("ConfidentialMPTConvertBack"),
 
   /**
-   * The {@link TransactionType} for the {@link ConfidentialMPTClawback} transaction.
+   * The {@link TransactionType} for the {@link ConfidentialMptClawback} transaction.
    *
    * @see "https://github.com/XRPLF/XRPL-Standards/discussions/241"
    */

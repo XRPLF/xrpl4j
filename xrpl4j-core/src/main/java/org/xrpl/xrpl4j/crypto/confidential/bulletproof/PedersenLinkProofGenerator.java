@@ -47,6 +47,7 @@ import org.xrpl.xrpl4j.crypto.confidential.Secp256k1Operations;
  *   <li>srho (32 bytes) - Response for Pedersen blinding factor</li>
  * </ul>
  */
+@SuppressWarnings("checkstyle")
 public interface PedersenLinkProofGenerator {
 
   /**

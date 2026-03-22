@@ -34,6 +34,7 @@ import java.util.Arrays;
  *
  * <p>Port of {@code secp256k1_mpt_pedersen_commit} from commitments.c.</p>
  */
+@SuppressWarnings("checkstyle")
 public class BcPedersenCommitment implements PedersenCommitment {
 
   @Override

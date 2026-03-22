@@ -112,7 +112,7 @@ public interface MpTokenObject extends LedgerObject {
 
   /**
    * The holder's ElGamal public key for confidential transfers.
-   * Present after the holder has registered via ConfidentialMPTConvert.
+   * Present after the holder has registered via ConfidentialMptConvert.
    *
    * @return An optionally-present hex-encoded {@link String}.
    */
@@ -121,7 +121,7 @@ public interface MpTokenObject extends LedgerObject {
 
   /**
    * The holder's confidential spending balance (encrypted).
-   * Present after the holder has converted tokens via ConfidentialMPTConvert.
+   * Present after the holder has converted tokens via ConfidentialMptConvert.
    *
    * @return An optionally-present hex-encoded {@link String}.
    */
@@ -130,7 +130,7 @@ public interface MpTokenObject extends LedgerObject {
 
   /**
    * The holder's confidential inbox balance (encrypted).
-   * Tokens received via ConfidentialMPTSend are credited here.
+   * Tokens received via ConfidentialMptSend are credited here.
    *
    * @return An optionally-present hex-encoded {@link String}.
    */

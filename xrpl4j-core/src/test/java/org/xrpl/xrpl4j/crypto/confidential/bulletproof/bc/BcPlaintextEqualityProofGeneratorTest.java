@@ -41,6 +41,7 @@ import java.io.InputStream;
  * <p>The C code was modified to use fixed nonces for the internal random scalar t.
  * We mock the BlindingFactorGenerator to return the same fixed nonce for each test vector.</p>
  */
+@SuppressWarnings("checkstyle")
 class BcPlaintextEqualityProofGeneratorTest {
 
   private static JsonNode testVectors;

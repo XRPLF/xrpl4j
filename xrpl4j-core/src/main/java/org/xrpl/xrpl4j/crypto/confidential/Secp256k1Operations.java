@@ -318,84 +318,84 @@ public final class Secp256k1Operations {
   /**
    * Adds two scalars modulo the curve order.
    *
-   * @param a The first scalar (32 bytes, big-endian).
-   * @param b The second scalar (32 bytes, big-endian).
+   * @param first  The first scalar (32 bytes, big-endian).
+   * @param second The second scalar (32 bytes, big-endian).
    *
-   * @return The sum (a + b) mod n as a 32-byte array.
+   * @return The sum (first + second) mod n as a 32-byte array.
    */
-  public static byte[] scalarAdd(byte[] a, byte[] b) {
-    Objects.requireNonNull(a, "a must not be null");
-    Objects.requireNonNull(b, "b must not be null");
-    BigInteger aInt = new BigInteger(1, a);
-    BigInteger bInt = new BigInteger(1, b);
-    BigInteger result = aInt.add(bInt).mod(CURVE_ORDER);
+  public static byte[] scalarAdd(byte[] first, byte[] second) {
+    Objects.requireNonNull(first, "first must not be null");
+    Objects.requireNonNull(second, "second must not be null");
+    BigInteger firstInt = new BigInteger(1, first);
+    BigInteger secondInt = new BigInteger(1, second);
+    BigInteger result = firstInt.add(secondInt).mod(CURVE_ORDER);
     return toBytes32(result);
   }
 
   /**
    * Multiplies two scalars modulo the curve order.
    *
-   * @param a The first scalar (32 bytes, big-endian).
-   * @param b The second scalar (32 bytes, big-endian).
+   * @param first  The first scalar (32 bytes, big-endian).
+   * @param second The second scalar (32 bytes, big-endian).
    *
-   * @return The product (a * b) mod n as a 32-byte array.
+   * @return The product (first * second) mod n as a 32-byte array.
    */
-  public static byte[] scalarMultiply(byte[] a, byte[] b) {
-    Objects.requireNonNull(a, "a must not be null");
-    Objects.requireNonNull(b, "b must not be null");
-    BigInteger aInt = new BigInteger(1, a);
-    BigInteger bInt = new BigInteger(1, b);
-    BigInteger result = aInt.multiply(bInt).mod(CURVE_ORDER);
+  public static byte[] scalarMultiply(byte[] first, byte[] second) {
+    Objects.requireNonNull(first, "first must not be null");
+    Objects.requireNonNull(second, "second must not be null");
+    BigInteger firstInt = new BigInteger(1, first);
+    BigInteger secondInt = new BigInteger(1, second);
+    BigInteger result = firstInt.multiply(secondInt).mod(CURVE_ORDER);
     return toBytes32(result);
   }
 
   /**
    * Computes the modular inverse of a scalar.
    *
-   * @param a The scalar to invert (32 bytes, big-endian).
+   * @param scalar The scalar to invert (32 bytes, big-endian).
    *
-   * @return The inverse a^(-1) mod n as a 32-byte array.
+   * @return The inverse scalar^(-1) mod n as a 32-byte array.
    *
-   * @throws IllegalArgumentException if a is zero.
+   * @throws IllegalArgumentException if scalar is zero.
    */
-  public static byte[] scalarInverse(byte[] a) {
-    Objects.requireNonNull(a, "a must not be null");
-    BigInteger aInt = new BigInteger(1, a);
-    if (aInt.equals(BigInteger.ZERO)) {
+  public static byte[] scalarInverse(byte[] scalar) {
+    Objects.requireNonNull(scalar, "scalar must not be null");
+    BigInteger scalarInt = new BigInteger(1, scalar);
+    if (scalarInt.equals(BigInteger.ZERO)) {
       throw new IllegalArgumentException("Cannot invert zero");
     }
-    BigInteger result = aInt.modInverse(CURVE_ORDER);
+    BigInteger result = scalarInt.modInverse(CURVE_ORDER);
     return toBytes32(result);
   }
 
   /**
    * Negates a scalar modulo the curve order.
    *
-   * @param a The scalar to negate (32 bytes, big-endian).
+   * @param scalar The scalar to negate (32 bytes, big-endian).
    *
-   * @return The negation (-a) mod n as a 32-byte array.
+   * @return The negation (-scalar) mod n as a 32-byte array.
    */
-  public static byte[] scalarNegate(byte[] a) {
-    Objects.requireNonNull(a, "a must not be null");
-    BigInteger aInt = new BigInteger(1, a);
-    BigInteger result = CURVE_ORDER.subtract(aInt).mod(CURVE_ORDER);
+  public static byte[] scalarNegate(byte[] scalar) {
+    Objects.requireNonNull(scalar, "scalar must not be null");
+    BigInteger scalarInt = new BigInteger(1, scalar);
+    BigInteger result = CURVE_ORDER.subtract(scalarInt).mod(CURVE_ORDER);
     return toBytes32(result);
   }
 
   /**
    * Subtracts two scalars modulo the curve order.
    *
-   * @param a The first scalar (32 bytes, big-endian).
-   * @param b The second scalar (32 bytes, big-endian).
+   * @param first The first scalar (32 bytes, big-endian).
+   * @param second The second scalar (32 bytes, big-endian).
    *
-   * @return The difference (a - b) mod n as a 32-byte array.
+   * @return The difference (first - second) mod n as a 32-byte array.
    */
-  public static byte[] scalarSub(byte[] a, byte[] b) {
-    Objects.requireNonNull(a, "a must not be null");
-    Objects.requireNonNull(b, "b must not be null");
-    BigInteger aInt = new BigInteger(1, a);
-    BigInteger bInt = new BigInteger(1, b);
-    BigInteger result = aInt.subtract(bInt).mod(CURVE_ORDER);
+  public static byte[] scalarSub(byte[] first, byte[] second) {
+    Objects.requireNonNull(first, "first must not be null");
+    Objects.requireNonNull(second, "second must not be null");
+    BigInteger firstInt = new BigInteger(1, first);
+    BigInteger secondInt = new BigInteger(1, second);
+    BigInteger result = firstInt.subtract(secondInt).mod(CURVE_ORDER);
     return toBytes32(result);
   }
 
@@ -441,6 +441,15 @@ public final class Secp256k1Operations {
     return Secp256k1Operations.toBytes32(reduced);
   }
 
+  /**
+   * Appends a compressed EC point to a byte buffer at the given offset.
+   *
+   * @param buffer The destination byte buffer.
+   * @param offset The offset at which to write the compressed point.
+   * @param point  The EC point to serialize and append.
+   *
+   * @return The new offset after writing (offset + 33).
+   */
   public static int appendPoint(byte[] buffer, int offset, ECPoint point) {
     byte[] pointBytes = Secp256k1Operations.serializeCompressed(point);
     System.arraycopy(pointBytes, 0, buffer, offset, 33);
@@ -605,18 +614,18 @@ public final class Secp256k1Operations {
    * sequential indices.</p>
    *
    * @param label The label string (e.g., "G" or "H").
-   * @param n     Number of generators to derive.
+   * @param count Number of generators to derive.
    *
-   * @return Array of n generator points.
+   * @return Array of count generator points.
    *
    * @throws NullPointerException  if label is null.
    * @throws IllegalStateException if any point derivation fails.
    */
-  public static ECPoint[] getGeneratorVector(String label, int n) {
+  public static ECPoint[] getGeneratorVector(String label, int count) {
     Objects.requireNonNull(label, "label must not be null");
     byte[] labelBytes = label.getBytes(StandardCharsets.UTF_8);
-    ECPoint[] vec = new ECPoint[n];
-    for (int i = 0; i < n; i++) {
+    ECPoint[] vec = new ECPoint[count];
+    for (int i = 0; i < count; i++) {
       vec[i] = hashToPointNums(labelBytes, i);
     }
     return vec;
@@ -657,8 +666,6 @@ public final class Secp256k1Operations {
 
     // Try-and-increment loop
     for (long ctr = 0; ctr < 0xFFFFFFFFL; ctr++) {
-      byte[] ctrBe = ByteUtils.toByteArray((int) ctr, 4);
-
       // Build hash input: domainSeparator || curveLabel || label || index || counter
       int inputLen = domainBytes.length + curveBytes.length +
         (label != null ? label.length : 0) + 4 + 4;
@@ -675,6 +682,7 @@ public final class Secp256k1Operations {
       }
       System.arraycopy(indexBe, 0, hashInput, offset, 4);
       offset += 4;
+      byte[] ctrBe = ByteUtils.toByteArray((int) ctr, 4);
       System.arraycopy(ctrBe, 0, hashInput, offset, 4);
 
       byte[] hash = HashingUtils.sha256(hashInput).toByteArray();

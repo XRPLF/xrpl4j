@@ -45,11 +45,11 @@ import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
-import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTConvert;
-import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTClawback;
-import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTConvertBack;
-import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTMergeInbox;
-import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTSend;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMptClawback;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvert;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvertBack;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMptMergeInbox;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMptSend;
 import org.xrpl.xrpl4j.model.transactions.CredentialAccept;
 import org.xrpl.xrpl4j.model.transactions.CredentialCreate;
 import org.xrpl.xrpl4j.model.transactions.CredentialDelete;
@@ -305,24 +305,24 @@ public class SignatureUtils {
       transactionWithSignature = CheckCreate.builder().from((CheckCreate) transaction)
         .transactionSignature(signature)
         .build();
-    } else if (ConfidentialMPTConvert.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignature = ConfidentialMPTConvert.builder().from((ConfidentialMPTConvert) transaction)
+    } else if (ConfidentialMptConvert.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = ConfidentialMptConvert.builder().from((ConfidentialMptConvert) transaction)
         .transactionSignature(signature)
         .build();
-    } else if (ConfidentialMPTSend.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignature = ConfidentialMPTSend.builder().from((ConfidentialMPTSend) transaction)
+    } else if (ConfidentialMptSend.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = ConfidentialMptSend.builder().from((ConfidentialMptSend) transaction)
         .transactionSignature(signature)
         .build();
-    } else if (ConfidentialMPTMergeInbox.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignature = ConfidentialMPTMergeInbox.builder().from((ConfidentialMPTMergeInbox) transaction)
+    } else if (ConfidentialMptMergeInbox.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = ConfidentialMptMergeInbox.builder().from((ConfidentialMptMergeInbox) transaction)
         .transactionSignature(signature)
         .build();
-    } else if (ConfidentialMPTConvertBack.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignature = ConfidentialMPTConvertBack.builder().from((ConfidentialMPTConvertBack) transaction)
+    } else if (ConfidentialMptConvertBack.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = ConfidentialMptConvertBack.builder().from((ConfidentialMptConvertBack) transaction)
         .transactionSignature(signature)
         .build();
-    } else if (ConfidentialMPTClawback.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignature = ConfidentialMPTClawback.builder().from((ConfidentialMPTClawback) transaction)
+    } else if (ConfidentialMptClawback.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = ConfidentialMptClawback.builder().from((ConfidentialMptClawback) transaction)
         .transactionSignature(signature)
         .build();
     } else if (DepositPreAuth.class.isAssignableFrom(transaction.getClass())) {
@@ -580,24 +580,24 @@ public class SignatureUtils {
       transactionWithSignatures = CheckCreate.builder().from((CheckCreate) transaction)
         .signers(signers)
         .build();
-    } else if (ConfidentialMPTConvert.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignatures = ConfidentialMPTConvert.builder().from((ConfidentialMPTConvert) transaction)
+    } else if (ConfidentialMptConvert.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = ConfidentialMptConvert.builder().from((ConfidentialMptConvert) transaction)
         .signers(signers)
         .build();
-    } else if (ConfidentialMPTSend.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignatures = ConfidentialMPTSend.builder().from((ConfidentialMPTSend) transaction)
+    } else if (ConfidentialMptSend.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = ConfidentialMptSend.builder().from((ConfidentialMptSend) transaction)
         .signers(signers)
         .build();
-    } else if (ConfidentialMPTMergeInbox.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignatures = ConfidentialMPTMergeInbox.builder().from((ConfidentialMPTMergeInbox) transaction)
+    } else if (ConfidentialMptMergeInbox.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = ConfidentialMptMergeInbox.builder().from((ConfidentialMptMergeInbox) transaction)
         .signers(signers)
         .build();
-    } else if (ConfidentialMPTConvertBack.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignatures = ConfidentialMPTConvertBack.builder().from((ConfidentialMPTConvertBack) transaction)
+    } else if (ConfidentialMptConvertBack.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = ConfidentialMptConvertBack.builder().from((ConfidentialMptConvertBack) transaction)
         .signers(signers)
         .build();
-    } else if (ConfidentialMPTClawback.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignatures = ConfidentialMPTClawback.builder().from((ConfidentialMPTClawback) transaction)
+    } else if (ConfidentialMptClawback.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = ConfidentialMptClawback.builder().from((ConfidentialMptClawback) transaction)
         .signers(signers)
         .build();
     } else if (DepositPreAuth.class.isAssignableFrom(transaction.getClass())) {

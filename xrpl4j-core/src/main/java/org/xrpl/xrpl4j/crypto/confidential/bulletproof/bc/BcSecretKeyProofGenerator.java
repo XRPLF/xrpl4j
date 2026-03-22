@@ -38,6 +38,7 @@ import java.util.Objects;
  *
  * <p>Port of {@code secp256k1_mpt_pok_sk_prove} from proof_pok_sk.c.</p>
  */
+@SuppressWarnings("checkstyle")
 public class BcSecretKeyProofGenerator implements SecretKeyProofGenerator {
 
   private static final int PROOF_LENGTH = 65;

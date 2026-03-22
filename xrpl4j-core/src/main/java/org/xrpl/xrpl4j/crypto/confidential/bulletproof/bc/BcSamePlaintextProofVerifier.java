@@ -39,6 +39,7 @@ import java.util.Objects;
  *
  * <p>Port of {@code secp256k1_mpt_verify_same_plaintext_multi} from proof_same_plaintext_multi.c.</p>
  */
+@SuppressWarnings("checkstyle")
 public class BcSamePlaintextProofVerifier implements SamePlaintextProofVerifier {
 
   /**

@@ -43,7 +43,7 @@ JavaSecretKeyProofGenerator proofGenerator = new JavaSecretKeyProofGenerator();
 
 SecretKeyProof zkProof = proofGenerator.generateProof(
   holderElGamalKeyPair.privateKey(),  // ElGamalPrivateKey
-  context                              // ConfidentialMPTConvertContext
+  context                              // ConfidentialMptConvertContext
 );
 
 String zkProofHex = zkProof.hexValue();
@@ -121,7 +121,7 @@ SamePlaintextMultiProof samePlaintextProof = samePlaintextGen.generateProof(
   destParticipant,      // SamePlaintextParticipant
   issuerParticipant,    // SamePlaintextParticipant
   Optional.empty(),     // Optional<SamePlaintextParticipant> auditor
-  sendContext           // ConfidentialMPTSendContext
+  sendContext           // ConfidentialMptSendContext
 );
 ```
 
@@ -161,7 +161,7 @@ ElGamalPedersenLinkProof amountLinkageProof = linkProofGen.generateProof(
   sendAmount,                  // UnsignedLong
   sendBlindingFactorSender,    // BlindingFactor - same used for encryption
   amountBlindingFactorForSend, // BlindingFactor - Pedersen blinding factor
-  sendContext                  // ConfidentialMPTSendContext
+  sendContext                  // ConfidentialMptSendContext
 );
 ```
 
@@ -182,7 +182,7 @@ ElGamalPedersenLinkProof balanceLinkageProof = linkProofGen.generateProof(
   senderCurrentBalance,          // UnsignedLong
   privateKeyAsBlindingFactor,    // BlindingFactor - PRIVATE KEY
   balanceBlindingFactorForSend,  // BlindingFactor
-  sendContext                    // ConfidentialMPTSendContext
+  sendContext                    // ConfidentialMptSendContext
 );
 ```
 
@@ -350,7 +350,7 @@ EqualityPlaintextProof clawbackProof = equalityProofGen.generateProof(
   issuerElGamalKeyPair.publicKey(),  // ElGamalPublicKey
   clawbackAmount,                    // UnsignedLong
   issuerPrivateKeyAsBlindingFactor,  // BlindingFactor - issuer's PRIVATE KEY
-  context                            // ConfidentialMPTClawbackContext
+  context                            // ConfidentialMptClawbackContext
 );
 
 String zkProofHex = clawbackProof.hexValue();

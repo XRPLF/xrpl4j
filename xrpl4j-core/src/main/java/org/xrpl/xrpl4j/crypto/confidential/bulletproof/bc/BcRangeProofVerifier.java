@@ -34,6 +34,7 @@ import java.util.Arrays;
  *
  * <p>Port of {@code secp256k1_bulletproof_verify_agg} from bulletproof_aggregated.c.</p>
  */
+@SuppressWarnings("checkstyle")
 public class BcRangeProofVerifier implements RangeProofVerifier {
 
   private static final int SCALAR_SIZE = 32;

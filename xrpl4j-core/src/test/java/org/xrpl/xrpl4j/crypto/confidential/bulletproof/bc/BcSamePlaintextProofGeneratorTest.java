@@ -45,6 +45,7 @@ import java.util.List;
  * <p>The C code was modified to use fixed nonces for km and all kr_i.
  * We mock the BlindingFactorGenerator to return the same fixed nonce for each test vector.</p>
  */
+@SuppressWarnings("checkstyle")
 class BcSamePlaintextProofGeneratorTest {
 
   private static JsonNode testVectors;

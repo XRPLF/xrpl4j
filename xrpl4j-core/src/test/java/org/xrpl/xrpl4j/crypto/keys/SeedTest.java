@@ -388,7 +388,9 @@ public class SeedTest {
 
   @Test
   public void deriveElGamalSecp256k1KeyPair() {
-    Entropy entropy = Entropy.of(BaseEncoding.base16().decode("4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4"));
+    Entropy entropy = Entropy.of(
+      BaseEncoding.base16().decode("4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4")
+    );
     Seed seed = Seed.elGamalSecp256k1SeedFromEntropy(entropy);
     KeyPair keyPair = Seed.DefaultSeed.Secp256k1KeyPairService.deriveKeyPair(seed);
     KeyPair expectedKeyPair = KeyPair.builder()

@@ -30,6 +30,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  *
  * <p>The proof format is: T (33 bytes compressed point) || s (32 bytes scalar) = 65 bytes total.</p>
  */
+@SuppressWarnings("checkstyle")
 public interface SecretKeyProofGenerator {
 
   /**

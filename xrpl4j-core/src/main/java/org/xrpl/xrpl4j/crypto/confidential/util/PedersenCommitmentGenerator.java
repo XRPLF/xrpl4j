@@ -43,11 +43,14 @@ public interface PedersenCommitmentGenerator {
    * @param amount         The value to commit to.
    * @param blindingFactor The blinding factor (rho).
    *
-   * @return A {@link org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment} containing the 33-byte compressed commitment.
+   * @return A {@link org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment} containing the 33-byte
+   *   compressed commitment.
    *
    * @throws NullPointerException  if any parameter is null.
    * @throws IllegalStateException if commitment generation fails.
    */
-  org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment generateCommitment(UnsignedLong amount, BlindingFactor blindingFactor);
+  org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment generateCommitment(
+    UnsignedLong amount, BlindingFactor blindingFactor
+  );
 }
 

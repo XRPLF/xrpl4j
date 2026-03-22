@@ -126,7 +126,9 @@ class SeedCodecTest extends AbstractCodecTest {
 
   @Test
   public void encodeDecodeElGamalSeed() {
-    Entropy entropy = Entropy.of(BaseEncoding.base16().decode("4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4"));
+    Entropy entropy = Entropy.of(
+      BaseEncoding.base16().decode("4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4")
+    );
     String encoded = seedCodec.encodeSeed(unsignedByteArrayFromHex(
       entropy.value().hexValue()), KeyType.SECP256K1);
     String decoded = seedCodec.decodeSeed(encoded).bytes().hexValue();
@@ -167,8 +169,9 @@ class SeedCodecTest extends AbstractCodecTest {
     assertThrows(
       EncodeException.class,
       () -> seedCodec
-        .encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFFCF2DE378FBDD7E2EE87D486DFB5A7BFFFFFF")
-          , KeyType.SECP256K1),
+        .encodeSeed(
+          unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFFCF2DE378FBDD7E2EE87D486DFB5A7BFFFFFF"),
+          KeyType.SECP256K1),
       "entropy must have length 32."
     );
   }

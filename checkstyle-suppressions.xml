@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Puppy Crawl//DTD Suppressions 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+  <!-- C-to-Java port: bulletproof proof system (mathematical variable names, mirrors C code) -->
+  <suppress files="crypto[/\\]confidential[/\\]bulletproof[/\\]" checks=".*"/>
+
+  <!-- C-to-Java port: BouncyCastle ElGamal encryption/decryption -->
+  <suppress files="crypto[/\\]confidential[/\\]elgamal[/\\]bc[/\\]" checks=".*"/>
+
+  <!-- C-to-Java port: BouncyCastle Pedersen commitment -->
+  <suppress files="crypto[/\\]confidential[/\\]commitment[/\\]bc[/\\]" checks=".*"/>
+</suppressions>

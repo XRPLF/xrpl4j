@@ -44,6 +44,7 @@ import java.util.Objects;
  * <p>Implements the Bulletproofs protocol (Bünz et al., 2018) for proving
  * that committed values lie within [0, 2^64) without revealing the values.</p>
  */
+@SuppressWarnings("checkstyle")
 public class BcRangeProofGenerator implements RangeProofGenerator {
 
   private static final int BP_VALUE_BITS = 64;

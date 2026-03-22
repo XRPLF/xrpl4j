@@ -87,6 +87,8 @@ public class SeedCodec {
     }
 
     Version version = type.equals(KeyType.ED25519) ? Version.ED25519_SEED : Version.FAMILY_SEED;
-    return AddressBase58.encode(entropy, Lists.newArrayList(version), UnsignedInteger.valueOf(entropy.getUnsignedBytes().size()));
+    return AddressBase58.encode(
+      entropy, Lists.newArrayList(version), UnsignedInteger.valueOf(entropy.getUnsignedBytes().size())
+    );
   }
 }

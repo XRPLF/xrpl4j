@@ -37,6 +37,7 @@ import java.util.Arrays;
  *
  * <p>Port of {@code secp256k1_elgamal_pedersen_link_prove} from proof_link.c.</p>
  */
+@SuppressWarnings("checkstyle")
 public class BcPedersenLinkProofGenerator implements PedersenLinkProofGenerator {
 
   private final BlindingFactorGenerator blindingFactorGenerator;

@@ -35,6 +35,7 @@ import java.util.List;
  *
  * <p>Total size: (1 + 2N) * 33 + (1 + N) * 32 bytes.</p>
  */
+@SuppressWarnings("checkstyle")
 public interface SamePlaintextProofGenerator {
 
   /**

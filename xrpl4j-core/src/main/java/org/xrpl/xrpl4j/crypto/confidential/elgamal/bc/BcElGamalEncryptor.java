@@ -33,6 +33,7 @@ import java.util.Arrays;
 /**
  * BouncyCastle implementation of {@link ElGamalEncryptor}.
  */
+@SuppressWarnings("checkstyle")
 public class BcElGamalEncryptor implements ElGamalEncryptor {
 
   @Override

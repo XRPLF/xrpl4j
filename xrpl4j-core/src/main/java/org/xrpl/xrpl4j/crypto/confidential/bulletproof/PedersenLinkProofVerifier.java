@@ -34,6 +34,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  *   <li>sm * G + srho * H == T3 + e * PCm</li>
  * </ul>
  */
+@SuppressWarnings("checkstyle")
 public interface PedersenLinkProofVerifier {
 
   /**

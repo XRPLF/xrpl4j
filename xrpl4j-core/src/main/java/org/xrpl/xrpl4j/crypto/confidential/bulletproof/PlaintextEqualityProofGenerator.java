@@ -43,8 +43,8 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  *     uint8_t const r[kMPT_PRIVKEY_SIZE],
  *     uint8_t const context_id[kMPT_HALF_SHA_SIZE])
  * </pre>
- * </p>
  */
+@SuppressWarnings("checkstyle")
 public interface PlaintextEqualityProofGenerator {
 
   /**

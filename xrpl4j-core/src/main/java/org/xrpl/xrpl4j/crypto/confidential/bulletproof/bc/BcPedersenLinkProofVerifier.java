@@ -34,6 +34,7 @@ import java.math.BigInteger;
  *
  * <p>Port of {@code secp256k1_elgamal_pedersen_link_verify} from proof_link.c.</p>
  */
+@SuppressWarnings("checkstyle")
 public class BcPedersenLinkProofVerifier implements PedersenLinkProofVerifier {
 
   @Override

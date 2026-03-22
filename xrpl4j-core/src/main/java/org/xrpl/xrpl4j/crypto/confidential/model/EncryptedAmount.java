@@ -83,7 +83,9 @@ public interface EncryptedAmount {
     byte[] c1Bytes = new byte[Secp256k1Operations.ELGAMAL_CIPHER_SIZE];
     byte[] c2Bytes = new byte[Secp256k1Operations.ELGAMAL_CIPHER_SIZE];
     System.arraycopy(bytes, 0, c1Bytes, 0, Secp256k1Operations.ELGAMAL_CIPHER_SIZE);
-    System.arraycopy(bytes, Secp256k1Operations.ELGAMAL_CIPHER_SIZE, c2Bytes, 0, Secp256k1Operations.ELGAMAL_CIPHER_SIZE);
+    System.arraycopy(
+      bytes, Secp256k1Operations.ELGAMAL_CIPHER_SIZE, c2Bytes, 0, Secp256k1Operations.ELGAMAL_CIPHER_SIZE
+    );
     return of(UnsignedByteArray.of(c1Bytes), UnsignedByteArray.of(c2Bytes));
   }
 
@@ -158,7 +160,9 @@ public interface EncryptedAmount {
   default UnsignedByteArray toBytes() {
     byte[] result = new byte[Secp256k1Operations.ELGAMAL_TOTAL_SIZE];
     System.arraycopy(c1().toByteArray(), 0, result, 0, Secp256k1Operations.ELGAMAL_CIPHER_SIZE);
-    System.arraycopy(c2().toByteArray(), 0, result, Secp256k1Operations.ELGAMAL_CIPHER_SIZE, Secp256k1Operations.ELGAMAL_CIPHER_SIZE);
+    System.arraycopy(
+      c2().toByteArray(), 0, result, Secp256k1Operations.ELGAMAL_CIPHER_SIZE, Secp256k1Operations.ELGAMAL_CIPHER_SIZE
+    );
     return UnsignedByteArray.of(result);
   }
 

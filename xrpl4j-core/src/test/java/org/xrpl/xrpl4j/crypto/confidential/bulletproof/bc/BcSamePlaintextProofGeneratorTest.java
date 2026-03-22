@@ -22,97 +22,26 @@ package org.xrpl.xrpl4j.crypto.confidential.bulletproof.bc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedLong;
-import org.junit.jupiter.api.BeforeAll;
+import org.bouncycastle.math.ec.ECPoint;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.confidential.BlindingFactorGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.Secp256k1Operations;
+import org.xrpl.xrpl4j.crypto.confidential.SecureRandomBlindingFactorGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.bulletproof.SamePlaintextProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.bulletproof.SamePlaintextProofVerifier;
-import org.xrpl.xrpl4j.crypto.confidential.bulletproof.bc.BcSamePlaintextProofGenerator;
-import org.xrpl.xrpl4j.crypto.confidential.bulletproof.bc.BcSamePlaintextProofVerifier;
 
-import java.io.InputStream;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Test for {@link BcSamePlaintextProofGenerator} comparing output with C implementation.
- *
- * <p>The C code was modified to use fixed nonces for km and all kr_i.
- * We mock the BlindingFactorGenerator to return the same fixed nonce for each test vector.</p>
+ * Test for {@link BcSamePlaintextProofGenerator} and {@link BcSamePlaintextProofVerifier}
+ * using the shared-r (equality_shared_r) algorithm.
  */
 @SuppressWarnings("checkstyle")
 class BcSamePlaintextProofGeneratorTest {
-
-  private static JsonNode testVectors;
-  private static final ObjectMapper objectMapper = new ObjectMapper();
-
-  @BeforeAll
-  static void loadTestVectors() throws Exception {
-    InputStream is = BcSamePlaintextProofGeneratorTest.class.getResourceAsStream(
-      "/mpt/port/same_plaintext_multi_vectors.json"
-    );
-    testVectors = objectMapper.readTree(is);
-  }
-
-  @Test
-  void proofGenerationMatchesCImplementation() {
-    for (JsonNode vector : testVectors.get("vectors")) {
-      UnsignedLong amount = UnsignedLong.valueOf(vector.get("amount").asLong());
-      String nonceHex = vector.get("nonce").asText();
-      String contextIdHex = vector.get("contextId").asText();
-      String expectedProofHex = vector.get("expectedProof").asText();
-
-      // Parse Pk array
-      List<UnsignedByteArray> Pk = new ArrayList<>();
-      for (JsonNode pkNode : vector.get("Pk")) {
-        Pk.add(UnsignedByteArray.fromHex(pkNode.asText()));
-      }
-
-      // Parse R array
-      List<UnsignedByteArray> R = new ArrayList<>();
-      for (JsonNode rNode : vector.get("R")) {
-        R.add(UnsignedByteArray.fromHex(rNode.asText()));
-      }
-
-      // Parse S array
-      List<UnsignedByteArray> S = new ArrayList<>();
-      for (JsonNode sNode : vector.get("S")) {
-        S.add(UnsignedByteArray.fromHex(sNode.asText()));
-      }
-
-      // Parse rArray
-      List<UnsignedByteArray> rArray = new ArrayList<>();
-      for (JsonNode rArrNode : vector.get("rArray")) {
-        rArray.add(UnsignedByteArray.fromHex(rArrNode.asText()));
-      }
-
-      UnsignedByteArray contextId = UnsignedByteArray.fromHex(contextIdHex);
-
-      // Create generator with mocked BlindingFactorGenerator that returns the nonce from test vector
-      BlindingFactor fixedNonce = BlindingFactor.fromHex(nonceHex);
-      BlindingFactorGenerator mockGenerator = () -> fixedNonce;
-      SamePlaintextProofGenerator generator = new BcSamePlaintextProofGenerator(mockGenerator);
-
-      // Generate proof
-      UnsignedByteArray proof = generator.generateProof(amount, R, S, Pk, rArray, contextId);
-
-      // Assert proof matches C output byte-for-byte
-      assertThat(proof.hexValue())
-        .as("Proof for nonce=%s", nonceHex)
-        .isEqualToIgnoringCase(expectedProofHex);
-
-      // Verify the proof using the verifier
-      SamePlaintextProofVerifier verifier = new BcSamePlaintextProofVerifier();
-      assertThat(verifier.verifyProof(proof, R, S, Pk, contextId))
-        .as("Proof should verify for nonce=%s", nonceHex)
-        .isTrue();
-    }
-  }
 
   @Test
   void testGenerateAndVerifyWithRandomNonces() {
@@ -120,37 +49,100 @@ class BcSamePlaintextProofGeneratorTest {
     SamePlaintextProofGenerator generator = new BcSamePlaintextProofGenerator();
     SamePlaintextProofVerifier verifier = new BcSamePlaintextProofVerifier();
 
-    // Use inputs from first test vector but with random nonces
-    JsonNode vector = testVectors.get("vectors").get(0);
-    UnsignedLong amount = UnsignedLong.valueOf(vector.get("amount").asLong());
-    String contextIdHex = vector.get("contextId").asText();
+    SecureRandomBlindingFactorGenerator blindingGen = new SecureRandomBlindingFactorGenerator();
 
-    List<UnsignedByteArray> Pk = new ArrayList<>();
-    for (JsonNode pkNode : vector.get("Pk")) {
-      Pk.add(UnsignedByteArray.fromHex(pkNode.asText()));
+    UnsignedLong amount = UnsignedLong.valueOf(1000);
+
+    // Generate a shared blinding factor r
+    BlindingFactor sharedR = blindingGen.generate();
+    UnsignedByteArray sharedRBytes = UnsignedByteArray.of(sharedR.toBytes());
+    BigInteger rInt = new BigInteger(1, sharedR.toBytes());
+
+    // Compute shared C1 = r * G
+    ECPoint c1Point = Secp256k1Operations.multiplyG(rInt);
+    UnsignedByteArray c1 = UnsignedByteArray.of(Secp256k1Operations.serializeCompressed(c1Point));
+
+    // Generate 3 recipient key pairs
+    int n = 3;
+    List<UnsignedByteArray> pkList = new ArrayList<>();
+    List<UnsignedByteArray> c2List = new ArrayList<>();
+
+    BigInteger mInt = BigInteger.valueOf(amount.longValue());
+    ECPoint mG = Secp256k1Operations.multiplyG(mInt);
+
+    for (int i = 0; i < n; i++) {
+      // Generate a random private key for this recipient
+      BlindingFactor sk = blindingGen.generate();
+      BigInteger skInt = new BigInteger(1, sk.toBytes());
+      ECPoint pk = Secp256k1Operations.multiplyG(skInt);
+      pkList.add(UnsignedByteArray.of(Secp256k1Operations.serializeCompressed(pk)));
+
+      // C2_i = m * G + r * Pk_i
+      ECPoint rPk = Secp256k1Operations.multiply(pk, rInt);
+      ECPoint c2 = Secp256k1Operations.add(mG, rPk);
+      c2List.add(UnsignedByteArray.of(Secp256k1Operations.serializeCompressed(c2)));
     }
 
-    List<UnsignedByteArray> R = new ArrayList<>();
-    for (JsonNode rNode : vector.get("R")) {
-      R.add(UnsignedByteArray.fromHex(rNode.asText()));
-    }
-
-    List<UnsignedByteArray> S = new ArrayList<>();
-    for (JsonNode sNode : vector.get("S")) {
-      S.add(UnsignedByteArray.fromHex(sNode.asText()));
-    }
-
-    List<UnsignedByteArray> rArray = new ArrayList<>();
-    for (JsonNode rArrNode : vector.get("rArray")) {
-      rArray.add(UnsignedByteArray.fromHex(rArrNode.asText()));
-    }
-
-    UnsignedByteArray contextId = UnsignedByteArray.fromHex(contextIdHex);
+    UnsignedByteArray contextId = UnsignedByteArray.of(new byte[32]);
 
     // Generate proof with random nonces
-    UnsignedByteArray proof = generator.generateProof(amount, R, S, Pk, rArray, contextId);
+    UnsignedByteArray proof = generator.generateProof(amount, sharedRBytes, c1, c2List, pkList, contextId);
+
+    // Verify the proof size
+    assertThat(proof.length()).isEqualTo(SamePlaintextProofGenerator.proofSize(n));
 
     // Verify the proof
-    assertThat(verifier.verifyProof(proof, R, S, Pk, contextId)).isTrue();
+    assertThat(verifier.verifyProof(proof, c1, c2List, pkList, contextId)).isTrue();
+  }
+
+  @Test
+  void testVerifyFailsWithWrongAmount() {
+    SamePlaintextProofGenerator generator = new BcSamePlaintextProofGenerator();
+    SamePlaintextProofVerifier verifier = new BcSamePlaintextProofVerifier();
+
+    SecureRandomBlindingFactorGenerator blindingGen = new SecureRandomBlindingFactorGenerator();
+
+    UnsignedLong amount = UnsignedLong.valueOf(1000);
+    UnsignedLong wrongAmount = UnsignedLong.valueOf(2000);
+
+    BlindingFactor sharedR = blindingGen.generate();
+    UnsignedByteArray sharedRBytes = UnsignedByteArray.of(sharedR.toBytes());
+    BigInteger rInt = new BigInteger(1, sharedR.toBytes());
+
+    ECPoint c1Point = Secp256k1Operations.multiplyG(rInt);
+    UnsignedByteArray c1 = UnsignedByteArray.of(Secp256k1Operations.serializeCompressed(c1Point));
+
+    int n = 2;
+    List<UnsignedByteArray> pkList = new ArrayList<>();
+    List<UnsignedByteArray> c2List = new ArrayList<>();
+
+    BigInteger mInt = BigInteger.valueOf(amount.longValue());
+    ECPoint mG = Secp256k1Operations.multiplyG(mInt);
+
+    for (int i = 0; i < n; i++) {
+      BlindingFactor sk = blindingGen.generate();
+      BigInteger skInt = new BigInteger(1, sk.toBytes());
+      ECPoint pk = Secp256k1Operations.multiplyG(skInt);
+      pkList.add(UnsignedByteArray.of(Secp256k1Operations.serializeCompressed(pk)));
+
+      ECPoint rPk = Secp256k1Operations.multiply(pk, rInt);
+      ECPoint c2 = Secp256k1Operations.add(mG, rPk);
+      c2List.add(UnsignedByteArray.of(Secp256k1Operations.serializeCompressed(c2)));
+    }
+
+    UnsignedByteArray contextId = UnsignedByteArray.of(new byte[32]);
+
+    // Generate proof with wrong amount
+    UnsignedByteArray proof = generator.generateProof(wrongAmount, sharedRBytes, c1, c2List, pkList, contextId);
+
+    // Verification should fail because the proof was generated with a different amount
+    assertThat(verifier.verifyProof(proof, c1, c2List, pkList, contextId)).isFalse();
+  }
+
+  @Test
+  void testProofSize() {
+    assertThat(SamePlaintextProofGenerator.proofSize(2)).isEqualTo(33 * 3 + 64);
+    assertThat(SamePlaintextProofGenerator.proofSize(3)).isEqualTo(33 * 4 + 64);
+    assertThat(SamePlaintextProofGenerator.proofSize(5)).isEqualTo(33 * 6 + 64);
   }
 }

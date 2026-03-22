@@ -110,25 +110,23 @@ public class BcConfidentialMptSendProofGenerator implements ConfidentialMptSendP
 
     int numRecipients = recipients.size();
 
-    // Build lists for same-plaintext proof
-    List<UnsignedByteArray> c1List = new java.util.ArrayList<>();
+    // Build lists for same-plaintext proof (shared r: single c1, list of c2 and pk)
     List<UnsignedByteArray> c2List = new java.util.ArrayList<>();
     List<UnsignedByteArray> pkList = new java.util.ArrayList<>();
-    List<UnsignedByteArray> blindingsList = new java.util.ArrayList<>();
 
     UnsignedByteArray txBlindingBytes = UnsignedByteArray.of(txBlindingFactor.toBytes());
+    // All recipients share the same C1 since they use the same blinding factor r
+    UnsignedByteArray c1 = recipients.get(0).encryptedAmount().c1();
     for (int i = 0; i < numRecipients; i++) {
       MptConfidentialParty party = recipients.get(i);
       EncryptedAmount ciphertext = party.encryptedAmount();
-      c1List.add(ciphertext.c1());
       c2List.add(ciphertext.c2());
       pkList.add(party.publicKey().value());
-      blindingsList.add(txBlindingBytes);
     }
 
-    // 1. Generate same-plaintext multi proof
+    // 1. Generate same-plaintext proof with shared r
     UnsignedByteArray samePlaintextProof = samePlaintextProofGenerator.generateProof(
-      amount, c1List, c2List, pkList, blindingsList, context.value()
+      amount, txBlindingBytes, c1, c2List, pkList, context.value()
     );
 
     // 2. Generate amount linkage proof (uses the transaction blinding factor)

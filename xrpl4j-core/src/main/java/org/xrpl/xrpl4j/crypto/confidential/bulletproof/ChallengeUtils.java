@@ -42,6 +42,7 @@ public final class ChallengeUtils {
   private static final String POK_SK_DOMAIN = "MPT_POK_SK_REGISTER";
   private static final String SAME_PLAINTEXT_DOMAIN = "MPT_POK_SAME_PLAINTEXT_PROOF";
   private static final String PEDERSEN_LINK_DOMAIN = "MPT_ELGAMAL_PEDERSEN_LINK";
+  private static final String EQUALITY_SHARED_R_DOMAIN = "MPT_POK_SAME_PLAINTEXT_SHARED_R";
   private static final String PLAINTEXT_EQUALITY_DOMAIN = "MPT_POK_PLAINTEXT_PROOF";
 
   private ChallengeUtils() {
@@ -180,6 +181,96 @@ public final class ChallengeUtils {
     }
 
     // 3. Context
+    if (contextId != null) {
+      byte[] contextBytes = contextId.toByteArray();
+      System.arraycopy(contextBytes, 0, hashInput, offset, 32);
+      Arrays.fill(contextBytes, (byte) 0);
+    }
+
+    byte[] h = Hashing.sha256().hashBytes(hashInput).asBytes();
+
+    // secp256k1_mpt_scalar_reduce32
+    byte[] e = Secp256k1Operations.reduceToScalar(h);
+
+    // Clear intermediate values
+    Arrays.fill(hashInput, (byte) 0);
+    Arrays.fill(h, (byte) 0);
+
+    return UnsignedByteArray.of(e);
+  }
+
+  /**
+   * Builds the challenge hash for the Equality Shared R proof.
+   *
+   * <p>Port of {@code compute_challenge_shared_r} from proof_same_plaintext_multi_shared_r.c.</p>
+   *
+   * <p>The challenge is computed as:
+   * {@code e = reduce(SHA256("MPT_POK_SAME_PLAINTEXT_SHARED_R" || C1 || {C2_i, Pk_i} || Tr || {Tm_i} [|| contextId])) mod n}</p>
+   *
+   * @param c1        The shared C1 point (33 bytes compressed).
+   * @param c2        List of C2 points, each 33 bytes compressed.
+   * @param pk        List of public keys, each 33 bytes compressed.
+   * @param tr        The Tr commitment point (33 bytes compressed).
+   * @param tm        List of Tm commitment points, each 33 bytes compressed.
+   * @param contextId The optional 32-byte context identifier. Can be null.
+   *
+   * @return A 32-byte challenge scalar (reduced mod curve order).
+   */
+  public static UnsignedByteArray buildEqualitySharedRChallenge(
+    final UnsignedByteArray c1,
+    final List<UnsignedByteArray> c2,
+    final List<UnsignedByteArray> pk,
+    final UnsignedByteArray tr,
+    final List<UnsignedByteArray> tm,
+    final UnsignedByteArray contextId
+  ) {
+    int n = c2.size();
+    byte[] domainBytes = EQUALITY_SHARED_R_DOMAIN.getBytes(StandardCharsets.UTF_8);
+
+    // Calculate total size: domain + C1 + n*(C2+Pk) + Tr + n*Tm + optional contextId
+    int contextIdLength = (contextId != null) ? 32 : 0;
+    int totalSize = domainBytes.length + 33 + (n * 2 * 33) + 33 + (n * 33) + contextIdLength;
+    byte[] hashInput = new byte[totalSize];
+    int offset = 0;
+
+    // Domain
+    System.arraycopy(domainBytes, 0, hashInput, offset, domainBytes.length);
+    offset += domainBytes.length;
+
+    // C1
+    byte[] c1Bytes = c1.toByteArray();
+    System.arraycopy(c1Bytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(c1Bytes, (byte) 0);
+
+    // {C2_i, Pk_i}
+    for (int i = 0; i < n; i++) {
+      byte[] c2Bytes = c2.get(i).toByteArray();
+      System.arraycopy(c2Bytes, 0, hashInput, offset, 33);
+      offset += 33;
+      Arrays.fill(c2Bytes, (byte) 0);
+
+      byte[] pkBytes = pk.get(i).toByteArray();
+      System.arraycopy(pkBytes, 0, hashInput, offset, 33);
+      offset += 33;
+      Arrays.fill(pkBytes, (byte) 0);
+    }
+
+    // Tr
+    byte[] trBytes = tr.toByteArray();
+    System.arraycopy(trBytes, 0, hashInput, offset, 33);
+    offset += 33;
+    Arrays.fill(trBytes, (byte) 0);
+
+    // {Tm_i}
+    for (int i = 0; i < n; i++) {
+      byte[] tmBytes = tm.get(i).toByteArray();
+      System.arraycopy(tmBytes, 0, hashInput, offset, 33);
+      offset += 33;
+      Arrays.fill(tmBytes, (byte) 0);
+    }
+
+    // Context
     if (contextId != null) {
       byte[] contextBytes = contextId.toByteArray();
       System.arraycopy(contextBytes, 0, hashInput, offset, 32);

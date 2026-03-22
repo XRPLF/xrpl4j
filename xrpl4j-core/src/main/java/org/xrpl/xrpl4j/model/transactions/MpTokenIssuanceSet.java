@@ -62,8 +62,8 @@ public interface MpTokenIssuanceSet extends Transaction {
    *
    * @return An optionally-present hex-encoded {@link String}.
    */
-  @JsonProperty("IssuerElGamalPublicKey")
-  Optional<String> issuerElGamalPublicKey();
+  @JsonProperty("IssuerEncryptionKey")
+  Optional<String> issuerEncryptionKey();
 
   /**
    * The 33-byte EC-ElGamal public key used for regulatory oversight (if applicable).
@@ -73,7 +73,7 @@ public interface MpTokenIssuanceSet extends Transaction {
    *
    * @return An optionally-present hex-encoded {@link String}.
    */
-  @JsonProperty("AuditorElGamalPublicKey")
-  Optional<String> auditorElGamalPublicKey();
+  @JsonProperty("AuditorEncryptionKey")
+  Optional<String> auditorEncryptionKey();
 
 }

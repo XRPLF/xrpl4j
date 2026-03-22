@@ -92,18 +92,18 @@ public final class Secp256k1Operations {
   // ============================================================================
 
   /**
-   * Calculates the expected proof size for a same-plaintext multi proof.
+   * Calculates the expected proof size for a same-plaintext shared-r proof.
    *
-   * <p>Port of {@code secp256k1_mpt_prove_same_plaintext_multi_size} from proof_same_plaintext_multi.c.</p>
+   * <p>Port of {@code secp256k1_mpt_prove_equality_shared_r_size} from proof_same_plaintext_multi_shared_r.c.</p>
    *
-   * <p>Formula: (1 Tm + 2N Tr) * 33 + (1 sm + N sr) * 32 = ((1 + 2*n) * 33) + ((1 + n) * 32)</p>
+   * <p>Formula: Tr (33) + N * Tm (N*33) + sm (32) + sr (32) = 33 * (N + 1) + 64</p>
    *
    * @param numCiphertexts The number of ciphertexts (recipients).
    *
    * @return The expected proof size in bytes.
    */
   public static int samePlaintextMultiProofSize(int numCiphertexts) {
-    return ((1 + 2 * numCiphertexts) * 33) + ((1 + numCiphertexts) * 32);
+    return 33 * (numCiphertexts + 1) + 64;
   }
 
   // ============================================================================

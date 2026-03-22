@@ -26,55 +26,54 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import java.util.List;
 
 /**
- * Port of {@code secp256k1_mpt_prove_same_plaintext_multi} from proof_same_plaintext_multi.c.
+ * Port of {@code secp256k1_mpt_prove_equality_shared_r} from proof_same_plaintext_multi_shared_r.c.
  *
- * <p>Generates a Zero-Knowledge Proof that N ElGamal ciphertexts all encrypt the same plaintext amount.</p>
+ * <p>Generates a Zero-Knowledge Proof that N ElGamal ciphertexts all encrypt the same plaintext amount,
+ * where all ciphertexts share a single randomness value {@code r} (and thus a single C1 point).</p>
  *
- * <p>The proof format is: Tm (33 bytes) || TrG[0..N-1] (N*33 bytes) || TrP[0..N-1] (N*33 bytes)
- * || sm (32 bytes) || sr[0..N-1] (N*32 bytes).</p>
+ * <p>The proof format is: Tr (33 bytes) || Tm[0..N-1] (N*33 bytes) || sm (32 bytes) || sr (32 bytes).</p>
  *
- * <p>Total size: (1 + 2N) * 33 + (1 + N) * 32 bytes.</p>
+ * <p>Total size: 33 * (N + 1) + 64 bytes.</p>
  */
 @SuppressWarnings("checkstyle")
 public interface SamePlaintextProofGenerator {
 
   /**
-   * Generates a Same Plaintext Multi proof.
+   * Generates a Same Plaintext proof with shared randomness.
    *
-   * <p>R and S arrays are linked by index - R[i] and S[i] form the ciphertext for participant i.</p>
+   * <p>All ciphertexts share the same C1 point because they use the same blinding factor {@code sharedR}.</p>
    *
    * @param amount    The plaintext amount (witness).
-   * @param R         List of R points (c1 from ciphertexts), each 33 bytes compressed.
-   * @param S         List of S points (c2 from ciphertexts), each 33 bytes compressed.
-   * @param Pk        List of public keys, each 33 bytes compressed.
-   * @param rArray    List of blinding factors (randomness), each 32 bytes.
+   * @param sharedR   The shared blinding factor (randomness), 32 bytes.
+   * @param c1        The shared C1 point (r * G), 33 bytes compressed.
+   * @param c2List    List of C2 points (one per recipient), each 33 bytes compressed.
+   * @param pkList    List of public keys (one per recipient), each 33 bytes compressed.
    * @param contextId The optional 32-byte context identifier. Can be null.
    *
    * @return The proof bytes.
    *
    * @throws IllegalStateException    if proof generation fails.
-   * @throws IllegalArgumentException if array sizes don't match or are less than 2.
+   * @throws IllegalArgumentException if list sizes don't match or are less than 2.
    */
   UnsignedByteArray generateProof(
     UnsignedLong amount,
-    List<UnsignedByteArray> R,
-    List<UnsignedByteArray> S,
-    List<UnsignedByteArray> Pk,
-    List<UnsignedByteArray> rArray,
+    UnsignedByteArray sharedR,
+    UnsignedByteArray c1,
+    List<UnsignedByteArray> c2List,
+    List<UnsignedByteArray> pkList,
     UnsignedByteArray contextId
   );
 
   /**
    * Computes the proof size for N participants.
    *
-   * <p>Format: (1 Tm + 2N Tr) * 33 + (1 sm + N sr) * 32</p>
+   * <p>Format: Tr (33) + N * Tm (N*33) + sm (32) + sr (32) = 33 * (N + 1) + 64</p>
    *
    * @param n The number of participants.
    *
    * @return The proof size in bytes.
    */
   static int proofSize(int n) {
-    return ((1 + 2 * n) * 33) + ((1 + n) * 32);
+    return 33 * (n + 1) + 64;
   }
 }
-

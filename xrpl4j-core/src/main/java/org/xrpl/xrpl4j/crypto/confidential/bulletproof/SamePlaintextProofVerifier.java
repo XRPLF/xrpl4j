@@ -25,34 +25,34 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import java.util.List;
 
 /**
- * Port of {@code secp256k1_mpt_verify_same_plaintext_multi} from proof_same_plaintext_multi.c.
+ * Port of {@code secp256k1_mpt_verify_equality_shared_r} from proof_same_plaintext_multi_shared_r.c.
  *
- * <p>Verifies a Zero-Knowledge Proof that N ElGamal ciphertexts all encrypt the same plaintext amount.</p>
+ * <p>Verifies a Zero-Knowledge Proof that N ElGamal ciphertexts all encrypt the same plaintext amount,
+ * where all ciphertexts share a single randomness value {@code r} (and thus a single C1 point).</p>
  */
 @SuppressWarnings("checkstyle")
 public interface SamePlaintextProofVerifier {
 
   /**
-   * Verifies a Same Plaintext Multi proof.
+   * Verifies a Same Plaintext proof with shared randomness.
    *
-   * <p>R and S arrays are linked by index - R[i] and S[i] form the ciphertext for participant i.</p>
+   * <p>All ciphertexts share the same C1 point.</p>
    *
    * @param proof     The proof bytes.
-   * @param R         List of R points (c1 from ciphertexts), each 33 bytes compressed.
-   * @param S         List of S points (c2 from ciphertexts), each 33 bytes compressed.
-   * @param Pk        List of public keys, each 33 bytes compressed.
+   * @param c1        The shared C1 point (r * G), 33 bytes compressed.
+   * @param c2List    List of C2 points (one per recipient), each 33 bytes compressed.
+   * @param pkList    List of public keys (one per recipient), each 33 bytes compressed.
    * @param contextId The optional 32-byte context identifier. Can be null.
    *
    * @return true if the proof is valid, false otherwise.
    *
-   * @throws IllegalArgumentException if array sizes don't match or are less than 2.
+   * @throws IllegalArgumentException if list sizes don't match or are less than 2.
    */
   boolean verifyProof(
     UnsignedByteArray proof,
-    List<UnsignedByteArray> R,
-    List<UnsignedByteArray> S,
-    List<UnsignedByteArray> Pk,
+    UnsignedByteArray c1,
+    List<UnsignedByteArray> c2List,
+    List<UnsignedByteArray> pkList,
     UnsignedByteArray contextId
   );
 }
-

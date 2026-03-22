@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.codec.binary.definitions;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -35,6 +36,7 @@ import java.util.Map;
 @Immutable
 @JsonSerialize(as = ImmutableDefinitions.class)
 @JsonDeserialize(as = ImmutableDefinitions.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public interface Definitions {
 
   /**

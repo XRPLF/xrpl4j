@@ -109,7 +109,7 @@ public interface ConfidentialMptSend extends Transaction {
   String balanceCommitment();
 
   /**
-   * Ciphertext for the auditor. Required if {@code sfAuditorElGamalPublicKey} is present on the issuance.
+   * Ciphertext for the auditor. Required if {@code sfAuditorEncryptionKey} is present on the issuance.
    *
    * @return An optionally-present hex-encoded {@link String} containing the ciphertext.
    */

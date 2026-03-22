@@ -14,7 +14,7 @@ import java.util.Optional;
  * spending balance (CB_S) before use.
  *
  * <p>This transaction also serves as the opt-in mechanism for confidential MPT participation: by executing it
- * (including a zero-amount conversion), a holder's HolderElGamalPublicKey is recorded on their MPToken object, enabling
+ * (including a zero-amount conversion), a holder's HolderEncryptionKey is recorded on their MPToken object, enabling
  * the holder to receive and manage confidential funds.</p>
  *
  * <p>This transaction is a self-conversion only. Issuers introduce supply exclusively through existing XLS-33
@@ -63,15 +63,15 @@ public interface ConfidentialMptConvert extends Transaction {
   MpTokenNumericAmount mptAmount();
 
   /**
-   * The holder's ElGamal public key. Mandatory if the account has not yet registered a key (initialization). Forbidden
+   * The holder's encryption key. Mandatory if the account has not yet registered a key (initialization). Forbidden
    * if a key is already registered.
    *
    * <p>This is a 64-byte hex-encoded string representing the ElGamal public key.</p>
    *
    * @return An optionally-present hex-encoded {@link String}.
    */
-  @JsonProperty("HolderElGamalPublicKey")
-  Optional<String> holderElGamalPublicKey();
+  @JsonProperty("HolderEncryptionKey")
+  Optional<String> holderEncryptionKey();
 
   /**
    * ElGamal ciphertext credited to the holder's confidential inbox balance (CB_IN).
@@ -90,7 +90,7 @@ public interface ConfidentialMptConvert extends Transaction {
   String issuerEncryptedAmount();
 
   /**
-   * ElGamal ciphertext for the auditor. Required if {@code sfAuditorElGamalPublicKey} is present on the issuance.
+   * ElGamal ciphertext for the auditor. Required if {@code sfAuditorEncryptionKey} is present on the issuance.
    *
    * @return An optionally-present hex-encoded {@link String} containing the ciphertext.
    */
@@ -108,7 +108,7 @@ public interface ConfidentialMptConvert extends Transaction {
 
   /**
    * A Schnorr Proof of Knowledge (PoK): proves the knowledge of the private key for the provided ElGamal Public Key.
-   * Required when registering a new HolderElGamalPublicKey.
+   * Required when registering a new HolderEncryptionKey.
    *
    * <p>This is a 65-byte hex-encoded string (130 hex characters).</p>
    *

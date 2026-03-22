@@ -37,7 +37,7 @@ class ConfidentialMptConvertTest extends AbstractJsonTest {
       )
       .mpTokenIssuanceId(MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41"))
       .mptAmount(MpTokenNumericAmount.of(1000L))
-      .holderElGamalPublicKey(HOLDER_ELGAMAL_PUB_KEY)
+      .holderEncryptionKey(HOLDER_ELGAMAL_PUB_KEY)
       .holderEncryptedAmount(HOLDER_ENCRYPTED_AMOUNT)
       .issuerEncryptedAmount(ISSUER_ENCRYPTED_AMOUNT)
       .auditorEncryptedAmount(AUDITOR_ENCRYPTED_AMOUNT)
@@ -55,7 +55,7 @@ class ConfidentialMptConvertTest extends AbstractJsonTest {
         "\"ED0C0B9B7D5F80868A701693D7C994385EB4DC661D9E7A2DD95E8199EDC5C211E7\",\n" +
         "  \"MPTokenIssuanceID\" : \"00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41\",\n" +
         "  \"MPTAmount\" : \"1000\",\n" +
-        "  \"HolderElGamalPublicKey\" : \"" + HOLDER_ELGAMAL_PUB_KEY + "\",\n" +
+        "  \"HolderEncryptionKey\" : \"" + HOLDER_ELGAMAL_PUB_KEY + "\",\n" +
         "  \"HolderEncryptedAmount\" : \"" + HOLDER_ENCRYPTED_AMOUNT + "\",\n" +
         "  \"IssuerEncryptedAmount\" : \"" + ISSUER_ENCRYPTED_AMOUNT + "\",\n" +
         "  \"AuditorEncryptedAmount\" : \"" + AUDITOR_ENCRYPTED_AMOUNT + "\",\n" +

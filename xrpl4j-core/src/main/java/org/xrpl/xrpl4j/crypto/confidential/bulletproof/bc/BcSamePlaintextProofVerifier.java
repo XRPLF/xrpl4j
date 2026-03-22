@@ -37,7 +37,7 @@ import java.util.Objects;
 /**
  * BouncyCastle implementation of {@link SamePlaintextProofVerifier}.
  *
- * <p>Port of {@code secp256k1_mpt_verify_same_plaintext_multi} from proof_same_plaintext_multi.c.</p>
+ * <p>Port of {@code secp256k1_mpt_verify_equality_shared_r} from proof_same_plaintext_multi_shared_r.c.</p>
  */
 @SuppressWarnings("checkstyle")
 public class BcSamePlaintextProofVerifier implements SamePlaintextProofVerifier {
@@ -51,20 +51,19 @@ public class BcSamePlaintextProofVerifier implements SamePlaintextProofVerifier 
   @Override
   public boolean verifyProof(
     final UnsignedByteArray proof,
-    final List<UnsignedByteArray> R,
-    final List<UnsignedByteArray> S,
-    final List<UnsignedByteArray> Pk,
+    final UnsignedByteArray c1,
+    final List<UnsignedByteArray> c2List,
+    final List<UnsignedByteArray> pkList,
     final UnsignedByteArray contextId
   ) {
     Objects.requireNonNull(proof, "proof must not be null");
-    Objects.requireNonNull(R, "R must not be null");
-    Objects.requireNonNull(S, "S must not be null");
-    Objects.requireNonNull(Pk, "Pk must not be null");
+    Objects.requireNonNull(c1, "c1 must not be null");
+    Objects.requireNonNull(c2List, "c2List must not be null");
+    Objects.requireNonNull(pkList, "pkList must not be null");
 
-    int n = R.size();
+    int n = c2List.size();
     Preconditions.checkArgument(n >= 2, "Must have at least 2 participants, but had %s", n);
-    Preconditions.checkArgument(S.size() == n, "S size must match R size");
-    Preconditions.checkArgument(Pk.size() == n, "Pk size must match R size");
+    Preconditions.checkArgument(pkList.size() == n, "pkList size must match c2List size");
 
     int expectedSize = SamePlaintextProofGenerator.proofSize(n);
     if (proof.length() != expectedSize) {
@@ -75,31 +74,21 @@ public class BcSamePlaintextProofVerifier implements SamePlaintextProofVerifier 
     int offset = 0;
 
     try {
-      // 1. Deserialize
+      // 1. Deserialize: Tr (33 bytes) || Tm[0..N-1] (N*33 bytes) || sm (32 bytes) || sr (32 bytes)
 
-      // Tm
-      byte[] TmBytes = Arrays.copyOfRange(proofBytes, offset, offset + 33);
+      // Tr
+      byte[] TrBytes = Arrays.copyOfRange(proofBytes, offset, offset + 33);
       offset += 33;
-      ECPoint Tm = Secp256k1Operations.deserialize(TmBytes);
+      ECPoint Tr = Secp256k1Operations.deserialize(TrBytes);
 
-      // TrG[0..N-1]
-      List<UnsignedByteArray> TrGList = new ArrayList<>(n);
-      ECPoint[] TrG = new ECPoint[n];
+      // Tm[0..N-1]
+      List<UnsignedByteArray> TmList = new ArrayList<>(n);
+      ECPoint[] Tm = new ECPoint[n];
       for (int i = 0; i < n; i++) {
-        byte[] trgBytes = Arrays.copyOfRange(proofBytes, offset, offset + 33);
+        byte[] tmBytes = Arrays.copyOfRange(proofBytes, offset, offset + 33);
         offset += 33;
-        TrG[i] = Secp256k1Operations.deserialize(trgBytes);
-        TrGList.add(UnsignedByteArray.of(trgBytes));
-      }
-
-      // TrP[0..N-1]
-      List<UnsignedByteArray> TrPList = new ArrayList<>(n);
-      ECPoint[] TrP = new ECPoint[n];
-      for (int i = 0; i < n; i++) {
-        byte[] trpBytes = Arrays.copyOfRange(proofBytes, offset, offset + 33);
-        offset += 33;
-        TrP[i] = Secp256k1Operations.deserialize(trpBytes);
-        TrPList.add(UnsignedByteArray.of(trpBytes));
+        Tm[i] = Secp256k1Operations.deserialize(tmBytes);
+        TmList.add(UnsignedByteArray.of(tmBytes));
       }
 
       // sm
@@ -110,44 +99,44 @@ public class BcSamePlaintextProofVerifier implements SamePlaintextProofVerifier 
         return false;
       }
 
-      // 2. Recompute Challenge
-      UnsignedByteArray eUba = ChallengeUtils.buildSamePlaintextChallenge(
-        R, S, Pk, UnsignedByteArray.of(TmBytes), TrGList, TrPList, contextId
+      // sr
+      byte[] sr = Arrays.copyOfRange(proofBytes, offset, offset + 32);
+      offset += 32;
+      BigInteger srInt = new BigInteger(1, sr);
+      if (!Secp256k1Operations.isValidPrivateKey(srInt)) {
+        return false;
+      }
+
+      // 2. Recompute challenge
+      UnsignedByteArray eUba = ChallengeUtils.buildEqualitySharedRChallenge(
+        c1, c2List, pkList, UnsignedByteArray.of(TrBytes), TmList, contextId
       );
       byte[] e = eUba.toByteArray();
       BigInteger eInt = new BigInteger(1, e);
 
-      // 3. Verify Equations
+      // 3. Verify equation 1: sr * G == Tr + e * C1
+      ECPoint C1Point = Secp256k1Operations.deserialize(c1.toByteArray());
+      ECPoint lhs1 = Secp256k1Operations.multiplyG(srInt);
+      ECPoint eC1 = Secp256k1Operations.multiply(C1Point, eInt);
+      ECPoint rhs1 = Secp256k1Operations.add(Tr, eC1);
+      if (!lhs1.equals(rhs1)) {
+        return false;
+      }
 
-      // Precompute s_m * G (Shared across all i)
+      // Precompute sm * G (shared across all i)
       ECPoint SmG = Secp256k1Operations.multiplyG(smInt);
 
+      // 4. For each i: sm * G + sr * Pk_i == Tm_i + e * C2_i
       for (int i = 0; i < n; i++) {
-        // Read s_ri
-        byte[] sri = Arrays.copyOfRange(proofBytes, offset, offset + 32);
-        offset += 32;
-        BigInteger sriInt = new BigInteger(1, sri);
-        if (!Secp256k1Operations.isValidPrivateKey(sriInt)) {
-          return false;
-        }
+        ECPoint Pki = Secp256k1Operations.deserialize(pkList.get(i).toByteArray());
+        ECPoint C2i = Secp256k1Operations.deserialize(c2List.get(i).toByteArray());
 
-        ECPoint Ri = Secp256k1Operations.deserialize(R.get(i).toByteArray());
-        ECPoint Si = Secp256k1Operations.deserialize(S.get(i).toByteArray());
-        ECPoint Pki = Secp256k1Operations.deserialize(Pk.get(i).toByteArray());
+        ECPoint srPki = Secp256k1Operations.multiply(Pki, srInt);
+        ECPoint lhs2 = Secp256k1Operations.add(SmG, srPki);
 
-        // Eq 1: s_ri * G == TrG_i + e * R_i
-        ECPoint lhs1 = Secp256k1Operations.multiplyG(sriInt);
-        ECPoint eRi = Secp256k1Operations.multiply(Ri, eInt);
-        ECPoint rhs1 = Secp256k1Operations.add(TrG[i], eRi);
-        if (!lhs1.equals(rhs1)) {
-          return false;
-        }
+        ECPoint eC2i = Secp256k1Operations.multiply(C2i, eInt);
+        ECPoint rhs2 = Secp256k1Operations.add(Tm[i], eC2i);
 
-        // Eq 2: s_m * G + s_ri * Pk_i == Tm + TrP_i + e * S_i
-        ECPoint sriPki = Secp256k1Operations.multiply(Pki, sriInt);
-        ECPoint lhs2 = Secp256k1Operations.add(SmG, sriPki);
-        ECPoint eSi = Secp256k1Operations.multiply(Si, eInt);
-        ECPoint rhs2 = Secp256k1Operations.add(Secp256k1Operations.add(Tm, TrP[i]), eSi);
         if (!lhs2.equals(rhs2)) {
           return false;
         }
@@ -161,4 +150,3 @@ public class BcSamePlaintextProofVerifier implements SamePlaintextProofVerifier 
     }
   }
 }
-

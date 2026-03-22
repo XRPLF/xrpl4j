@@ -40,7 +40,7 @@ import java.util.Objects;
 /**
  * BouncyCastle implementation of {@link SamePlaintextProofGenerator}.
  *
- * <p>Port of {@code secp256k1_mpt_prove_same_plaintext_multi} from proof_same_plaintext_multi.c.</p>
+ * <p>Port of {@code secp256k1_mpt_prove_equality_shared_r} from proof_same_plaintext_multi_shared_r.c.</p>
  */
 @SuppressWarnings("checkstyle")
 public class BcSamePlaintextProofGenerator implements SamePlaintextProofGenerator {
@@ -68,90 +68,79 @@ public class BcSamePlaintextProofGenerator implements SamePlaintextProofGenerato
   @Override
   public UnsignedByteArray generateProof(
     final UnsignedLong amount,
-    final List<UnsignedByteArray> R,
-    final List<UnsignedByteArray> S,
-    final List<UnsignedByteArray> Pk,
-    final List<UnsignedByteArray> rArray,
+    final UnsignedByteArray sharedR,
+    final UnsignedByteArray c1,
+    final List<UnsignedByteArray> c2List,
+    final List<UnsignedByteArray> pkList,
     final UnsignedByteArray contextId
   ) {
     Objects.requireNonNull(amount, "amount must not be null");
-    Objects.requireNonNull(R, "R must not be null");
-    Objects.requireNonNull(S, "S must not be null");
-    Objects.requireNonNull(Pk, "Pk must not be null");
-    Objects.requireNonNull(rArray, "rArray must not be null");
+    Objects.requireNonNull(sharedR, "sharedR must not be null");
+    Objects.requireNonNull(c1, "c1 must not be null");
+    Objects.requireNonNull(c2List, "c2List must not be null");
+    Objects.requireNonNull(pkList, "pkList must not be null");
 
-    int n = R.size();
+    int n = c2List.size();
     Preconditions.checkArgument(n >= 2, "Must have at least 2 participants, but had %s", n);
-    Preconditions.checkArgument(S.size() == n, "S size must match R size");
-    Preconditions.checkArgument(Pk.size() == n, "Pk size must match R size");
-    Preconditions.checkArgument(rArray.size() == n, "rArray size must match R size");
+    Preconditions.checkArgument(pkList.size() == n, "pkList size must match c2List size");
 
-    // Validate input blinding factors (matches C's implicit validation via r_array usage)
-    for (int i = 0; i < n; i++) {
-      BigInteger ri = new BigInteger(1, rArray.get(i).toByteArray());
-      if (!Secp256k1Operations.isValidPrivateKey(ri)) {
-        throw new IllegalArgumentException("rArray[" + i + "] is not a valid scalar");
-      }
+    // Validate shared blinding factor
+    BigInteger rInt = new BigInteger(1, sharedR.toByteArray());
+    if (!Secp256k1Operations.isValidPrivateKey(rInt)) {
+      throw new IllegalArgumentException("sharedR is not a valid scalar");
     }
 
     // Intermediate values to clear
     byte[] km = null;
-    byte[][] krFlat = new byte[n][];
+    byte[] kr = null;
     byte[] mScalar = null;
     byte[] sm = null;
+    byte[] sr = null;
     byte[] e = null;
 
     try {
-      // 1. Generate Randomness & Commitments
-
-      // km -> Tm = km * G
-      // if (!secp256k1_ec_pubkey_create(ctx, &Tm, k_m)) goto cleanup;
+      // 1. Generate nonces: km (for amount), kr (for shared randomness)
       BlindingFactor nonceKm = blindingFactorGenerator.generate();
       km = nonceKm.toBytes();
       BigInteger kmInt = new BigInteger(1, km);
-      ECPoint Tm = Secp256k1Operations.multiplyG(kmInt);
-      if (Tm.isInfinity()) {
-        throw new IllegalStateException("Tm is point at infinity");
+
+      BlindingFactor nonceKr = blindingFactorGenerator.generate();
+      kr = nonceKr.toBytes();
+      BigInteger krInt = new BigInteger(1, kr);
+
+      // 2. Compute Tr = kr * G
+      ECPoint Tr = Secp256k1Operations.multiplyG(krInt);
+      if (Tr.isInfinity()) {
+        throw new IllegalStateException("Tr is point at infinity");
       }
-      byte[] TmBytes = Secp256k1Operations.serializeCompressed(Tm);
+      byte[] TrBytes = Secp256k1Operations.serializeCompressed(Tr);
 
-      List<UnsignedByteArray> TrGList = new ArrayList<>(n);
-      List<UnsignedByteArray> TrPList = new ArrayList<>(n);
+      // 3. Precompute kmG = km * G
+      ECPoint kmG = Secp256k1Operations.multiplyG(kmInt);
+      if (kmG.isInfinity()) {
+        throw new IllegalStateException("kmG is point at infinity");
+      }
 
+      // 4. For each i: Tm_i = kmG + kr * Pk_i
+      List<UnsignedByteArray> TmList = new ArrayList<>(n);
       for (int i = 0; i < n; i++) {
-        // kri -> TrG = kri * G
-        // if (!secp256k1_ec_pubkey_create(ctx, &TrG[i], kri)) goto cleanup;
-        BlindingFactor nonceKri = blindingFactorGenerator.generate();
-        krFlat[i] = nonceKri.toBytes();
-        BigInteger kriInt = new BigInteger(1, krFlat[i]);
-        ECPoint TrGi = Secp256k1Operations.multiplyG(kriInt);
-        if (TrGi.isInfinity()) {
-          throw new IllegalStateException("TrG[" + i + "] is point at infinity");
+        ECPoint PkPoint = Secp256k1Operations.deserialize(pkList.get(i).toByteArray());
+        ECPoint krPki = Secp256k1Operations.multiply(PkPoint, krInt);
+        ECPoint Tmi = Secp256k1Operations.add(kmG, krPki);
+        if (Tmi.isInfinity()) {
+          throw new IllegalStateException("Tm[" + i + "] is point at infinity");
         }
-        TrGList.add(UnsignedByteArray.of(Secp256k1Operations.serializeCompressed(TrGi)));
-
-        // TrP = kri * Pk_i
-        // if (!secp256k1_ec_pubkey_tweak_mul(ctx, &TrP[i], kri)) goto cleanup;
-        ECPoint PkPoint = Secp256k1Operations.deserialize(Pk.get(i).toByteArray());
-        ECPoint TrPi = Secp256k1Operations.multiply(PkPoint, kriInt);
-        if (TrPi.isInfinity()) {
-          throw new IllegalStateException("TrP[" + i + "] is point at infinity");
-        }
-        TrPList.add(UnsignedByteArray.of(Secp256k1Operations.serializeCompressed(TrPi)));
+        TmList.add(UnsignedByteArray.of(Secp256k1Operations.serializeCompressed(Tmi)));
       }
 
-      // 2. Compute Challenge
-      UnsignedByteArray eUba = ChallengeUtils.buildSamePlaintextChallenge(
-        R, S, Pk, UnsignedByteArray.of(TmBytes), TrGList, TrPList, contextId
+      // 5. Compute challenge e
+      UnsignedByteArray eUba = ChallengeUtils.buildEqualitySharedRChallenge(
+        c1, c2List, pkList, UnsignedByteArray.of(TrBytes), TmList, contextId
       );
       e = eUba.toByteArray();
       BigInteger eInt = new BigInteger(1, e);
 
-      // 3. Compute Responses
-
-      // s_m = k_m + e * m (mod n)
-      // if (!secp256k1_ec_seckey_tweak_mul(ctx, m_scalar, e)) goto cleanup;
-      // if (!secp256k1_ec_seckey_tweak_add(ctx, s_m, m_scalar)) goto cleanup;
+      // 6. Compute responses: sm = km + e * m (mod n), sr = kr + e * r (mod n)
       mScalar = Secp256k1Operations.unsignedLongToScalar(amount);
       BigInteger mInt = new BigInteger(1, mScalar);
       BigInteger smInt = kmInt.add(eInt.multiply(mInt)).mod(Secp256k1Operations.getCurveOrder());
@@ -160,26 +149,25 @@ public class BcSamePlaintextProofGenerator implements SamePlaintextProofGenerato
       }
       sm = Secp256k1Operations.toBytes32(smInt);
 
-      // Serialize proof: Tm || TrG[0..N-1] || TrP[0..N-1] || sm || sr[0..N-1]
+      BigInteger srInt = krInt.add(eInt.multiply(rInt)).mod(Secp256k1Operations.getCurveOrder());
+      if (!Secp256k1Operations.isValidPrivateKey(srInt)) {
+        throw new IllegalStateException("s_r is not a valid scalar");
+      }
+      sr = Secp256k1Operations.toBytes32(srInt);
+
+      // 7. Serialize: Tr (33 bytes) || Tm[0..N-1] (N*33 bytes) || sm (32 bytes) || sr (32 bytes)
       int proofSize = SamePlaintextProofGenerator.proofSize(n);
       byte[] proof = new byte[proofSize];
       int offset = 0;
 
-      // Tm
-      System.arraycopy(TmBytes, 0, proof, offset, 33);
+      // Tr
+      System.arraycopy(TrBytes, 0, proof, offset, 33);
       offset += 33;
 
-      // TrG[0..N-1]
+      // Tm[0..N-1]
       for (int i = 0; i < n; i++) {
-        byte[] trgBytes = TrGList.get(i).toByteArray();
-        System.arraycopy(trgBytes, 0, proof, offset, 33);
-        offset += 33;
-      }
-
-      // TrP[0..N-1]
-      for (int i = 0; i < n; i++) {
-        byte[] trpBytes = TrPList.get(i).toByteArray();
-        System.arraycopy(trpBytes, 0, proof, offset, 33);
+        byte[] tmBytes = TmList.get(i).toByteArray();
+        System.arraycopy(tmBytes, 0, proof, offset, 33);
         offset += 33;
       }
 
@@ -187,21 +175,8 @@ public class BcSamePlaintextProofGenerator implements SamePlaintextProofGenerato
       System.arraycopy(sm, 0, proof, offset, 32);
       offset += 32;
 
-      // sr[0..N-1]: s_ri = k_ri + e * r_i (mod n)
-      // if (!secp256k1_ec_seckey_tweak_mul(ctx, term, e)) goto cleanup;
-      // if (!secp256k1_ec_seckey_tweak_add(ctx, s_ri, term)) goto cleanup;
-      for (int i = 0; i < n; i++) {
-        BigInteger kriInt = new BigInteger(1, krFlat[i]);
-        BigInteger riInt = new BigInteger(1, rArray.get(i).toByteArray());
-        BigInteger sriInt = kriInt.add(eInt.multiply(riInt)).mod(Secp256k1Operations.getCurveOrder());
-        if (!Secp256k1Operations.isValidPrivateKey(sriInt)) {
-          throw new IllegalStateException("s_r[" + i + "] is not a valid scalar");
-        }
-        byte[] sri = Secp256k1Operations.toBytes32(sriInt);
-        System.arraycopy(sri, 0, proof, offset, 32);
-        offset += 32;
-        Arrays.fill(sri, (byte) 0);
-      }
+      // sr
+      System.arraycopy(sr, 0, proof, offset, 32);
 
       return UnsignedByteArray.of(proof);
 
@@ -210,10 +185,8 @@ public class BcSamePlaintextProofGenerator implements SamePlaintextProofGenerato
       if (km != null) {
         Arrays.fill(km, (byte) 0);
       }
-      for (int i = 0; i < n; i++) {
-        if (krFlat[i] != null) {
-          Arrays.fill(krFlat[i], (byte) 0);
-        }
+      if (kr != null) {
+        Arrays.fill(kr, (byte) 0);
       }
       if (mScalar != null) {
         Arrays.fill(mScalar, (byte) 0);
@@ -221,10 +194,12 @@ public class BcSamePlaintextProofGenerator implements SamePlaintextProofGenerato
       if (sm != null) {
         Arrays.fill(sm, (byte) 0);
       }
+      if (sr != null) {
+        Arrays.fill(sr, (byte) 0);
+      }
       if (e != null) {
         Arrays.fill(e, (byte) 0);
       }
     }
   }
 }
-

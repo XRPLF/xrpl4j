@@ -147,7 +147,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .flags(MpTokenIssuanceCreateFlags.builder()
         .tfMptCanTransfer(true)
         .tfMptCanClawback(true)
-        .tfMptCanPrivacy(true)
+        .tfMptCanConfidentialAmount(true)
         .build())
       .build();
 
@@ -165,7 +165,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ).node();
     assertThat(issuance.flags().lsfMptCanTransfer()).isTrue();
     assertThat(issuance.flags().lsfMptCanClawback()).isTrue();
-    assertThat(issuance.flags().lsfMptCanPrivacy()).isTrue();
+    assertThat(issuance.flags().lsfMptCanConfidentialAmount()).isTrue();
 
     // =====================================================================
     // 2. Register the issuer's ElGamal public key via MpTokenIssuanceSet.
@@ -184,7 +184,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .signingPublicKey(issuerKeyPair.publicKey())
       .lastLedgerSequence(lastLedgerSeq(issuerAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
-      .issuerElGamalPublicKey(issuerElGamalKeyPair.publicKey().base16Value())
+      .issuerEncryptionKey(issuerElGamalKeyPair.publicKey().base16Value())
       .build();
 
     signSubmitAndWait(issuanceSet, issuerKeyPair, MpTokenIssuanceSet.class);
@@ -272,7 +272,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(amountToConvert))
-      .holderElGamalPublicKey(holderElGamalKeyPair.publicKey().base16Value())
+      .holderEncryptionKey(holderElGamalKeyPair.publicKey().base16Value())
       .holderEncryptedAmount(holderEncryptedForConvert.toHex())
       .issuerEncryptedAmount(issuerEncryptedForConvert.toHex())
       .blindingFactor(convertBlindingFactor.hexValue())
@@ -358,7 +358,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .lastLedgerSequence(lastLedgerSeq(holder2AccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(UnsignedLong.ZERO))
-      .holderElGamalPublicKey(holder2ElGamalKeyPair.publicKey().base16Value())
+      .holderEncryptionKey(holder2ElGamalKeyPair.publicKey().base16Value())
       .holderEncryptedAmount(holder2EncryptedForConvert.toHex())
       .issuerEncryptedAmount(issuerEncryptedForHolder2Convert.toHex())
       .blindingFactor(holder2ConvertBlindingFactor.hexValue())

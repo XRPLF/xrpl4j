@@ -155,20 +155,20 @@ public class BcConfidentialMptSendProofVerifier implements ConfidentialMptSendPr
     ConfidentialMptSendContext context
   ) {
     int recipientCount = recipients.size();
-    List<UnsignedByteArray> c1List = new java.util.ArrayList<>();
+    // All recipients share the same C1 since they use the same blinding factor r
+    UnsignedByteArray c1 = recipients.get(0).encryptedAmount().c1();
     List<UnsignedByteArray> c2List = new java.util.ArrayList<>();
     List<UnsignedByteArray> pkList = new java.util.ArrayList<>();
 
     for (int i = 0; i < recipientCount; i++) {
       MptConfidentialParty party = recipients.get(i);
       EncryptedAmount ciphertext = party.encryptedAmount();
-      c1List.add(ciphertext.c1());
       c2List.add(ciphertext.c2());
       pkList.add(party.publicKey().value());
     }
 
     return samePlaintextProofVerifier.verifyProof(
-      UnsignedByteArray.of(proof), c1List, c2List, pkList, context.value()
+      UnsignedByteArray.of(proof), c1, c2List, pkList, context.value()
     );
   }
 

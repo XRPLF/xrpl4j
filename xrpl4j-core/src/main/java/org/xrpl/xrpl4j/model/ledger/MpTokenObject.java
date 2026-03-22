@@ -111,13 +111,13 @@ public interface MpTokenObject extends LedgerObject {
   Optional<String> ownerNode();
 
   /**
-   * The holder's ElGamal public key for confidential transfers.
+   * The holder's encryption key for confidential transfers.
    * Present after the holder has registered via ConfidentialMptConvert.
    *
    * @return An optionally-present hex-encoded {@link String}.
    */
-  @JsonProperty("HolderElGamalPublicKey")
-  Optional<String> holderElGamalPublicKey();
+  @JsonProperty("HolderEncryptionKey")
+  Optional<String> holderEncryptionKey();
 
   /**
    * The holder's confidential spending balance (encrypted).

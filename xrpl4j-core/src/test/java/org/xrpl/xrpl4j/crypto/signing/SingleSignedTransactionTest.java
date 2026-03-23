@@ -40,6 +40,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
+import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
@@ -76,9 +77,31 @@ class SingleSignedTransactionTest {
   }
 
   @Test
-  void value() {
+  void testHash() {
     assertThat(singleSingedTransaction.hash().value())
       .isEqualTo("3C9BE23F7820DDC3D93CF69A7E47C6A89FEB0EF27A1F25E62F87F9E1F7E6E910");
+  }
+
+  @Test
+  void testUnsignedAndSignedTransactionAccessors() {
+    Transaction unsigned = singleSingedTransaction.unsignedTransaction();
+    Transaction signed = singleSingedTransaction.signedTransaction();
+
+    // Verify unsigned transaction has no signature
+    assertThat(unsigned.transactionSignature()).isEmpty();
+    assertThat(unsigned.signers()).isEmpty();
+
+    // Verify signed transaction has the same fields as unsigned
+    assertThat(signed.account()).isEqualTo(unsigned.account());
+    assertThat(signed.fee()).isEqualTo(unsigned.fee());
+    assertThat(signed.sequence()).isEqualTo(unsigned.sequence());
+  }
+
+  @Test
+  void testSignatureAccessor() {
+    Signature signature = singleSingedTransaction.signature();
+    assertThat(signature).isNotNull();
+    assertThat(signature.value().hexValue()).isEqualTo(HEX_32_BYTES);
   }
 
   @Test
@@ -104,7 +127,7 @@ class SingleSignedTransactionTest {
 
   @Test
   void buildWithTransactionSignatureThrows() {
-    assertThrows(
+    IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class,
       () -> SingleSignedTransaction.<Payment>builder()
         .unsignedTransaction(Payment.builder()
@@ -131,9 +154,9 @@ class SingleSignedTransactionTest {
         .signature(Signature.builder()
           .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
           .build())
-        .build(),
-      "Single-sig transactions must not already be signed."
+        .build()
     );
+    assertThat(exception.getMessage()).isEqualTo("Transactions to be single-signed must not already be signed.");
   }
 
   @Test
@@ -145,7 +168,7 @@ class SingleSignedTransactionTest {
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "01"))
       .build();
 
-    assertThrows(
+    IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class,
       () -> SingleSignedTransaction.<Payment>builder()
         .unsignedTransaction(Payment.builder()
@@ -167,14 +190,14 @@ class SingleSignedTransactionTest {
         .signature(Signature.builder()
           .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
           .build())
-        .build(),
-      "Single-sig transaction must not have Signers."
+        .build()
     );
+    assertThat(exception.getMessage()).isEqualTo("Transactions to be single-signed must not have Signers.");
   }
 
   @Test
   void buildWithMultiSignPublicKeyThrows() {
-    assertThrows(
+    IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class,
       () -> SingleSignedTransaction.<Payment>builder()
         .unsignedTransaction(Payment.builder()
@@ -195,9 +218,9 @@ class SingleSignedTransactionTest {
         .signature(Signature.builder()
           .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
           .build())
-        .build(),
-      "Transactions to be single-signed must not set `signingPublicKey` to the multisig (empty) public key."
+        .build()
     );
+    assertThat(exception.getMessage()).isEqualTo("Transactions to be single-signed must not set `signingPublicKey` to the multisig (empty) public key.");
   }
 
 }

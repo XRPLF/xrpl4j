@@ -101,16 +101,17 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
       "Transactions to be signed must not already include a signature."
     );
 
-    Preconditions.checkArgument(
-      !this.signerSet().isEmpty(),
-      "Multisigned transaction must have at least one signer."
-    );
-
     // TODO: Once https://github.com/XRPLF/xrpl4j/pull/684 is merged, we should update this check to use the new
     // empty public key constant (and update the error message).
     Preconditions.checkArgument(
       this.unsignedTransaction().signingPublicKey().equals(PublicKey.MULTI_SIGN_PUBLIC_KEY),
       "Transactions to be multisigned must set `signingPublicKey` to an empty public key."
     );
+
+    Preconditions.checkArgument(
+      !this.signerSet().isEmpty(),
+      "Multisigned transaction must have at least one signer."
+    );
+
   }
 }

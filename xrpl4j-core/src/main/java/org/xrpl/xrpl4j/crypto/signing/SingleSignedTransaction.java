@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Check;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 /**
@@ -55,9 +56,17 @@ public interface SingleSignedTransaction<T extends Transaction> extends SignedTr
    */
   @Check
   default void check() {
+
     Preconditions.checkArgument(
-      !this.unsignedTransaction().transactionSignature().isPresent(),
-      "Transactions to be signed must not already include a signature."
+      this.unsignedTransaction().signers().isEmpty(),
+      "Single-sig transaction must not have Signers."
+    );
+
+    // TODO: Once https://github.com/XRPLF/xrpl4j/pull/684 is merged, we should update this check to use the new
+    // empty public key constant (and update the error message).
+    Preconditions.checkArgument(
+      !this.unsignedTransaction().signingPublicKey().equals(PublicKey.MULTI_SIGN_PUBLIC_KEY),
+      "Transactions to be single-signed must not set `signingPublicKey` to the multisig (empty) public key."
     );
   }
 

@@ -57,9 +57,15 @@ public interface SingleSignedTransaction<T extends Transaction> extends SignedTr
   @Check
   default void check() {
 
+    // signers are reserved for multisig
     Preconditions.checkArgument(
       this.unsignedTransaction().signers().isEmpty(),
-      "Single-sig transaction must not have Signers."
+      "Transactions to be single-signed must not have Signers."
+    );
+
+    Preconditions.checkArgument(
+      !this.unsignedTransaction().transactionSignature().isPresent(),
+      "Transactions to be single-signed must not already be signed."
     );
 
     // TODO: Once https://github.com/XRPLF/xrpl4j/pull/684 is merged, we should update this check to use the new

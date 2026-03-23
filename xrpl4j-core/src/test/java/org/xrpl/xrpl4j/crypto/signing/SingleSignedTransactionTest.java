@@ -220,7 +220,8 @@ class SingleSignedTransactionTest {
           .build())
         .build()
     );
-    assertThat(exception.getMessage()).isEqualTo("Transactions to be single-signed must not set `signingPublicKey` to the multisig (empty) public key.");
+    assertThat(exception.getMessage()).isEqualTo(
+      "Transactions to be single-signed must not set `signingPublicKey` to the multisig (empty) public key.");
   }
 
 }

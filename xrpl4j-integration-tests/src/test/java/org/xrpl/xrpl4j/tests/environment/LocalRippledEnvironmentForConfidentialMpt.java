@@ -58,9 +58,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * Environment that connects to a locally running rippled node in standalone mode.
  */
-public class LocalRippledEnvironmentForConfidentialMPT implements XrplEnvironment {
+public class LocalRippledEnvironmentForConfidentialMpt implements XrplEnvironment {
 
-  private static final Logger LOGGER = getLogger(LocalRippledEnvironmentForConfidentialMPT.class);
+  private static final Logger LOGGER = getLogger(LocalRippledEnvironmentForConfidentialMpt.class);
 
   /**
    * The URL of the locally running rippled node.
@@ -81,7 +81,7 @@ public class LocalRippledEnvironmentForConfidentialMPT implements XrplEnvironmen
   /**
    * No-args constructor that initializes the connection to the local rippled node.
    */
-  public LocalRippledEnvironmentForConfidentialMPT() {
+  public LocalRippledEnvironmentForConfidentialMpt() {
     this.xrplClient = new XrplClient(LOCAL_RIPPLED_URL);
     this.xrplAdminClient = new XrplAdminClient(LOCAL_RIPPLED_URL);
     // Start the ledger acceptor with a default interval

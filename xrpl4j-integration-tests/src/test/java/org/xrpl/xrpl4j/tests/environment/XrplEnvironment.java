@@ -46,7 +46,7 @@ public interface XrplEnvironment {
    * @return XRPL environment of the correct type.
    */
   static XrplEnvironment getNewConfiguredEnvironment() {
-    return new LocalRippledEnvironmentForConfidentialMPT();
+    return new LocalRippledEnvironmentForConfidentialMpt();
   }
 
   /**

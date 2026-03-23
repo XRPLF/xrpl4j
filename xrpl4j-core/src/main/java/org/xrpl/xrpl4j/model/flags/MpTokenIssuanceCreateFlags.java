@@ -34,7 +34,8 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
   /**
    * Constant {@link MpTokenIssuanceCreateFlags} for the {@code tfMPTCanConfidentialAmount} flag.
    */
-  protected static final MpTokenIssuanceCreateFlags CAN_CONFIDENTIAL_AMOUNT = new MpTokenIssuanceCreateFlags(0x00000080);
+  protected static final MpTokenIssuanceCreateFlags CAN_CONFIDENTIAL_AMOUNT
+    = new MpTokenIssuanceCreateFlags(0x00000080);
 
   /**
    * Constant {@link MpTokenIssuanceCreateFlags} for the {@code tfInnerBatchTxn} flag.

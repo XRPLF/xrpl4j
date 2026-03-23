@@ -69,7 +69,6 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
    *
    * @return A {@link T}.
    */
-  @SuppressWarnings("unchecked")
   @Override
   @Value.Derived
   default T signedTransaction() {
@@ -100,6 +99,11 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
     Preconditions.checkArgument(
       !this.unsignedTransaction().transactionSignature().isPresent(),
       "Transactions to be signed must not already include a signature."
+    );
+
+    Preconditions.checkArgument(
+      !this.signerSet().isEmpty(),
+      "Multisigned transaction must have at least one signer."
     );
 
     // TODO: Once https://github.com/XRPLF/xrpl4j/pull/684 is merged, we should update this check to use the new

@@ -145,6 +145,7 @@ public class AbstractTransactionSignerTest {
       .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .fee(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(ED_PUBLIC_KEY)
       .build();
 
     keyType = KeyType.ED25519;
@@ -166,6 +167,7 @@ public class AbstractTransactionSignerTest {
       .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .fee(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(ED_PUBLIC_KEY)
       .build();
 
     keyType = KeyType.SECP256K1;

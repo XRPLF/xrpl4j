@@ -40,6 +40,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -680,9 +681,17 @@ public class SignatureUtilsTest {
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY) // <-- The crux of the test
       .build();
-
-    // This should succeed - no validation prevents single-signing a transaction with empty signingPublicKey
-    addSignatureToTransactionHelper(payment);
+    final Signature signature = Signature.builder().value(UnsignedByteArray.of(new byte[0])).build();
+    final IllegalArgumentException result = assertThrows(IllegalArgumentException.class,
+      () -> SingleSignedTransaction.builder()
+        .unsignedTransaction(payment)
+        .signature(signature)
+        .signedTransaction(payment.withTransactionSignature(signature))
+        .build()
+    );
+    assertThat(result).hasMessageContaining(
+      "Transactions to be single-signed must not set `signingPublicKey` to the multisig (empty) public key."
+    );
   }
 
   @Test

@@ -31,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.google.common.io.BaseEncoding;
 import org.assertj.core.util.Sets;
@@ -43,6 +44,7 @@ import org.mockito.Mockito;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;
@@ -154,6 +156,7 @@ class BcSignatureServiceTest {
       .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .fee(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(ED_PUBLIC_KEY)
       .build();
 
     final Signature expectedSignature = Signature.builder()
@@ -179,6 +182,9 @@ class BcSignatureServiceTest {
       .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .fee(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("030D58EB48B4420B1F7B9DF55087E0E29FEF0E8468F9A6825B01CA2C361042D435")
+      )
       .build();
 
     final Signature expectedSignature = Signature.builder().value(UnsignedByteArray.of(new byte[32])).build();

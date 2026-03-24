@@ -171,6 +171,22 @@ class IssueTest extends AbstractJsonTest {
   }
 
   @Test
+  void handleUnsupportedIssueType() {
+    Issue unsupported = new Issue() {};
+    assertThrows(IllegalStateException.class, () ->
+      unsupported.handle($ -> { }, $ -> { }, $ -> { })
+    );
+  }
+
+  @Test
+  void mapUnsupportedIssueType() {
+    Issue unsupported = new Issue() {};
+    assertThrows(IllegalStateException.class, () ->
+      unsupported.map($ -> "xrp", $ -> "iou", $ -> "mpt")
+    );
+  }
+
+  @Test
   void mapWithNulls() {
     Issue xrp = Issue.XRP;
     assertThrows(NullPointerException.class, () ->

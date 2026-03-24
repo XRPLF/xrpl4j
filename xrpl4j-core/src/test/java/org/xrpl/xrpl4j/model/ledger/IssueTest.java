@@ -161,7 +161,7 @@ class IssueTest extends AbstractJsonTest {
       .issuer(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"))
       .build();
 
-    NullPointerException exception = assertThrows(
+    assertThrows(
       NullPointerException.class,
       () -> iouIssue.map(xi -> "XRP", null, mi -> "MPT")
     );
@@ -172,7 +172,7 @@ class IssueTest extends AbstractJsonTest {
     MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
     MptIssue mptIssue = MptIssue.of(mptId);
 
-    NullPointerException exception = assertThrows(
+    assertThrows(
       NullPointerException.class,
       () -> mptIssue.map(xi -> "XRP", ii -> "IOU", null)
     );
@@ -229,7 +229,7 @@ class IssueTest extends AbstractJsonTest {
       .issuer(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"))
       .build();
 
-    NullPointerException exception = assertThrows(
+    assertThrows(
       NullPointerException.class,
       () -> iouIssue.handle(xi -> { }, null, mi -> { })
     );
@@ -240,7 +240,7 @@ class IssueTest extends AbstractJsonTest {
     MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
     MptIssue mptIssue = MptIssue.of(mptId);
 
-    NullPointerException exception = assertThrows(
+    assertThrows(
       NullPointerException.class,
       () -> mptIssue.handle(xi -> { }, ii -> { }, null)
     );

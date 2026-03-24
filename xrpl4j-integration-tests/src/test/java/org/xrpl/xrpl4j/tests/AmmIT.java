@@ -1194,7 +1194,8 @@ public class AmmIT extends AbstractIT {
 
   /**
    * Creates an MPT/XRP AMM, then has a second holder deposit MPT into the pool using
-   * {@link AmmDeposit} with MPT amounts. Verifies the AMM state after deposit via {@code ammInfo}.
+   * {@link AmmDeposit} with MPT amounts, and withdraw XRP from the pool using {@link AmmWithdraw}.
+   * Verifies the AMM state after deposit and withdrawal via {@code ammInfo}.
    */
   @Test
   void mptAmmDepositAndWithdraw() throws JsonRpcClientErrorException, JsonProcessingException {
@@ -2270,14 +2271,22 @@ public class AmmIT extends AbstractIT {
     // Extract the actual asset order from ledgerEntry response
     // Note: ledgerEntry and ammInfo may return assets in different orders, so we need to verify both are present
     MpTokenIssuanceId ledgerEntryAsset1Id = ammObject.node().asset().map(
-      xrpIssue -> { throw new RuntimeException("Expected MPT, got XRP"); },
-      iouIssue -> { throw new RuntimeException("Expected MPT, got IOU"); },
+      xrpIssue -> {
+        throw new RuntimeException("Expected MPT, got XRP");
+      },
+      iouIssue -> {
+        throw new RuntimeException("Expected MPT, got IOU");
+      },
       mptIssue -> mptIssue.mptIssuanceId()
     );
 
     MpTokenIssuanceId ledgerEntryAsset2Id = ammObject.node().asset2().map(
-      xrpIssue -> { throw new RuntimeException("Expected MPT, got XRP"); },
-      iouIssue -> { throw new RuntimeException("Expected MPT, got IOU"); },
+      xrpIssue -> {
+        throw new RuntimeException("Expected MPT, got XRP");
+      },
+      iouIssue -> {
+        throw new RuntimeException("Expected MPT, got IOU");
+      },
       mptIssue -> mptIssue.mptIssuanceId()
     );
 

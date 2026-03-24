@@ -1190,7 +1190,7 @@ public class OfferIT extends AbstractIT {
     AccountInfoResult mptIssuerAccountInfo = scanForResult(
       () -> this.getValidatedAccountInfo(mptIssuerKeyPair.publicKey().deriveAddress())
     );
-    AccountInfoResult iouIssuerAccountInfo = scanForResult(
+    scanForResult(
       () -> this.getValidatedAccountInfo(iouIssuerKeyPair.publicKey().deriveAddress())
     );
 

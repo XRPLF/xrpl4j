@@ -2266,9 +2266,26 @@ public class AmmIT extends AbstractIT {
     );
 
     assertThat(ammObject.node().account()).isEqualTo(ammInfoByAssets.amm().account());
-    // Use the actual asset order from ammInfoByAssets, not the order we submitted
-    assertThat(ammObject.node().asset()).isEqualTo(MptIssue.of(actualAsset1Id));
-    assertThat(ammObject.node().asset2()).isEqualTo(MptIssue.of(actualAsset2Id));
+
+    // Extract the actual asset order from ledgerEntry response
+    // Note: ledgerEntry and ammInfo may return assets in different orders, so we need to verify both are present
+    MpTokenIssuanceId ledgerEntryAsset1Id = ammObject.node().asset().map(
+      xrpIssue -> { throw new RuntimeException("Expected MPT, got XRP"); },
+      iouIssue -> { throw new RuntimeException("Expected MPT, got IOU"); },
+      mptIssue -> mptIssue.mptIssuanceId()
+    );
+
+    MpTokenIssuanceId ledgerEntryAsset2Id = ammObject.node().asset2().map(
+      xrpIssue -> { throw new RuntimeException("Expected MPT, got XRP"); },
+      iouIssue -> { throw new RuntimeException("Expected MPT, got IOU"); },
+      mptIssue -> mptIssue.mptIssuanceId()
+    );
+
+    // Verify both MPT issuance IDs are present in the ledger entry (order-agnostic)
+    assertThat(ledgerEntryAsset1Id).isIn(mpt1IssuanceId, mpt2IssuanceId);
+    assertThat(ledgerEntryAsset2Id).isIn(mpt1IssuanceId, mpt2IssuanceId);
+    assertThat(ledgerEntryAsset1Id).isNotEqualTo(ledgerEntryAsset2Id);
+
     assertThat(ammObject.node().lpTokenBalance()).isEqualTo(ammInfoByAssets.amm().lpToken());
     assertThat(ammObject.node().tradingFee()).isEqualTo(ammInfoByAssets.amm().tradingFee());
 

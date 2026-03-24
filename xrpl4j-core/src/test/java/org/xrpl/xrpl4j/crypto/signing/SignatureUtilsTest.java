@@ -163,7 +163,12 @@ public class SignatureUtilsTest {
   public static final ImmutableXChainBridge XCHAIN_BRIDGE = XChainBridge.builder()
     .lockingChainDoor(Address.of("rMAXACCrp3Y8PpswXcg3bKggHX76V3F8M4")).lockingChainIssue(Issue.XRP)
     .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
-    .issuingChainIssue(IouIssue.builder().currency("TST").issuer(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh")).build())
+    .issuingChainIssue(
+      IouIssue.builder()
+        .currency("TST")
+        .issuer(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+        .build()
+    )
     .build();
 
   PublicKey sourcePublicKey;

@@ -100,8 +100,13 @@ class VaultObjectTest extends AbstractJsonTest {
       "    \"Asset\" : {\n" +
       "        \"currency\" : \"XRP\"\n" +
       "    },\n" +
+      "    \"AssetsTotal\" : \"0\",\n" +
+      "    \"AssetsAvailable\" : \"0\",\n" +
+      "    \"AssetsMaximum\" : \"0\",\n" +
+      "    \"LossUnrealized\" : \"0\",\n" +
       "    \"ShareMPTID\" : \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\",\n" +
       "    \"WithdrawalPolicy\" : 1,\n" +
+      "    \"Scale\" : 0,\n" +
       "    \"index\" : %s\n" +
       "}", HASH_256);
 

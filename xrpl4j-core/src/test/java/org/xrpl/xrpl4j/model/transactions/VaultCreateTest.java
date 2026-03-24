@@ -77,7 +77,7 @@ class VaultCreateTest {
       .scale(AssetScale.of(UnsignedInteger.valueOf(19)))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Scale must be <= 18.");
+      .hasMessage("Scale must be between 0 and 18.");
   }
 
   @Test

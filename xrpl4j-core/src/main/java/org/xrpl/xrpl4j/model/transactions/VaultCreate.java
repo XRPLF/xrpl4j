@@ -116,8 +116,8 @@ public interface VaultCreate extends Transaction {
       },
       iouIssue -> {
         long scaleVal = scaleValue.value().longValue();
-        if (scaleVal < 0 || scaleVal > 18) {
-          throw new IllegalArgumentException("Scale must be <= 18.");
+        if (scaleVal > 18) {
+          throw new IllegalArgumentException("Scale must be between 0 and 18.");
         }
       },
       mptIssue -> {

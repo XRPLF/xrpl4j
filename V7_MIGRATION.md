@@ -3,18 +3,21 @@
 This guide outlines the breaking changes between v6.x.x and v7.0.0 and provides an upgrade path for applications using
 xrpl4j.
 
-## TODO: Add migration guide for #712 and #715 after rebase
-
 ## Overview
 
-Version 7.0.0 introduces support for
-the [Single Asset Vault](https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0065-single-asset-vault) amendment,
-which adds Multi-Purpose Token (MPT) support to the `Issue` type. The previously concrete `Issue` immutable has been
-refactored into a polymorphic interface with three concrete subtypes: `XrpIssue`, `IouIssue`, and `MptIssue`.
+Version 7.0.0 introduces several breaking changes:
+
+1. **Issue Model Refactor** — `Issue` has been refactored from a concrete immutable into a polymorphic interface with
+   three subtypes (`XrpIssue`, `IouIssue`, `MptIssue`) to support the
+   [Single Asset Vault](https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0065-single-asset-vault) amendment.
+2. **Transaction Signing API Refactor** — `SignatureUtils.addSignatureToTransaction()` and
+   `SignatureUtils.addMultiSignaturesToTransaction()` have been removed. Transaction signing now uses Immutables-generated
+   `withTransactionSignature()` and `withSigners()` methods on `Transaction`, and validation has moved to `@Check`
+   methods on `SingleSignedTransaction` and `MultiSignedTransaction`.
 
 ## Breaking Changes
 
-### Issue Model
+### 1. Issue Model
 
 #### Issue is now an interface
 
@@ -114,7 +117,7 @@ String description = issue.map(
 );
 ```
 
-### JSON Serialization
+#### JSON Serialization
 
 JSON serialization and deserialization remain compatible. The `IssueDeserializer` automatically selects the correct
 subtype based on the JSON structure:
@@ -123,10 +126,65 @@ subtype based on the JSON structure:
 - `{"currency": "USD", "issuer": "rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"}` → `IouIssue`
 - `{"mpt_issuance_id": "00000001A407AF5856CFF3379945D823561023E8E5CED9C9"}` → `MptIssue`
 
+### 2. Transaction Signing API
+
+The transaction signing internals have been refactored to eliminate per-transaction-type switch statements in
+`SignatureUtils`. This change leverages Immutables-generated builder methods on the `Transaction` interface.
+
+#### `SignatureUtils.addSignatureToTransaction()` removed
+
+This method contained a large switch statement with explicit handling for every transaction type. It has been removed.
+The signing flow now uses `Transaction.withTransactionSignature()` directly.
+
+**Migration:**
+
+If you were calling `addSignatureToTransaction()` directly (uncommon — this was primarily used internally by
+`AbstractTransactionSigner`):
+
+```java
+// Before (v6.x.x)
+SingleSignedTransaction<Payment> signed = signatureUtils.addSignatureToTransaction(payment, signature);
+
+// After (v7.0.0)
+Transaction signedTx = payment.withTransactionSignature(signature);
+SingleSignedTransaction<Payment> signed = SingleSignedTransaction.<Payment>builder()
+    .unsignedTransaction(payment)
+    .signature(signature)
+    .signedTransaction((Payment) signedTx)
+    .build();
+```
+
+#### `SignatureUtils.addMultiSignaturesToTransaction()` removed
+
+This method has also been removed. Use `Transaction.withSigners()` instead.
+
+**Migration:**
+
+```java
+// Before (v6.x.x)
+Transaction multiSigned = signatureUtils.addMultiSignaturesToTransaction(transaction, signerWrappers);
+
+// After (v7.0.0)
+Transaction multiSigned = transaction.withSigners(signerWrappers);
+```
+
+#### New `Transaction` interface methods
+
+Two new methods have been added to the `Transaction` interface. Immutables generates concrete implementations of these
+for every transaction subclass:
+
+- `Transaction withTransactionSignature(Signature signature)` — returns a copy of the transaction with the signature
+  applied.
+- `Transaction withSigners(Iterable<? extends SignerWrapper> signers)` — returns a copy of the transaction with the
+  specified signers applied.
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.
 - The `Issue.XRP` constant is still available and works the same way.
+- The `TransactionSigner.sign()` and `TransactionSigner.multiSign()` APIs are unchanged — only the internal
+  implementation has changed. If you use these high-level APIs (e.g., via `BcSignatureService`), no migration is needed
+  for signing.
 
 ## Additional Resources
 

@@ -69,6 +69,7 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
    *
    * @return A {@link T}.
    */
+  @SuppressWarnings("unchecked")
   @Override
   @Value.Derived
   default T signedTransaction() {
@@ -83,7 +84,7 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
       )
       .collect(Collectors.toList());
 
-    return SignatureUtils.getInstance().addMultiSignaturesToTransaction(unsignedTransaction(), signers);
+    return (T) this.unsignedTransaction().withSigners(signers);
   }
 
   /**
@@ -99,7 +100,7 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
     // signers are reserved for multisig
     Preconditions.checkArgument(
       this.unsignedTransaction().signers().isEmpty(),
-      "Transactions to be multi-signed must not have Signers."
+      "Transactions to be multi-signed must not already have Signers."
     );
 
     // tx sig is reserved for single-sig

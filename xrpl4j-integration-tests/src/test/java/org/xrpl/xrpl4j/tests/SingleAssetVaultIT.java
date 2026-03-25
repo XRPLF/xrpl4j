@@ -93,8 +93,7 @@ public class SingleAssetVaultIT extends AbstractIT {
       issuerKeyPair.privateKey(),
       enableClawback
     );
-    SubmitResult<AccountSet> enableClawbackResult = xrplClient.submit(signedEnableClawback);
-    assertThat(enableClawbackResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+    assertThat(xrplClient.submit(signedEnableClawback).engineResult()).isEqualTo(SUCCESS_STATUS);
 
     this.scanForResult(
       () -> this.getValidatedTransaction(signedEnableClawback.hash(), AccountSet.class)
@@ -154,8 +153,7 @@ public class SingleAssetVaultIT extends AbstractIT {
       vaultOwnerKeyPair.privateKey(),
       vaultCreate
     );
-    SubmitResult<VaultCreate> vaultCreateSubmitResult = xrplClient.submit(signedVaultCreate);
-    assertThat(vaultCreateSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+    assertThat(xrplClient.submit(signedVaultCreate).engineResult()).isEqualTo(SUCCESS_STATUS);
 
     // Wait for transaction to be validated
     this.scanForResult(

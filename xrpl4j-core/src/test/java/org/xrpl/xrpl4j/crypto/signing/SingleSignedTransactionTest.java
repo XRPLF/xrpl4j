@@ -29,8 +29,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.jayway.jsonassert.JsonAssert;
-import org.assertj.core.api.InstanceOfAssertFactories;
-import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
@@ -46,31 +44,17 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
- * Unit tests for {@link MultiSignedTransaction}.
+ * Unit tests for {@link SingleSignedTransaction}.
  */
-class MultiSignedTransactionTest {
+class SingleSignedTransactionTest {
 
   private static final String HEX_32_BYTES = "0000000000000000000000000000000000000000000000000000000000000000";
-  private Signer signer1;
-  private Signer signer2;
-  private MultiSignedTransaction<Payment> multiSignedTransaction;
+  private SingleSignedTransaction<?> singleSingedTransaction;
 
   @BeforeEach
   void setUp() {
-    signer1 = Signer.builder()
-      .transactionSignature(Signature.builder()
-        .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
-        .build())
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "01"))
-      .build();
-    signer2 = Signer.builder()
-      .transactionSignature(Signature.builder()
-        .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
-        .build())
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "00"))
-      .build();
-    multiSignedTransaction = MultiSignedTransaction.<Payment>builder()
-      .unsignedTransaction(Payment.builder()
+    singleSingedTransaction = SingleSignedTransaction.builder()
+      .signedTransaction(Payment.builder()
         .account(ED_ADDRESS)
         .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
         .sequence(UnsignedInteger.ONE)
@@ -78,81 +62,86 @@ class MultiSignedTransactionTest {
         .destination(EC_ADDRESS)
         .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
         .build())
-      .addSignerSet(
-        signer1,
-        signer2
-      )
+      .unsignedTransaction(Payment.builder()
+        .account(ED_ADDRESS)
+        .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
+        .sequence(UnsignedInteger.ONE)
+        .amount(XrpCurrencyAmount.ofDrops(12345))
+        .destination(EC_ADDRESS)
+        .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "01"))
+        .build())
+      .signature(Signature.builder()
+        .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
+        .build())
       .build();
   }
 
   @Test
   void testHash() {
-    assertThat(multiSignedTransaction.hash().value())
-      .isEqualTo("53F05196A66B08F30D1968A38BF8A9D85C624B03CF7AD2E8A7381AF1A7152043");
+    assertThat(singleSingedTransaction.hash().value())
+      .isEqualTo("3C9BE23F7820DDC3D93CF69A7E47C6A89FEB0EF27A1F25E62F87F9E1F7E6E910");
+  }
+
+  @Test
+  void testUnsignedAndSignedTransactionAccessors() {
+    Transaction unsigned = singleSingedTransaction.unsignedTransaction();
+    Transaction signed = singleSingedTransaction.signedTransaction();
+
+    // Verify unsigned transaction has no signature
+    assertThat(unsigned.transactionSignature()).isEmpty();
+    assertThat(unsigned.signers()).isEmpty();
+
+    // Verify signed transaction has the same fields as unsigned
+    assertThat(signed.account()).isEqualTo(unsigned.account());
+    assertThat(signed.fee()).isEqualTo(unsigned.fee());
+    assertThat(signed.sequence()).isEqualTo(unsigned.sequence());
+  }
+
+  @Test
+  void testSignatureAccessor() {
+    Signature signature = singleSingedTransaction.signature();
+    assertThat(signature).isNotNull();
+    assertThat(signature.value().hexValue()).isEqualTo(HEX_32_BYTES);
   }
 
   @Test
   void testSignedTransactionBytes() throws JsonProcessingException {
-    assertThat(multiSignedTransaction.signedTransactionBytes().hexValue()).isEqualTo(
+    assertThat(singleSingedTransaction.signedTransactionBytes().hexValue()).isEqualTo(
       XrplBinaryCodec.getInstance().encode(ObjectMapperFactory.create().writeValueAsString(
-        multiSignedTransaction.signedTransaction()
+        singleSingedTransaction.signedTransaction()
       ))
     );
   }
 
   @Test
-  void testSignedTransactionConstructed() {
-    Transaction signedTransaction = multiSignedTransaction.signedTransaction();
-
-    // Verify signers are sorted by account address (signer2 has lower address than signer1)
-    assertThat(signedTransaction.signers()).asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(2)
-      .extracting("signer.account", "signer.signingPublicKey", "signer.transactionSignature")
-      .containsExactly(Tuple.tuple(
-          signer2.signingPublicKey().deriveAddress(),
-          signer2.signingPublicKey(),
-          signer2.transactionSignature()
-        ),
-        Tuple.tuple(
-          signer1.signingPublicKey().deriveAddress(),
-          signer1.signingPublicKey(),
-          signer1.transactionSignature()
-        ));
-  }
-
-  @Test
-  void testSignerSetAccessor() {
-    assertThat(multiSignedTransaction.signerSet()).hasSize(2);
-    assertThat(multiSignedTransaction.signerSet()).contains(signer1, signer2);
-  }
-
-  @Test
-  void testUnsignedTransactionAccessor() {
-    Payment unsigned = multiSignedTransaction.unsignedTransaction();
-
-    // Verify unsigned transaction has no signers or signature
-    assertThat(unsigned.signers()).isEmpty();
-    assertThat(unsigned.transactionSignature()).isEmpty();
-    assertThat(unsigned.signingPublicKey()).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
-  }
-
-  @Test
   void jsonSerializeAndDeserialize() throws JsonProcessingException {
-    String json = ObjectMapperFactory.create().writeValueAsString(multiSignedTransaction);
+    String json = ObjectMapperFactory.create().writeValueAsString(singleSingedTransaction);
     JsonAssert.with(json).assertNotNull("$.unsignedTransaction");
     JsonAssert.with(json).assertNotNull("$.signedTransaction");
     JsonAssert.with(json).assertNotNull("$.signedTransactionBytes");
-    JsonAssert.with(json).assertNotNull("$.signerSet");
+    JsonAssert.with(json).assertNotNull("$.signature");
 
-    MultiSignedTransaction<?> actual = ObjectMapperFactory.create().readValue(json, MultiSignedTransaction.class);
-    assertThat(actual).isEqualTo(multiSignedTransaction);
+    SingleSignedTransaction<?> actual = ObjectMapperFactory.create().readValue(json, SingleSignedTransaction.class);
+    assertThat(actual).isEqualTo(singleSingedTransaction);
   }
 
   @Test
   void buildWithTransactionSignatureThrows() {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class,
-      () -> MultiSignedTransaction.<Payment>builder()
+      () -> SingleSignedTransaction.<Payment>builder()
         .unsignedTransaction(Payment.builder()
+          .account(ED_ADDRESS)
+          .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
+          .sequence(UnsignedInteger.ONE)
+          .amount(XrpCurrencyAmount.ofDrops(12345))
+          .destination(EC_ADDRESS)
+          .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "01"))
+          .transactionSignature(Signature.builder()
+            .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
+            .build())
+          .build())
+        .signedTransaction(Payment.builder()
           .account(ED_ADDRESS)
           .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
           .sequence(UnsignedInteger.ONE)
@@ -162,53 +151,16 @@ class MultiSignedTransactionTest {
             .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
             .build())
           .build())
-        .addSignerSet(signer1)
-        .build()
-    );
-    assertThat(exception.getMessage()).isEqualTo(
-      "Transactions to be multi-signed must not include a signature (this is reserved for single-sig)."
-    );
-  }
-
-  @Test
-  void buildWithNoSignersThrows() {
-    IllegalArgumentException exception = assertThrows(
-      IllegalArgumentException.class,
-      () -> MultiSignedTransaction.<Payment>builder()
-        .unsignedTransaction(Payment.builder()
-          .account(ED_ADDRESS)
-          .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
-          .sequence(UnsignedInteger.ONE)
-          .amount(XrpCurrencyAmount.ofDrops(12345))
-          .destination(EC_ADDRESS)
+        .signature(Signature.builder()
+          .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
           .build())
         .build()
     );
-    assertThat(exception.getMessage()).isEqualTo("Transactions to be multi-signed must have at least one signer.");
+    assertThat(exception.getMessage()).isEqualTo("Transactions to be single-signed must not already be signed.");
   }
 
   @Test
-  void buildWithNonEmptySigningPublicKeyThrows() {
-    IllegalArgumentException exception = assertThrows(
-      IllegalArgumentException.class,
-      () -> MultiSignedTransaction.<Payment>builder()
-        .unsignedTransaction(Payment.builder()
-          .account(ED_ADDRESS)
-          .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
-          .sequence(UnsignedInteger.ONE)
-          .amount(XrpCurrencyAmount.ofDrops(12345))
-          .destination(EC_ADDRESS)
-          .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "01"))
-          .build())
-        .addSignerSet(signer1)
-        .build()
-    );
-    assertThat(exception.getMessage()).isEqualTo(
-      "Transactions to be multi-signed must set `signingPublicKey` to an empty public key.");
-  }
-
-  @Test
-  void buildWithUnsignedTransactionSignersThrows() {
+  void buildWithSignersThrows() {
     Signer signer = Signer.builder()
       .transactionSignature(Signature.builder()
         .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
@@ -218,7 +170,36 @@ class MultiSignedTransactionTest {
 
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class,
-      () -> MultiSignedTransaction.<Payment>builder()
+      () -> SingleSignedTransaction.<Payment>builder()
+        .unsignedTransaction(Payment.builder()
+          .account(ED_ADDRESS)
+          .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
+          .sequence(UnsignedInteger.ONE)
+          .amount(XrpCurrencyAmount.ofDrops(12345))
+          .destination(EC_ADDRESS)
+          .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "01"))
+          .addSigners(SignerWrapper.of(signer))
+          .build())
+        .signedTransaction(Payment.builder()
+          .account(ED_ADDRESS)
+          .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
+          .sequence(UnsignedInteger.ONE)
+          .amount(XrpCurrencyAmount.ofDrops(12345))
+          .destination(EC_ADDRESS)
+          .build())
+        .signature(Signature.builder()
+          .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
+          .build())
+        .build()
+    );
+    assertThat(exception.getMessage()).isEqualTo("Transactions to be single-signed must not have Signers.");
+  }
+
+  @Test
+  void buildWithMultiSignPublicKeyThrows() {
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class,
+      () -> SingleSignedTransaction.<Payment>builder()
         .unsignedTransaction(Payment.builder()
           .account(ED_ADDRESS)
           .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
@@ -226,11 +207,21 @@ class MultiSignedTransactionTest {
           .amount(XrpCurrencyAmount.ofDrops(12345))
           .destination(EC_ADDRESS)
           .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
-          .addSigners(SignerWrapper.of(signer))
           .build())
-        .addSignerSet(signer1)
+        .signedTransaction(Payment.builder()
+          .account(ED_ADDRESS)
+          .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
+          .sequence(UnsignedInteger.ONE)
+          .amount(XrpCurrencyAmount.ofDrops(12345))
+          .destination(EC_ADDRESS)
+          .build())
+        .signature(Signature.builder()
+          .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
+          .build())
         .build()
     );
-    assertThat(exception.getMessage()).isEqualTo("Transactions to be multi-signed must not already have Signers.");
+    assertThat(exception.getMessage()).isEqualTo(
+      "Transactions to be single-signed must not set `signingPublicKey` to the multisig (empty) public key.");
   }
+
 }

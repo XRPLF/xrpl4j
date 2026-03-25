@@ -50,6 +50,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     this.signatureUtils = Objects.requireNonNull(signatureUtils);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T extends Transaction> SingleSignedTransaction<T> sign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
@@ -57,7 +58,14 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
 
     final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSignableBytes(transaction);
     final Signature signature = this.signingHelper(privateKeyable, signableTransactionBytes);
-    return this.signatureUtils.addSignatureToTransaction(transaction, signature);
+
+    final Transaction transactionWithSignature = transaction.withTransactionSignature(signature);
+
+    return SingleSignedTransaction.<T>builder()
+      .unsignedTransaction(transaction)
+      .signature(signature)
+      .signedTransaction((T) transactionWithSignature)
+      .build();
   }
 
   @Override

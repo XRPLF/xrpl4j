@@ -106,7 +106,7 @@ public interface VaultInfoRequestParams extends XrplRequestParams {
       );
     }
 
-    if (hasVaultId && hasOwnerAndSeq) {
+    if (hasVaultId && (owner().isPresent() || seq().isPresent())) {
       throw new IllegalArgumentException(
         "VaultInfoRequestParams cannot specify both vaultId and owner/seq"
       );

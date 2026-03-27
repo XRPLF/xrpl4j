@@ -104,7 +104,7 @@ public class IssueType extends SerializedType<IssueType> {
 
     // MPT
     if (accountId.value().equals(ACCOUNT_ONE)) {
-      // Convert sequence from little-endian to bug-endian
+      // Convert sequence from little-endian to big-endian
       UnsignedByteArray sequenceLE = parser.read(4);
       UnsignedByteArray sequenceBE = sequenceLE.reverse();
 

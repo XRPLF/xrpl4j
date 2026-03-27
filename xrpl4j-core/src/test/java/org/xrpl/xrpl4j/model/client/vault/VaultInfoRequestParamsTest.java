@@ -104,7 +104,7 @@ public class VaultInfoRequestParamsTest {
         .owner(OWNER)
         .build()
     );
-    assertThat(exception.getMessage()).isEqualTo("VaultInfoRequestParams must specify both owner and seq together");
+    assertThat(exception.getMessage()).isEqualTo("VaultInfoRequestParams cannot specify both vaultId and owner/seq");
   }
 
   @Test
@@ -115,7 +115,7 @@ public class VaultInfoRequestParamsTest {
         .seq(SEQ)
         .build()
     );
-    assertThat(exception.getMessage()).isEqualTo("VaultInfoRequestParams must specify both owner and seq together");
+    assertThat(exception.getMessage()).isEqualTo("VaultInfoRequestParams cannot specify both vaultId and owner/seq");
   }
 }
 

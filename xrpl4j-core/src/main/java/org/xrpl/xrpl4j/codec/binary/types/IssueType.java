@@ -38,8 +38,8 @@ public class IssueType extends SerializedType<IssueType> {
     Issue issue = objectMapper.treeToValue(node, Issue.class);
 
     if (issue.mptIssuanceId().isPresent()) {
-      // MPTokenIssuanceID binary format: issuer (20 bytes) + ACCOUNT_ONE (20 bytes) + sequence (4 bytes) = 44 bytes
-      // MPTokenIssuanceID hex format: sequence (4 bytes big-endian) + issuer (20 bytes) = 24 bytes
+      // mpt_issuance_id (192-bit integer): sequence (4 bytes big-endian) || issuer (20 bytes) = 24 bytes
+      // Binary encoded representation: issuer (20 bytes) || ACCOUNT_ONE (20 bytes) || sequence (4 bytes) = 44 bytes
       String mptIssuanceId = issue.mptIssuanceId().get().asText();
 
       if (!MPT_ISSUANCE_ID_HEX_PATTERN.matcher(mptIssuanceId).matches()) {
@@ -104,7 +104,7 @@ public class IssueType extends SerializedType<IssueType> {
 
     // MPT
     if (accountId.value().equals(ACCOUNT_ONE)) {
-      // Convert sequence from little-endian to bug-endian
+      // Convert sequence from little-endian to big-endian
       UnsignedByteArray sequenceLE = parser.read(4);
       UnsignedByteArray sequenceBE = sequenceLE.reverse();
 

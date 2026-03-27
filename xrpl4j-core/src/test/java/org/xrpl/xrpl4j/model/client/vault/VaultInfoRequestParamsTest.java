@@ -95,5 +95,27 @@ public class VaultInfoRequestParamsTest {
         .build()
     );
   }
+
+  @Test
+  public void testValidationFailsWithVaultIdAndOwnerOnly() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+      VaultInfoRequestParams.builder()
+        .vaultId(VAULT_ID)
+        .owner(OWNER)
+        .build()
+    );
+    assertThat(exception.getMessage()).isEqualTo("VaultInfoRequestParams cannot specify both vaultId and owner/seq");
+  }
+
+  @Test
+  public void testValidationFailsWithVaultIdAndSeqOnly() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+      VaultInfoRequestParams.builder()
+        .vaultId(VAULT_ID)
+        .seq(SEQ)
+        .build()
+    );
+    assertThat(exception.getMessage()).isEqualTo("VaultInfoRequestParams cannot specify both vaultId and owner/seq");
+  }
 }
 

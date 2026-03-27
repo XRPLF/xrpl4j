@@ -300,6 +300,22 @@ class NumberTypeTest {
   }
 
   @Test
+  void throwsExponentOverflowAfterRoundingPushesMantissaPastMaxInt64() {
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class,
+      () -> codec.fromJson(new TextNode("92233720368547758075e32767"))
+    );
+    assertThat(exception.getMessage()).isEqualTo("Exponent overflow: value too large to represent");
+  }
+
+  @Test
+  void roundsUpAgainAfterRoundingPushesMantissaPastMaxInt64() {
+    String value = "92233720368547758075";
+    NumberType num = codec.fromJson(new TextNode(value));
+    assertThat(num.toJson().asText()).isEqualTo("922337203685477581e2");
+  }
+
+  @Test
   void throwsUnderflowWhenMantissaTooSmallAfterGrow() {
     // A value where the mantissa can't grow to MIN_MANTISSA because exponent hits MIN_EXPONENT.
     IllegalArgumentException exception = assertThrows(

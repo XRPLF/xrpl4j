@@ -127,34 +127,46 @@ public interface VaultObject extends LedgerObject {
   /**
    * The total value of the vault.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An {@link AssetAmount}, defaulting to "0".
    */
   @JsonProperty("AssetsTotal")
-  Optional<AssetAmount> assetsTotal();
+  @Value.Default
+  default AssetAmount assetsTotal() {
+    return AssetAmount.of("0");
+  }
 
   /**
    * The available assets in the vault.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An {@link AssetAmount}, defaulting to "0".
    */
   @JsonProperty("AssetsAvailable")
-  Optional<AssetAmount> assetsAvailable();
+  @Value.Default
+  default AssetAmount assetsAvailable() {
+    return AssetAmount.of("0");
+  }
 
   /**
    * The maximum amount of assets the vault can hold. 0 means no cap.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An {@link AssetAmount}, defaulting to "0".
    */
   @JsonProperty("AssetsMaximum")
-  Optional<AssetAmount> assetsMaximum();
+  @Value.Default
+  default AssetAmount assetsMaximum() {
+    return AssetAmount.of("0");
+  }
 
   /**
    * The potential unrealized loss.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An {@link AssetAmount}, defaulting to "0".
    */
   @JsonProperty("LossUnrealized")
-  Optional<AssetAmount> lossUnrealized();
+  @Value.Default
+  default AssetAmount lossUnrealized() {
+    return AssetAmount.of("0");
+  }
 
   /**
    * The ID of the share MPTokenIssuance.
@@ -175,10 +187,13 @@ public interface VaultObject extends LedgerObject {
   /**
    * Power of 10 for asset-to-share conversion.
    *
-   * @return An optionally-present {@link AssetScale}.
+   * @return An {@link AssetScale}, defaulting to 0.
    */
   @JsonProperty("Scale")
-  Optional<AssetScale> scale();
+  @Value.Default
+  default AssetScale scale() {
+    return AssetScale.of(UnsignedInteger.ZERO);
+  }
 
   /**
    * The share MPTokenIssuance information for this vault. Only present in {@code vault_info} RPC responses.

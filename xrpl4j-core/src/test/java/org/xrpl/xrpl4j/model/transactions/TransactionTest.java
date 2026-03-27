@@ -24,9 +24,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
@@ -187,5 +190,59 @@ public class TransactionTest {
     TransactionFlags result = mockTransaction.transactionFlags();
 
     assertThat(result).isEqualTo(TransactionFlags.EMPTY);
+  }
+
+  // /////////////////////
+  // withSignature
+  // /////////////////////
+
+  @Test
+  public void addSignatureToTransaction() {
+    Payment payment = Payment.builder()
+      .account(Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .destination(Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY) // <-- The crux of the test
+      .build();
+
+    final Payment paymentWithSignature = (Payment) payment.withTransactionSignature(mock(Signature.class));
+    assertThat(paymentWithSignature.transactionSignature()).isPresent();
+    assertThat(paymentWithSignature.signers()).isEmpty();
+
+    assertThat(paymentWithSignature.account()).isEqualTo(payment.account());
+    assertThat(paymentWithSignature.fee()).isEqualTo(payment.fee());
+    assertThat(paymentWithSignature.sequence()).isEqualTo(payment.sequence());
+    assertThat(paymentWithSignature.destination()).isEqualTo(payment.destination());
+    assertThat(paymentWithSignature.amount()).isEqualTo(payment.amount());
+    assertThat(paymentWithSignature.signingPublicKey()).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
+  }
+
+  // /////////////////////
+  // withSignature
+  // /////////////////////
+
+  @Test
+  public void addSignersToTransaction() {
+    Payment payment = Payment.builder()
+      .account(Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .destination(Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY) // <-- The crux of the test
+      .build();
+
+    final Payment paymentWithSignature = (Payment) payment.withSigners(Lists.newArrayList(mock(SignerWrapper.class)));
+    assertThat(paymentWithSignature.signers()).hasSize(1);
+    assertThat(paymentWithSignature.transactionSignature()).isEmpty();
+
+    assertThat(paymentWithSignature.account()).isEqualTo(payment.account());
+    assertThat(paymentWithSignature.fee()).isEqualTo(payment.fee());
+    assertThat(paymentWithSignature.sequence()).isEqualTo(payment.sequence());
+    assertThat(paymentWithSignature.destination()).isEqualTo(payment.destination());
+    assertThat(paymentWithSignature.amount()).isEqualTo(payment.amount());
+    assertThat(paymentWithSignature.signingPublicKey()).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
   }
 }

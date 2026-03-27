@@ -61,7 +61,7 @@ public class NumberType extends SerializedType<NumberType> {
   // xrpld implementation: src/libxrpl/basics/Number.cpp -> doNormalize
   @Override
   public NumberType fromJson(JsonNode node) {
-    String value = node.isInt() || node.isLong() ? String.valueOf(node.asLong()) : node.asText();
+    String value = node.asText();
     BigDecimal decimal = new BigDecimal(value).stripTrailingZeros();
 
     long mantissa;

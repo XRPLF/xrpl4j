@@ -398,8 +398,12 @@ public class DelegateIT extends AbstractIT {
     assertThat(delegateObject.get().account()).isEqualTo(delegatorKeyPair.publicKey().deriveAddress());
     assertThat(delegateObject.get().authorize()).isEqualTo(delegateKeyPair.publicKey().deriveAddress());
     assertThat(delegateObject.get().permissions()).hasSize(2);
-    assertThat(delegateObject.get().permissions().get(0).permission().permissionValue().value()).isEqualTo("Payment");
-    assertThat(delegateObject.get().permissions().get(1).permission().permissionValue().value()).isEqualTo("TrustSet");
+    String permission0 = delegateObject.get().permissions().get(0).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    String permission1 = delegateObject.get().permissions().get(1).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    assertThat(permission0).isEqualTo("Payment");
+    assertThat(permission1).isEqualTo("TrustSet");
 
     logger.info("Delegate object verified successfully");
   }
@@ -610,10 +614,12 @@ public class DelegateIT extends AbstractIT {
 
     assertThat(delegateObjectAfterUpdate).isPresent();
     assertThat(delegateObjectAfterUpdate.get().permissions()).hasSize(2);
-    assertThat(delegateObjectAfterUpdate.get().permissions().get(0).permission().permissionValue().value())
-      .isEqualTo("TrustSet");
-    assertThat(delegateObjectAfterUpdate.get().permissions().get(1).permission().permissionValue().value())
-      .isEqualTo("OfferCreate");
+    String permission0 = delegateObjectAfterUpdate.get().permissions().get(0).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    String permission1 = delegateObjectAfterUpdate.get().permissions().get(1).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    assertThat(permission0).isEqualTo("TrustSet");
+    assertThat(permission1).isEqualTo("OfferCreate");
 
     logger.info("Delegate object permissions updated successfully");
   }

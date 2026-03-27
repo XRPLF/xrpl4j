@@ -61,8 +61,10 @@ public class DelegateSetTest {
     assertThat(delegateSet.account()).isEqualTo(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"));
     assertThat(delegateSet.authorize()).isEqualTo(authorize);
     assertThat(delegateSet.permissions()).hasSize(2);
-    String value0 = delegateSet.permissions().get(0).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
-    String value1 = delegateSet.permissions().get(1).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
+    String value0 = delegateSet.permissions().get(0).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    String value1 = delegateSet.permissions().get(1).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
     assertThat(value0).isEqualTo("Payment");
     assertThat(value1).isEqualTo("TrustSet");
   }
@@ -268,10 +270,14 @@ public class DelegateSetTest {
       .build();
 
     assertThat(delegateSet.permissions()).hasSize(4);
-    String value0 = delegateSet.permissions().get(0).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
-    String value1 = delegateSet.permissions().get(1).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
-    String value2 = delegateSet.permissions().get(2).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
-    String value3 = delegateSet.permissions().get(3).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
+    String value0 = delegateSet.permissions().get(0).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    String value1 = delegateSet.permissions().get(1).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    String value2 = delegateSet.permissions().get(2).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    String value3 = delegateSet.permissions().get(3).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
     assertThat(value0).isEqualTo("Payment");
     assertThat(value1).isEqualTo("TrustSet");
     assertThat(value2).isEqualTo("OfferCreate");
@@ -302,9 +308,12 @@ public class DelegateSetTest {
       .build();
 
     assertThat(delegateSet.permissions()).hasSize(3);
-    String value0 = delegateSet.permissions().get(0).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
-    String value1 = delegateSet.permissions().get(1).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
-    String value2 = delegateSet.permissions().get(2).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
+    String value0 = delegateSet.permissions().get(0).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    String value1 = delegateSet.permissions().get(1).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    String value2 = delegateSet.permissions().get(2).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
     assertThat(value0).isEqualTo("Payment");
     assertThat(value1).isEqualTo("TrustSet");
     assertThat(value2).isEqualTo("OfferCreate");
@@ -334,9 +343,12 @@ public class DelegateSetTest {
       .build();
 
     assertThat(delegateSet.permissions()).hasSize(3);
-    String value0 = delegateSet.permissions().get(0).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
-    String value1 = delegateSet.permissions().get(1).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
-    String value2 = delegateSet.permissions().get(2).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
+    String value0 = delegateSet.permissions().get(0).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    String value1 = delegateSet.permissions().get(1).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    String value2 = delegateSet.permissions().get(2).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
     assertThat(value0).isEqualTo("TrustlineAuthorize");
     assertThat(value1).isEqualTo("TrustlineFreeze");
     assertThat(value2).isEqualTo("PaymentMint");
@@ -366,9 +378,12 @@ public class DelegateSetTest {
       .build();
 
     assertThat(delegateSet.permissions()).hasSize(3);
-    String value0 = delegateSet.permissions().get(0).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
-    String value1 = delegateSet.permissions().get(1).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
-    String value2 = delegateSet.permissions().get(2).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
+    String value0 = delegateSet.permissions().get(0).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    String value1 = delegateSet.permissions().get(1).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
+    String value2 = delegateSet.permissions().get(2).permission().permissionValue()
+      .map(tx -> tx.value(), g -> g.value());
     assertThat(value0).isEqualTo("Payment");
     assertThat(value1).isEqualTo("TrustlineAuthorize");
     assertThat(value2).isEqualTo("EscrowCreate");
@@ -406,7 +421,8 @@ public class DelegateSetTest {
         .build();
 
       assertThat(delegateSet.permissions()).hasSize(1);
-      String permissionValue = delegateSet.permissions().get(0).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
+      String permissionValue = delegateSet.permissions().get(0).permission().permissionValue()
+        .map(tx -> tx.value(), g -> g.value());
       assertThat(permissionValue).isEqualTo(txType.value());
     }
   }
@@ -469,7 +485,8 @@ public class DelegateSetTest {
         .build();
 
       assertThat(delegateSet.permissions()).hasSize(1);
-      String permissionValue = delegateSet.permissions().get(0).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
+      String permissionValue = delegateSet.permissions().get(0).permission().permissionValue()
+        .map(tx -> tx.value(), g -> g.value());
       assertThat(permissionValue).isEqualTo(granularPerm.value());
     }
   }

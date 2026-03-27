@@ -69,9 +69,9 @@ public class DefaultDefinitionsProvider implements DefinitionsProvider {
 
       // Return a new Definitions object with the generated PERMISSION_VALUES
       return ImmutableDefinitions.builder()
-              .from(baseDefinitions)
-              .permissionValues(permissionValues)
-              .build();
+        .from(baseDefinitions)
+        .permissionValues(permissionValues)
+        .build();
     });
   }
 

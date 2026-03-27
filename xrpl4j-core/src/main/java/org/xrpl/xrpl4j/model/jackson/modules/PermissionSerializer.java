@@ -45,7 +45,11 @@ public class PermissionSerializer extends StdScalarSerializer<Permission> {
     JsonGenerator gen,
     SerializerProvider provider
   ) throws IOException {
-    gen.writeString(permission.value());
+    String value = permission.map(
+      transactionTypePermission -> transactionTypePermission.value(),
+      granularPermissionValue -> granularPermissionValue.value()
+    );
+    gen.writeString(value);
   }
 }
 

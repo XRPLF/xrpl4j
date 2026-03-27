@@ -74,7 +74,6 @@ public interface GranularPermissionValue extends Permission {
    * @return The string value of the granular permission.
    */
   @Value.Derived
-  @Override
   default String value() {
     return granularPermission().value();
   }

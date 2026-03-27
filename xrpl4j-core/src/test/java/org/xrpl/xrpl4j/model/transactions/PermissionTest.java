@@ -132,13 +132,21 @@ public class PermissionTest {
   void testValueMethodForTransactionTypePermission() {
     Permission permission = TransactionTypePermission.of(TransactionType.ESCROW_CREATE);
 
-    assertThat(permission.value()).isEqualTo("EscrowCreate");
+    String value = permission.map(
+      txPermission -> txPermission.value(),
+      granularPermission -> granularPermission.value()
+    );
+    assertThat(value).isEqualTo("EscrowCreate");
   }
 
   @Test
   void testValueMethodForGranularPermissionValue() {
     Permission permission = GranularPermissionValue.of(GranularPermission.TRUSTLINE_FREEZE);
 
-    assertThat(permission.value()).isEqualTo("TrustlineFreeze");
+    String value = permission.map(
+      txPermission -> txPermission.value(),
+      granularPermission -> granularPermission.value()
+    );
+    assertThat(value).isEqualTo("TrustlineFreeze");
   }
 }

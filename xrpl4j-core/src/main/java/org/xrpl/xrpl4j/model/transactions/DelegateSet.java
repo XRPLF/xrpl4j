@@ -140,7 +140,10 @@ public interface DelegateSet extends Transaction {
   default void validateNoDuplicatePermissions() {
     Set<String> permissionValues = new HashSet<>();
     for (AccountPermissionWrapper wrapper : permissions()) {
-      String permissionValue = wrapper.permission().permissionValue().value();
+      String permissionValue = wrapper.permission().permissionValue().map(
+        transactionTypePermission -> transactionTypePermission.value(),
+        granularPermissionValue -> granularPermissionValue.value()
+      );
       Preconditions.checkArgument(
         permissionValues.add(permissionValue),
         "DelegateSet: Permissions array cannot contain duplicate values"

@@ -30,7 +30,6 @@ import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TransactionTypePermission;
 
 import java.io.IOException;
-import java.util.Optional;
 
 /**
  * Custom Jackson deserializer for {@link Permission}s.
@@ -54,16 +53,13 @@ public class PermissionDeserializer extends StdDeserializer<Permission> {
       return TransactionTypePermission.of(transactionType);
     }
 
-    // Try to parse as GranularPermission
-    Optional<GranularPermission> granularPermission = GranularPermission.forValue(value);
-    if (granularPermission.isPresent()) {
-      return GranularPermissionValue.of(granularPermission.get());
-    }
-
-    // If neither, throw an exception
-    throw new IllegalArgumentException(
-      String.format("Unknown permission value: %s", value)
-    );
+    // Try to parse as GranularPermission. If not present, throw an exception because one of
+    // either transactionType or granularPermission must be present.
+    return GranularPermission.forValue(value)
+      .map(GranularPermissionValue::of)
+      .orElseThrow(() -> new IllegalArgumentException(
+        String.format("Unknown permission value: %s", value)
+      ));
   }
 }
 

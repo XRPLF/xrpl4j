@@ -90,12 +90,5 @@ public interface Permission {
       throw new IllegalStateException(String.format("Unsupported Permission Type: %s", this.getClass()));
     }
   }
-
-  /**
-   * Get the string value of this permission for JSON serialization.
-   *
-   * @return A {@link String} representing the permission value.
-   */
-  String value();
 }
 

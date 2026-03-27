@@ -73,7 +73,6 @@ public interface TransactionTypePermission extends Permission {
    * @return The string value of the transaction type.
    */
   @Value.Derived
-  @Override
   default String value() {
     return transactionType().value();
   }

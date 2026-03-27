@@ -115,16 +115,20 @@ public class DelegateObjectTest extends AbstractJsonTest {
       .build();
 
     assertThat(delegateObject.permissions()).hasSize(3);
-    assertThat(delegateObject.permissions().get(0).permission().permissionValue().value()).isEqualTo("Payment");
-    assertThat(delegateObject.permissions().get(1).permission().permissionValue().value()).isEqualTo("TrustSet");
-    assertThat(delegateObject.permissions().get(2).permission().permissionValue().value()).isEqualTo("OfferCreate");
+    String value0 = delegateObject.permissions().get(0).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
+    String value1 = delegateObject.permissions().get(1).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
+    String value2 = delegateObject.permissions().get(2).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
+    assertThat(value0).isEqualTo("Payment");
+    assertThat(value1).isEqualTo("TrustSet");
+    assertThat(value2).isEqualTo("OfferCreate");
   }
 
   @Test
   void testWithSinglePermission() {
     DelegateObject delegateObject = createMinimalDelegateObject();
     assertThat(delegateObject.permissions()).hasSize(1);
-    assertThat(delegateObject.permissions().get(0).permission().permissionValue().value()).isEqualTo("Payment");
+    String permissionValue = delegateObject.permissions().get(0).permission().permissionValue().map(tx -> tx.value(), g -> g.value());
+    assertThat(permissionValue).isEqualTo("Payment");
   }
 
   @Test

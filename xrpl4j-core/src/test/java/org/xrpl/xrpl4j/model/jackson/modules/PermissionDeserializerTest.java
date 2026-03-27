@@ -78,30 +78,38 @@ class PermissionDeserializerTest {
   @Test
   void testDeserializeMultipleTransactionTypes() throws IOException {
     String[] transactionTypes = {"TrustSet", "OfferCreate", "EscrowFinish", "CheckCash"};
-    
+
     for (String txType : transactionTypes) {
       JsonParser mockJsonParser = mock(JsonParser.class);
       when(mockJsonParser.getValueAsString()).thenReturn(txType);
-      
+
       Permission permission = deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class));
-      
+
       assertThat(permission).isInstanceOf(TransactionTypePermission.class);
-      assertThat(permission.value()).isEqualTo(txType);
+      String value = permission.map(
+        txPermission -> txPermission.value(),
+        granularPermission -> granularPermission.value()
+      );
+      assertThat(value).isEqualTo(txType);
     }
   }
 
   @Test
   void testDeserializeMultipleGranularPermissions() throws IOException {
     String[] granularPermissions = {"PaymentMint", "TrustlineFreeze", "AccountDomainSet"};
-    
+
     for (String granularPerm : granularPermissions) {
       JsonParser mockJsonParser = mock(JsonParser.class);
       when(mockJsonParser.getValueAsString()).thenReturn(granularPerm);
-      
+
       Permission permission = deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class));
-      
+
       assertThat(permission).isInstanceOf(GranularPermissionValue.class);
-      assertThat(permission.value()).isEqualTo(granularPerm);
+      String value = permission.map(
+        txPermission -> txPermission.value(),
+        granularPermission -> granularPermission.value()
+      );
+      assertThat(value).isEqualTo(granularPerm);
     }
   }
 

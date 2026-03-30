@@ -110,6 +110,8 @@ public interface BatchSigner {
 
   /**
    * Validates that the BatchSigner has either direct signing fields or multi-sig signers, but not both.
+   *
+   * @return A validated and normalized {@link BatchSigner}.
    */
   @Value.Check
   default BatchSigner checkAndNormalize() {

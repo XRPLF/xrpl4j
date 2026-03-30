@@ -32,6 +32,8 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -161,6 +163,50 @@ public class PaymentJsonTests extends AbstractJsonTest {
       "  \"CredentialIDs\": [\"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37\"]," +
       "  \"DestinationTag\": 736049272," +
       "  \"DomainID\": \"A2356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B3F\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(payment, json);
+  }
+
+  @Test
+  public void testJsonWithMptPathStep() throws JsonProcessingException, JSONException {
+    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+
+    Payment payment = Payment.builder()
+      .account(Address.of("rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn"))
+      .destination(Address.of("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK"))
+      .amount(MptCurrencyAmount.builder()
+        .mptIssuanceId(mptId)
+        .value("5000")
+        .build())
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(6))
+      .addPaths(Lists.newArrayList(
+        PathStep.builder()
+          .mptIssuanceId(mptId)
+          .build()
+      ))
+      .flags(PaymentFlags.UNSET)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    String json = "{" +
+      "  \"Account\": \"rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn\"," +
+      "  \"Destination\": \"r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK\"," +
+      "  \"TransactionType\": \"Payment\"," +
+      "  \"Amount\": {" +
+      "    \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\"," +
+      "    \"value\": \"5000\"" +
+      "  }," +
+      "  \"Fee\": \"12\"," +
+      "  \"Flags\": 0," +
+      "  \"Sequence\": 6," +
+      "  \"Paths\": [[{" +
+      "    \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\"" +
+      "  }]]," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
 
     assertCanSerializeAndDeserialize(payment, json);

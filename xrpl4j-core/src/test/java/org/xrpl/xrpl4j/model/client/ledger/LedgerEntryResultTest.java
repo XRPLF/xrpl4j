@@ -23,8 +23,10 @@ import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.CredentialObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.ledger.NfToken;
 import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
 import org.xrpl.xrpl4j.model.ledger.NfTokenWrapper;
@@ -41,6 +43,7 @@ import org.xrpl.xrpl4j.model.transactions.CredentialType;
 import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
@@ -124,7 +127,7 @@ class LedgerEntryResultTest extends AbstractJsonTest {
           .account(Address.of("rNqXnvSYbjZeJQ6jWcf6T5mnNMRPzHXaZW"))
           .asset(Issue.XRP)
           .asset2(
-            Issue.builder()
+            IouIssue.builder()
               .currency("7872706C346A436F696E00000000000000000000")
               .issuer(Address.of("rDeo7rDoYw6AUKGneWwfkHPsMJagxcGWy1"))
               .build()
@@ -219,6 +222,165 @@ class LedgerEntryResultTest extends AbstractJsonTest {
       "      }" +
       "    ]," +
       "    \"index\": \"6BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08692\"" +
+      "  }," +
+      "  \"status\": \"success\"," +
+      "  \"validated\": true" +
+      "}";
+
+    assertCanSerializeAndDeserialize(result, json);
+  }
+
+  @Test
+  void testAmmResultWithMptAsset() throws JSONException, JsonProcessingException {
+    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+
+    LedgerEntryResult<AmmObject> result = LedgerEntryResult.<AmmObject>builder()
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(607272)))
+      .ledgerHash(Hash256.of("EEB650A0FD3CF0A5CE68B3DBD67C902FEC85E6AFAE1D0A7A7AF4BAD2F38557C7"))
+      .validated(true)
+      .index(Hash256.of("6BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08692"))
+      .node(
+        AmmObject.builder()
+          .account(Address.of("rNqXnvSYbjZeJQ6jWcf6T5mnNMRPzHXaZW"))
+          .asset(MptIssue.of(mptId))
+          .asset2(Issue.XRP)
+          .auctionSlot(
+            AuctionSlot.builder()
+              .account(Address.of("rDeo7rDoYw6AUKGneWwfkHPsMJagxcGWy1"))
+              .discountedFee(TradingFee.of(UnsignedInteger.valueOf(77)))
+              .expiration(UnsignedInteger.valueOf(750359162))
+              .price(
+                IssuedCurrencyAmount.builder()
+                  .currency("03DCF8F3910BFE6AB56136A90BD41E0902E23C4F")
+                  .value("0")
+                  .issuer(Address.of("rNqXnvSYbjZeJQ6jWcf6T5mnNMRPzHXaZW"))
+                  .build()
+              )
+              .build()
+          )
+          .lpTokenBalance(
+            IssuedCurrencyAmount.builder()
+              .currency("03DCF8F3910BFE6AB56136A90BD41E0902E23C4F")
+              .issuer(Address.of("rNqXnvSYbjZeJQ6jWcf6T5mnNMRPzHXaZW"))
+              .value("70606.68056410846")
+              .build()
+          )
+          .ownerNode("0")
+          .tradingFee(TradingFee.of(UnsignedInteger.valueOf(778)))
+          .addVoteSlots(
+            VoteEntryWrapper.of(VoteEntry.builder()
+              .account(Address.of("rDeo7rDoYw6AUKGneWwfkHPsMJagxcGWy1"))
+              .tradingFee(TradingFee.of(UnsignedInteger.valueOf(1000)))
+              .voteWeight(VoteWeight.of(UnsignedInteger.valueOf(70815)))
+              .build())
+          )
+          .index(Hash256.of("6BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08692"))
+          .build()
+      )
+      .status("success")
+      .build();
+
+    String json = "{" +
+      "  \"index\": \"6BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08692\"," +
+      "  \"ledger_hash\": \"EEB650A0FD3CF0A5CE68B3DBD67C902FEC85E6AFAE1D0A7A7AF4BAD2F38557C7\"," +
+      "  \"ledger_index\": 607272," +
+      "  \"node\": {" +
+      "    \"Account\": \"rNqXnvSYbjZeJQ6jWcf6T5mnNMRPzHXaZW\"," +
+      "    \"Asset\": {" +
+      "      \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\"" +
+      "    }," +
+      "    \"Asset2\": {" +
+      "      \"currency\": \"XRP\"" +
+      "    }," +
+      "    \"AuctionSlot\": {" +
+      "      \"Account\": \"rDeo7rDoYw6AUKGneWwfkHPsMJagxcGWy1\"," +
+      "      \"DiscountedFee\": 77," +
+      "      \"Expiration\": 750359162," +
+      "      \"Price\": {" +
+      "        \"currency\": \"03DCF8F3910BFE6AB56136A90BD41E0902E23C4F\"," +
+      "        \"issuer\": \"rNqXnvSYbjZeJQ6jWcf6T5mnNMRPzHXaZW\"," +
+      "        \"value\": \"0\"" +
+      "      }" +
+      "    }," +
+      "    \"Flags\": 0," +
+      "    \"LPTokenBalance\": {" +
+      "      \"currency\": \"03DCF8F3910BFE6AB56136A90BD41E0902E23C4F\"," +
+      "      \"issuer\": \"rNqXnvSYbjZeJQ6jWcf6T5mnNMRPzHXaZW\"," +
+      "      \"value\": \"70606.68056410846\"" +
+      "    }," +
+      "    \"LedgerEntryType\": \"AMM\"," +
+      "    \"OwnerNode\": \"0\"," +
+      "    \"TradingFee\": 778," +
+      "    \"VoteSlots\": [" +
+      "      {" +
+      "        \"VoteEntry\": {" +
+      "          \"Account\": \"rDeo7rDoYw6AUKGneWwfkHPsMJagxcGWy1\"," +
+      "          \"TradingFee\": 1000," +
+      "          \"VoteWeight\": 70815" +
+      "        }" +
+      "      }" +
+      "    ]," +
+      "    \"index\": \"6BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08692\"" +
+      "  }," +
+      "  \"status\": \"success\"," +
+      "  \"validated\": true" +
+      "}";
+
+    assertCanSerializeAndDeserialize(result, json);
+  }
+
+  @Test
+  void testAmmResultWithBothMptAssets() throws JSONException, JsonProcessingException {
+    MpTokenIssuanceId mptId1 = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+    MpTokenIssuanceId mptId2 = MpTokenIssuanceId.of("00000003430427B80BD2D09D36B70B969E12801065F22309");
+
+    LedgerEntryResult<AmmObject> result = LedgerEntryResult.<AmmObject>builder()
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(607272)))
+      .ledgerHash(Hash256.of("EEB650A0FD3CF0A5CE68B3DBD67C902FEC85E6AFAE1D0A7A7AF4BAD2F38557C7"))
+      .validated(true)
+      .index(Hash256.of("7BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08693"))
+      .node(
+        AmmObject.builder()
+          .account(Address.of("rNqXnvSYbjZeJQ6jWcf6T5mnNMRPzHXaZW"))
+          .asset(MptIssue.of(mptId1))
+          .asset2(MptIssue.of(mptId2))
+          .lpTokenBalance(
+            IssuedCurrencyAmount.builder()
+              .currency("03DCF8F3910BFE6AB56136A90BD41E0902E23C4F")
+              .issuer(Address.of("rNqXnvSYbjZeJQ6jWcf6T5mnNMRPzHXaZW"))
+              .value("50000.12345678901")
+              .build()
+          )
+          .ownerNode("0")
+          .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
+          .index(Hash256.of("7BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08693"))
+          .build()
+      )
+      .status("success")
+      .build();
+
+    String json = "{" +
+      "  \"index\": \"7BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08693\"," +
+      "  \"ledger_hash\": \"EEB650A0FD3CF0A5CE68B3DBD67C902FEC85E6AFAE1D0A7A7AF4BAD2F38557C7\"," +
+      "  \"ledger_index\": 607272," +
+      "  \"node\": {" +
+      "    \"Account\": \"rNqXnvSYbjZeJQ6jWcf6T5mnNMRPzHXaZW\"," +
+      "    \"Asset\": {" +
+      "      \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\"" +
+      "    }," +
+      "    \"Asset2\": {" +
+      "      \"mpt_issuance_id\": \"00000003430427B80BD2D09D36B70B969E12801065F22309\"" +
+      "    }," +
+      "    \"Flags\": 0," +
+      "    \"LPTokenBalance\": {" +
+      "      \"currency\": \"03DCF8F3910BFE6AB56136A90BD41E0902E23C4F\"," +
+      "      \"issuer\": \"rNqXnvSYbjZeJQ6jWcf6T5mnNMRPzHXaZW\"," +
+      "      \"value\": \"50000.12345678901\"" +
+      "    }," +
+      "    \"LedgerEntryType\": \"AMM\"," +
+      "    \"OwnerNode\": \"0\"," +
+      "    \"TradingFee\": 500," +
+      "    \"index\": \"7BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08693\"" +
       "  }," +
       "  \"status\": \"success\"," +
       "  \"validated\": true" +

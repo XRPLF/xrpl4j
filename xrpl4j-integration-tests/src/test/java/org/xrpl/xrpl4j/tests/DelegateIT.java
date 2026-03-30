@@ -446,7 +446,7 @@ public class DelegateIT extends AbstractIT {
 
     /////////////////////////
     // Wait for the create transaction to be validated
-    TransactionResult<DelegateSet> validatedCreateTransaction = this.scanForResult(
+    this.scanForResult(
       () -> this.getValidatedTransaction(createResult.transactionResult().hash(), DelegateSet.class)
     );
 
@@ -495,7 +495,7 @@ public class DelegateIT extends AbstractIT {
 
     /////////////////////////
     // Wait for the removal transaction to be validated
-    TransactionResult<DelegateSet> validatedRemoveTransaction = this.scanForResult(
+    this.scanForResult(
       () -> this.getValidatedTransaction(removeResult.transactionResult().hash(), DelegateSet.class)
     );
 

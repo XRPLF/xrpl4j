@@ -23,72 +23,15 @@ package org.xrpl.xrpl4j.crypto.signing;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.Beta;
-import com.google.common.base.Preconditions;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
-import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
-import org.xrpl.xrpl4j.model.transactions.AccountDelete;
-import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AmmBid;
-import org.xrpl.xrpl4j.model.transactions.AmmClawback;
-import org.xrpl.xrpl4j.model.transactions.AmmCreate;
-import org.xrpl.xrpl4j.model.transactions.AmmDelete;
-import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
-import org.xrpl.xrpl4j.model.transactions.AmmVote;
-import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.Batch;
-import org.xrpl.xrpl4j.model.transactions.CheckCancel;
-import org.xrpl.xrpl4j.model.transactions.CheckCash;
-import org.xrpl.xrpl4j.model.transactions.CheckCreate;
-import org.xrpl.xrpl4j.model.transactions.Clawback;
-import org.xrpl.xrpl4j.model.transactions.CredentialAccept;
-import org.xrpl.xrpl4j.model.transactions.CredentialCreate;
-import org.xrpl.xrpl4j.model.transactions.CredentialDelete;
-import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
-import org.xrpl.xrpl4j.model.transactions.DidDelete;
-import org.xrpl.xrpl4j.model.transactions.DidSet;
-import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
-import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
-import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
-import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
-import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
-import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
-import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
-import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
-import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
-import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
-import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
-import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
-import org.xrpl.xrpl4j.model.transactions.OfferCancel;
-import org.xrpl.xrpl4j.model.transactions.OfferCreate;
-import org.xrpl.xrpl4j.model.transactions.OracleDelete;
-import org.xrpl.xrpl4j.model.transactions.OracleSet;
-import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
-import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
-import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
-import org.xrpl.xrpl4j.model.transactions.PermissionedDomainDelete;
-import org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet;
-import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
-import org.xrpl.xrpl4j.model.transactions.SignerListSet;
-import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
-import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
-import org.xrpl.xrpl4j.model.transactions.TrustSet;
-import org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit;
-import org.xrpl.xrpl4j.model.transactions.XChainAddAccountCreateAttestation;
-import org.xrpl.xrpl4j.model.transactions.XChainAddClaimAttestation;
-import org.xrpl.xrpl4j.model.transactions.XChainClaim;
-import org.xrpl.xrpl4j.model.transactions.XChainCommit;
-import org.xrpl.xrpl4j.model.transactions.XChainCreateBridge;
-import org.xrpl.xrpl4j.model.transactions.XChainCreateClaimId;
-import org.xrpl.xrpl4j.model.transactions.XChainModifyBridge;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -247,76 +190,4 @@ public class SignatureUtils {
     }
   }
 
-  /**
-   * Add {@link Transaction#transactionSignature()} to the given transaction. Because {@link Transaction} is not an
-   * Immutable object, it does not have a generated builder like its subclasses do. Thus, this method needs to rebuild
-   * transactions based on their runtime type.
-   *
-   * @param transaction An unsigned {@link Transaction} to add a signature to. Note that
-   *                    {@link Transaction#transactionSignature()} must not be provided, and
-   *                    {@link Transaction#signingPublicKey()} must be provided.
-   * @param signature   A {@link Signature} containing the transaction signature.
-   * @param <T>         extends {@link Transaction}.
-   *
-   * @return A copy of {@code transaction} with the {@link Transaction#transactionSignature()} field added.
-   *
-   * @deprecated This method will be removed in a future version. Prefer using
-   *   {@link Transaction#withTransactionSignature(Signature)}
-   */
-  @SuppressWarnings("unchecked")
-  @Deprecated
-  public <T extends Transaction> SingleSignedTransaction<T> addSignatureToTransaction(
-    final T transaction, final Signature signature
-  ) {
-    Objects.requireNonNull(transaction);
-    Objects.requireNonNull(signature);
-
-    // This precondition will move to SingleSignedTransaction#check() once we remove this method.
-    Preconditions.checkArgument(
-      !transaction.transactionSignature().isPresent(),
-      "Transactions to be signed must not already include a signature."
-    );
-
-    final Transaction transactionWithSignature = transaction.withTransactionSignature(signature);
-
-    return SingleSignedTransaction.<T>builder()
-      .unsignedTransaction(transaction)
-      .signature(signature)
-      .signedTransaction((T) transactionWithSignature)
-      .build();
-  }
-
-  /**
-   * Add {@link Transaction#signers()}} to the given transaction. Because {@link Transaction} is not an Immutable
-   * object, it does not have a generated builder like its subclasses do. Thus, this method needs to rebuild
-   * transactions based on their runtime type.
-   *
-   * @param transaction An unsigned {@link Transaction} to add a signature to. Note that
-   *                    {@link Transaction#transactionSignature()} must not be provided, and
-   *                    {@link Transaction#signingPublicKey()} must be an empty string.
-   * @param signers     A {@link List} of {@link SignerWrapper}s containing the transaction signatures.
-   * @param <T>         extends {@link Transaction}.
-   *
-   * @return A copy of {@code transaction} with the {@link Transaction#signers()}} field added.
-   *
-   * @deprecated This method will be removed in a future version. Prefer using
-   *   {@link Transaction#withSigners(Iterable)}.
-   */
-  @SuppressWarnings("unchecked")
-  @Deprecated
-  public <T extends Transaction> T addMultiSignaturesToTransaction(T transaction, List<SignerWrapper> signers) {
-    Objects.requireNonNull(transaction);
-    Objects.requireNonNull(signers);
-
-    Preconditions.checkArgument(
-      !transaction.transactionSignature().isPresent(),
-      "Transactions to be signed must not already include a signature."
-    );
-    Preconditions.checkArgument(
-      transaction.signingPublicKey().equals(PublicKey.MULTI_SIGN_PUBLIC_KEY),
-      "Transactions to be multisigned must set signingPublicKey to an empty String."
-    );
-
-    return (T) transaction.withSigners(signers);
-  }
 }

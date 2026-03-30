@@ -165,9 +165,9 @@ class MultiSignedTransactionTest {
         .addSignerSet(signer1)
         .build()
     );
-    // Note: This error comes from SignatureUtils.addMultiSignaturesToTransaction(), not from check()
     assertThat(exception.getMessage()).isEqualTo(
-      "Transactions to be signed must not already include a signature.");
+      "Transactions to be multi-signed must not include a signature (this is reserved for single-sig)."
+    );
   }
 
   @Test
@@ -203,9 +203,8 @@ class MultiSignedTransactionTest {
         .addSignerSet(signer1)
         .build()
     );
-    // Note: This error comes from SignatureUtils.addMultiSignaturesToTransaction(), not from check()
     assertThat(exception.getMessage()).isEqualTo(
-      "Transactions to be multisigned must set signingPublicKey to an empty String.");
+      "Transactions to be multi-signed must set `signingPublicKey` to an empty public key.");
   }
 
   @Test
@@ -232,6 +231,6 @@ class MultiSignedTransactionTest {
         .addSignerSet(signer1)
         .build()
     );
-    assertThat(exception.getMessage()).isEqualTo("Transactions to be multi-signed must not have Signers.");
+    assertThat(exception.getMessage()).isEqualTo("Transactions to be multi-signed must not already have Signers.");
   }
 }

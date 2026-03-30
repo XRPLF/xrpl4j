@@ -21,7 +21,6 @@ package org.xrpl.xrpl4j.crypto.signing;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,11 +40,10 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -54,8 +52,6 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.model.AddressConstants;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
-import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
-import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
@@ -150,7 +146,6 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -683,35 +678,25 @@ public class SignatureUtilsTest {
   // //////////////////////////
 
   @Test
-  public void addSignatureToTransactionWithNullTransaction() {
-    assertThrows(NullPointerException.class, () -> signatureUtils.addSignatureToTransaction(null, signatureMock));
-  }
-
-  @Test
-  public void addSignatureToTransactionWithNullSignature() {
-    assertThrows(NullPointerException.class, () -> signatureUtils.addSignatureToTransaction(transactionMock, null));
-  }
-
-  @Test
   public void addSignatureToTransactionWithEmptySigningPublicKey() {
-    Payment payment = Payment.builder().account(sourcePublicKey.deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE)).sequence(UnsignedInteger.ONE)
-      .destination(sourcePublicKey.deriveAddress()).amount(XrpCurrencyAmount.ofDrops(12345))
+    Payment payment = Payment.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .destination(sourcePublicKey.deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(12345))
       .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY) // <-- The crux of the test
       .build();
-
-    // This should not succeed (empty public key is reserved for multisig)
-    assertThrows(IllegalArgumentException.class,
-      () -> signatureUtils.addSignatureToTransaction(payment, signatureMock));
-
-    final Signature signature = Signature.fromBase16(
-      "F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E" +
-        "9AFF11A4AA46F09ECFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500");
-
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> SingleSignedTransaction.builder().unsignedTransaction(payment)
-        .signedTransaction(payment.withTransactionSignature(signature)).signature(signature).build()
+    final Signature signature = Signature.builder().value(UnsignedByteArray.of(new byte[0])).build();
+    final IllegalArgumentException result = assertThrows(IllegalArgumentException.class,
+      () -> SingleSignedTransaction.builder()
+        .unsignedTransaction(payment)
+        .signature(signature)
+        .signedTransaction(payment.withTransactionSignature(signature))
+        .build()
+    );
+    assertThat(result).hasMessageContaining(
+      "Transactions to be single-signed must not set `signingPublicKey` to the multisig (empty) public key."
     );
   }
 
@@ -1259,36 +1244,6 @@ public class SignatureUtilsTest {
   }
 
   @Test
-  void addMultiSignaturesWithNulls() {
-    assertThatThrownBy(
-      () -> signatureUtils.addMultiSignaturesToTransaction(null, Lists.newArrayList(signer1))).isInstanceOf(
-      NullPointerException.class);
-
-    assertThatThrownBy(
-      () -> signatureUtils.addMultiSignaturesToTransaction(mock(Transaction.class), null)).isInstanceOf(
-      NullPointerException.class);
-  }
-
-  @Test
-  void addMultiSignaturesWithTransactionSignaturePresent() {
-    when(transactionMock.transactionSignature()).thenReturn(Optional.of(Signature.fromBase16("00")));
-    assertThatThrownBy(
-      () -> signatureUtils.addMultiSignaturesToTransaction(transactionMock, Lists.newArrayList(signer1))).isInstanceOf(
-      IllegalArgumentException.class).hasMessage("Transactions to be signed must not already include a signature.");
-  }
-
-  @Test
-  void addMultiSignaturesWithSigningPublicKeyNonBlank() {
-    when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
-    when(transactionMock.signingPublicKey()).thenReturn(
-      PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A"));
-    assertThatThrownBy(
-      () -> signatureUtils.addMultiSignaturesToTransaction(transactionMock, Lists.newArrayList(signer1))).isInstanceOf(
-        IllegalArgumentException.class)
-      .hasMessage("Transactions to be multisigned must set signingPublicKey to an empty String.");
-  }
-
-  @Test
   public void addMultiSignaturesToTransactionPayment() {
     Payment payment = Payment.builder().account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE)).sequence(UnsignedInteger.ONE)
@@ -1770,7 +1725,12 @@ public class SignatureUtilsTest {
   private void addSignatureToTransactionHelper(final Transaction transaction) {
     Objects.requireNonNull(transaction);
     when(signatureMock.base16Value()).thenReturn("ED");
-    SingleSignedTransaction<?> result = signatureUtils.addSignatureToTransaction(transaction, signatureMock);
+    Transaction signedTransaction = transaction.withTransactionSignature(signatureMock);
+    SingleSignedTransaction<?> result = SingleSignedTransaction.builder()
+      .unsignedTransaction(transaction)
+      .signature(signatureMock)
+      .signedTransaction(signedTransaction)
+      .build();
     assertThat(result.unsignedTransaction()).isEqualTo(transaction);
     assertThat(result.signature().base16Value()).isEqualTo("ED");
     assertThat(result.signedTransaction().transactionSignature()).isPresent();
@@ -1780,8 +1740,7 @@ public class SignatureUtilsTest {
   private void addMultiSignatureToTransactionHelper(final Transaction transaction) {
     Objects.requireNonNull(transaction);
 
-    Transaction signedTransaction = signatureUtils.addMultiSignaturesToTransaction(transaction,
-      Lists.newArrayList(signer1, signer2));
+    Transaction signedTransaction = transaction.withSigners(Lists.newArrayList(signer1, signer2));
 
     assertThat(signedTransaction).usingRecursiveComparison().ignoringFields("signers").isEqualTo(transaction);
     assertThat(signedTransaction.signers()).asList().containsExactly(signer1, signer2);

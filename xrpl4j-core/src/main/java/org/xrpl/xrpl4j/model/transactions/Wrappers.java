@@ -856,6 +856,25 @@ public class Wrappers {
   @Beta
   abstract static class _AssetAmount extends Wrapper<String> implements Serializable {
 
+    /**
+     * Indicates whether this amount is negative.
+     *
+     * @return {@code true} if this amount is negative; {@code false} otherwise (i.e., if the value is 0 or positive).
+     */
+    public boolean isNegative() {
+      return this.value().startsWith("-");
+    }
+
+    /**
+     * Indicates whether this amount is zero. Handles all string representations of zero (e.g., "0", "0.0", "0.000",
+     * "0e0", "-0").
+     *
+     * @return {@code true} if this amount is zero; {@code false} otherwise.
+     */
+    public boolean isZero() {
+      return new BigDecimal(this.value()).signum() == 0;
+    }
+
     @Override
     public String toString() {
       return this.value();

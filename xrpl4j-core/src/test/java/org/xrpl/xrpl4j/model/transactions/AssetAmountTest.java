@@ -73,6 +73,88 @@ public class AssetAmountTest {
     assertThat(deserialized).isEqualTo(wrapper);
   }
 
+  // /////////////////
+  // isNegative
+  // /////////////////
+
+  @Test
+  void isNegativeWithPositiveValue() {
+    assertThat(AssetAmount.of("1000").isNegative()).isFalse();
+  }
+
+  @Test
+  void isNegativeWithZero() {
+    assertThat(AssetAmount.of("0").isNegative()).isFalse();
+  }
+
+  @Test
+  void isNegativeWithNegativeValue() {
+    assertThat(AssetAmount.of("-1000").isNegative()).isTrue();
+  }
+
+  @Test
+  void isNegativeWithNegativeDecimal() {
+    assertThat(AssetAmount.of("-0.001").isNegative()).isTrue();
+  }
+
+  @Test
+  void isNegativeWithNegativeZero() {
+    assertThat(AssetAmount.of("-0").isNegative()).isTrue();
+  }
+
+  // /////////////////
+  // isZero
+  // /////////////////
+
+  @Test
+  void isZeroWithZero() {
+    assertThat(AssetAmount.of("0").isZero()).isTrue();
+  }
+
+  @Test
+  void isZeroWithDecimalZero() {
+    assertThat(AssetAmount.of("0.0").isZero()).isTrue();
+  }
+
+  @Test
+  void isZeroWithTrailingZeros() {
+    assertThat(AssetAmount.of("0.000").isZero()).isTrue();
+  }
+
+  @Test
+  void isZeroWithScientificNotationZero() {
+    assertThat(AssetAmount.of("0e0").isZero()).isTrue();
+  }
+
+  @Test
+  void isZeroWithNegativeZero() {
+    assertThat(AssetAmount.of("-0").isZero()).isTrue();
+  }
+
+  @Test
+  void isZeroWithNegativeDecimalZero() {
+    assertThat(AssetAmount.of("-0.0").isZero()).isTrue();
+  }
+
+  @Test
+  void isZeroWithPositiveValue() {
+    assertThat(AssetAmount.of("1000").isZero()).isFalse();
+  }
+
+  @Test
+  void isZeroWithSmallPositiveValue() {
+    assertThat(AssetAmount.of("0.001").isZero()).isFalse();
+  }
+
+  @Test
+  void isZeroWithNegativeValue() {
+    assertThat(AssetAmount.of("-1000").isZero()).isFalse();
+  }
+
+  // /////////////////
+  // Equality
+  // /////////////////
+
   @Test
   void testEquality() {
     AssetAmount amount1 = AssetAmount.of("1000");

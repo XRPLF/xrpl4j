@@ -72,3 +72,62 @@ public interface Payment extends Transaction {
 - **Unit tests**: JUnit 5 + AssertJ + Mockito. Run via Surefire plugin.
 - **Integration tests**: JUnit 5 + Failsafe plugin. Classes match `*IT` pattern. Get 2 automatic retries for flakiness. Use Testcontainers where needed.
 - **Coverage**: JaCoCo with separate unit and integration reports.
+
+# XRPL Protocol Definition Files
+
+## 1. Transaction Fields + Required/Optional Status
+**File:** `/Users/rajp/Documents/code/rippled-lending-protocol/include/xrpl/protocol/detail/transactions.macro`
+
+Each transaction is defined using:
+`TRANSACTION(tag, value, name, delegatable, amendments, privileges, fields)`
+
+Fields use: `soeREQUIRED`, `soeOPTIONAL`, or `soeDEFAULT`
+
+**Common fields shared by ALL transactions:**
+`/Users/rajp/Documents/code/rippled-lending-protocol/src/libxrpl/protocol/TxFormats.cpp`
+
+---
+
+## 2. Data Types of Transaction Fields
+**File:** `/Users/rajp/Documents/code/rippled-lending-protocol/include/xrpl/protocol/detail/sfields.macro`
+
+Each field is defined using:
+`TYPED_SFIELD(sfFieldName, TYPE, fieldCode)`
+
+Available types: `UINT8`, `UINT16`, `UINT32`, `UINT64`, `UINT128`, `UINT256`,
+`INT32`, `AMOUNT`, `NUMBER`, `ACCOUNT`, `VL`, `VECTOR256`, `OBJECT`, `ARRAY`,
+`PATHSET`, `ISSUE`, `XCHAIN_BRIDGE`, `CURRENCY`
+
+---
+
+## 3. Ledger Object Fields + Required/Optional Status
+**File:** `/Users/rajp/Documents/code/rippled-lending-protocol/include/xrpl/protocol/detail/ledger_entries.macro`
+
+Each ledger object is defined using:
+`LEDGER_ENTRY(type, typeCode, name, jsonName, fields)`
+
+Fields use: `soeREQUIRED`, `soeOPTIONAL`, or `soeDEFAULT`
+
+---
+
+## 4. Data Types of Ledger Object Fields
+**Same file as #2:**
+`/Users/rajp/Documents/code/rippled-lending-protocol/include/xrpl/protocol/detail/sfields.macro`
+
+---
+
+## 5. Ledger Entry RPC Request Params
+**File:** `/Users/rajp/Documents/code/rippled-lending-protocol/src/xrpld/rpc/handlers/LedgerEntry.cpp`
+
+Contains the JSON parsing logic for each ledger entry type query,
+showing which fields can be used to look up each ledger object via the `ledger_entry` RPC.
+
+---
+
+## Notes on Field Requirement Levels
+| Value | Meaning |
+|---|---|
+| `soeREQUIRED` | Field must always be present |
+| `soeOPTIONAL` | Field may be present; omitted if not set |
+| `soeDEFAULT` | Field is optional; omitted from ledger when equal to its default (zero) value |
+

@@ -11,6 +11,7 @@ import java.util.Optional;
 
 /**
  * Clawback first-loss capital from a LoanBroker. Must be submitted by the asset issuer.
+ * The transaction can only clawback funds up to the minimum cover required for the current loans.
  *
  * <p>This class will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API is
  * subject to change.</p>

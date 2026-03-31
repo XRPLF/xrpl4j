@@ -47,10 +47,13 @@ import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.AssetAmount;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.ImmutablePayment;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
 import org.xrpl.xrpl4j.model.transactions.Signer;
@@ -707,6 +710,91 @@ class XrplBinaryCodecTest {
   }
 
   // /////////////////
+  // encodeForMultiSigningWithSigningPubKey
+  // /////////////////
+
+  @Test
+  void encodeForMultiSigningWithSigningPubKey() throws JsonProcessingException {
+    String signerAccountId = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
+    LoanSet loanSet = createLoanSet();
+    String json = objectMapper.writeValueAsString(loanSet);
+
+    String withPubKeyResult = encoder.encodeForMultiSigningWithSigningPubKey(json, signerAccountId);
+    String multiSignResult = encoder.encodeForMultiSigning(json, signerAccountId);
+
+    // Both should start with SMT prefix (4 bytes)
+    assertThat(withPubKeyResult).startsWith("534D5400");
+    assertThat(multiSignResult).startsWith("534D5400");
+
+    // Both should end with the same 20-byte account ID suffix
+    assertThat(withPubKeyResult.substring(withPubKeyResult.length() - 40))
+      .isEqualTo(multiSignResult.substring(multiSignResult.length() - 40));
+
+    // But they should differ because withPubKey preserves SigningPubKey while multiSign clears it
+    assertThat(withPubKeyResult).isNotEqualTo(multiSignResult);
+
+    // withPubKey result should be longer because it includes the non-empty SigningPubKey
+    assertThat(withPubKeyResult.length()).isGreaterThan(multiSignResult.length());
+  }
+
+  @Test
+  void encodeForMultiSigningWithSigningPubKeyPreservesSigningPubKey() throws JsonProcessingException {
+    String signerAccountId = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
+    LoanSet loanSet = createLoanSet();
+    String signingPubKey = loanSet.signingPublicKey().base16Value();
+    String json = objectMapper.writeValueAsString(loanSet);
+
+    String result = encoder.encodeForMultiSigningWithSigningPubKey(json, signerAccountId);
+
+    // Decode the result and verify SigningPubKey is present
+    String decoded = encoder.decode(result);
+    assertThat(decoded).contains(signingPubKey);
+  }
+
+  @Test
+  void encodeForMultiSigningWithSigningPubKeyWithNonObjectJsonThrowsException() {
+    String signerAccountId = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
+
+    // Test with JSON array
+    String jsonArray = "[\"value1\", \"value2\"]";
+    Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigningWithSigningPubKey(jsonArray, signerAccountId))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("JSON object required for signing");
+
+    // Test with JSON primitive (string)
+    String jsonString = "\"just a string\"";
+    Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigningWithSigningPubKey(jsonString, signerAccountId))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("JSON object required for signing");
+
+    // Test with JSON primitive (number)
+    String jsonNumber = "12345";
+    Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigningWithSigningPubKey(jsonNumber, signerAccountId))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("JSON object required for signing");
+  }
+
+  @Test
+  void encodeForMultiSigningWithSigningPubKeyWithDifferentSigners() throws JsonProcessingException {
+    LoanSet loanSet = createLoanSet();
+    String json = objectMapper.writeValueAsString(loanSet);
+
+    String signer1 = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
+    String signer2 = "rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw";
+
+    String result1 = encoder.encodeForMultiSigningWithSigningPubKey(json, signer1);
+    String result2 = encoder.encodeForMultiSigningWithSigningPubKey(json, signer2);
+
+    // The body should be the same (everything except the 20-byte account ID suffix)
+    assertThat(result1.substring(0, result1.length() - 40))
+      .isEqualTo(result2.substring(0, result2.length() - 40));
+
+    // But the 20-byte account ID suffix should be different
+    assertThat(result1.substring(result1.length() - 40))
+      .isNotEqualTo(result2.substring(result2.length() - 40));
+  }
+
+  // /////////////////
   // encodeForSigningClaim
   // /////////////////
 
@@ -776,6 +864,21 @@ class XrplBinaryCodecTest {
 
     // But the amount should be different
     assertThat(result1.substring(72)).isNotEqualTo(result2.substring(72));
+  }
+
+  // Helper method to create a minimal LoanSet transaction
+  private LoanSet createLoanSet() {
+    return LoanSet.builder()
+      .account(Address.of("rJ73aumLPTQQmy5wnGhvrogqf5DDhjuzc9"))
+      .fee(XrpCurrencyAmount.ofDrops(30))
+      .sequence(UnsignedInteger.ONE)
+      .loanBrokerId(Hash256.of(Strings.padStart("ABC123", 64, '0')))
+      .principalRequested(AssetAmount.of("50000"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey(
+          "EDC41841B85D6E6CA8EF82B9E4A08F29CD0966334EAC7F8690DAD6546F2DFC00A6"
+        )
+      ).build();
   }
 
   // Helper method to create inner payment transactions

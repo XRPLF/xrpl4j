@@ -28,6 +28,7 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -121,6 +122,16 @@ public abstract class AbstractSignatureService<P extends PrivateKeyable> impleme
   @Override
   public Signature multiSignInner(final P privateKeyable, final Batch batchTransaction) {
     return abstractTransactionSigner.multiSignInner(privateKeyable, batchTransaction);
+  }
+
+  @Override
+  public Signature counterpartySign(final P privateKeyable, final LoanSet transaction) {
+    return abstractTransactionSigner.counterpartySign(privateKeyable, transaction);
+  }
+
+  @Override
+  public Signature counterpartyMultiSign(final P privateKeyable, final LoanSet transaction) {
+    return abstractTransactionSigner.counterpartyMultiSign(privateKeyable, transaction);
   }
 
   @Override

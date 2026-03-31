@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
@@ -46,4 +47,17 @@ public interface LoanBrokerDelete extends Transaction {
    */
   @JsonProperty("LoanBrokerID")
   Hash256 loanBrokerId();
+
+  /**
+   * Validates LoanBrokerDelete data verification preconditions per the XLS-66 spec and rippled preflight.
+   */
+  @Value.Check
+  default void check() {
+    Preconditions.checkArgument(
+      !loanBrokerId().value().equals(
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ),
+      "LoanBrokerID must not be zero."
+    );
+  }
 }

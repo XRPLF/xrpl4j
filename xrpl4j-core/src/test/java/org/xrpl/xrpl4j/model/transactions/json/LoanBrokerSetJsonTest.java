@@ -20,7 +20,7 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 public class LoanBrokerSetJsonTest extends AbstractJsonTest {
 
   @Test
-  public void testLoanBrokerSetJson() throws JsonProcessingException, JSONException {
+  public void testLoanBrokerSetCreateJson() throws JsonProcessingException, JSONException {
     LoanBrokerSet loanBrokerSet = LoanBrokerSet.builder()
       .account(Address.of("rU1Cm8GymH5U1WuTcmMTUZ5XjwJbanQoA8"))
       .fee(XrpCurrencyAmount.ofDrops(15))
@@ -31,7 +31,6 @@ public class LoanBrokerSetJsonTest extends AbstractJsonTest {
         )
       )
       .vaultId(Hash256.of("F07A0E3933CB0E1402E52F312CBBB3CE301932F5E8B8340344B79A48574529F0"))
-      .loanBrokerId(Hash256.of("A07A0E3933CB0E1402E52F312CBBB3CE301932F5E8B8340344B79A48574529F0"))
       .data(LoanBrokerData.of("010203"))
       .managementFeeRate(UnsignedInteger.valueOf(10000))
       .debtMaximum(AssetAmount.of("250000"))
@@ -46,12 +45,43 @@ public class LoanBrokerSetJsonTest extends AbstractJsonTest {
       "  \"Sequence\": 188," +
       "  \"SigningPubKey\": \"ED1F863E4E0957C6965B7B0563D56C77E4F68D571E8026251834F0ADBB0411D6FD\"," +
       "  \"VaultID\": \"F07A0E3933CB0E1402E52F312CBBB3CE301932F5E8B8340344B79A48574529F0\"," +
-      "  \"LoanBrokerID\": \"A07A0E3933CB0E1402E52F312CBBB3CE301932F5E8B8340344B79A48574529F0\"," +
       "  \"Data\": \"010203\"," +
       "  \"ManagementFeeRate\": 10000," +
       "  \"DebtMaximum\": \"250000\"," +
       "  \"CoverRateMinimum\": 15000," +
       "  \"CoverRateLiquidation\": 12000" +
+      "}";
+
+    assertCanSerializeAndDeserialize(loanBrokerSet, json);
+  }
+
+  @Test
+  public void testLoanBrokerSetUpdateJson() throws JsonProcessingException, JSONException {
+    LoanBrokerSet loanBrokerSet = LoanBrokerSet.builder()
+      .account(Address.of("rU1Cm8GymH5U1WuTcmMTUZ5XjwJbanQoA8"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(188))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey(
+          "ED1F863E4E0957C6965B7B0563D56C77E4F68D571E8026251834F0ADBB0411D6FD"
+        )
+      )
+      .vaultId(Hash256.of("F07A0E3933CB0E1402E52F312CBBB3CE301932F5E8B8340344B79A48574529F0"))
+      .loanBrokerId(Hash256.of("A07A0E3933CB0E1402E52F312CBBB3CE301932F5E8B8340344B79A48574529F0"))
+      .data(LoanBrokerData.of("010203"))
+      .debtMaximum(AssetAmount.of("250000"))
+      .build();
+
+    String json = "{" +
+      "  \"Account\": \"rU1Cm8GymH5U1WuTcmMTUZ5XjwJbanQoA8\"," +
+      "  \"TransactionType\": \"LoanBrokerSet\"," +
+      "  \"Fee\": \"15\"," +
+      "  \"Sequence\": 188," +
+      "  \"SigningPubKey\": \"ED1F863E4E0957C6965B7B0563D56C77E4F68D571E8026251834F0ADBB0411D6FD\"," +
+      "  \"VaultID\": \"F07A0E3933CB0E1402E52F312CBBB3CE301932F5E8B8340344B79A48574529F0\"," +
+      "  \"LoanBrokerID\": \"A07A0E3933CB0E1402E52F312CBBB3CE301932F5E8B8340344B79A48574529F0\"," +
+      "  \"Data\": \"010203\"," +
+      "  \"DebtMaximum\": \"250000\"" +
       "}";
 
     assertCanSerializeAndDeserialize(loanBrokerSet, json);

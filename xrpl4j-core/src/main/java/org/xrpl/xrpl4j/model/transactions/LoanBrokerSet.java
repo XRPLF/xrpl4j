@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
@@ -101,4 +102,72 @@ public interface LoanBrokerSet extends Transaction {
    */
   @JsonProperty("CoverRateLiquidation")
   Optional<UnsignedInteger> coverRateLiquidation();
+
+  /**
+   * Validates LoanBrokerSet data verification preconditions per the XLS-66 spec and rippled preflight.
+   */
+  @Value.Check
+  default void check() {
+    // VaultID must not be all zeros
+    Preconditions.checkArgument(
+      !vaultId().value().equals("0000000000000000000000000000000000000000000000000000000000000000"),
+      "VaultID must not be zero."
+    );
+
+    // LoanBrokerID, if present, must not be all zeros
+    loanBrokerId().ifPresent(id -> Preconditions.checkArgument(
+      !id.value().equals("0000000000000000000000000000000000000000000000000000000000000000"),
+      "LoanBrokerID must not be zero."
+    ));
+
+    // When updating (LoanBrokerID present), cannot modify fixed fields
+    loanBrokerId().ifPresent(id -> {
+      Preconditions.checkArgument(
+        !managementFeeRate().isPresent(),
+        "ManagementFeeRate cannot be modified when updating an existing LoanBroker."
+      );
+      Preconditions.checkArgument(
+        !coverRateMinimum().isPresent(),
+        "CoverRateMinimum cannot be modified when updating an existing LoanBroker."
+      );
+      Preconditions.checkArgument(
+        !coverRateLiquidation().isPresent(),
+        "CoverRateLiquidation cannot be modified when updating an existing LoanBroker."
+      );
+    });
+
+    // ManagementFeeRate must be between 0 and 10000 inclusive (0% to 10% in 1/10 bps)
+    managementFeeRate().ifPresent(rate -> Preconditions.checkArgument(
+      rate.compareTo(UnsignedInteger.valueOf(10000)) <= 0,
+      "ManagementFeeRate must be between 0 and 10000 inclusive."
+    ));
+
+    // DebtMaximum must not be negative
+    debtMaximum().ifPresent(debt -> Preconditions.checkArgument(
+      !debt.isNegative(),
+      "DebtMaximum must not be negative."
+    ));
+
+    // CoverRateMinimum must be between 0 and 100000 inclusive (0% to 100% in 1/10 bps)
+    coverRateMinimum().ifPresent(rate -> Preconditions.checkArgument(
+      rate.compareTo(UnsignedInteger.valueOf(100000)) <= 0,
+      "CoverRateMinimum must be between 0 and 100000 inclusive."
+    ));
+
+    // CoverRateLiquidation must be between 0 and 100000 inclusive (0% to 100% in 1/10 bps)
+    coverRateLiquidation().ifPresent(rate -> Preconditions.checkArgument(
+      rate.compareTo(UnsignedInteger.valueOf(100000)) <= 0,
+      "CoverRateLiquidation must be between 0 and 100000 inclusive."
+    ));
+
+    // CoverRateMinimum and CoverRateLiquidation must both be zero or both be non-zero
+    boolean minIsZero = !coverRateMinimum().isPresent() ||
+      coverRateMinimum().get().equals(UnsignedInteger.ZERO);
+    boolean liqIsZero = !coverRateLiquidation().isPresent() ||
+      coverRateLiquidation().get().equals(UnsignedInteger.ZERO);
+    Preconditions.checkArgument(
+      minIsZero == liqIsZero,
+      "CoverRateMinimum and CoverRateLiquidation must both be zero or both be non-zero."
+    );
+  }
 }

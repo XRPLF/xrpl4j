@@ -2,12 +2,17 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
@@ -20,15 +25,19 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.ledger.LoanBrokerLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.ledger.LoanLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.ledger.VaultLedgerEntryParams;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
-import org.xrpl.xrpl4j.model.flags.LoanFlags;
+import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.LoanManageFlags;
 import org.xrpl.xrpl4j.model.flags.LoanPayFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.LoanBrokerObject;
 import org.xrpl.xrpl4j.model.ledger.LoanObject;
+import org.xrpl.xrpl4j.model.ledger.SignerEntry;
+import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
 import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
@@ -48,10 +57,16 @@ import org.xrpl.xrpl4j.model.transactions.LoanDelete;
 import org.xrpl.xrpl4j.model.transactions.LoanManage;
 import org.xrpl.xrpl4j.model.transactions.LoanPay;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
+import org.xrpl.xrpl4j.model.transactions.Signer;
+import org.xrpl.xrpl4j.model.transactions.SignerListSet;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.VaultCreate;
 import org.xrpl.xrpl4j.model.transactions.VaultDeposit;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Integration tests for the Lending Protocol (XLS-66) transactions and ledger objects.
@@ -61,8 +76,284 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
  */
 public class LendingProtocolIT extends AbstractIT {
 
+  private static final String SUCCESS_STATUS = TransactionResultCodes.TES_SUCCESS;
+
   private static final ObjectMapper objectMapper =
     ObjectMapperFactory.create();
+
+  // //////////////////////
+  // LoanSet counterparty signing tests (XRP vault, broker initiates, borrower is counterparty)
+  // //////////////////////
+
+  // //////////////////////
+  // Test 1: Broker single-signs, Borrower (counterparty) single-signs
+  // //////////////////////
+
+  @Test
+  void loanSetWithSingleSignBrokerAndSingleSignCounterparty()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+
+    final KeyPair brokerKeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerKeyPair = createRandomAccountEd25519();
+    final Address brokerAddress = brokerKeyPair.publicKey().deriveAddress();
+    final Address borrowerAddress = borrowerKeyPair.publicKey().deriveAddress();
+
+    final FeeResult feeResult = xrplClient.fee();
+    final XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
+
+    final Hash256 loanBrokerId = setupLoanBroker(brokerKeyPair, fee);
+
+    // Build the unsigned base LoanSet transaction
+    final AccountInfoResult brokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(brokerAddress)
+    );
+    final LoanSet unsignedLoanSet = LoanSet.builder()
+      .account(brokerAddress)
+      .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(fee.value().longValue() * 3)))
+      .sequence(brokerAccountInfo.accountData().sequence())
+      .loanBrokerId(loanBrokerId)
+      .principalRequested(AssetAmount.of("1000000"))
+      .counterparty(borrowerAddress)
+      .paymentTotal(UnsignedInteger.valueOf(3))
+      .signingPublicKey(brokerKeyPair.publicKey())
+      .build();
+
+    // Broker (first-party) single-signs the unsigned transaction
+    final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
+      brokerKeyPair.privateKey(), unsignedLoanSet
+    );
+
+    // Borrower (counterparty) single-signs the same unsigned transaction
+    final Signature counterpartySig = signatureService.counterpartySign(
+      borrowerKeyPair.privateKey(), unsignedLoanSet
+    );
+    final CounterpartySignature counterpartySignature = CounterpartySignature.of(
+      borrowerKeyPair.publicKey(), counterpartySig
+    );
+
+    // Assemble the final transaction with both signatures
+    final LoanSet signedLoanSet = LoanSet.builder().from(unsignedLoanSet)
+      .counterpartySignature(counterpartySignature)
+      .transactionSignature(brokerSigned.signature())
+      .build();
+
+    final SingleSignedTransaction<LoanSet> finalTx = SingleSignedTransaction.<LoanSet>builder()
+      .unsignedTransaction(unsignedLoanSet)
+      .signature(brokerSigned.signature())
+      .signedTransaction(signedLoanSet)
+      .build();
+
+    submitAndVerifySingleSignedLoanSet(finalTx);
+  }
+
+  // //////////////////////
+  // Test 2: Broker single-signs, Borrower (counterparty) multi-signs
+  // //////////////////////
+
+  @Test
+  void loanSetWithSingleSignBrokerAndMultiSignCounterparty()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+
+    final KeyPair brokerKeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerKeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerSigner1KeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerSigner2KeyPair = createRandomAccountEd25519();
+    final Address brokerAddress = brokerKeyPair.publicKey().deriveAddress();
+    final Address borrowerAddress = borrowerKeyPair.publicKey().deriveAddress();
+
+    final FeeResult feeResult = xrplClient.fee();
+    final XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
+
+    final Hash256 loanBrokerId = setupLoanBroker(brokerKeyPair, fee);
+    setupSignerList(borrowerKeyPair, borrowerSigner1KeyPair, borrowerSigner2KeyPair, fee);
+
+    // Build the unsigned base LoanSet transaction
+    final AccountInfoResult brokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(brokerAddress)
+    );
+    final LoanSet unsignedLoanSet = LoanSet.builder()
+      .account(brokerAddress)
+      .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(fee.value().longValue() * 5)))
+      .sequence(brokerAccountInfo.accountData().sequence())
+      .loanBrokerId(loanBrokerId)
+      .principalRequested(AssetAmount.of("1000000"))
+      .counterparty(borrowerAddress)
+      .paymentTotal(UnsignedInteger.valueOf(3))
+      .signingPublicKey(brokerKeyPair.publicKey())
+      .build();
+
+    // Broker (first-party) single-signs the unsigned transaction
+    final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
+      brokerKeyPair.privateKey(), unsignedLoanSet
+    );
+
+    // Borrower (counterparty) multi-signs the same unsigned transaction
+    final Set<Signer> counterpartySigners = Lists.newArrayList(
+      borrowerSigner1KeyPair, borrowerSigner2KeyPair
+    ).stream().map(signerKeyPair -> Signer.builder()
+      .signingPublicKey(signerKeyPair.publicKey())
+      .transactionSignature(signatureService.counterpartyMultiSign(signerKeyPair.privateKey(), unsignedLoanSet))
+      .build()
+    ).collect(Collectors.toSet());
+
+    final CounterpartySignature counterpartySignature = CounterpartySignature.of(counterpartySigners);
+
+    // Assemble the final transaction with both signatures
+    final LoanSet signedLoanSet = LoanSet.builder().from(unsignedLoanSet)
+      .counterpartySignature(counterpartySignature)
+      .transactionSignature(brokerSigned.signature())
+      .build();
+
+    final SingleSignedTransaction<LoanSet> finalTx = SingleSignedTransaction.<LoanSet>builder()
+      .unsignedTransaction(unsignedLoanSet)
+      .signature(brokerSigned.signature())
+      .signedTransaction(signedLoanSet)
+      .build();
+
+    submitAndVerifySingleSignedLoanSet(finalTx);
+  }
+
+  // //////////////////////
+  // Test 3: Broker multi-signs, Borrower (counterparty) single-signs
+  // //////////////////////
+
+  @Test
+  void loanSetWithMultiSignBrokerAndSingleSignCounterparty()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+
+    final KeyPair brokerKeyPair = createRandomAccountEd25519();
+    final KeyPair brokerSigner1KeyPair = createRandomAccountEd25519();
+    final KeyPair brokerSigner2KeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerKeyPair = createRandomAccountEd25519();
+    final Address brokerAddress = brokerKeyPair.publicKey().deriveAddress();
+    final Address borrowerAddress = borrowerKeyPair.publicKey().deriveAddress();
+
+    final FeeResult feeResult = xrplClient.fee();
+    final XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
+
+    final Hash256 loanBrokerId = setupLoanBroker(brokerKeyPair, fee);
+    setupSignerList(brokerKeyPair, brokerSigner1KeyPair, brokerSigner2KeyPair, fee);
+
+    // Build the unsigned base LoanSet transaction (empty SigningPubKey for multi-sign)
+    final AccountInfoResult brokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(brokerAddress)
+    );
+    final LoanSet unsignedLoanSet = LoanSet.builder()
+      .account(brokerAddress)
+      .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(fee.value().longValue() * 5)))
+      .sequence(brokerAccountInfo.accountData().sequence())
+      .loanBrokerId(loanBrokerId)
+      .principalRequested(AssetAmount.of("1000000"))
+      .counterparty(borrowerAddress)
+      .paymentTotal(UnsignedInteger.valueOf(3))
+      .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
+      .build();
+
+    // Broker (first-party) multi-signs the unsigned transaction
+    final Set<Signer> brokerSigners = Lists.newArrayList(
+      brokerSigner1KeyPair, brokerSigner2KeyPair
+    ).stream().map(signerKeyPair -> Signer.builder()
+      .signingPublicKey(signerKeyPair.publicKey())
+      .transactionSignature(signatureService.multiSign(signerKeyPair.privateKey(), unsignedLoanSet))
+      .build()
+    ).collect(Collectors.toSet());
+
+    // Borrower (counterparty) single-signs the same unsigned transaction
+    final Signature counterpartySig = signatureService.counterpartySign(
+      borrowerKeyPair.privateKey(), unsignedLoanSet
+    );
+    final CounterpartySignature counterpartySignature = CounterpartySignature.of(
+      borrowerKeyPair.publicKey(), counterpartySig
+    );
+
+    // Assemble the final multi-signed transaction with counterparty signature
+    final LoanSet unsignedWithCounterparty = LoanSet.builder().from(unsignedLoanSet)
+      .counterpartySignature(counterpartySignature)
+      .build();
+
+    final MultiSignedTransaction<LoanSet> finalTx = MultiSignedTransaction.<LoanSet>builder()
+      .unsignedTransaction(unsignedWithCounterparty)
+      .signerSet(brokerSigners)
+      .build();
+
+    submitAndVerifyMultiSignedLoanSet(finalTx);
+  }
+
+  // //////////////////////
+  // Test 4: Broker multi-signs, Borrower (counterparty) multi-signs
+  // //////////////////////
+
+  @Test
+  void loanSetWithMultiSignBrokerAndMultiSignCounterparty()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+
+    final KeyPair brokerKeyPair = createRandomAccountEd25519();
+    final KeyPair brokerSigner1KeyPair = createRandomAccountEd25519();
+    final KeyPair brokerSigner2KeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerKeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerSigner1KeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerSigner2KeyPair = createRandomAccountEd25519();
+    final Address brokerAddress = brokerKeyPair.publicKey().deriveAddress();
+    final Address borrowerAddress = borrowerKeyPair.publicKey().deriveAddress();
+
+    final FeeResult feeResult = xrplClient.fee();
+    final XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
+
+    final Hash256 loanBrokerId = setupLoanBroker(brokerKeyPair, fee);
+    setupSignerList(brokerKeyPair, brokerSigner1KeyPair, brokerSigner2KeyPair, fee);
+    setupSignerList(borrowerKeyPair, borrowerSigner1KeyPair, borrowerSigner2KeyPair, fee);
+
+    // Build the unsigned base LoanSet transaction (empty SigningPubKey for multi-sign)
+    final AccountInfoResult brokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(brokerAddress)
+    );
+    final LoanSet unsignedLoanSet = LoanSet.builder()
+      .account(brokerAddress)
+      .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(fee.value().longValue() * 7)))
+      .sequence(brokerAccountInfo.accountData().sequence())
+      .loanBrokerId(loanBrokerId)
+      .principalRequested(AssetAmount.of("1000000"))
+      .counterparty(borrowerAddress)
+      .paymentTotal(UnsignedInteger.valueOf(3))
+      .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
+      .build();
+
+    // Broker (first-party) multi-signs the unsigned transaction
+    final Set<Signer> brokerSigners = Lists.newArrayList(
+      brokerSigner1KeyPair, brokerSigner2KeyPair
+    ).stream().map(signerKeyPair -> Signer.builder()
+      .signingPublicKey(signerKeyPair.publicKey())
+      .transactionSignature(signatureService.multiSign(signerKeyPair.privateKey(), unsignedLoanSet))
+      .build()
+    ).collect(Collectors.toSet());
+
+    // Borrower (counterparty) multi-signs the same unsigned transaction
+    final Set<Signer> counterpartySigners = Lists.newArrayList(
+      borrowerSigner1KeyPair, borrowerSigner2KeyPair
+    ).stream().map(signerKeyPair -> Signer.builder()
+      .signingPublicKey(signerKeyPair.publicKey())
+      .transactionSignature(signatureService.counterpartyMultiSign(signerKeyPair.privateKey(), unsignedLoanSet))
+      .build()
+    ).collect(Collectors.toSet());
+
+    final CounterpartySignature counterpartySignature = CounterpartySignature.of(counterpartySigners);
+
+    // Assemble the final multi-signed transaction with counterparty signature
+    final LoanSet unsignedWithCounterparty = LoanSet.builder().from(unsignedLoanSet)
+      .counterpartySignature(counterpartySignature)
+      .build();
+
+    final MultiSignedTransaction<LoanSet> finalTx = MultiSignedTransaction.<LoanSet>builder()
+      .unsignedTransaction(unsignedWithCounterparty)
+      .signerSet(brokerSigners)
+      .build();
+
+    submitAndVerifyMultiSignedLoanSet(finalTx);
+  }
+
+  // //////////////////////
+  // Full lending lifecycle test
+  // //////////////////////
 
   /**
    * Logs the JSON representation of an object for test capture.
@@ -722,6 +1013,213 @@ public class LendingProtocolIT extends AbstractIT {
       LedgerEntryRequestParams.index(expectedLoan.index(), LedgerSpecifier.VALIDATED)
     );
     assertThat(entryByIndexUntyped.node()).isEqualTo(expectedLoan);
+  }
+
+  // //////////////////////
+  // Counterparty signing helpers
+  // //////////////////////
+
+  private void submitAndVerifySingleSignedLoanSet(SingleSignedTransaction<LoanSet> signedTx)
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    final SubmitResult<LoanSet> submitResult = xrplClient.submit(signedTx);
+    assertThat(submitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    final TransactionResult<LoanSet> validatedResult = this.scanForResult(
+      () -> this.getValidatedTransaction(signedTx.hash(), LoanSet.class)
+    );
+    assertThat(validatedResult.metadata()
+      .orElseThrow(() -> new RuntimeException("Metadata is missing."))
+      .transactionResult()
+    ).isEqualTo(SUCCESS_STATUS);
+
+    logInfo(signedTx.signedTransaction().transactionType(), signedTx.hash());
+  }
+
+  private void submitAndVerifyMultiSignedLoanSet(MultiSignedTransaction<LoanSet> multiSignedTx)
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    final SubmitMultiSignedResult<LoanSet> submitResult = xrplClient.submitMultisigned(multiSignedTx);
+    assertThat(submitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    final TransactionResult<LoanSet> validatedResult = this.scanForResult(
+      () -> this.getValidatedTransaction(multiSignedTx.hash(), LoanSet.class)
+    );
+    assertThat(validatedResult.metadata()
+      .orElseThrow(() -> new RuntimeException("Metadata is missing."))
+      .transactionResult()
+    ).isEqualTo(SUCCESS_STATUS);
+
+    logInfo(multiSignedTx.signedTransaction().transactionType(), multiSignedTx.hash());
+  }
+
+  /**
+   * Creates an XRP vault and deposits funds into it. Returns the vault ID.
+   */
+  private Hash256 setupXrpVault(KeyPair ownerKeyPair, XrpCurrencyAmount fee)
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    final Address ownerAddress = ownerKeyPair.publicKey().deriveAddress();
+    final KeyPair depositorKeyPair = createRandomAccountEd25519();
+
+    AccountInfoResult ownerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(ownerAddress)
+    );
+
+    final VaultCreate vaultCreate = VaultCreate.builder()
+      .account(ownerAddress)
+      .fee(fee)
+      .sequence(ownerAccountInfo.accountData().sequence())
+      .asset(Issue.XRP)
+      .assetsMaximum(AssetAmount.of("10000000000"))
+      .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
+      .signingPublicKey(ownerKeyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<VaultCreate> signedVaultCreate = signatureService.sign(
+      ownerKeyPair.privateKey(), vaultCreate
+    );
+    final SubmitResult<VaultCreate> vaultResult = xrplClient.submit(signedVaultCreate);
+    assertThat(vaultResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedVaultCreate.hash(), VaultCreate.class));
+    logInfo(vaultCreate.transactionType(), signedVaultCreate.hash());
+
+    final LedgerEntryResult<VaultObject> vaultEntry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.vault(
+        VaultLedgerEntryParams.builder().owner(ownerAddress).seq(vaultCreate.sequence()).build(),
+        LedgerSpecifier.VALIDATED
+      )
+    );
+    final Hash256 vaultId = vaultEntry.node().index();
+
+    final AccountInfoResult depositorAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(depositorKeyPair.publicKey().deriveAddress())
+    );
+
+    final VaultDeposit vaultDeposit = VaultDeposit.builder()
+      .account(depositorKeyPair.publicKey().deriveAddress())
+      .fee(fee)
+      .sequence(depositorAccountInfo.accountData().sequence())
+      .vaultId(vaultId)
+      .amount(XrpCurrencyAmount.ofDrops(5000000))
+      .signingPublicKey(depositorKeyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<VaultDeposit> signedDeposit = signatureService.sign(
+      depositorKeyPair.privateKey(), vaultDeposit
+    );
+    final SubmitResult<VaultDeposit> depositResult = xrplClient.submit(signedDeposit);
+    assertThat(depositResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedDeposit.hash(), VaultDeposit.class));
+    logInfo(vaultDeposit.transactionType(), signedDeposit.hash());
+
+    return vaultId;
+  }
+
+  /**
+   * Creates a loan broker on the given vault and deposits cover. Returns the LoanBroker ID.
+   */
+  private Hash256 setupLoanBroker(KeyPair brokerKeyPair, XrpCurrencyAmount fee)
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    final Address brokerAddress = brokerKeyPair.publicKey().deriveAddress();
+    final Hash256 vaultId = setupXrpVault(brokerKeyPair, fee);
+
+    AccountInfoResult brokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(brokerAddress)
+    );
+
+    final LoanBrokerSet loanBrokerSet = LoanBrokerSet.builder()
+      .account(brokerAddress)
+      .fee(fee)
+      .sequence(brokerAccountInfo.accountData().sequence())
+      .vaultId(vaultId)
+      .debtMaximum(AssetAmount.of("5000000000"))
+      .signingPublicKey(brokerKeyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<LoanBrokerSet> signedBrokerSet = signatureService.sign(
+      brokerKeyPair.privateKey(), loanBrokerSet
+    );
+    final SubmitResult<LoanBrokerSet> brokerSetResult = xrplClient.submit(signedBrokerSet);
+    assertThat(brokerSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedBrokerSet.hash(), LoanBrokerSet.class));
+    logInfo(loanBrokerSet.transactionType(), signedBrokerSet.hash());
+
+    final LedgerEntryResult<LoanBrokerObject> brokerEntry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.loanBroker(
+        LoanBrokerLedgerEntryParams.builder().owner(brokerAddress).seq(loanBrokerSet.sequence()).build(),
+        LedgerSpecifier.VALIDATED
+      )
+    );
+    final Hash256 loanBrokerId = brokerEntry.node().index();
+
+    brokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(brokerAddress)
+    );
+
+    final LoanBrokerCoverDeposit coverDeposit = LoanBrokerCoverDeposit.builder()
+      .account(brokerAddress)
+      .fee(fee)
+      .sequence(brokerAccountInfo.accountData().sequence())
+      .loanBrokerId(loanBrokerId)
+      .amount(XrpCurrencyAmount.ofDrops(5000000))
+      .signingPublicKey(brokerKeyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<LoanBrokerCoverDeposit> signedCoverDeposit = signatureService.sign(
+      brokerKeyPair.privateKey(), coverDeposit
+    );
+    final SubmitResult<LoanBrokerCoverDeposit> coverResult = xrplClient.submit(signedCoverDeposit);
+    assertThat(coverResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedCoverDeposit.hash(), LoanBrokerCoverDeposit.class));
+    logInfo(coverDeposit.transactionType(), signedCoverDeposit.hash());
+
+    return loanBrokerId;
+  }
+
+  /**
+   * Sets up a signer list with two signers on the given account (quorum=2, each weight=1).
+   */
+  private void setupSignerList(
+    KeyPair accountKeyPair,
+    KeyPair signer1KeyPair,
+    KeyPair signer2KeyPair,
+    XrpCurrencyAmount fee
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    final AccountInfoResult accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(accountKeyPair.publicKey().deriveAddress())
+    );
+
+    final SignerListSet signerListSet = SignerListSet.builder()
+      .account(accountKeyPair.publicKey().deriveAddress())
+      .fee(fee)
+      .sequence(accountInfo.accountData().sequence())
+      .signerQuorum(UnsignedInteger.valueOf(2))
+      .addSignerEntries(
+        SignerEntryWrapper.of(
+          SignerEntry.builder()
+            .account(signer1KeyPair.publicKey().deriveAddress())
+            .signerWeight(UnsignedInteger.ONE)
+            .build()
+        ),
+        SignerEntryWrapper.of(
+          SignerEntry.builder()
+            .account(signer2KeyPair.publicKey().deriveAddress())
+            .signerWeight(UnsignedInteger.ONE)
+            .build()
+        )
+      )
+      .signingPublicKey(accountKeyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
+      accountKeyPair.privateKey(), signerListSet
+    );
+    final SubmitResult<SignerListSet> submitResult = xrplClient.submit(signedSignerListSet);
+    assertThat(submitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(accountKeyPair.publicKey().deriveAddress()),
+      infoResult -> infoResult.accountData().signerLists().size() == 1
+    );
+    logInfo(signerListSet.transactionType(), signedSignerListSet.hash());
   }
 
   /**

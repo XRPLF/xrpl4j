@@ -3,13 +3,11 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -29,7 +27,6 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.LoanManageFlags;
 import org.xrpl.xrpl4j.model.flags.LoanPayFlags;
-import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -71,14 +68,11 @@ import java.util.stream.Collectors;
  * Integration tests for the Lending Protocol (XLS-66) transactions and ledger objects.
  *
  * <p>Tests exercise the full lifecycle: Vault creation, LoanBroker management,
- * Loan creation (with dual-signing), payments, and cleanup.</p>
+ * Loan creation (with dual-signing), and payments.</p>
  */
 public class LendingProtocolIT extends AbstractIT {
 
   private static final String SUCCESS_STATUS = TransactionResultCodes.TES_SUCCESS;
-
-  private static final ObjectMapper objectMapper =
-    ObjectMapperFactory.create();
 
   // //////////////////////
   // LoanSet counterparty signing tests (XRP vault, broker initiates, borrower is counterparty)
@@ -94,25 +88,23 @@ public class LendingProtocolIT extends AbstractIT {
 
     final KeyPair brokerKeyPair = createRandomAccountEd25519();
     final KeyPair borrowerKeyPair = createRandomAccountEd25519();
-    final Address brokerAddress = brokerKeyPair.publicKey().deriveAddress();
-    final Address borrowerAddress = borrowerKeyPair.publicKey().deriveAddress();
 
     final FeeResult feeResult = xrplClient.fee();
     final XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
 
-    final Hash256 loanBrokerId = setupLoanBroker(brokerKeyPair, fee);
+    final Hash256 loanBrokerId = setupLoanBrokerAndXrpVault(brokerKeyPair, fee);
 
     // Build the unsigned base LoanSet transaction
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(brokerAddress)
+      () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
     final LoanSet unsignedLoanSet = LoanSet.builder()
-      .account(brokerAddress)
+      .account(brokerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(AssetAmount.of("1000000"))
-      .counterparty(borrowerAddress)
+      .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
@@ -136,13 +128,17 @@ public class LendingProtocolIT extends AbstractIT {
       .transactionSignature(brokerSigned.signature())
       .build();
 
+    final LoanSet unsignedWithCounterparty = LoanSet.builder().from(unsignedLoanSet)
+      .counterpartySignature(counterpartySignature)
+      .build();
+
     final SingleSignedTransaction<LoanSet> finalTx = SingleSignedTransaction.<LoanSet>builder()
-      .unsignedTransaction(unsignedLoanSet)
+      .unsignedTransaction(unsignedWithCounterparty)
       .signature(brokerSigned.signature())
       .signedTransaction(signedLoanSet)
       .build();
 
-    submitAndVerifySingleSignedLoanSet(finalTx);
+    submitSingleSignedLoanSet(finalTx);
   }
 
   // //////////////////////
@@ -157,28 +153,26 @@ public class LendingProtocolIT extends AbstractIT {
     final KeyPair borrowerKeyPair = createRandomAccountEd25519();
     final KeyPair borrowerSigner1KeyPair = createRandomAccountEd25519();
     final KeyPair borrowerSigner2KeyPair = createRandomAccountEd25519();
-    final Address brokerAddress = brokerKeyPair.publicKey().deriveAddress();
-    final Address borrowerAddress = borrowerKeyPair.publicKey().deriveAddress();
 
     final FeeResult feeResult = xrplClient.fee();
     final XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
 
-    final Hash256 loanBrokerId = setupLoanBroker(brokerKeyPair, fee);
+    final Hash256 loanBrokerId = setupLoanBrokerAndXrpVault(brokerKeyPair, fee);
     setupSignerList(borrowerKeyPair, borrowerSigner1KeyPair, borrowerSigner2KeyPair, fee);
 
     // Build the unsigned base LoanSet transaction
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(brokerAddress)
+      () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
     final LoanSet unsignedLoanSet = LoanSet.builder()
-      .account(brokerAddress)
+      .account(brokerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeLoanSetNetworkFees(
         feeResult, UnsignedInteger.ZERO, UnsignedInteger.valueOf(2)
       ).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(AssetAmount.of("1000000"))
-      .counterparty(borrowerAddress)
+      .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
@@ -205,13 +199,17 @@ public class LendingProtocolIT extends AbstractIT {
       .transactionSignature(brokerSigned.signature())
       .build();
 
+    final LoanSet unsignedWithCounterparty = LoanSet.builder().from(unsignedLoanSet)
+      .counterpartySignature(counterpartySignature)
+      .build();
+
     final SingleSignedTransaction<LoanSet> finalTx = SingleSignedTransaction.<LoanSet>builder()
-      .unsignedTransaction(unsignedLoanSet)
+      .unsignedTransaction(unsignedWithCounterparty)
       .signature(brokerSigned.signature())
       .signedTransaction(signedLoanSet)
       .build();
 
-    submitAndVerifySingleSignedLoanSet(finalTx);
+    submitSingleSignedLoanSet(finalTx);
   }
 
   // //////////////////////
@@ -226,30 +224,26 @@ public class LendingProtocolIT extends AbstractIT {
     final KeyPair brokerSigner1KeyPair = createRandomAccountEd25519();
     final KeyPair brokerSigner2KeyPair = createRandomAccountEd25519();
     final KeyPair borrowerKeyPair = createRandomAccountEd25519();
-    final Address brokerAddress = brokerKeyPair.publicKey().deriveAddress();
-    final Address borrowerAddress = borrowerKeyPair.publicKey().deriveAddress();
 
     final FeeResult feeResult = xrplClient.fee();
     final XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
 
-    final Hash256 loanBrokerId = setupLoanBroker(brokerKeyPair, fee);
+    final Hash256 loanBrokerId = setupLoanBrokerAndXrpVault(brokerKeyPair, fee);
     setupSignerList(brokerKeyPair, brokerSigner1KeyPair, brokerSigner2KeyPair, fee);
 
-    // Build the unsigned base LoanSet transaction (empty SigningPubKey for multi-sign)
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(brokerAddress)
+      () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
     final LoanSet unsignedLoanSet = LoanSet.builder()
-      .account(brokerAddress)
+      .account(brokerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeLoanSetNetworkFees(
         feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.ZERO
       ).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(AssetAmount.of("1000000"))
-      .counterparty(borrowerAddress)
+      .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
-      .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
       .build();
 
     // Broker (first-party) multi-signs the unsigned transaction
@@ -279,7 +273,7 @@ public class LendingProtocolIT extends AbstractIT {
       .signerSet(brokerSigners)
       .build();
 
-    submitAndVerifyMultiSignedLoanSet(finalTx);
+    submitMultiSignedLoanSet(finalTx);
   }
 
   // //////////////////////
@@ -296,31 +290,28 @@ public class LendingProtocolIT extends AbstractIT {
     final KeyPair borrowerKeyPair = createRandomAccountEd25519();
     final KeyPair borrowerSigner1KeyPair = createRandomAccountEd25519();
     final KeyPair borrowerSigner2KeyPair = createRandomAccountEd25519();
-    final Address brokerAddress = brokerKeyPair.publicKey().deriveAddress();
-    final Address borrowerAddress = borrowerKeyPair.publicKey().deriveAddress();
 
     final FeeResult feeResult = xrplClient.fee();
     final XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
 
-    final Hash256 loanBrokerId = setupLoanBroker(brokerKeyPair, fee);
+    final Hash256 loanBrokerId = setupLoanBrokerAndXrpVault(brokerKeyPair, fee);
     setupSignerList(brokerKeyPair, brokerSigner1KeyPair, brokerSigner2KeyPair, fee);
     setupSignerList(borrowerKeyPair, borrowerSigner1KeyPair, borrowerSigner2KeyPair, fee);
 
-    // Build the unsigned base LoanSet transaction (empty SigningPubKey for multi-sign)
+    // Build the unsigned base LoanSet transaction
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(brokerAddress)
+      () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
     final LoanSet unsignedLoanSet = LoanSet.builder()
-      .account(brokerAddress)
+      .account(brokerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeLoanSetNetworkFees(
         feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.valueOf(2)
       ).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(AssetAmount.of("1000000"))
-      .counterparty(borrowerAddress)
+      .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
-      .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
       .build();
 
     // Broker (first-party) multi-signs the unsigned transaction
@@ -353,7 +344,7 @@ public class LendingProtocolIT extends AbstractIT {
       .signerSet(brokerSigners)
       .build();
 
-    submitAndVerifyMultiSignedLoanSet(finalTx);
+    submitMultiSignedLoanSet(finalTx);
   }
 
   // //////////////////////
@@ -361,49 +352,27 @@ public class LendingProtocolIT extends AbstractIT {
   // //////////////////////
 
   /**
-   * Logs the JSON representation of an object for test capture.
-   *
-   * @param label a short label describing the object
-   * @param obj the object to serialize
-   * @throws Exception if serialization fails
-   */
-  private void logJson(String label, Object obj) throws Exception {
-    String json = objectMapper
-      .writerWithDefaultPrettyPrinter()
-      .writeValueAsString(obj);
-    logger.info("{} JSON: {}", label, json);
-  }
-
-  /**
    * Full lending lifecycle with IOU asset: create vault, create loan broker, deposit cover,
    * create loan (dual-signed), make payments, default, delete loan, withdraw cover, delete broker.
    */
   @Test
-  void lendingProtocolWithIouAsset() throws Exception {
+  void lendingProtocolLifecycle() throws Exception {
     // Step 1: Create accounts
     KeyPair issuerKeyPair = createRandomAccountEd25519();
-    KeyPair vaultOwnerKeyPair = createRandomAccountEd25519();
+    KeyPair loanBrokerKeyPair = createRandomAccountEd25519();
     KeyPair depositorKeyPair = createRandomAccountEd25519();
     KeyPair borrowerKeyPair = createRandomAccountEd25519();
-
-    // The Vault Owner and Loan Broker must be on the same account
-    final KeyPair loanBrokerKeyPair = vaultOwnerKeyPair;
 
     FeeResult feeResult = xrplClient.fee();
     XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
 
-    final Address issuerAddress = issuerKeyPair.publicKey().deriveAddress();
-    final Address vaultOwnerAddress = vaultOwnerKeyPair.publicKey().deriveAddress();
-    final Address depositorAddress = depositorKeyPair.publicKey().deriveAddress();
-    final Address borrowerAddress = borrowerKeyPair.publicKey().deriveAddress();
-
     // Step 2: Enable clawback on issuer account
     AccountInfoResult issuerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(issuerAddress)
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
 
     AccountSet enableClawback = AccountSet.builder()
-      .account(issuerAddress)
+      .account(issuerKeyPair.publicKey().deriveAddress())
       .fee(fee)
       .sequence(issuerAccountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ALLOW_TRUSTLINE_CLAWBACK)
@@ -425,12 +394,12 @@ public class LendingProtocolIT extends AbstractIT {
     // Step 3: Define IOU asset
     final IouIssue usdIssue = IouIssue.builder()
       .currency("USD")
-      .issuer(issuerAddress)
+      .issuer(issuerKeyPair.publicKey().deriveAddress())
       .build();
 
     IssuedCurrencyAmount usdAmount = IssuedCurrencyAmount.builder()
       .currency("USD")
-      .issuer(issuerAddress)
+      .issuer(issuerKeyPair.publicKey().deriveAddress())
       .value("1000000")
       .build();
 
@@ -439,33 +408,36 @@ public class LendingProtocolIT extends AbstractIT {
     createTrustLine(borrowerKeyPair, usdAmount, fee);
 
     // Also set up trust line for the vault owner/loan broker (for cover deposit)
-    createTrustLine(vaultOwnerKeyPair, usdAmount, fee);
+    createTrustLine(loanBrokerKeyPair, usdAmount, fee);
 
     // Step 5: Fund accounts with IOU
     sendIssuedCurrency(issuerKeyPair, depositorKeyPair,
-      IssuedCurrencyAmount.builder().currency("USD").issuer(issuerAddress).value("500000").build(), fee);
+      IssuedCurrencyAmount.builder().currency("USD")
+        .issuer(issuerKeyPair.publicKey().deriveAddress()).value("500000").build(), fee);
     sendIssuedCurrency(issuerKeyPair, borrowerKeyPair,
-      IssuedCurrencyAmount.builder().currency("USD").issuer(issuerAddress).value("100000").build(), fee);
-    sendIssuedCurrency(issuerKeyPair, vaultOwnerKeyPair,
-      IssuedCurrencyAmount.builder().currency("USD").issuer(issuerAddress).value("200000").build(), fee);
+      IssuedCurrencyAmount.builder().currency("USD")
+        .issuer(issuerKeyPair.publicKey().deriveAddress()).value("100000").build(), fee);
+    sendIssuedCurrency(issuerKeyPair, loanBrokerKeyPair,
+      IssuedCurrencyAmount.builder().currency("USD")
+        .issuer(issuerKeyPair.publicKey().deriveAddress()).value("200000").build(), fee);
 
     // ========== VAULT CREATION ==========
-    AccountInfoResult vaultOwnerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(vaultOwnerAddress)
+    AccountInfoResult loanBrokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
     );
 
     VaultCreate vaultCreate = VaultCreate.builder()
-      .account(vaultOwnerAddress)
+      .account(loanBrokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
-      .sequence(vaultOwnerAccountInfo.accountData().sequence())
+      .sequence(loanBrokerAccountInfo.accountData().sequence())
       .asset(usdIssue)
       .assetsMaximum(AssetAmount.of("500000"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
-      .signingPublicKey(vaultOwnerKeyPair.publicKey())
+      .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<VaultCreate> signedVaultCreate = signatureService.sign(
-      vaultOwnerKeyPair.privateKey(), vaultCreate
+      loanBrokerKeyPair.privateKey(), vaultCreate
     );
     SubmitResult<VaultCreate> vaultCreateResult = xrplClient.submit(signedVaultCreate);
     assertThat(vaultCreateResult.engineResult()).isEqualTo(SUCCESS_STATUS);
@@ -477,7 +449,7 @@ public class LendingProtocolIT extends AbstractIT {
     LedgerEntryResult<VaultObject> vaultLedgerEntry = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.vault(
         VaultLedgerEntryParams.builder()
-          .owner(vaultOwnerAddress)
+          .owner(loanBrokerKeyPair.publicKey().deriveAddress())
           .seq(vaultCreate.sequence())
           .build(),
         LedgerSpecifier.VALIDATED
@@ -488,15 +460,16 @@ public class LendingProtocolIT extends AbstractIT {
 
     // Deposit into vault
     AccountInfoResult depositorAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(depositorAddress)
+      () -> this.getValidatedAccountInfo(depositorKeyPair.publicKey().deriveAddress())
     );
 
     VaultDeposit vaultDeposit = VaultDeposit.builder()
-      .account(depositorAddress)
+      .account(depositorKeyPair.publicKey().deriveAddress())
       .fee(fee)
       .sequence(depositorAccountInfo.accountData().sequence())
       .vaultId(vaultId)
-      .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(issuerAddress).value("100000").build())
+      .amount(IssuedCurrencyAmount.builder().currency("USD")
+        .issuer(issuerKeyPair.publicKey().deriveAddress()).value("100000").build())
       .signingPublicKey(depositorKeyPair.publicKey())
       .build();
 
@@ -509,14 +482,14 @@ public class LendingProtocolIT extends AbstractIT {
     );
 
     // ========== LOAN BROKER SET ==========
-    vaultOwnerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(vaultOwnerAddress)
+    loanBrokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
     );
 
     LoanBrokerSet loanBrokerSet = LoanBrokerSet.builder()
-      .account(vaultOwnerAddress)
+      .account(loanBrokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
-      .sequence(vaultOwnerAccountInfo.accountData().sequence())
+      .sequence(loanBrokerAccountInfo.accountData().sequence())
       .vaultId(vaultId)
       .debtMaximum(AssetAmount.of("250000"))
       .managementFeeRate(UnsignedInteger.valueOf(10000))
@@ -529,18 +502,16 @@ public class LendingProtocolIT extends AbstractIT {
     );
     SubmitResult<LoanBrokerSet> loanBrokerSetResult =
       xrplClient.submit(signedLoanBrokerSet);
-    logJson("LoanBrokerSet SubmitResult", loanBrokerSetResult);
     assertThat(loanBrokerSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(
       () -> this.getValidatedTransaction(signedLoanBrokerSet.hash(), LoanBrokerSet.class)
     );
-    logInfo(loanBrokerSet.transactionType(), signedLoanBrokerSet.hash());
 
     // Get LoanBroker ID via ledger_entry
     LedgerEntryResult<LoanBrokerObject> loanBrokerEntry = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.loanBroker(
         LoanBrokerLedgerEntryParams.builder()
-          .owner(vaultOwnerAddress)
+          .owner(loanBrokerKeyPair.publicKey().deriveAddress())
           .seq(loanBrokerSet.sequence())
           .build(),
         LedgerSpecifier.VALIDATED
@@ -548,11 +519,10 @@ public class LendingProtocolIT extends AbstractIT {
     );
     Hash256 loanBrokerId = loanBrokerEntry.node().index();
     LoanBrokerObject loanBrokerObject = loanBrokerEntry.node();
-    logJson("LoanBrokerObject after creation", loanBrokerObject);
     logger.info("LoanBroker created: {}", loanBrokerId);
 
     // Verify LoanBroker fields
-    assertThat(loanBrokerObject.owner()).isEqualTo(vaultOwnerAddress);
+    assertThat(loanBrokerObject.owner()).isEqualTo(loanBrokerKeyPair.publicKey().deriveAddress());
     assertThat(loanBrokerObject.vaultId()).isEqualTo(vaultId);
     assertThat(loanBrokerObject.debtMaximum()).isNotEmpty().get().isEqualTo(AssetAmount.of("250000"));
     assertThat(loanBrokerObject.managementFeeRate()).isNotEmpty()
@@ -560,19 +530,57 @@ public class LendingProtocolIT extends AbstractIT {
     assertThat(loanBrokerObject.data()).isNotEmpty().get().isEqualTo(LoanBrokerData.of("010203"));
 
     // Verify via helper
-    assertLoanBrokerEntryEqualsObjectFromAccountObjects(vaultOwnerAddress, loanBrokerSet.sequence());
+    assertLoanBrokerEntryEqualsObjectFromAccountObjects(
+      loanBrokerKeyPair.publicKey().deriveAddress(), loanBrokerSet.sequence()
+    );
+
+    // ========== LOAN BROKER SET - Update ==========
+    loanBrokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
+    );
+
+    LoanBrokerSet loanBrokerUpdate = LoanBrokerSet.builder()
+      .account(loanBrokerKeyPair.publicKey().deriveAddress())
+      .fee(fee)
+      .sequence(loanBrokerAccountInfo.accountData().sequence())
+      .vaultId(vaultId)
+      .loanBrokerId(loanBrokerId)
+      .debtMaximum(AssetAmount.of("500000"))
+      .data(LoanBrokerData.of("AABB"))
+      .signingPublicKey(loanBrokerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<LoanBrokerSet> signedLoanBrokerUpdate = signatureService.sign(
+      loanBrokerKeyPair.privateKey(), loanBrokerUpdate
+    );
+    SubmitResult<LoanBrokerSet> loanBrokerUpdateResult = xrplClient.submit(signedLoanBrokerUpdate);
+    assertThat(loanBrokerUpdateResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(
+      () -> this.getValidatedTransaction(signedLoanBrokerUpdate.hash(), LoanBrokerSet.class)
+    );
+
+    // Verify updated fields
+    loanBrokerEntry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(loanBrokerId, LoanBrokerObject.class, LedgerSpecifier.VALIDATED)
+    );
+    assertThat(loanBrokerEntry.node().debtMaximum()).isNotEmpty().get().isEqualTo(AssetAmount.of("500000"));
+    assertThat(loanBrokerEntry.node().data()).isNotEmpty().get().isEqualTo(LoanBrokerData.of("AABB"));
+    // Fixed fields should remain unchanged
+    assertThat(loanBrokerEntry.node().managementFeeRate()).isNotEmpty()
+      .get().isEqualTo(UnsignedInteger.valueOf(10000));
 
     // ========== LOAN BROKER COVER DEPOSIT ==========
-    vaultOwnerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(vaultOwnerAddress)
+    loanBrokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
     );
 
     LoanBrokerCoverDeposit coverDeposit = LoanBrokerCoverDeposit.builder()
-      .account(vaultOwnerAddress)
+      .account(loanBrokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
-      .sequence(vaultOwnerAccountInfo.accountData().sequence())
+      .sequence(loanBrokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
-      .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(issuerAddress).value("50000").build())
+      .amount(IssuedCurrencyAmount.builder().currency("USD")
+        .issuer(issuerKeyPair.publicKey().deriveAddress()).value("50000").build())
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
 
@@ -581,12 +589,10 @@ public class LendingProtocolIT extends AbstractIT {
     );
     SubmitResult<LoanBrokerCoverDeposit> coverDepositResult =
       xrplClient.submit(signedCoverDeposit);
-    logJson("CoverDeposit SubmitResult", coverDepositResult);
     assertThat(coverDepositResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(
       () -> this.getValidatedTransaction(signedCoverDeposit.hash(), LoanBrokerCoverDeposit.class)
     );
-    logInfo(coverDeposit.transactionType(), signedCoverDeposit.hash());
 
     // Verify CoverAvailable updated
     loanBrokerEntry = xrplClient.ledgerEntry(
@@ -595,22 +601,21 @@ public class LendingProtocolIT extends AbstractIT {
     assertThat(loanBrokerEntry.node().coverAvailable()).isNotEmpty().get().isEqualTo(AssetAmount.of("50000"));
 
     // ========== LOAN SET (Dual-Signed) ==========
-    vaultOwnerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(vaultOwnerAddress)
+    loanBrokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
     );
 
     // Build the LoanSet transaction with broker's signing key
-    // LoanSet fee accounts for counterparty signature per Lending Protocol spec section 3.8.1.1
     XrpCurrencyAmount loanSetFee = FeeUtils.computeLoanSetNetworkFees(
       feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO
     ).recommendedFee();
     LoanSet loanSetBase = LoanSet.builder()
-      .account(vaultOwnerAddress)
+      .account(loanBrokerKeyPair.publicKey().deriveAddress())
       .fee(loanSetFee)
-      .sequence(vaultOwnerAccountInfo.accountData().sequence())
+      .sequence(loanBrokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(AssetAmount.of("50000"))
-      .counterparty(borrowerAddress)
+      .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
       .data(LoanData.of("AABBCC"))
       .signingPublicKey(loanBrokerKeyPair.publicKey())
@@ -623,10 +628,9 @@ public class LendingProtocolIT extends AbstractIT {
     );
 
     // Extract borrower's signature and build CounterpartySignature
-    CounterpartySignature counterpartySig = CounterpartySignature.builder()
-      .signingPubKey(borrowerKeyPair.publicKey().base16Value())
-      .txnSignature(borrowerSigned.signature().base16Value())
-      .build();
+    CounterpartySignature counterpartySig = CounterpartySignature.of(
+      borrowerKeyPair.publicKey(), borrowerSigned.signature()
+    );
 
     // Build final LoanSet with CounterpartySignature
     LoanSet loanSetFinal = LoanSet.builder().from(loanSetBase)
@@ -639,12 +643,10 @@ public class LendingProtocolIT extends AbstractIT {
     );
     SubmitResult<LoanSet> loanSetResult =
       xrplClient.submit(signedLoanSet);
-    logJson("LoanSet SubmitResult", loanSetResult);
     assertThat(loanSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(
       () -> this.getValidatedTransaction(signedLoanSet.hash(), LoanSet.class)
     );
-    logInfo(loanSetFinal.transactionType(), signedLoanSet.hash());
 
     // Get Loan ID via ledger_entry
     LedgerEntryResult<LoanObject> loanEntry = xrplClient.ledgerEntry(
@@ -658,30 +660,30 @@ public class LendingProtocolIT extends AbstractIT {
     );
     Hash256 loanId = loanEntry.node().index();
     LoanObject loanObject = loanEntry.node();
-    logJson("LoanObject after creation", loanObject);
     logger.info("Loan created: {}", loanId);
 
     // Verify Loan fields
-    assertThat(loanObject.borrower()).isEqualTo(borrowerAddress);
+    assertThat(loanObject.borrower()).isEqualTo(borrowerKeyPair.publicKey().deriveAddress());
     assertThat(loanObject.loanBrokerId()).isEqualTo(loanBrokerId);
     assertThat(loanObject.principalOutstanding()).isNotEmpty();
     assertThat(loanObject.paymentRemaining()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(3));
 
     // Verify via helper
-    assertLoanEntryEqualsObjectFromAccountObjects(borrowerAddress, loanBrokerId,
+    assertLoanEntryEqualsObjectFromAccountObjects(borrowerKeyPair.publicKey().deriveAddress(), loanBrokerId,
       loanBrokerObject.loanSequence());
 
     // ========== LOAN PAY ==========
     AccountInfoResult borrowerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(borrowerAddress)
+      () -> this.getValidatedAccountInfo(borrowerKeyPair.publicKey().deriveAddress())
     );
 
     LoanPay loanPay = LoanPay.builder()
-      .account(borrowerAddress)
+      .account(borrowerKeyPair.publicKey().deriveAddress())
       .fee(fee)
       .sequence(borrowerAccountInfo.accountData().sequence())
       .loanId(loanId)
-      .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(issuerAddress).value("25000").build())
+      .amount(IssuedCurrencyAmount.builder().currency("USD")
+        .issuer(issuerKeyPair.publicKey().deriveAddress()).value("25000").build())
       .signingPublicKey(borrowerKeyPair.publicKey())
       .build();
 
@@ -690,31 +692,28 @@ public class LendingProtocolIT extends AbstractIT {
     );
     SubmitResult<LoanPay> loanPayResult =
       xrplClient.submit(signedLoanPay);
-    logJson("LoanPay SubmitResult", loanPayResult);
     assertThat(loanPayResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(
       () -> this.getValidatedTransaction(signedLoanPay.hash(), LoanPay.class)
     );
-    logInfo(loanPay.transactionType(), signedLoanPay.hash());
 
     // Verify loan state after payment
     loanEntry = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
     );
     LoanObject paidLoan = loanEntry.node();
-    logJson("LoanObject after first payment", paidLoan);
     assertThat(paidLoan.paymentRemaining()).isNotEmpty()
       .get().isEqualTo(UnsignedInteger.valueOf(2));
 
     // ========== LOAN MANAGE - Impair ==========
-    vaultOwnerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(vaultOwnerAddress)
+    loanBrokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
     );
 
     LoanManage loanManageImpair = LoanManage.builder()
-      .account(vaultOwnerAddress)
+      .account(loanBrokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
-      .sequence(vaultOwnerAccountInfo.accountData().sequence())
+      .sequence(loanBrokerAccountInfo.accountData().sequence())
       .loanId(loanId)
       .flags(LoanManageFlags.of(LoanManageFlags.LOAN_IMPAIR.getValue()))
       .signingPublicKey(loanBrokerKeyPair.publicKey())
@@ -725,23 +724,49 @@ public class LendingProtocolIT extends AbstractIT {
     );
     SubmitResult<LoanManage> impairResult =
       xrplClient.submit(signedImpair);
-    logJson("LoanManage Impair SubmitResult", impairResult);
     assertThat(impairResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(
       () -> this.getValidatedTransaction(signedImpair.hash(), LoanManage.class)
     );
-    logInfo(loanManageImpair.transactionType(), signedImpair.hash());
 
     // Verify loan is impaired
     loanEntry = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
     );
-    logJson("LoanObject after impairment", loanEntry.node());
     assertThat(loanEntry.node().flags().lsfLoanImpaired()).isTrue();
 
-    // ========== LOAN PAY - Full payment (clears impairment) ==========
+    // ========== LOAN MANAGE - Unimpair ==========
+    loanBrokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
+    );
+
+    LoanManage loanManageUnimpair = LoanManage.builder()
+      .account(loanBrokerKeyPair.publicKey().deriveAddress())
+      .fee(fee)
+      .sequence(loanBrokerAccountInfo.accountData().sequence())
+      .loanId(loanId)
+      .flags(LoanManageFlags.of(LoanManageFlags.LOAN_UNIMPAIR.getValue()))
+      .signingPublicKey(loanBrokerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<LoanManage> signedUnimpair = signatureService.sign(
+      loanBrokerKeyPair.privateKey(), loanManageUnimpair
+    );
+    SubmitResult<LoanManage> unimpairResult = xrplClient.submit(signedUnimpair);
+    assertThat(unimpairResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(
+      () -> this.getValidatedTransaction(signedUnimpair.hash(), LoanManage.class)
+    );
+
+    // Verify loan is no longer impaired
+    loanEntry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
+    );
+    assertThat(loanEntry.node().flags().lsfLoanImpaired()).isFalse();
+
+    // ========== LOAN PAY - Full payment ==========
     borrowerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(borrowerAddress)
+      () -> this.getValidatedAccountInfo(borrowerKeyPair.publicKey().deriveAddress())
     );
 
     // Get remaining outstanding to pay in full
@@ -750,11 +775,12 @@ public class LendingProtocolIT extends AbstractIT {
       .orElse("50000");
 
     LoanPay fullPayment = LoanPay.builder()
-      .account(borrowerAddress)
+      .account(borrowerKeyPair.publicKey().deriveAddress())
       .fee(fee)
       .sequence(borrowerAccountInfo.accountData().sequence())
       .loanId(loanId)
-      .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(issuerAddress).value(remainingOutstanding).build())
+      .amount(IssuedCurrencyAmount.builder().currency("USD")
+        .issuer(issuerKeyPair.publicKey().deriveAddress()).value(remainingOutstanding).build())
       .flags(LoanPayFlags.of(LoanPayFlags.LOAN_FULL_PAYMENT.getValue()))
       .signingPublicKey(borrowerKeyPair.publicKey())
       .build();
@@ -764,20 +790,18 @@ public class LendingProtocolIT extends AbstractIT {
     );
     SubmitResult<LoanPay> fullPayResult =
       xrplClient.submit(signedFullPayment);
-    logJson("LoanPay Full SubmitResult", fullPayResult);
     assertThat(fullPayResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(
       () -> this.getValidatedTransaction(signedFullPayment.hash(), LoanPay.class)
     );
-    logInfo(fullPayment.transactionType(), signedFullPayment.hash());
 
     // ========== LOAN DELETE ==========
     borrowerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(borrowerAddress)
+      () -> this.getValidatedAccountInfo(borrowerKeyPair.publicKey().deriveAddress())
     );
 
     LoanDelete loanDelete = LoanDelete.builder()
-      .account(borrowerAddress)
+      .account(borrowerKeyPair.publicKey().deriveAddress())
       .fee(fee)
       .sequence(borrowerAccountInfo.accountData().sequence())
       .loanId(loanId)
@@ -789,12 +813,10 @@ public class LendingProtocolIT extends AbstractIT {
     );
     SubmitResult<LoanDelete> loanDeleteResult =
       xrplClient.submit(signedLoanDelete);
-    logJson("LoanDelete SubmitResult", loanDeleteResult);
     assertThat(loanDeleteResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(
       () -> this.getValidatedTransaction(signedLoanDelete.hash(), LoanDelete.class)
     );
-    logInfo(loanDelete.transactionType(), signedLoanDelete.hash());
 
     // Verify loan is deleted
     assertThat(this.scanForResult(
@@ -802,7 +824,7 @@ public class LendingProtocolIT extends AbstractIT {
         try {
           return xrplClient.accountObjects(AccountObjectsRequestParams.builder()
             .type(AccountObjectType.LOAN)
-            .account(borrowerAddress)
+            .account(borrowerKeyPair.publicKey().deriveAddress())
             .ledgerSpecifier(LedgerSpecifier.VALIDATED)
             .build()
           ).accountObjects();
@@ -814,17 +836,18 @@ public class LendingProtocolIT extends AbstractIT {
     )).isEmpty();
 
     // ========== LOAN BROKER COVER WITHDRAW ==========
-    vaultOwnerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(vaultOwnerAddress)
+    loanBrokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
     );
 
     LoanBrokerCoverWithdraw coverWithdraw = LoanBrokerCoverWithdraw.builder()
-      .account(vaultOwnerAddress)
+      .account(loanBrokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
-      .sequence(vaultOwnerAccountInfo.accountData().sequence())
+      .sequence(loanBrokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
-      .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(issuerAddress).value("25000").build())
-      .destination(vaultOwnerAddress)
+      .amount(IssuedCurrencyAmount.builder().currency("USD")
+        .issuer(issuerKeyPair.publicKey().deriveAddress()).value("25000").build())
+      .destination(loanBrokerKeyPair.publicKey().deriveAddress())
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
 
@@ -833,24 +856,23 @@ public class LendingProtocolIT extends AbstractIT {
     );
     SubmitResult<LoanBrokerCoverWithdraw> coverWithdrawResult =
       xrplClient.submit(signedCoverWithdraw);
-    logJson("CoverWithdraw SubmitResult", coverWithdrawResult);
     assertThat(coverWithdrawResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(
       () -> this.getValidatedTransaction(signedCoverWithdraw.hash(), LoanBrokerCoverWithdraw.class)
     );
-    logInfo(coverWithdraw.transactionType(), signedCoverWithdraw.hash());
 
     // ========== LOAN BROKER COVER CLAWBACK (issuer claws back remaining cover) ==========
     issuerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(issuerAddress)
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
 
     LoanBrokerCoverClawback coverClawback = LoanBrokerCoverClawback.builder()
-      .account(issuerAddress)
+      .account(issuerKeyPair.publicKey().deriveAddress())
       .fee(fee)
       .sequence(issuerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
-      .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(issuerAddress).value("25000").build())
+      .amount(IssuedCurrencyAmount.builder().currency("USD")
+        .issuer(issuerKeyPair.publicKey().deriveAddress()).value("25000").build())
       .signingPublicKey(issuerKeyPair.publicKey())
       .build();
 
@@ -859,22 +881,20 @@ public class LendingProtocolIT extends AbstractIT {
     );
     SubmitResult<LoanBrokerCoverClawback> coverClawbackResult =
       xrplClient.submit(signedCoverClawback);
-    logJson("CoverClawback SubmitResult", coverClawbackResult);
     assertThat(coverClawbackResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(
       () -> this.getValidatedTransaction(signedCoverClawback.hash(), LoanBrokerCoverClawback.class)
     );
-    logInfo(coverClawback.transactionType(), signedCoverClawback.hash());
 
     // ========== LOAN BROKER DELETE ==========
-    vaultOwnerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(vaultOwnerAddress)
+    loanBrokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
     );
 
     LoanBrokerDelete loanBrokerDelete = LoanBrokerDelete.builder()
-      .account(vaultOwnerAddress)
+      .account(loanBrokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
-      .sequence(vaultOwnerAccountInfo.accountData().sequence())
+      .sequence(loanBrokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
@@ -884,12 +904,10 @@ public class LendingProtocolIT extends AbstractIT {
     );
     SubmitResult<LoanBrokerDelete> loanBrokerDeleteResult =
       xrplClient.submit(signedLoanBrokerDelete);
-    logJson("LoanBrokerDelete SubmitResult", loanBrokerDeleteResult);
     assertThat(loanBrokerDeleteResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(
       () -> this.getValidatedTransaction(signedLoanBrokerDelete.hash(), LoanBrokerDelete.class)
     );
-    logInfo(loanBrokerDelete.transactionType(), signedLoanBrokerDelete.hash());
 
     // Verify loan broker is deleted
     assertThat(this.scanForResult(
@@ -897,7 +915,7 @@ public class LendingProtocolIT extends AbstractIT {
         try {
           return xrplClient.accountObjects(AccountObjectsRequestParams.builder()
             .type(AccountObjectType.LOAN_BROKER)
-            .account(vaultOwnerAddress)
+            .account(loanBrokerKeyPair.publicKey().deriveAddress())
             .ledgerSpecifier(LedgerSpecifier.VALIDATED)
             .build()
           ).accountObjects();
@@ -1024,7 +1042,7 @@ public class LendingProtocolIT extends AbstractIT {
   // Counterparty signing helpers
   // //////////////////////
 
-  private void submitAndVerifySingleSignedLoanSet(SingleSignedTransaction<LoanSet> signedTx)
+  private void submitSingleSignedLoanSet(SingleSignedTransaction<LoanSet> signedTx)
     throws JsonRpcClientErrorException, JsonProcessingException {
     final SubmitResult<LoanSet> submitResult = xrplClient.submit(signedTx);
     assertThat(submitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
@@ -1036,11 +1054,9 @@ public class LendingProtocolIT extends AbstractIT {
       .orElseThrow(() -> new RuntimeException("Metadata is missing."))
       .transactionResult()
     ).isEqualTo(SUCCESS_STATUS);
-
-    logInfo(signedTx.signedTransaction().transactionType(), signedTx.hash());
   }
 
-  private void submitAndVerifyMultiSignedLoanSet(MultiSignedTransaction<LoanSet> multiSignedTx)
+  private void submitMultiSignedLoanSet(MultiSignedTransaction<LoanSet> multiSignedTx)
     throws JsonRpcClientErrorException, JsonProcessingException {
     final SubmitMultiSignedResult<LoanSet> submitResult = xrplClient.submitMultisigned(multiSignedTx);
     assertThat(submitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
@@ -1052,43 +1068,42 @@ public class LendingProtocolIT extends AbstractIT {
       .orElseThrow(() -> new RuntimeException("Metadata is missing."))
       .transactionResult()
     ).isEqualTo(SUCCESS_STATUS);
-
-    logInfo(multiSignedTx.signedTransaction().transactionType(), multiSignedTx.hash());
   }
 
   /**
-   * Creates an XRP vault and deposits funds into it. Returns the vault ID.
+   * Creates an XRP vault, deposits funds, creates a loan broker, and deposits cover. Returns the LoanBroker ID.
    */
-  private Hash256 setupXrpVault(KeyPair ownerKeyPair, XrpCurrencyAmount fee)
+  private Hash256 setupLoanBrokerAndXrpVault(KeyPair brokerKeyPair, XrpCurrencyAmount fee)
     throws JsonRpcClientErrorException, JsonProcessingException {
-    final Address ownerAddress = ownerKeyPair.publicKey().deriveAddress();
     final KeyPair depositorKeyPair = createRandomAccountEd25519();
 
-    AccountInfoResult ownerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(ownerAddress)
+    AccountInfoResult brokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
 
     final VaultCreate vaultCreate = VaultCreate.builder()
-      .account(ownerAddress)
+      .account(brokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
-      .sequence(ownerAccountInfo.accountData().sequence())
+      .sequence(brokerAccountInfo.accountData().sequence())
       .asset(Issue.XRP)
       .assetsMaximum(AssetAmount.of("10000000000"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
-      .signingPublicKey(ownerKeyPair.publicKey())
+      .signingPublicKey(brokerKeyPair.publicKey())
       .build();
 
     final SingleSignedTransaction<VaultCreate> signedVaultCreate = signatureService.sign(
-      ownerKeyPair.privateKey(), vaultCreate
+      brokerKeyPair.privateKey(), vaultCreate
     );
     final SubmitResult<VaultCreate> vaultResult = xrplClient.submit(signedVaultCreate);
     assertThat(vaultResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(() -> this.getValidatedTransaction(signedVaultCreate.hash(), VaultCreate.class));
-    logInfo(vaultCreate.transactionType(), signedVaultCreate.hash());
 
     final LedgerEntryResult<VaultObject> vaultEntry = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.vault(
-        VaultLedgerEntryParams.builder().owner(ownerAddress).seq(vaultCreate.sequence()).build(),
+        VaultLedgerEntryParams.builder()
+          .owner(brokerKeyPair.publicKey().deriveAddress())
+          .seq(vaultCreate.sequence())
+          .build(),
         LedgerSpecifier.VALIDATED
       )
     );
@@ -1113,25 +1128,13 @@ public class LendingProtocolIT extends AbstractIT {
     final SubmitResult<VaultDeposit> depositResult = xrplClient.submit(signedDeposit);
     assertThat(depositResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(() -> this.getValidatedTransaction(signedDeposit.hash(), VaultDeposit.class));
-    logInfo(vaultDeposit.transactionType(), signedDeposit.hash());
 
-    return vaultId;
-  }
-
-  /**
-   * Creates a loan broker on the given vault and deposits cover. Returns the LoanBroker ID.
-   */
-  private Hash256 setupLoanBroker(KeyPair brokerKeyPair, XrpCurrencyAmount fee)
-    throws JsonRpcClientErrorException, JsonProcessingException {
-    final Address brokerAddress = brokerKeyPair.publicKey().deriveAddress();
-    final Hash256 vaultId = setupXrpVault(brokerKeyPair, fee);
-
-    AccountInfoResult brokerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(brokerAddress)
+    brokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
 
     final LoanBrokerSet loanBrokerSet = LoanBrokerSet.builder()
-      .account(brokerAddress)
+      .account(brokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
       .sequence(brokerAccountInfo.accountData().sequence())
       .vaultId(vaultId)
@@ -1145,22 +1148,24 @@ public class LendingProtocolIT extends AbstractIT {
     final SubmitResult<LoanBrokerSet> brokerSetResult = xrplClient.submit(signedBrokerSet);
     assertThat(brokerSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(() -> this.getValidatedTransaction(signedBrokerSet.hash(), LoanBrokerSet.class));
-    logInfo(loanBrokerSet.transactionType(), signedBrokerSet.hash());
 
     final LedgerEntryResult<LoanBrokerObject> brokerEntry = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.loanBroker(
-        LoanBrokerLedgerEntryParams.builder().owner(brokerAddress).seq(loanBrokerSet.sequence()).build(),
+        LoanBrokerLedgerEntryParams.builder()
+          .owner(brokerKeyPair.publicKey().deriveAddress())
+          .seq(loanBrokerSet.sequence())
+          .build(),
         LedgerSpecifier.VALIDATED
       )
     );
     final Hash256 loanBrokerId = brokerEntry.node().index();
 
     brokerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(brokerAddress)
+      () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
 
     final LoanBrokerCoverDeposit coverDeposit = LoanBrokerCoverDeposit.builder()
-      .account(brokerAddress)
+      .account(brokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
@@ -1174,7 +1179,6 @@ public class LendingProtocolIT extends AbstractIT {
     final SubmitResult<LoanBrokerCoverDeposit> coverResult = xrplClient.submit(signedCoverDeposit);
     assertThat(coverResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(() -> this.getValidatedTransaction(signedCoverDeposit.hash(), LoanBrokerCoverDeposit.class));
-    logInfo(coverDeposit.transactionType(), signedCoverDeposit.hash());
 
     return loanBrokerId;
   }
@@ -1224,15 +1228,5 @@ public class LendingProtocolIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(accountKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().signerLists().size() == 1
     );
-    logInfo(signerListSet.transactionType(), signedSignerListSet.hash());
-  }
-
-  /**
-   * Typo-compatible AssertionError to match SingleAssetVaultIT pattern.
-   */
-  private static class AssertionError extends RuntimeException {
-    AssertionError(String message) {
-      super(message);
-    }
   }
 }

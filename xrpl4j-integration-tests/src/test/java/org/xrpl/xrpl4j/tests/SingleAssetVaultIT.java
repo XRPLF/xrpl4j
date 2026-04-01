@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -61,7 +62,13 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
  * for different asset types (IOU, MPT, XRP) and verify vault state through multiple query methods
  * (vault_info RPC, ledger_entry, account_objects).</p>
  */
+@DisabledIf(value = "shouldNotRun", disabledReason = "SingleAssetVaultIT only runs on local rippled node and Devnet")
 public class SingleAssetVaultIT extends AbstractIT {
+
+  static boolean shouldNotRun() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null;
+  }
 
   /**
    * Test vault with IOU as asset. Exercises all vault transactions and verifies vault state through

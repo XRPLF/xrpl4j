@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -109,7 +108,7 @@ public class LendingProtocolIT extends AbstractIT {
     );
     final LoanSet unsignedLoanSet = LoanSet.builder()
       .account(brokerAddress)
-      .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(fee.value().longValue() * 3)))
+      .fee(FeeUtils.computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(AssetAmount.of("1000000"))
@@ -173,7 +172,9 @@ public class LendingProtocolIT extends AbstractIT {
     );
     final LoanSet unsignedLoanSet = LoanSet.builder()
       .account(brokerAddress)
-      .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(fee.value().longValue() * 5)))
+      .fee(FeeUtils.computeLoanSetNetworkFees(
+        feeResult, UnsignedInteger.ZERO, UnsignedInteger.valueOf(2)
+      ).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(AssetAmount.of("1000000"))
@@ -240,7 +241,9 @@ public class LendingProtocolIT extends AbstractIT {
     );
     final LoanSet unsignedLoanSet = LoanSet.builder()
       .account(brokerAddress)
-      .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(fee.value().longValue() * 5)))
+      .fee(FeeUtils.computeLoanSetNetworkFees(
+        feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.ZERO
+      ).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(AssetAmount.of("1000000"))
@@ -309,7 +312,9 @@ public class LendingProtocolIT extends AbstractIT {
     );
     final LoanSet unsignedLoanSet = LoanSet.builder()
       .account(brokerAddress)
-      .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(fee.value().longValue() * 7)))
+      .fee(FeeUtils.computeLoanSetNetworkFees(
+        feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.valueOf(2)
+      ).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(AssetAmount.of("1000000"))
@@ -595,10 +600,10 @@ public class LendingProtocolIT extends AbstractIT {
     );
 
     // Build the LoanSet transaction with broker's signing key
-    // LoanSet is larger due to CounterpartySignature, so use a higher fee
-    XrpCurrencyAmount loanSetFee = XrpCurrencyAmount.of(
-      UnsignedLong.valueOf(fee.value().longValue() * 3)
-    );
+    // LoanSet fee accounts for counterparty signature per Lending Protocol spec section 3.8.1.1
+    XrpCurrencyAmount loanSetFee = FeeUtils.computeLoanSetNetworkFees(
+      feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO
+    ).recommendedFee();
     LoanSet loanSetBase = LoanSet.builder()
       .account(vaultOwnerAddress)
       .fee(loanSetFee)

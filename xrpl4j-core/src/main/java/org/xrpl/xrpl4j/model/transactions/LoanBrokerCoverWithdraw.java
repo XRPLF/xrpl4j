@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.AddressConstants;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
@@ -74,4 +76,26 @@ public interface LoanBrokerCoverWithdraw extends Transaction {
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
 
+  /**
+   * Validates LoanBrokerCoverWithdraw data verification preconditions per the Lending Protocol spec section 3.6.3.1.
+   */
+  @Value.Check
+  default void check() {
+    Preconditions.checkArgument(
+      !loanBrokerId().value().equals(
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ),
+      "LoanBrokerID must not be zero."
+    );
+
+    Preconditions.checkArgument(
+      !amount().isNegative() && !amount().isZero(),
+      "Amount must be greater than zero."
+    );
+
+    destination().ifPresent(dest -> Preconditions.checkArgument(
+      !dest.equals(AddressConstants.ACCOUNT_ZERO),
+      "Destination must not be the zero account."
+    ));
+  }
 }

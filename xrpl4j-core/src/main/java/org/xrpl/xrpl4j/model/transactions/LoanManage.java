@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.LoanManageFlags;
 
@@ -46,4 +47,26 @@ public interface LoanManage extends Transaction {
    */
   @JsonProperty("LoanID")
   Hash256 loanId();
+
+  /**
+   * Validates LoanManage data verification preconditions per the Lending Protocol spec section 3.10.4.1.
+   */
+  @Value.Check
+  default void check() {
+    Preconditions.checkArgument(
+      !loanId().value().equals(
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ),
+      "LoanID must not be zero."
+    );
+
+    // tfLoanDefault, tfLoanImpair, tfLoanUnimpair are mutually exclusive.
+    int flagCount = (flags().tfLoanDefault() ? 1 : 0)
+      + (flags().tfLoanImpair() ? 1 : 0)
+      + (flags().tfLoanUnimpair() ? 1 : 0);
+    Preconditions.checkArgument(
+      flagCount <= 1,
+      "Only one of tfLoanDefault, tfLoanImpair, or tfLoanUnimpair may be set."
+    );
+  }
 }

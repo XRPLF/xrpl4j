@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.LoanPayFlags;
 
@@ -55,4 +56,30 @@ public interface LoanPay extends Transaction {
   @JsonProperty("Amount")
   CurrencyAmount amount();
 
+  /**
+   * Validates LoanPay data verification preconditions per the Lending Protocol spec section 3.11.4.1.
+   */
+  @Value.Check
+  default void check() {
+    Preconditions.checkArgument(
+      !loanId().value().equals(
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ),
+      "LoanID must not be zero."
+    );
+
+    Preconditions.checkArgument(
+      !amount().isNegative() && !amount().isZero(),
+      "Amount must be greater than zero."
+    );
+
+    // tfLoanLatePayment, tfLoanFullPayment, tfLoanOverpayment are mutually exclusive.
+    int flagCount = (flags().tfLoanLatePayment() ? 1 : 0)
+      + (flags().tfLoanFullPayment() ? 1 : 0)
+      + (flags().tfLoanOverpayment() ? 1 : 0);
+    Preconditions.checkArgument(
+      flagCount <= 1,
+      "Only one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set."
+    );
+  }
 }

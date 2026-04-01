@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.AddressConstants;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
@@ -59,4 +61,55 @@ public interface LoanBrokerCoverClawback extends Transaction {
   @JsonProperty("Amount")
   Optional<CurrencyAmount> amount();
 
+  /**
+   * Validates LoanBrokerCoverClawback data verification preconditions per the Lending Protocol spec section 3.7.3.1.
+   */
+  @Value.Check
+  default void check() {
+    // 1. At least one of LoanBrokerID or Amount must be specified.
+    Preconditions.checkArgument(
+      loanBrokerId().isPresent() || amount().isPresent(),
+      "At least one of LoanBrokerID or Amount must be specified."
+    );
+
+    // 2. LoanBrokerID, if present, must not be zero.
+    loanBrokerId().ifPresent(id -> Preconditions.checkArgument(
+      !id.value().equals("0000000000000000000000000000000000000000000000000000000000000000"),
+      "LoanBrokerID must not be zero."
+    ));
+
+    amount().ifPresent(amt -> {
+      // 3. Amount must not be negative (zero is valid — means clawback up to minimum cover).
+      Preconditions.checkArgument(
+        !amt.isNegative(),
+        "Amount must not be negative."
+      );
+
+      // 4. Amount must not be XRP (cannot clawback native asset).
+      Preconditions.checkArgument(
+        !(amt instanceof XrpCurrencyAmount),
+        "Amount must not be XRP."
+      );
+
+      // 6. LoanBrokerID absent + MPT amount is invalid.
+      if (!loanBrokerId().isPresent() && amt instanceof MptCurrencyAmount) {
+        throw new IllegalArgumentException(
+          "LoanBrokerID must be specified when Amount is an MPT."
+        );
+      }
+
+      // 7. LoanBrokerID absent + IOU with issuer == submitter or issuer == ACCOUNT_ZERO is invalid.
+      if (!loanBrokerId().isPresent() && amt instanceof IssuedCurrencyAmount) {
+        IssuedCurrencyAmount iou = (IssuedCurrencyAmount) amt;
+        Preconditions.checkArgument(
+          !iou.issuer().equals(account()),
+          "LoanBrokerID must be specified when Amount issuer is the submitter."
+        );
+        Preconditions.checkArgument(
+          !iou.issuer().equals(AddressConstants.ACCOUNT_ZERO),
+          "LoanBrokerID must be specified when Amount issuer is the zero account."
+        );
+      }
+    });
+  }
 }

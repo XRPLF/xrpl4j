@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
@@ -54,4 +55,19 @@ public interface LoanBrokerCoverDeposit extends Transaction {
    */
   @JsonProperty("Amount")
   CurrencyAmount amount();
+
+  @Value.Check
+  default void check() {
+    Preconditions.checkArgument(
+      !loanBrokerId().value().equals(
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ),
+      "LoanBrokerID must not be zero."
+    );
+
+    Preconditions.checkArgument(
+      !amount().isNegative() && !amount().isZero(),
+      "Amount must be greater than zero."
+    );
+  }
 }

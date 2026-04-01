@@ -302,6 +302,16 @@ public class Wrappers {
     }
 
     /**
+     * Indicates whether this amount is zero.
+     *
+     * @return {@code true} if this amount is zero; {@code false} otherwise.
+     */
+    @Override
+    public boolean isZero() {
+      return value().equals(UnsignedLong.ZERO);
+    }
+
+    /**
      * Convert this XRP amount into a decimal representing a value denominated in whole XRP units. For example, a value
      * of `1.0` represents 1 unit of XRP; a value of `0.5` represents a half of an XRP unit.
      *

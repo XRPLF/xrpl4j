@@ -28,6 +28,8 @@ import org.immutables.value.Value.Auxiliary;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 
+import java.math.BigDecimal;
+
 /**
  * A {@link CurrencyAmount} for Issued Currencies on the XRP Ledger.
  *
@@ -105,6 +107,19 @@ public interface IssuedCurrencyAmount extends CurrencyAmount {
   @Auxiliary
   default boolean isNegative() {
     return value().startsWith("-");
+  }
+
+  /**
+   * Indicates whether this amount is zero. Handles all string representations of zero (e.g., "0", "0.0", "0.000",
+   * "0e0", "-0").
+   *
+   * @return {@code true} if this amount is zero; {@code false} otherwise.
+   */
+  @Derived
+  @JsonIgnore
+  @Auxiliary
+  default boolean isZero() {
+    return new BigDecimal(value()).signum() == 0;
   }
 
 }

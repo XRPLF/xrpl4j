@@ -53,6 +53,11 @@ class CurrencyAmountTest extends AbstractJsonTest {
       public boolean isNegative() {
         return false;
       }
+
+      @Override
+      public boolean isZero() {
+        return false;
+      }
     };
     assertThat(currencyAmount.isNegative()).isFalse();
     // Negative
@@ -61,13 +66,28 @@ class CurrencyAmountTest extends AbstractJsonTest {
       public boolean isNegative() {
         return true;
       }
+
+      @Override
+      public boolean isZero() {
+        return false;
+      }
     };
     assertThat(currencyAmount.isNegative()).isTrue();
   }
 
   @Test
   void handleWithNulls() {
-    CurrencyAmount amount = () -> false;
+    CurrencyAmount amount = new CurrencyAmount() {
+      @Override
+      public boolean isNegative() {
+        return false;
+      }
+
+      @Override
+      public boolean isZero() {
+        return false;
+      }
+    };
     // null xrpCurrencyAmountHandler
     assertThrows(NullPointerException.class, () ->
       amount.handle(null, $ -> new Object(), $ -> new Object())
@@ -87,7 +107,17 @@ class CurrencyAmountTest extends AbstractJsonTest {
   @Test
   void handleUnhandled() {
     // Unhandled...
-    CurrencyAmount currencyAmount = () -> false;
+    CurrencyAmount currencyAmount = new CurrencyAmount() {
+      @Override
+      public boolean isNegative() {
+        return false;
+      }
+
+      @Override
+      public boolean isZero() {
+        return false;
+      }
+    };
     assertThrows(IllegalStateException.class, () ->
       currencyAmount.handle(
         $ -> new Object(),

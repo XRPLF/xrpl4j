@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.LoanSetFlags;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
@@ -182,4 +184,96 @@ public interface LoanSet extends Transaction {
    */
   @JsonProperty("GracePeriod")
   Optional<UnsignedInteger> gracePeriod();
+
+  /**
+   * Validates LoanSet data verification preconditions per the Lending Protocol spec section 3.8.5.1.
+   */
+  @Value.Check
+  default void check() {
+    // 1. LoanBrokerID must not be zero.
+    Preconditions.checkArgument(
+      !loanBrokerId().value().equals(
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ),
+      "LoanBrokerID must not be zero."
+    );
+
+    // 6. LoanServiceFee, LatePaymentFee, or ClosePaymentFee must not be negative.
+    loanServiceFee().ifPresent(fee -> Preconditions.checkArgument(
+      !fee.isNegative(),
+      "LoanServiceFee must not be negative."
+    ));
+    latePaymentFee().ifPresent(fee -> Preconditions.checkArgument(
+      !fee.isNegative(),
+      "LatePaymentFee must not be negative."
+    ));
+    closePaymentFee().ifPresent(fee -> Preconditions.checkArgument(
+      !fee.isNegative(),
+      "ClosePaymentFee must not be negative."
+    ));
+
+    // 7. PrincipalRequested must be greater than zero.
+    Preconditions.checkArgument(
+      !principalRequested().isNegative() && !principalRequested().isZero(),
+      "PrincipalRequested must be greater than zero."
+    );
+
+    // 8. LoanOriginationFee must not be negative and must not exceed PrincipalRequested.
+    loanOriginationFee().ifPresent(fee -> {
+      Preconditions.checkArgument(
+        !fee.isNegative(),
+        "LoanOriginationFee must not be negative."
+      );
+      Preconditions.checkArgument(
+        new BigDecimal(fee.value()).compareTo(new BigDecimal(principalRequested().value())) <= 0,
+        "LoanOriginationFee must not exceed PrincipalRequested."
+      );
+    });
+
+    // 9-13. Rate fields must not exceed 100000.
+    interestRate().ifPresent(rate -> Preconditions.checkArgument(
+      rate.compareTo(UnsignedInteger.valueOf(100000)) <= 0,
+      "InterestRate must be between 0 and 100000 inclusive."
+    ));
+    overpaymentFee().ifPresent(rate -> Preconditions.checkArgument(
+      rate.compareTo(UnsignedInteger.valueOf(100000)) <= 0,
+      "OverpaymentFee must be between 0 and 100000 inclusive."
+    ));
+    lateInterestRate().ifPresent(rate -> Preconditions.checkArgument(
+      rate.compareTo(UnsignedInteger.valueOf(100000)) <= 0,
+      "LateInterestRate must be between 0 and 100000 inclusive."
+    ));
+    closeInterestRate().ifPresent(rate -> Preconditions.checkArgument(
+      rate.compareTo(UnsignedInteger.valueOf(100000)) <= 0,
+      "CloseInterestRate must be between 0 and 100000 inclusive."
+    ));
+    overpaymentInterestRate().ifPresent(rate -> Preconditions.checkArgument(
+      rate.compareTo(UnsignedInteger.valueOf(100000)) <= 0,
+      "OverpaymentInterestRate must be between 0 and 100000 inclusive."
+    ));
+
+    // 14. PaymentTotal must be greater than zero (if specified).
+    paymentTotal().ifPresent(total -> Preconditions.checkArgument(
+      total.compareTo(UnsignedInteger.ZERO) > 0,
+      "PaymentTotal must be greater than zero."
+    ));
+
+    // 15. PaymentInterval must be at least 60 seconds (if specified).
+    paymentInterval().ifPresent(interval -> Preconditions.checkArgument(
+      interval.compareTo(UnsignedInteger.valueOf(60)) >= 0,
+      "PaymentInterval must be at least 60 seconds."
+    ));
+
+    // 16. GracePeriod must be at least 60 seconds and not exceed PaymentInterval (if specified).
+    gracePeriod().ifPresent(gp -> {
+      Preconditions.checkArgument(
+        gp.compareTo(UnsignedInteger.valueOf(60)) >= 0,
+        "GracePeriod must be at least 60 seconds."
+      );
+      paymentInterval().ifPresent(interval -> Preconditions.checkArgument(
+        gp.compareTo(interval) <= 0,
+        "GracePeriod must not exceed PaymentInterval."
+      ));
+    });
+  }
 }

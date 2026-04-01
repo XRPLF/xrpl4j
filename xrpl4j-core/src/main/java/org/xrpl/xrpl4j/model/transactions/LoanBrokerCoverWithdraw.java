@@ -77,7 +77,7 @@ public interface LoanBrokerCoverWithdraw extends Transaction {
   Optional<UnsignedInteger> destinationTag();
 
   /**
-   * Validates LoanBrokerCoverWithdraw data verification preconditions per the Lending Protocol spec section 3.6.3.1.
+   * Validates LoanBrokerCoverWithdraw data verification preconditions.
    */
   @Value.Check
   default void check() {

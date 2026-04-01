@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
@@ -55,7 +56,6 @@ import org.xrpl.xrpl4j.model.transactions.LoanPay;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
-import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.VaultCreate;
 import org.xrpl.xrpl4j.model.transactions.VaultDeposit;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
@@ -70,9 +70,13 @@ import java.util.stream.Collectors;
  * <p>Tests exercise the full lifecycle: Vault creation, LoanBroker management,
  * Loan creation (with dual-signing), and payments.</p>
  */
+@DisabledIf(value = "shouldNotRun", disabledReason = "LendingProtocolIT only runs on local rippled node and Devnet")
 public class LendingProtocolIT extends AbstractIT {
 
-  private static final String SUCCESS_STATUS = TransactionResultCodes.TES_SUCCESS;
+  static boolean shouldNotRun() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null;
+  }
 
   // //////////////////////
   // LoanSet counterparty signing tests (XRP vault, broker initiates, borrower is counterparty)
@@ -359,9 +363,6 @@ public class LendingProtocolIT extends AbstractIT {
   void lendingProtocolLifecycle() throws Exception {
     // Step 1: Create accounts
     KeyPair issuerKeyPair = createRandomAccountEd25519();
-    KeyPair loanBrokerKeyPair = createRandomAccountEd25519();
-    KeyPair depositorKeyPair = createRandomAccountEd25519();
-    KeyPair borrowerKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
@@ -402,6 +403,10 @@ public class LendingProtocolIT extends AbstractIT {
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .value("1000000")
       .build();
+
+    KeyPair loanBrokerKeyPair = createRandomAccountEd25519();
+    KeyPair depositorKeyPair = createRandomAccountEd25519();
+    KeyPair borrowerKeyPair = createRandomAccountEd25519();
 
     // Step 4: Set up trust lines for depositor and borrower
     createTrustLine(depositorKeyPair, usdAmount, fee);

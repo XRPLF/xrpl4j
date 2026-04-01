@@ -74,9 +74,9 @@ public interface LoanPay extends Transaction {
     );
 
     // tfLoanLatePayment, tfLoanFullPayment, tfLoanOverpayment are mutually exclusive.
-    int flagCount = (flags().tfLoanLatePayment() ? 1 : 0)
-      + (flags().tfLoanFullPayment() ? 1 : 0)
-      + (flags().tfLoanOverpayment() ? 1 : 0);
+    int flagCount = (flags().tfLoanLatePayment() ? 1 : 0) +
+      (flags().tfLoanFullPayment() ? 1 : 0) +
+      (flags().tfLoanOverpayment() ? 1 : 0);
     Preconditions.checkArgument(
       flagCount <= 1,
       "Only one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set."

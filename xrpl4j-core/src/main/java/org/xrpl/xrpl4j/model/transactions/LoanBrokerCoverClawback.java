@@ -62,7 +62,7 @@ public interface LoanBrokerCoverClawback extends Transaction {
   Optional<CurrencyAmount> amount();
 
   /**
-   * Validates LoanBrokerCoverClawback data verification preconditions per the Lending Protocol spec section 3.7.3.1.
+   * Validates LoanBrokerCoverClawback data verification preconditions.
    */
   @Value.Check
   default void check() {

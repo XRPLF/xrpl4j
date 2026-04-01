@@ -186,7 +186,7 @@ public interface LoanSet extends Transaction {
   Optional<UnsignedInteger> gracePeriod();
 
   /**
-   * Validates LoanSet data verification preconditions per the Lending Protocol spec section 3.8.5.1.
+   * Validates LoanSet data verification preconditions.
    */
   @Value.Check
   default void check() {

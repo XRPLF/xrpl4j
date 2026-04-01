@@ -187,9 +187,9 @@ class LoanPayTest {
   void allThreeFlagsIsInvalid() {
     assertThatThrownBy(() -> baseBuilder()
       .flags(LoanPayFlags.of(
-        LoanPayFlags.LOAN_LATE_PAYMENT.getValue()
-          | LoanPayFlags.LOAN_FULL_PAYMENT.getValue()
-          | LoanPayFlags.LOAN_OVERPAYMENT.getValue()
+        LoanPayFlags.LOAN_LATE_PAYMENT.getValue() |
+          LoanPayFlags.LOAN_FULL_PAYMENT.getValue() |
+          LoanPayFlags.LOAN_OVERPAYMENT.getValue()
       ))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)

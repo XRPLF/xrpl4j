@@ -121,9 +121,9 @@ class LoanManageTest {
   void allThreeFlagsIsInvalid() {
     assertThatThrownBy(() -> baseBuilder()
       .flags(LoanManageFlags.of(
-        LoanManageFlags.LOAN_DEFAULT.getValue()
-          | LoanManageFlags.LOAN_IMPAIR.getValue()
-          | LoanManageFlags.LOAN_UNIMPAIR.getValue()
+        LoanManageFlags.LOAN_DEFAULT.getValue() |
+          LoanManageFlags.LOAN_IMPAIR.getValue() |
+          LoanManageFlags.LOAN_UNIMPAIR.getValue()
       ))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)

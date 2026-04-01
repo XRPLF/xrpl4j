@@ -49,7 +49,7 @@ public interface LoanBrokerDelete extends Transaction {
   Hash256 loanBrokerId();
 
   /**
-   * Validates LoanBrokerDelete data verification preconditions per the XLS-66 spec and rippled preflight.
+   * Validates LoanBrokerDelete data verification preconditions.
    */
   @Value.Check
   default void check() {

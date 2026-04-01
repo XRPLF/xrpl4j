@@ -61,9 +61,9 @@ public interface LoanManage extends Transaction {
     );
 
     // tfLoanDefault, tfLoanImpair, tfLoanUnimpair are mutually exclusive.
-    int flagCount = (flags().tfLoanDefault() ? 1 : 0)
-      + (flags().tfLoanImpair() ? 1 : 0)
-      + (flags().tfLoanUnimpair() ? 1 : 0);
+    int flagCount = (flags().tfLoanDefault() ? 1 : 0) +
+      (flags().tfLoanImpair() ? 1 : 0) +
+      (flags().tfLoanUnimpair() ? 1 : 0);
     Preconditions.checkArgument(
       flagCount <= 1,
       "Only one of tfLoanDefault, tfLoanImpair, or tfLoanUnimpair may be set."

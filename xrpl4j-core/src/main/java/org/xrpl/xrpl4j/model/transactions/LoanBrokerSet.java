@@ -104,7 +104,7 @@ public interface LoanBrokerSet extends Transaction {
   Optional<UnsignedInteger> coverRateLiquidation();
 
   /**
-   * Validates LoanBrokerSet data verification preconditions per the XLS-66 spec and rippled preflight.
+   * Validates LoanBrokerSet data verification preconditions.
    */
   @Value.Check
   default void check() {

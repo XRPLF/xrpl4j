@@ -56,6 +56,9 @@ public interface LoanBrokerCoverDeposit extends Transaction {
   @JsonProperty("Amount")
   CurrencyAmount amount();
 
+  /**
+   * Validates LoanBrokerCoverDeposit data verification preconditions.
+   */
   @Value.Check
   default void check() {
     Preconditions.checkArgument(

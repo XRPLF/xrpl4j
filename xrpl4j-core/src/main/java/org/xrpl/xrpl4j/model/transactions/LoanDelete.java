@@ -49,7 +49,7 @@ public interface LoanDelete extends Transaction {
   Hash256 loanId();
 
   /**
-   * Validates LoanDelete data verification preconditions per the Lending Protocol spec section 3.9.3.1.
+   * Validates LoanDelete data verification preconditions.
    */
   @Value.Check
   default void check() {

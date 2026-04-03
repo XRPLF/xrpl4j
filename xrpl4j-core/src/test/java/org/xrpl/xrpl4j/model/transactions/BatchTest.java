@@ -207,6 +207,18 @@ public class BatchTest {
         }
 
         @Override
+        public Transaction withTransactionSignature(Signature signature) {
+          // This function exists only when used by Immutables and is not supported in this anonymous class.
+          throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Transaction withSigners(Iterable<? extends SignerWrapper> signers) {
+          // This function exists only when used by Immutables and is not supported in this anonymous class.
+          throw new UnsupportedOperationException();
+        }
+
+        @Override
         public Optional<NetworkId> networkId() {
           return Optional.empty();
         }

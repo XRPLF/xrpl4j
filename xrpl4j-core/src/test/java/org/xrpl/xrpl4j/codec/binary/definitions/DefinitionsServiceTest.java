@@ -255,6 +255,23 @@ class DefinitionsServiceTest {
   }
 
   @Test
+  void mapFieldRawValueToSpecializationReturnsEmptyForInvalidNumericString() {
+    // Test that invalid numeric strings return Optional.empty() instead of throwing NumberFormatException
+    assertThat(definitionsService.mapFieldRawValueToSpecialization("TransactionType", "not-a-number")).isEmpty();
+    assertThat(definitionsService.mapFieldRawValueToSpecialization("LedgerEntryType", "abc")).isEmpty();
+    assertThat(definitionsService.mapFieldRawValueToSpecialization("TransactionResult", "1.5")).isEmpty();
+    assertThat(definitionsService.mapFieldRawValueToSpecialization("PermissionValue", "")).isEmpty();
+    assertThat(definitionsService.mapFieldRawValueToSpecialization("TransactionType", " ")).isEmpty();
+    assertThat(definitionsService.mapFieldRawValueToSpecialization("TransactionType", "123abc")).isEmpty();
+  }
+
+  @Test
+  void mapFieldRawValueToSpecializationReturnsEmptyForNullValue() {
+    // Test that null value returns Optional.empty() instead of throwing NullPointerException
+    assertThat(definitionsService.mapFieldRawValueToSpecialization("TransactionType", null)).isEmpty();
+  }
+
+  @Test
   void testCommonFieldsExist() {
     // Test some common fields to ensure definitions are loaded correctly
     assertThat(definitionsService.getFieldInfo("Account")).isPresent();

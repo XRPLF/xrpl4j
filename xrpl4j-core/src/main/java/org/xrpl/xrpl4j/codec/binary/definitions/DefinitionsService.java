@@ -206,17 +206,36 @@ public class DefinitionsService {
     if (fieldName == null) {
       return Optional.empty();
     }
+    Integer parsedValue = parseIntegerOrNull(value);
+    if (parsedValue == null) {
+      return Optional.empty();
+    }
     switch (fieldName) {
       case "LedgerEntryType":
-        return Optional.ofNullable(ledgerEntryTypeReverseLookupMap.get(Integer.valueOf(value)));
+        return Optional.ofNullable(ledgerEntryTypeReverseLookupMap.get(parsedValue));
       case "TransactionResult":
-        return Optional.ofNullable(transactionResultReverseLookupNap.get(Integer.valueOf(value)));
+        return Optional.ofNullable(transactionResultReverseLookupNap.get(parsedValue));
       case "TransactionType":
-        return Optional.ofNullable(transactionTypeReverseLookupMap.get(Integer.valueOf(value)));
+        return Optional.ofNullable(transactionTypeReverseLookupMap.get(parsedValue));
       case "PermissionValue":
-        return Optional.ofNullable(permissionValueReverseLookupMap.get(Integer.valueOf(value)));
+        return Optional.ofNullable(permissionValueReverseLookupMap.get(parsedValue));
       default:
         return Optional.empty();
+    }
+  }
+
+  /**
+   * Safely parse a string to an Integer, returning null if parsing fails.
+   *
+   * @param value A {@link String} to parse.
+   *
+   * @return The parsed {@link Integer}, or null if the value is not a valid integer.
+   */
+  private Integer parseIntegerOrNull(String value) {
+    try {
+      return Integer.valueOf(value);
+    } catch (NumberFormatException e) {
+      return null;
     }
   }
 

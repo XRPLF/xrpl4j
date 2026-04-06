@@ -783,6 +783,28 @@ public class FeeUtilsTest {
   }
 
   @Test
+  void testComputeLoanSetNetworkFeesFirstPartySignersExceedsLimit() {
+    FeeResult feeResult = feeResultBuilder().build();
+    assertThrows(IllegalArgumentException.class,
+      () -> computeLoanSetNetworkFees(feeResult, UnsignedInteger.valueOf(33), UnsignedInteger.ZERO));
+  }
+
+  @Test
+  void testComputeLoanSetNetworkFeesCounterpartySignersExceedsLimit() {
+    FeeResult feeResult = feeResultBuilder().build();
+    assertThrows(IllegalArgumentException.class,
+      () -> computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.valueOf(33)));
+  }
+
+  @Test
+  void testComputeLoanSetNetworkFeesAtSignerLimit() {
+    FeeResult feeResult = feeResultBuilder().build();
+    // 32 is the max — should not throw
+    assertThat(computeLoanSetNetworkFees(feeResult, UnsignedInteger.valueOf(32), UnsignedInteger.valueOf(32)))
+      .isNotNull();
+  }
+
+  @Test
   void testComputeLoanSetNetworkFeesSingleSignBothParties() {
     // Case 1: Single-sign broker + single-sign counterparty
     // Multiplier: (1 + 0 + max(1, 0)) = 2

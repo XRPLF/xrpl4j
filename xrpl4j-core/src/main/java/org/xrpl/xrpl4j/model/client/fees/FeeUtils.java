@@ -209,6 +209,14 @@ public class FeeUtils {
     Objects.requireNonNull(feeResult);
     Objects.requireNonNull(numFirstPartySigners);
     Objects.requireNonNull(numCounterpartySigners);
+    Preconditions.checkArgument(
+      numFirstPartySigners.compareTo(UnsignedInteger.valueOf(32)) <= 0,
+      "numFirstPartySigners must not exceed 32 (XRPL signer list limit)."
+    );
+    Preconditions.checkArgument(
+      numCounterpartySigners.compareTo(UnsignedInteger.valueOf(32)) <= 0,
+      "numCounterpartySigners must not exceed 32 (XRPL signer list limit)."
+    );
 
     ComputedNetworkFees computedNetworkFees = computeNetworkFees(feeResult);
     // |signatures| = max(1, |tx.CounterpartySignature.Signers|)

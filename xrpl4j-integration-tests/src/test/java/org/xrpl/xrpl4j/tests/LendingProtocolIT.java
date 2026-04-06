@@ -626,15 +626,12 @@ public class LendingProtocolIT extends AbstractIT {
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
 
-    // Dual-signing: borrower signs the same transaction payload
-    // Since CounterpartySignature has isSigningField=false, both parties sign the same bytes
-    SingleSignedTransaction<LoanSet> borrowerSigned = signatureService.sign(
+    // Borrower counterparty-signs the transaction
+    Signature borrowerCounterpartySig = signatureService.counterpartySign(
       borrowerKeyPair.privateKey(), loanSetBase
     );
-
-    // Extract borrower's signature and build CounterpartySignature
     CounterpartySignature counterpartySig = CounterpartySignature.of(
-      borrowerKeyPair.publicKey(), borrowerSigned.signature()
+      borrowerKeyPair.publicKey(), borrowerCounterpartySig
     );
 
     // Build final LoanSet with CounterpartySignature

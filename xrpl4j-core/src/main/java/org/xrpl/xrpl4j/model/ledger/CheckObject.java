@@ -188,8 +188,8 @@ public interface CheckObject extends LedgerObject {
    * The account that is sponsoring the reserve for this Check object. If present, the sponsor is responsible
    * for the reserve requirement of this object instead of the owner.
    *
-   * <p>This field will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
-   * Its API is subject to change.</p>
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
    *
    * @return An optionally-present {@link Address} of the sponsoring account.
    */

@@ -31,8 +31,9 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import java.util.Optional;
 
 /**
- * Create or modify a pre-funded sponsorship relationship. This transaction creates a {@link SponsorshipObject}
- * in the ledger that allows the sponsor to pre-fund fees and reserves for a sponsee account.
+ * Create or modify a pre-funded sponsorship relationship. This transaction creates a
+ * {@link org.xrpl.xrpl4j.model.ledger.SponsorshipObject} in the ledger that allows the sponsor to pre-fund fees
+ * and reserves for a sponsee account.
  *
  * <p>Unlike {@link SponsorshipTransfer} which requires co-signing for each transaction, this transaction
  * establishes a pre-funded sponsorship where the sponsee can use the pre-allocated funds without requiring
@@ -45,8 +46,8 @@ import java.util.Optional;
  *   <li>{@link #reserveCount()} - Number of reserve units to sponsor for the sponsee</li>
  * </ul>
  *
- * <p>This class will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
- * Its API is subject to change.</p>
+ * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+ * amendment is enabled on mainnet. Its API is subject to change.</p>
  *
  * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
  */

@@ -52,8 +52,8 @@ import java.util.Optional;
  * "newSponsor" field. The current sponsor must sign the transaction normally, and the new sponsor must provide
  * a {@link Transaction#sponsorSignature()} to authorize taking over the sponsorship.</p>
  *
- * <p>This class will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
- * Its API is subject to change.</p>
+ * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+ * amendment is enabled on mainnet. Its API is subject to change.</p>
  *
  * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
  */

@@ -178,8 +178,8 @@ public interface RippleStateObject extends LedgerObject {
    * If present, the sponsor is responsible for the reserve requirement of this trust line from the low account's
    * perspective.
    *
-   * <p>This field will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
-   * Its API is subject to change.</p>
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
    *
    * @return An optionally-present {@link Address} of the sponsoring account for the low side.
    */
@@ -192,8 +192,8 @@ public interface RippleStateObject extends LedgerObject {
    * If present, the sponsor is responsible for the reserve requirement of this trust line from the high account's
    * perspective.
    *
-   * <p>This field will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
-   * Its API is subject to change.</p>
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
    *
    * @return An optionally-present {@link Address} of the sponsoring account for the high side.
    */

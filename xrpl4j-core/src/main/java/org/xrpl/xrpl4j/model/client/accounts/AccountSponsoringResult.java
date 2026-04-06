@@ -40,8 +40,8 @@ import java.util.Optional;
 /**
  * The result of an {@code account_sponsoring} RPC request.
  *
- * <p>This class will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
- * Its API is subject to change.</p>
+ * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+ * amendment is enabled on mainnet. Its API is subject to change.</p>
  */
 @Beta
 @Value.Immutable

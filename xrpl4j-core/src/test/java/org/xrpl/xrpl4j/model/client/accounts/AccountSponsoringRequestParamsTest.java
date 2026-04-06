@@ -16,11 +16,12 @@ public class AccountSponsoringRequestParamsTest {
   public void buildWithMinimalFields() {
     AccountSponsoringRequestParams params = AccountSponsoringRequestParams.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
       .build();
 
     assertThat(params.account()).isEqualTo(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"));
     assertThat(params.ledgerSpecifier()).isEqualTo(LedgerSpecifier.VALIDATED);
-    assertThat(params.deletionBlockersOnly()).isEmpty();
+    assertThat(params.deletionBlockersOnly()).isFalse();
     assertThat(params.limit()).isEmpty();
     assertThat(params.marker()).isEmpty();
     assertThat(params.type()).isEmpty();
@@ -35,16 +36,16 @@ public class AccountSponsoringRequestParamsTest {
       .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.valueOf(1000))))
       .limit(UnsignedInteger.valueOf(50))
       .marker(marker)
-      .type("offer")
+      .type(AccountObjectsRequestParams.AccountObjectType.OFFER)
       .build();
 
     assertThat(params.account()).isEqualTo(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"));
-    assertThat(params.deletionBlockersOnly()).isPresent().get().isTrue();
+    assertThat(params.deletionBlockersOnly()).isTrue();
     assertThat(params.ledgerSpecifier().ledgerIndex()).isPresent().get()
       .isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(1000)));
     assertThat(params.limit()).isPresent().get().isEqualTo(UnsignedInteger.valueOf(50));
     assertThat(params.marker()).isPresent().get().isEqualTo(marker);
-    assertThat(params.type()).isPresent().get().isEqualTo("offer");
+    assertThat(params.type()).isPresent().get().isEqualTo(AccountObjectsRequestParams.AccountObjectType.OFFER);
   }
 
   @Test
@@ -62,20 +63,22 @@ public class AccountSponsoringRequestParamsTest {
   public void buildWithDeletionBlockersOnly() {
     AccountSponsoringRequestParams params = AccountSponsoringRequestParams.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
       .deletionBlockersOnly(true)
       .build();
 
-    assertThat(params.deletionBlockersOnly()).isPresent().get().isTrue();
+    assertThat(params.deletionBlockersOnly()).isTrue();
   }
 
   @Test
   public void buildWithTypeFilter() {
     AccountSponsoringRequestParams params = AccountSponsoringRequestParams.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .type("escrow")
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+      .type(AccountObjectsRequestParams.AccountObjectType.ESCROW)
       .build();
 
-    assertThat(params.type()).isPresent().get().isEqualTo("escrow");
+    assertThat(params.type()).isPresent().get().isEqualTo(AccountObjectsRequestParams.AccountObjectType.ESCROW);
   }
 
 }

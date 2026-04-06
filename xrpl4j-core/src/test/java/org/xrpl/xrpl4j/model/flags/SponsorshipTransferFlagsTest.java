@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 
 public class SponsorshipTransferFlagsTest {
@@ -8,7 +9,8 @@ public class SponsorshipTransferFlagsTest {
   @Test
   public void emptyFlags() {
     SponsorshipTransferFlags flags = SponsorshipTransferFlags.empty();
-    assertThat(flags.isEmpty()).isTrue();
+    // empty() returns 0, which is truly empty
+    assertThat(flags.getValue()).isEqualTo(0L);
     assertThat(flags.tfSponsorshipEnd()).isFalse();
     assertThat(flags.tfSponsorshipCreate()).isFalse();
     assertThat(flags.tfSponsorshipReassign()).isFalse();

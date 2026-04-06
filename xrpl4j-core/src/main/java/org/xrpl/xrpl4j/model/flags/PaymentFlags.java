@@ -258,7 +258,9 @@ public class PaymentFlags extends TransactionFlags {
      * @return A new {@link PaymentFlags}.
      */
     public PaymentFlags build() {
-      return PaymentFlags.of(true, tfNoDirectRipple, tfPartialPayment, tfLimitQuality, tfSponsorCreatedAccount, tfInnerBatchTxn);
+      return PaymentFlags.of(
+        true, tfNoDirectRipple, tfPartialPayment, tfLimitQuality, tfSponsorCreatedAccount, tfInnerBatchTxn
+      );
     }
   }
 }

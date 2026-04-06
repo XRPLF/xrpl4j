@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.flags.SponsorshipTransferFlags;
@@ -18,7 +19,8 @@ public class SponsorshipTransferTest {
       .build();
 
     assertThat(transfer.account()).isEqualTo(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"));
-    assertThat(transfer.objectId()).isEqualTo(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"));
+    assertThat(transfer.objectId()).isPresent().get()
+      .isEqualTo(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"));
     assertThat(transfer.sponsor()).isEmpty();
     assertThat(transfer.flags().tfSponsorshipEnd()).isTrue();
   }

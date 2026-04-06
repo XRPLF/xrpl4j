@@ -42,7 +42,8 @@ import java.util.Optional;
  *   <li>tfSponsorshipReassign - Transfer sponsorship from one sponsor to another. In this scenario,
  *       the {@link Transaction#sponsor()} field identifies the new sponsor who will take over the
  *       sponsorship responsibility. The transaction must be signed by both the current sponsor
- *       (via {@link Transaction#signingPublicKey()}) and the new sponsor (via {@link Transaction#sponsorSignature()}).</li>
+ *       (via {@link Transaction#signingPublicKey()}) and the new sponsor
+       (via {@link Transaction#sponsorSignature()}).</li>
  * </ul>
  *
  * <p><strong>Note on Reassign Semantics:</strong> When using tfSponsorshipReassign, the {@link Transaction#sponsor()}
@@ -114,7 +115,8 @@ public interface SponsorshipTransfer extends Transaction {
 
     Preconditions.checkState(
       modeCount == 1,
-      "SponsorshipTransfer must have exactly one mode flag set (tfSponsorshipEnd, tfSponsorshipCreate, or tfSponsorshipReassign)"
+      "SponsorshipTransfer must have exactly one mode flag set " +
+        "(tfSponsorshipEnd, tfSponsorshipCreate, or tfSponsorshipReassign)"
     );
   }
 

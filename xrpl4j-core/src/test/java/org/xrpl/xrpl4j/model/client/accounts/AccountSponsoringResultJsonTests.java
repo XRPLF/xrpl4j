@@ -92,9 +92,9 @@ public class AccountSponsoringResultJsonTests extends AbstractJsonTest {
       .validated(false)
       .build();
 
+    // Note: Empty lists are not serialized due to JsonInclude.Include.NON_EMPTY configuration
     String json = "{\n" +
       "        \"account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
-      "        \"sponsored_objects\": [],\n" +
       "        \"ledger_current_index\": 54300940,\n" +
       "        \"validated\": false\n" +
       "    }";

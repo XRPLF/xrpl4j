@@ -3,9 +3,9 @@ package org.xrpl.xrpl4j.model.client.accounts;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.flags.OfferFlags;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -37,12 +37,19 @@ public class AccountSponsoringResultTest {
   public void buildWithAllFields() {
     Hash256 ledgerHash = Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321");
     Marker marker = Marker.of("marker");
-    
+
     OfferObject offer = OfferObject.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .flags(OfferFlags.of(0))
       .sequence(UnsignedInteger.ONE)
       .takerGets(XrpCurrencyAmount.ofDrops(1000))
       .takerPays(XrpCurrencyAmount.ofDrops(2000))
+      .bookDirectory(Hash256.of("4627DFFCFF8B5A265EDBD8AE8C14A52325DBFEDAF4F5C32E5E03E788E09BB35C"))
+      .bookNode("0000000000000000")
+      .ownerNode("0000000000000000")
+      .previousTransactionId(Hash256.of("F0AB71E777B2DA54B86231E19B82554EF1F8211F92ECA473121C655BFC5329BF"))
+      .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14524914))
+      .index(Hash256.of("96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797"))
       .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
       .build();
 

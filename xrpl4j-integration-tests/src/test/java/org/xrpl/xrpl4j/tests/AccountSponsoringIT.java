@@ -266,7 +266,7 @@ public class AccountSponsoringIT extends AbstractIT {
 
     assertThat(createdSponsorship).isPresent();
     assertThat(createdSponsorship.get().owner()).isEqualTo(sponsorAddress);
-    assertThat(createdSponsorship.get().reserveCount()).hasValue(UnsignedInteger.valueOf(5));
+    assertThat(createdSponsorship.get().reserveCount()).isEqualTo(UnsignedInteger.valueOf(5));
   }
 }
 

@@ -34,9 +34,11 @@ public class SponsorshipTransferFlags extends TransactionFlags {
 
   /**
    * Constant {@link SponsorshipTransferFlags} for the {@code tfSponsorshipEnd} flag.
-   * The sponsor or sponsee is ending the sponsorship, transferring the responsibility of the reserve back to the sponsee.
+   * The sponsor or sponsee is ending the sponsorship, transferring the responsibility of the
+   * reserve back to the sponsee.
    */
-  protected static final SponsorshipTransferFlags SPONSORSHIP_END = new SponsorshipTransferFlags(0x00010000);
+  protected static final SponsorshipTransferFlags SPONSORSHIP_END =
+    new SponsorshipTransferFlags(0x00010000);
 
   /**
    * Constant {@link SponsorshipTransferFlags} for the {@code tfSponsorshipCreate} flag.
@@ -46,9 +48,11 @@ public class SponsorshipTransferFlags extends TransactionFlags {
 
   /**
    * Constant {@link SponsorshipTransferFlags} for the {@code tfSponsorshipReassign} flag.
-   * The sponsee is reassigning a sponsorship, transferring the responsibility of the reserve from one sponsor to another.
+   * The sponsee is reassigning a sponsorship, transferring the responsibility of the reserve
+   * from one sponsor to another.
    */
-  protected static final SponsorshipTransferFlags SPONSORSHIP_REASSIGN = new SponsorshipTransferFlags(0x00040000);
+  protected static final SponsorshipTransferFlags SPONSORSHIP_REASSIGN =
+    new SponsorshipTransferFlags(0x00040000);
 
   private SponsorshipTransferFlags(long value) {
     super(value);

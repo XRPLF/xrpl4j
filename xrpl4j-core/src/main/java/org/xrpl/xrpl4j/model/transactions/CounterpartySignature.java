@@ -128,6 +128,12 @@ public interface CounterpartySignature {
    */
   @Value.Check
   default CounterpartySignature checkAndNormalize() {
+    // Reject half-filled direct-signing (e.g. signingPubKey without txnSignature or vice versa)
+    Preconditions.checkState(
+      signingPubKey().isPresent() == txnSignature().isPresent(),
+      "CounterpartySignature must have both SigningPubKey and TxnSignature, or neither"
+    );
+
     boolean hasDirectSigning = signingPubKey().isPresent() && txnSignature().isPresent();
     boolean hasMultiSig = !signers().isEmpty();
 

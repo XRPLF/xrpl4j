@@ -867,6 +867,24 @@ public class Wrappers {
   abstract static class _AssetAmount extends Wrapper<String> implements Serializable {
 
     /**
+     * Validates that the value is a valid decimal string.
+     */
+    @Value.Check
+    public void check() {
+      Preconditions.checkArgument(
+        !this.value().isEmpty(),
+        "AssetAmount must not be empty."
+      );
+      try {
+        new BigDecimal(this.value());
+      } catch (NumberFormatException e) {
+        throw new IllegalArgumentException(
+          String.format("AssetAmount value '%s' is not a valid decimal number.", this.value()), e
+        );
+      }
+    }
+
+    /**
      * Indicates whether this amount is negative.
      *
      * @return {@code true} if this amount is negative; {@code false} otherwise (i.e., if the value is 0 or positive).

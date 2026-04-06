@@ -219,6 +219,7 @@ public interface LoanSet extends Transaction {
     );
 
     // 8. LoanOriginationFee must not be negative and must not exceed PrincipalRequested.
+    // Both these fields represent same underlying asset.
     loanOriginationFee().ifPresent(fee -> {
       Preconditions.checkArgument(
         !fee.isNegative(),

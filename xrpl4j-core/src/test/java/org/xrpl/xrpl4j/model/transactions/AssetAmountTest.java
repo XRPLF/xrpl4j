@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -164,6 +165,40 @@ public class AssetAmountTest {
     assertThat(amount1).isEqualTo(amount2);
     assertThat(amount1).isNotEqualTo(amount3);
     assertThat(amount1.hashCode()).isEqualTo(amount2.hashCode());
+  }
+
+  // /////////////////
+  // Validation
+  // /////////////////
+
+  @Test
+  void validDecimalValues() {
+    assertThat(AssetAmount.of("0").value()).isEqualTo("0");
+    assertThat(AssetAmount.of("1000").value()).isEqualTo("1000");
+    assertThat(AssetAmount.of("-500").value()).isEqualTo("-500");
+    assertThat(AssetAmount.of("0.001").value()).isEqualTo("0.001");
+    assertThat(AssetAmount.of("1e5").value()).isEqualTo("1e5");
+  }
+
+  @Test
+  void emptyValueIsInvalid() {
+    assertThatThrownBy(() -> AssetAmount.of(""))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("AssetAmount must not be empty.");
+  }
+
+  @Test
+  void nonNumericValueIsInvalid() {
+    assertThatThrownBy(() -> AssetAmount.of("abc"))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("AssetAmount value 'abc' is not a valid decimal number.");
+  }
+
+  @Test
+  void specialCharactersAreInvalid() {
+    assertThatThrownBy(() -> AssetAmount.of("100$"))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("is not a valid decimal number.");
   }
 
   /**

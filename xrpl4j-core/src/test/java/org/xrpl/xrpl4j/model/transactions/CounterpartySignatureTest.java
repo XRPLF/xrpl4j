@@ -196,7 +196,7 @@ class CounterpartySignatureTest {
     );
 
     assertThat(exception.getMessage())
-      .contains("CounterpartySignature must have either (SigningPubKey and TxnSignature) or non-empty Signers array");
+      .contains("CounterpartySignature must have both SigningPubKey and TxnSignature, or neither");
   }
 
   @Test
@@ -208,7 +208,25 @@ class CounterpartySignatureTest {
     );
 
     assertThat(exception.getMessage())
-      .contains("CounterpartySignature must have either (SigningPubKey and TxnSignature) or non-empty Signers array");
+      .contains("CounterpartySignature must have both SigningPubKey and TxnSignature, or neither");
+  }
+
+  @Test
+  void testValidationFailsWithSigningPubKeyAndSigners() {
+    Signer signer = Signer.builder()
+      .signingPublicKey(PUBLIC_KEY1)
+      .transactionSignature(SIGNATURE1)
+      .build();
+
+    IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
+      CounterpartySignature.builder()
+        .signingPubKey(PUBLIC_KEY1.base16Value())
+        .addSigners(SignerWrapper.of(signer))
+        .build()
+    );
+
+    assertThat(exception.getMessage())
+      .contains("CounterpartySignature must have both SigningPubKey and TxnSignature, or neither");
   }
 
   // /////////////////

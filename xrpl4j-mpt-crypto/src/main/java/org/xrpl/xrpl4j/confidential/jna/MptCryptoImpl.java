@@ -63,4 +63,23 @@ public class MptCryptoImpl implements NativeMptCrypto {
   public int generateBlindingFactor(byte[] outFactor) {
     return lib.mpt_generate_blinding_factor(outFactor);
   }
+
+  @Override
+  public int generateConvertProof(byte[] pubkey, byte[] privkey, byte[] ctxHash, byte[] outProof) {
+    return lib.mpt_get_convert_proof(pubkey, privkey, ctxHash, outProof);
+  }
+
+  @Override
+  public int verifyConvertProof(byte[] proof, byte[] pubkey, byte[] ctxHash) {
+    com.sun.jna.Pointer ctx = lib.mpt_secp256k1_context();
+
+    // Parse compressed 33-byte pubkey into internal 64-byte representation
+    byte[] internalPk = new byte[64];
+    int parseResult = lib.secp256k1_ec_pubkey_parse(ctx, internalPk, pubkey, pubkey.length);
+    if (parseResult != 1) {
+      return 0;
+    }
+
+    return lib.secp256k1_mpt_pok_sk_verify(ctx, proof, internalPk, ctxHash);
+  }
 }

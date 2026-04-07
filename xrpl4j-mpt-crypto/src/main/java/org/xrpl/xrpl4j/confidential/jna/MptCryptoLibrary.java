@@ -73,4 +73,51 @@ public interface MptCryptoLibrary extends Library {
    * @return 0 on success, -1 on failure.
    */
   int mpt_generate_blinding_factor(byte[] outFactor);
+
+  /**
+   * Generates a Schnorr Proof of Knowledge for a Confidential MPT conversion.
+   *
+   * @param pubkey   The 33-byte compressed secp256k1 public key.
+   * @param privkey  The 32-byte private key.
+   * @param ctxHash  The 32-byte context hash.
+   * @param outProof A 65-byte buffer to receive the proof (T || s).
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  int mpt_get_convert_proof(byte[] pubkey, byte[] privkey, byte[] ctxHash, byte[] outProof);
+
+  /**
+   * Returns the shared secp256k1 context used by the mpt-crypto library.
+   *
+   * @return A pointer to the secp256k1 context.
+   */
+  com.sun.jna.Pointer mpt_secp256k1_context();
+
+  /**
+   * Parses a compressed secp256k1 public key into the internal representation.
+   *
+   * @param ctx      The secp256k1 context pointer.
+   * @param pubkey   A 64-byte buffer to receive the internal public key representation.
+   * @param input    The compressed public key bytes.
+   * @param inputlen The length of the input (33 for compressed keys).
+   *
+   * @return 1 on success, 0 on failure.
+   */
+  int secp256k1_ec_pubkey_parse(
+    com.sun.jna.Pointer ctx, byte[] pubkey, byte[] input, long inputlen
+  );
+
+  /**
+   * Verifies a Schnorr Proof of Knowledge of a secret key.
+   *
+   * @param ctx       The secp256k1 context pointer.
+   * @param proof     The 65-byte proof to verify.
+   * @param pk        The 64-byte internal public key representation.
+   * @param contextId The 32-byte context hash.
+   *
+   * @return 1 if the proof is valid, 0 otherwise.
+   */
+  int secp256k1_mpt_pok_sk_verify(
+    com.sun.jna.Pointer ctx, byte[] proof, byte[] pk, byte[] contextId
+  );
 }

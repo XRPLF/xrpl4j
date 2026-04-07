@@ -63,4 +63,27 @@ public interface NativeMptCrypto {
    * @return 0 on success, -1 on failure.
    */
   int generateBlindingFactor(byte[] outFactor);
+
+  /**
+   * Generates a Schnorr Proof of Knowledge for a Confidential MPT conversion.
+   *
+   * @param pubkey   The 33-byte compressed secp256k1 public key.
+   * @param privkey  The 32-byte private key.
+   * @param ctxHash  The 32-byte context hash binding the proof to a transaction.
+   * @param outProof A 65-byte buffer to receive the proof (T || s).
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  int generateConvertProof(byte[] pubkey, byte[] privkey, byte[] ctxHash, byte[] outProof);
+
+  /**
+   * Verifies a Schnorr Proof of Knowledge for a Confidential MPT conversion.
+   *
+   * @param proof   The 65-byte proof (T || s).
+   * @param pubkey  The 33-byte compressed secp256k1 public key.
+   * @param ctxHash The 32-byte context hash.
+   *
+   * @return 1 if the proof is valid, 0 otherwise.
+   */
+  int verifyConvertProof(byte[] proof, byte[] pubkey, byte[] ctxHash);
 }

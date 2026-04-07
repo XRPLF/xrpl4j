@@ -25,8 +25,8 @@ import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertC
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertProofVerifier;
-import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptConvertProofGenerator;
-import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptConvertProofVerifier;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptConvertProofGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptConvertProofVerifier;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -53,7 +53,7 @@ public class ConfidentialMptConvertService {
    * Creates a new instance with default BouncyCastle implementations.
    */
   public ConfidentialMptConvertService() {
-    this(new BcConfidentialMptConvertProofGenerator(), new BcConfidentialMptConvertProofVerifier());
+    this(new JnaConfidentialMptConvertProofGenerator(), new JnaConfidentialMptConvertProofVerifier());
   }
 
   /**

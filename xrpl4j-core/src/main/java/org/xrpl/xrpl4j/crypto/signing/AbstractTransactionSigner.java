@@ -137,6 +137,31 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     return this.signingHelper(privateKeyable, signableTransactionBytes);
   }
 
+  @Override
+  public <T extends Transaction> Signature sponsorSign(final P privateKeyable, final T transaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(transaction);
+
+    // Sponsor single-signing uses the same signable bytes as regular single-signing.
+    // The sponsor signs the complete transaction binary (including the sponsee's SigningPubKey).
+    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSignableBytes(transaction);
+    return this.signingHelper(privateKeyable, signableTransactionBytes);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorMultiSign(final P privateKeyable, final T transaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(transaction);
+
+    // Sponsor multi-signing preserves the first-party signer's SigningPubKey in the signed data.
+    // This differs from regular multi-signing which clears the SigningPubKey.
+    final Address address = derivePublicKey(privateKeyable).deriveAddress();
+    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSponsorMultiSignableBytes(
+      transaction, address
+    );
+    return this.signingHelper(privateKeyable, signableTransactionBytes);
+  }
+
   /**
    * Helper to generate a signature based upon an {@link UnsignedByteArray} of transaction bytes.
    *

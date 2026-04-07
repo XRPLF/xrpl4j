@@ -137,6 +137,36 @@ public class XrplBinaryCodec {
   }
 
   /**
+   * Encodes JSON to canonical XRPL binary as a hex string for multi-signing purposes, preserving the existing
+   * {@code SigningPubKey} field. Unlike {@link #encodeForMultiSigning(String, String)}, this method does <b>not</b>
+   * clear the {@code SigningPubKey} field. This is necessary when a co-signer multi-signs a transaction where the
+   * first-party signer's {@code SigningPubKey} must remain intact in the signed data (e.g., sponsor multi-signing
+   * in dual-signed transactions such as sponsored fee transactions).
+   *
+   * <p>The resulting bytes use the same multi-signing prefix ({@code SMT\0}) and account ID suffix as
+   * {@link #encodeForMultiSigning(String, String)}.</p>
+   *
+   * @param json         A {@link String} containing JSON to be encoded.
+   * @param xrpAccountId A {@link String} containing the XRPL AccountId of the signer.
+   *
+   * @return hex encoded representation
+   *
+   * @throws JsonProcessingException if JSON is not valid.
+   */
+  public String encodeForMultiSigningWithSigningPubKey(
+    String json, String xrpAccountId
+  ) throws JsonProcessingException {
+    JsonNode node = BINARY_CODEC_OBJECT_MAPPER.readTree(json);
+    if (!node.isObject()) {
+      throw new IllegalArgumentException("JSON object required for signing");
+    }
+    // NOTE: Unlike encodeForMultiSigning, we do NOT clear SigningPubKey here.
+    // This preserves the first-party signer's public key in the binary.
+    String suffix = new AccountIdType().fromJson(new TextNode(xrpAccountId)).toHex();
+    return TRX_MULTI_SIGNATURE_PREFIX + encode(removeNonSigningFields(node)) + suffix;
+  }
+
+  /**
    * Encodes a {@link Batch} transaction to canonical XRPL binary as a hex string for signing purposes. Note that this
    * function slightly diverges from the pattern of the other encodeForSigning functions because the bytes to be signed
    * for a Batch transaction are not simply the canonical binary representation of the JSON. Instead, we have distinct

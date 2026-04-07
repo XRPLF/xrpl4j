@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.BlindingFactorGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptClawbackService;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptConvertBackService;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptConvertService;
@@ -48,8 +49,9 @@ import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertPro
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.MptAmountDecryptor;
 import org.xrpl.xrpl4j.crypto.confidential.util.MptAmountEncryptor;
-import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcMptAmountDecryptor;
-import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcMptAmountEncryptor;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaBlindingFactorGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaMptAmountDecryptor;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaMptAmountEncryptor;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -105,6 +107,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
   private static ConfidentialMptSendService sendService;
   private static ConfidentialMptConvertBackService convertBackService;
   private static ConfidentialMptClawbackService clawbackService;
+  private static BlindingFactorGenerator blindingFactorGenerator;
   private static MptAmountEncryptor encryptor;
   private static MptAmountDecryptor decryptor;
 
@@ -120,8 +123,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
     sendService = new ConfidentialMptSendService();
     convertBackService = new ConfidentialMptConvertBackService();
     clawbackService = new ConfidentialMptClawbackService();
-    encryptor = new BcMptAmountEncryptor();
-    decryptor = new BcMptAmountDecryptor();
+    blindingFactorGenerator = new JnaBlindingFactorGenerator();
+    encryptor = new JnaMptAmountEncryptor();
+    decryptor = new JnaMptAmountDecryptor();
   }
 
   @Test
@@ -256,7 +260,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holderElGamalKeyPair, convertContext
     );
 
-    BlindingFactor convertBlindingFactor = BlindingFactor.generate();
+    BlindingFactor convertBlindingFactor = blindingFactorGenerator.generate();
     EncryptedAmount holderEncryptedForConvert = encryptor.encrypt(
       amountToConvert, holderElGamalKeyPair.publicKey(), convertBlindingFactor
     );
@@ -342,7 +346,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holder2ElGamalKeyPair, holder2ConvertContext
     );
 
-    BlindingFactor holder2ConvertBlindingFactor = BlindingFactor.generate();
+    BlindingFactor holder2ConvertBlindingFactor = blindingFactorGenerator.generate();
     EncryptedAmount holder2EncryptedForConvert = encryptor.encrypt(
       UnsignedLong.ZERO, holder2ElGamalKeyPair.publicKey(), holder2ConvertBlindingFactor
     );
@@ -396,7 +400,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
 
     // Encrypt the send amount for all three parties using the same blinding factor
-    BlindingFactor sendBlindingFactor = BlindingFactor.generate();
+    BlindingFactor sendBlindingFactor = blindingFactorGenerator.generate();
     EncryptedAmount senderCiphertext = encryptor.encrypt(
       sendAmount, holderElGamalKeyPair.publicKey(), sendBlindingFactor
     );
@@ -417,8 +421,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
 
     // Generate Pedersen commitments for the amount and remaining balance (for range proofs)
-    BlindingFactor amountBlindingFactor = BlindingFactor.generate();
-    BlindingFactor balanceBlindingFactor = BlindingFactor.generate();
+    BlindingFactor amountBlindingFactor = blindingFactorGenerator.generate();
+    BlindingFactor balanceBlindingFactor = blindingFactorGenerator.generate();
     PedersenProofParams amountParams = sendService.generatePedersenProofParams(
       sendAmount, senderCiphertext, amountBlindingFactor
     );
@@ -488,7 +492,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .confidentialBalanceVersion().orElse(UnsignedInteger.ZERO);
 
     // Encrypt the convert-back amount for holder and issuer
-    BlindingFactor convertBackBlindingFactor = BlindingFactor.generate();
+    BlindingFactor convertBackBlindingFactor = blindingFactorGenerator.generate();
     EncryptedAmount holderEncryptedForConvertBack = encryptor.encrypt(
       convertBackAmount, holderElGamalKeyPair.publicKey(), convertBackBlindingFactor
     );
@@ -513,7 +517,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       currentBalanceForConvertBack, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
     );
 
-    BlindingFactor convertBackBalanceBlindingFactor = BlindingFactor.generate();
+    BlindingFactor convertBackBalanceBlindingFactor = blindingFactorGenerator.generate();
     PedersenProofParams convertBackBalanceParams = convertBackService.generatePedersenProofParams(
       currentSpendingBalance, currentBalanceForConvertBack, convertBackBalanceBlindingFactor
     );

@@ -44,27 +44,6 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 public interface BlindingFactor {
 
   /**
-   * Default generator instance for the static {@link #generate()} method.
-   */
-  BlindingFactorGenerator DEFAULT_GENERATOR = new SecureRandomBlindingFactorGenerator();
-
-  /**
-   * Generates a random blinding factor using secure random entropy.
-   *
-   * <p>This is a convenience method that uses the default {@link SecureRandomBlindingFactorGenerator}.
-   * For code that needs dependency injection (e.g., for testing with deterministic values),
-   * inject a {@link BlindingFactorGenerator} instead.</p>
-   *
-   * <p>The generated value is guaranteed to be a valid secp256k1 scalar
-   * (0 &lt; value &lt; curve order) using rejection sampling.</p>
-   *
-   * @return A randomly generated {@link BlindingFactor}.
-   */
-  static BlindingFactor generate() {
-    return DEFAULT_GENERATOR.generate();
-  }
-
-  /**
    * Instantiates a new builder.
    *
    * @return An {@link ImmutableBlindingFactor.Builder}.

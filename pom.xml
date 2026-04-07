@@ -52,6 +52,11 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>xrpl4j-mpt-crypto</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
         <version>${jackson.version}</version>
@@ -173,6 +178,11 @@
         <version>1.78.1</version>
       </dependency>
       <dependency>
+        <groupId>net.java.dev.jna</groupId>
+        <artifactId>jna</artifactId>
+        <version>5.16.0</version>
+      </dependency>
+      <dependency>
         <groupId>org.awaitility</groupId>
         <artifactId>awaitility</artifactId>
         <version>4.3.0</version>
@@ -284,6 +294,7 @@
 
   <modules>
     <module>xrpl4j-core</module>
+    <module>xrpl4j-mpt-crypto</module>
     <module>xrpl4j-integration-tests</module>
     <module>xrpl4j-client</module>
     <module>xrpl4j-bom</module>
@@ -320,6 +331,8 @@
                   <ignoredDependency>com.google.code.findbugs:annotations</ignoredDependency>
                   <ignoredDependency>com.google.errorprone:error_prone_annotations</ignoredDependency>
                   <ignoredDependency>ch.qos.logback:logback-classic</ignoredDependency>
+                  <!-- Loaded via reflection in MptAmountEncryptor/Decryptor.create() -->
+                  <ignoredDependency>org.xrpl:xrpl4j-mpt-crypto</ignoredDependency>
                   <!-- As part of SkyStreamer, but only for test scope-->
                   <ignoredDependency>com.vaadin.external.google:android-json</ignoredDependency>
                   <ignoredDependency>org.junit.jupiter:junit-jupiter-engine</ignoredDependency>

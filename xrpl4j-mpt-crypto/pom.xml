@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>xrpl4j-parent</artifactId>
+    <groupId>org.xrpl</groupId>
+    <version>HEAD-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>xrpl4j-mpt-crypto</artifactId>
+  <name>xrpl4j :: mpt-crypto</name>
+  <description>JNA bindings for the mpt-crypto native library providing confidential MPT cryptographic operations.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>xrpl4j-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+    </dependency>
+    <!-- Test dependencies will be added when unit tests are created -->
+  </dependencies>
+</project>

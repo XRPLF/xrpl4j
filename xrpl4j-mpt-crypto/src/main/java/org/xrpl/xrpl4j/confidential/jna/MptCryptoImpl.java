@@ -76,16 +76,17 @@ public class MptCryptoImpl implements NativeMptCrypto {
 
   @Override
   public int verifyConvertProof(byte[] proof, byte[] pubkey, byte[] ctxHash) {
-    com.sun.jna.Pointer ctx = lib.mpt_secp256k1_context();
+    return lib.mpt_verify_convert_proof(proof, pubkey, ctxHash);
+  }
 
-    // Parse compressed 33-byte pubkey into internal 64-byte representation
-    byte[] internalPk = new byte[64];
-    int parseResult = lib.secp256k1_ec_pubkey_parse(ctx, internalPk, pubkey, pubkey.length);
-    if (parseResult != 1) {
-      return 0;
-    }
-
-    return lib.secp256k1_mpt_pok_sk_verify(ctx, proof, internalPk, ctxHash);
+  @Override
+  public int verifyClawbackProof(
+    byte[] proof, byte[] c1, byte[] c2, byte[] pubkey, long amount, byte[] ctxHash
+  ) {
+    byte[] ciphertext = new byte[c1.length + c2.length];
+    System.arraycopy(c1, 0, ciphertext, 0, c1.length);
+    System.arraycopy(c2, 0, ciphertext, c1.length, c2.length);
+    return lib.mpt_verify_clawback_proof(proof, amount, pubkey, ciphertext, ctxHash);
   }
 
   @Override
@@ -93,6 +94,37 @@ public class MptCryptoImpl implements NativeMptCrypto {
     byte[] privkey, byte[] pubkey, byte[] ctxHash, long amount, byte[] encryptedAmount, byte[] outProof
   ) {
     return lib.mpt_get_clawback_proof(privkey, pubkey, ctxHash, amount, encryptedAmount, outProof);
+  }
+
+  @Override
+  public int verifyConvertBackProof(
+    byte[] pubkey, byte[] ctxHash, long amount,
+    byte[] encryptedBalance, byte[] balanceCommitment,
+    byte[] proof
+  ) {
+    return lib.mpt_verify_convert_back_proof(proof, pubkey, encryptedBalance, balanceCommitment, amount, ctxHash);
+  }
+
+  @Override
+  public int verifySendProof(
+    byte[] recipientPubkeys, byte[] recipientCiphertexts, int numRecipients,
+    byte[] senderSpendingCiphertext,
+    byte[] ctxHash, byte[] amountCommitment, byte[] balanceCommitment,
+    byte[] proof, int proofLen
+  ) {
+    MptConfidentialRecipient[] recipients =
+      (MptConfidentialRecipient[]) new MptConfidentialRecipient().toArray(numRecipients);
+    for (int i = 0; i < numRecipients; i++) {
+      System.arraycopy(recipientPubkeys, i * 33, recipients[i].pubkey, 0, 33);
+      System.arraycopy(recipientCiphertexts, i * 66, recipients[i].ciphertext, 0, 66);
+    }
+
+    return lib.mpt_verify_send_proof(
+      proof, proofLen,
+      recipients[0], (byte) numRecipients,
+      senderSpendingCiphertext, amountCommitment,
+      balanceCommitment, ctxHash
+    );
   }
 
   @Override
@@ -121,7 +153,7 @@ public class MptCryptoImpl implements NativeMptCrypto {
       (MptConfidentialRecipient[]) new MptConfidentialRecipient().toArray(numRecipients);
     for (int i = 0; i < numRecipients; i++) {
       System.arraycopy(recipientPubkeys, i * 33, recipients[i].pubkey, 0, 33);
-      System.arraycopy(recipientCiphertexts, i * 66, recipients[i].encryptedAmount, 0, 66);
+      System.arraycopy(recipientCiphertexts, i * 66, recipients[i].ciphertext, 0, 66);
     }
 
     MptPedersenProofParams amountParams = newPedersenParams(

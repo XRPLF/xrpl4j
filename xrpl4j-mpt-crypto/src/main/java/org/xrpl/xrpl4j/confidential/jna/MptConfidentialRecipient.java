@@ -26,23 +26,23 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * JNA mapping for the C struct {@code mpt_confidential_recipient}.
+ * JNA mapping for the C struct {@code mpt_confidential_participant}.
  *
  * <pre>
- * struct mpt_confidential_recipient {
+ * struct mpt_confidential_participant {
  *     uint8_t pubkey[33];
- *     uint8_t encrypted_amount[66];
+ *     uint8_t ciphertext[66];
  * };
  * </pre>
  */
-@Structure.FieldOrder({"pubkey", "encryptedAmount"})
+@Structure.FieldOrder({"pubkey", "ciphertext"})
 public class MptConfidentialRecipient extends Structure {
 
   /** The 33-byte compressed secp256k1 public key. */
   public byte[] pubkey = new byte[33];
 
   /** The 66-byte ElGamal ciphertext (C1 || C2). */
-  public byte[] encryptedAmount = new byte[66];
+  public byte[] ciphertext = new byte[66];
 
   /** Default constructor required by JNA. */
   public MptConfidentialRecipient() {

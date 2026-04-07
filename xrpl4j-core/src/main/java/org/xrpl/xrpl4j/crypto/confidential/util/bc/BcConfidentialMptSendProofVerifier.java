@@ -83,6 +83,7 @@ public class BcConfidentialMptSendProofVerifier implements ConfidentialMptSendPr
   public boolean verifyProof(
     final ConfidentialMptSendProof proof,
     final List<MptConfidentialParty> recipients,
+    final EncryptedAmount senderSpendingCiphertext,
     final ConfidentialMptSendContext context,
     final PedersenCommitment amountCommitment,
     final PedersenCommitment balanceCommitment

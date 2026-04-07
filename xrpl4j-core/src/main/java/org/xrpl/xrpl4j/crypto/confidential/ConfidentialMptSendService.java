@@ -31,8 +31,8 @@ import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.PedersenCommitmentGenerator;
-import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptSendProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptSendProofGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptSendProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaPedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -64,7 +64,7 @@ public class ConfidentialMptSendService {
   public ConfidentialMptSendService() {
     this(
       new JnaConfidentialMptSendProofGenerator(),
-      new BcConfidentialMptSendProofVerifier(),
+      new JnaConfidentialMptSendProofVerifier(),
       new JnaPedersenCommitmentGenerator()
     );
   }
@@ -197,11 +197,14 @@ public class ConfidentialMptSendService {
   public boolean verifyProof(
     final ConfidentialMptSendProof proof,
     final List<MptConfidentialParty> recipients,
+    final EncryptedAmount senderSpendingCiphertext,
     final ConfidentialMptSendContext context,
     final PedersenCommitment amountCommitment,
     final PedersenCommitment balanceCommitment
   ) {
-    return proofVerifier.verifyProof(proof, recipients, context, amountCommitment, balanceCommitment);
+    return proofVerifier.verifyProof(
+      proof, recipients, senderSpendingCiphertext, context, amountCommitment, balanceCommitment
+    );
   }
 }
 

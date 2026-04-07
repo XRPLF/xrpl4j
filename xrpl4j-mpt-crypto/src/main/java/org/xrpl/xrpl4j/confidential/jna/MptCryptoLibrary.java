@@ -86,40 +86,28 @@ public interface MptCryptoLibrary extends Library {
    */
   int mpt_get_convert_proof(byte[] pubkey, byte[] privkey, byte[] ctxHash, byte[] outProof);
 
-  /**
-   * Returns the shared secp256k1 context used by the mpt-crypto library.
-   *
-   * @return A pointer to the secp256k1 context.
-   */
-  com.sun.jna.Pointer mpt_secp256k1_context();
+  // mpt_verify_convert_proof(proof[65], pubkey[33], context_hash[32])
+  int mpt_verify_convert_proof(byte[] proof, byte[] pubkey, byte[] contextHash);
 
-  /**
-   * Parses a compressed secp256k1 public key into the internal representation.
-   *
-   * @param ctx      The secp256k1 context pointer.
-   * @param pubkey   A 64-byte buffer to receive the internal public key representation.
-   * @param input    The compressed public key bytes.
-   * @param inputlen The length of the input (33 for compressed keys).
-   *
-   * @return 1 on success, 0 on failure.
-   */
-  int secp256k1_ec_pubkey_parse(
-    com.sun.jna.Pointer ctx, byte[] pubkey, byte[] input, long inputlen
+  // mpt_verify_convert_back_proof(proof[883], pubkey[33], ciphertext[66],
+  //     balance_commitment[33], amount, context_hash[32])
+  int mpt_verify_convert_back_proof(
+    byte[] proof, byte[] pubkey, byte[] ciphertext,
+    byte[] balanceCommitment, long amount, byte[] contextHash
   );
 
-  /**
-   * Verifies a Schnorr Proof of Knowledge of a secret key.
-   *
-   * @param ctx       The secp256k1 context pointer.
-   * @param proof     The 65-byte proof to verify.
-   * @param pk        The 64-byte internal public key representation.
-   * @param contextId The 32-byte context hash.
-   *
-   * @return 1 if the proof is valid, 0 otherwise.
-   */
-  int secp256k1_mpt_pok_sk_verify(
-    com.sun.jna.Pointer ctx, byte[] proof, byte[] pk, byte[] contextId
+  // mpt_verify_send_proof(proof*, proof_len, participants*, n_participants,
+  //     sender_spending_ciphertext[66], amount_commitment[33],
+  //     balance_commitment[33], context_hash[32])
+  int mpt_verify_send_proof(
+    byte[] proof, long proofLen,
+    MptConfidentialRecipient participants, byte numParticipants,
+    byte[] senderSpendingCiphertext, byte[] amountCommitment,
+    byte[] balanceCommitment, byte[] contextHash
   );
+
+  // mpt_verify_clawback_proof(proof[98], amount, pubkey[33], ciphertext[66], context_hash[32])
+  int mpt_verify_clawback_proof(byte[] proof, long amount, byte[] pubkey, byte[] ciphertext, byte[] contextHash);
 
   /**
    * Generates a Pedersen Commitment: C = amount * G + blindingFactor * H.

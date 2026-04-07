@@ -448,6 +448,18 @@ public class ConfidentialTransfersIT extends AbstractIT {
       amountParams,
       balanceParams
     );
+    assertThat(sendService.verifyProof(
+      sendProof,
+      Arrays.asList(
+        MptConfidentialParty.of(holderElGamalKeyPair.publicKey(), senderCiphertext),
+        MptConfidentialParty.of(holder2ElGamalKeyPair.publicKey(), destCiphertext),
+        MptConfidentialParty.of(issuerElGamalKeyPair.publicKey(), issuerCiphertextForSend)
+      ),
+      senderBalanceCiphertext,
+      sendContext,
+      PedersenCommitment.of(amountParams.pedersenCommitment()),
+      PedersenCommitment.of(balanceParams.pedersenCommitment())
+    )).isTrue();
 
     ConfidentialMptSend confidentialSend = ConfidentialMptSend.builder()
       .account(holderKeyPair.publicKey().deriveAddress())
@@ -529,6 +541,14 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ConfidentialMptConvertBackProof convertBackProof = convertBackService.generateProof(
       holderElGamalKeyPair, convertBackAmount, convertBackContext, convertBackBalanceParams
     );
+    assertThat(convertBackService.verifyProof(
+      convertBackProof,
+      holderElGamalKeyPair.publicKey(),
+      currentBalanceForConvertBack,
+      PedersenCommitment.of(convertBackBalanceParams.pedersenCommitment()),
+      convertBackAmount,
+      convertBackContext
+    )).isTrue();
 
     PedersenCommitment convertBackCommitment = PedersenCommitment.of(
       convertBackBalanceParams.pedersenCommitment()
@@ -604,6 +624,13 @@ public class ConfidentialTransfersIT extends AbstractIT {
       issuerElGamalKeyPair.privateKey(),
       clawbackContext
     );
+    assertThat(clawbackService.verifyProof(
+      clawbackProof,
+      issuerBalanceCiphertext,
+      issuerElGamalKeyPair.publicKey(),
+      clawbackAmount,
+      clawbackContext
+    )).isTrue();
 
     ConfidentialMptClawback clawback = ConfidentialMptClawback.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())

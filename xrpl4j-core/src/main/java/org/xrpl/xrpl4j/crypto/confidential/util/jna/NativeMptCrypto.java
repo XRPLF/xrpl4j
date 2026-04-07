@@ -168,4 +168,57 @@ public interface NativeMptCrypto {
   int generateClawbackProof(
     byte[] privkey, byte[] pubkey, byte[] ctxHash, long amount, byte[] encryptedAmount, byte[] outProof
   );
+
+  /**
+   * Verifies an equality proof for a ConfidentialMptClawback transaction.
+   *
+   * @param proof           The 98-byte equality proof.
+   * @param c1              The 33-byte C1 component of the encrypted balance.
+   * @param c2              The 33-byte C2 component of the encrypted balance.
+   * @param pubkey          The 33-byte issuer public key.
+   * @param amount          The clawback amount.
+   * @param ctxHash         The 32-byte context hash.
+   *
+   * @return 1 if the proof is valid, 0 otherwise.
+   */
+  int verifyClawbackProof(byte[] proof, byte[] c1, byte[] c2, byte[] pubkey, long amount, byte[] ctxHash);
+
+  /**
+   * Verifies the proof for a ConfidentialMptConvertBack transaction.
+   *
+   * @param pubkey              The holder's 33-byte public key.
+   * @param ctxHash             The 32-byte context hash.
+   * @param amount              The amount converted back.
+   * @param encryptedBalance    The 66-byte encrypted balance from the ledger.
+   * @param balanceCommitment   The 33-byte Pedersen commitment for the balance.
+   * @param proof               The 883-byte proof.
+   *
+   * @return 0 on success (valid), non-zero on failure.
+   */
+  int verifyConvertBackProof(
+    byte[] pubkey, byte[] ctxHash, long amount,
+    byte[] encryptedBalance, byte[] balanceCommitment,
+    byte[] proof
+  );
+
+  /**
+   * Verifies the combined proof for a ConfidentialMptSend transaction.
+   *
+   * @param recipientPubkeys     Flat array of recipient public keys (n * 33 bytes).
+   * @param recipientCiphertexts Flat array of recipient encrypted amounts (n * 66 bytes).
+   * @param numRecipients        Number of recipients.
+   * @param ctxHash              The 32-byte context hash.
+   * @param amountCommitment     The 33-byte Pedersen commitment for the amount.
+   * @param balanceCommitment    The 33-byte Pedersen commitment for the balance.
+   * @param proof                The proof bytes.
+   * @param proofLen             The proof length.
+   *
+   * @return 0 on success (valid), non-zero on failure.
+   */
+  int verifySendProof(
+    byte[] recipientPubkeys, byte[] recipientCiphertexts, int numRecipients,
+    byte[] senderSpendingCiphertext,
+    byte[] ctxHash, byte[] amountCommitment, byte[] balanceCommitment,
+    byte[] proof, int proofLen
+  );
 }

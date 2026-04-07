@@ -99,6 +99,6 @@ public class JnaConfidentialMptConvertProofVerifier implements ConfidentialMptCo
       CONTEXT_HASH_SIZE, ctxHash.length
     );
 
-    return nativeCrypto.verifyConvertProof(proofBytes, pubkeyBytes, ctxHash) == 1;
+    return nativeCrypto.verifyConvertProof(proofBytes, pubkeyBytes, ctxHash) == 0;
   }
 }

@@ -134,6 +134,47 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   Signature multiSignInner(P privateKeyable, Batch batchTransaction);
 
   /**
+   * Obtain a sponsor single-signature for the supplied transaction. The sponsor signs the same bytes as
+   * the first-party signer (using {@link #sign(PrivateKeyable, Transaction)}), but this method returns only
+   * the raw {@link Signature} rather than a {@link SingleSignedTransaction} wrapper, since the sponsor's
+   * signature is placed into the {@link Transaction#sponsorSignature()} field, not the transaction's
+   * {@code TxnSignature}.
+   *
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param privateKeyable The {@link P} used to sign {@code transaction}.
+   * @param transaction    The {@link Transaction} to sign as the sponsor.
+   * @param <T>            The type of the transaction to be signed.
+   *
+   * @return A {@link Signature} for the sponsor.
+   */
+  @Beta
+  <T extends Transaction> Signature sponsorSign(P privateKeyable, T transaction);
+
+  /**
+   * Obtain a sponsor multi-signature for the supplied transaction. Unlike
+   * {@link #multiSign(PrivateKeyable, Transaction)}, this method does <b>not</b> clear the {@code SigningPubKey}
+   * field, preserving the first-party signer's public key in the signed data. The resulting bytes use the same
+   * multi-signing prefix ({@code SMT\0}) and the sponsor signer's account ID suffix.
+   *
+   * <p>This is necessary for sponsored transactions where the sponsor must co-sign without overwriting
+   * the transaction sender's signature. The sponsor's multi-signature is placed in the
+   * {@link Transaction#sponsorSignature()} {@code Signers} array.</p>
+   *
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param privateKeyable The {@link P} used to sign {@code transaction}.
+   * @param transaction    The {@link Transaction} to sponsor multi-sign.
+   * @param <T>            The type of the transaction to be signed.
+   *
+   * @return A {@link Signature} for the sponsor signer.
+   */
+  @Beta
+  <T extends Transaction> Signature sponsorMultiSign(P privateKeyable, T transaction);
+
+  /**
    * Obtain a signature for the supplied unsigned transaction using the supplied {@link P}.
    * <p>
    * As is the case with {@link #multiSign(PrivateKeyable, Transaction)}, the primary reason this method's signature

@@ -124,6 +124,16 @@ public abstract class AbstractSignatureService<P extends PrivateKeyable> impleme
   }
 
   @Override
+  public <T extends Transaction> Signature sponsorSign(final P privateKeyable, final T transaction) {
+    return abstractTransactionSigner.sponsorSign(privateKeyable, transaction);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorMultiSign(final P privateKeyable, final T transaction) {
+    return abstractTransactionSigner.sponsorMultiSign(privateKeyable, transaction);
+  }
+
+  @Override
   public <T extends Transaction> boolean verify(final Signer signer, final T unsignedTransaction) {
     return abstractTransactionVerifier.verify(signer, unsignedTransaction);
   }

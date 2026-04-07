@@ -190,4 +190,35 @@ public class SignatureUtils {
     }
   }
 
+  /**
+   * Helper method to convert a {@link Transaction} into bytes that can be multi-signed by a sponsor.
+   *
+   * <p>Unlike {@link #toMultiSignableBytes(Transaction, Address)}, this method preserves the existing
+   * {@code SigningPubKey} field in the encoded bytes. This is necessary when a sponsor multi-signs a transaction
+   * where the first-party signer's {@code SigningPubKey} must remain intact in the signed data.</p>
+   *
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param transaction   A {@link Transaction} to be sponsor multi-signed.
+   * @param signerAddress The {@link Address} of the sponsor signer.
+   *
+   * @return An {@link UnsignedByteArray}.
+   */
+  @Beta
+  public UnsignedByteArray toSponsorMultiSignableBytes(final Transaction transaction, final Address signerAddress) {
+    Objects.requireNonNull(transaction);
+    Objects.requireNonNull(signerAddress);
+
+    try {
+      final String unsignedJson = objectMapper.writeValueAsString(transaction);
+      final String unsignedBinaryHex = binaryCodec.encodeForMultiSigningWithSigningPubKey(
+        unsignedJson, signerAddress.value()
+      );
+      return UnsignedByteArray.fromHex(unsignedBinaryHex);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
 }

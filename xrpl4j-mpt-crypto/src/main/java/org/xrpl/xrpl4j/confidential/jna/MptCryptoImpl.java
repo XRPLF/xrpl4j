@@ -65,6 +65,11 @@ public class MptCryptoImpl implements NativeMptCrypto {
   }
 
   @Override
+  public int generatePedersenCommitment(long amount, byte[] blindingFactor, byte[] outCommitment) {
+    return lib.mpt_get_pedersen_commitment(amount, blindingFactor, outCommitment);
+  }
+
+  @Override
   public int generateConvertProof(byte[] pubkey, byte[] privkey, byte[] ctxHash, byte[] outProof) {
     return lib.mpt_get_convert_proof(pubkey, privkey, ctxHash, outProof);
   }
@@ -81,5 +86,71 @@ public class MptCryptoImpl implements NativeMptCrypto {
     }
 
     return lib.secp256k1_mpt_pok_sk_verify(ctx, proof, internalPk, ctxHash);
+  }
+
+  @Override
+  public int generateClawbackProof(
+    byte[] privkey, byte[] pubkey, byte[] ctxHash, long amount, byte[] encryptedAmount, byte[] outProof
+  ) {
+    return lib.mpt_get_clawback_proof(privkey, pubkey, ctxHash, amount, encryptedAmount, outProof);
+  }
+
+  @Override
+  public int generateConvertBackProof(
+    byte[] privkey, byte[] pubkey, byte[] ctxHash, long amount,
+    byte[] balanceCommitment, long balanceValue, byte[] balanceCiphertext, byte[] balanceBlinding,
+    byte[] outProof
+  ) {
+    MptPedersenProofParams params = newPedersenParams(
+      balanceCommitment, balanceValue, balanceCiphertext, balanceBlinding
+    );
+    return lib.mpt_get_convert_back_proof(privkey, pubkey, ctxHash, amount, params, outProof);
+  }
+
+  @Override
+  public int generateSendProof(
+    byte[] privkey, long amount,
+    byte[] recipientPubkeys, byte[] recipientCiphertexts, int numRecipients,
+    byte[] txBlindingFactor, byte[] contextHash,
+    byte[] amountCommitment, long amountValue, byte[] amountCiphertext, byte[] amountBlinding,
+    byte[] balanceCommitment, long balanceValue, byte[] balanceCiphertext, byte[] balanceBlinding,
+    byte[] outProof, int[] outLen
+  ) {
+    // Build contiguous array of mpt_confidential_recipient structs
+    MptConfidentialRecipient[] recipients =
+      (MptConfidentialRecipient[]) new MptConfidentialRecipient().toArray(numRecipients);
+    for (int i = 0; i < numRecipients; i++) {
+      System.arraycopy(recipientPubkeys, i * 33, recipients[i].pubkey, 0, 33);
+      System.arraycopy(recipientCiphertexts, i * 66, recipients[i].encryptedAmount, 0, 66);
+    }
+
+    MptPedersenProofParams amountParams = newPedersenParams(
+      amountCommitment, amountValue, amountCiphertext, amountBlinding
+    );
+    MptPedersenProofParams balanceParams = newPedersenParams(
+      balanceCommitment, balanceValue, balanceCiphertext, balanceBlinding
+    );
+
+    long[] nativeOutLen = new long[]{outLen[0]};
+    int result = lib.mpt_get_confidential_send_proof(
+      privkey, amount,
+      recipients[0], numRecipients,
+      txBlindingFactor, contextHash,
+      amountParams, balanceParams,
+      outProof, nativeOutLen
+    );
+    outLen[0] = (int) nativeOutLen[0];
+    return result;
+  }
+
+  private static MptPedersenProofParams newPedersenParams(
+    byte[] commitment, long amount, byte[] ciphertext, byte[] blinding
+  ) {
+    MptPedersenProofParams params = new MptPedersenProofParams();
+    System.arraycopy(commitment, 0, params.pedersenCommitment, 0, commitment.length);
+    params.amount = amount;
+    System.arraycopy(ciphertext, 0, params.encryptedAmount, 0, ciphertext.length);
+    System.arraycopy(blinding, 0, params.blindingFactor, 0, blinding.length);
+    return params;
   }
 }

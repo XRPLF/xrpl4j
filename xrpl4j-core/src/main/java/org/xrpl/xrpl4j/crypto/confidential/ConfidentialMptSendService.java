@@ -31,9 +31,9 @@ import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.PedersenCommitmentGenerator;
-import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptSendProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptSendProofVerifier;
-import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcPedersenCommitmentGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptSendProofGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaPedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
@@ -63,9 +63,9 @@ public class ConfidentialMptSendService {
    */
   public ConfidentialMptSendService() {
     this(
-      new BcConfidentialMptSendProofGenerator(),
+      new JnaConfidentialMptSendProofGenerator(),
       new BcConfidentialMptSendProofVerifier(),
-      new BcPedersenCommitmentGenerator()
+      new JnaPedersenCommitmentGenerator()
     );
   }
 

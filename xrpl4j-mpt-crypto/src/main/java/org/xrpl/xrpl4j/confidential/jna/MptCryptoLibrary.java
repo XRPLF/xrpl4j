@@ -120,4 +120,72 @@ public interface MptCryptoLibrary extends Library {
   int secp256k1_mpt_pok_sk_verify(
     com.sun.jna.Pointer ctx, byte[] proof, byte[] pk, byte[] contextId
   );
+
+  /**
+   * Generates a Pedersen Commitment: C = amount * G + blindingFactor * H.
+   *
+   * @param amount          The value to commit to.
+   * @param blindingFactor  The 32-byte blinding factor.
+   * @param outCommitment   A 33-byte buffer to receive the compressed commitment.
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  int mpt_get_pedersen_commitment(long amount, byte[] blindingFactor, byte[] outCommitment);
+
+  /**
+   * Returns the total proof size for a ConfidentialMptSend with the given number of recipients.
+   *
+   * @param numRecipients The number of recipients.
+   *
+   * @return The expected proof size in bytes.
+   */
+  long get_confidential_send_proof_size(long numRecipients);
+
+  /**
+   * Generates the combined proof for a ConfidentialMptSend transaction.
+   *
+   * @param priv              The sender's 32-byte private key.
+   * @param amount            The amount being sent.
+   * @param recipients        Pointer to array of mpt_confidential_recipient structs.
+   * @param numRecipients     Number of recipients.
+   * @param txBlindingFactor  The 32-byte blinding factor.
+   * @param contextHash       The 32-byte context hash.
+   * @param amountParams      Pointer to mpt_pedersen_proof_params struct for amount.
+   * @param balanceParams     Pointer to mpt_pedersen_proof_params struct for balance.
+   * @param outProof          Buffer to receive the proof.
+   * @param outLen            Pointer to size (in: buffer size, out: actual size).
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  /**
+   * Generates the proof for a ConfidentialMptConvertBack transaction.
+   *
+   * @param priv        The holder's 32-byte private key.
+   * @param pub         The holder's 33-byte public key.
+   * @param contextHash The 32-byte context hash.
+   * @param amount      The amount to convert back.
+   * @param params      The Pedersen proof params for the balance.
+   * @param outProof    An 883-byte buffer to receive the proof.
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  /**
+   * Generates an equality proof for a ConfidentialMptClawback transaction.
+   */
+  int mpt_get_clawback_proof(
+    byte[] priv, byte[] pub, byte[] contextHash, long amount, byte[] encryptedAmount, byte[] outProof
+  );
+
+  int mpt_get_convert_back_proof(
+    byte[] priv, byte[] pub, byte[] contextHash, long amount,
+    MptPedersenProofParams params, byte[] outProof
+  );
+
+  int mpt_get_confidential_send_proof(
+    byte[] priv, long amount,
+    MptConfidentialRecipient recipients, long numRecipients,
+    byte[] txBlindingFactor, byte[] contextHash,
+    MptPedersenProofParams amountParams, MptPedersenProofParams balanceParams,
+    byte[] outProof, long[] outLen
+  );
 }

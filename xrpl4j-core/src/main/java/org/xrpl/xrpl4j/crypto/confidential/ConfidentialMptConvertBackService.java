@@ -30,9 +30,9 @@ import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBac
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertBackProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertBackProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.PedersenCommitmentGenerator;
-import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptConvertBackProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptConvertBackProofVerifier;
-import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcPedersenCommitmentGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptConvertBackProofGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaPedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -62,9 +62,9 @@ public class ConfidentialMptConvertBackService {
    */
   public ConfidentialMptConvertBackService() {
     this(
-      new BcConfidentialMptConvertBackProofGenerator(),
+      new JnaConfidentialMptConvertBackProofGenerator(),
       new BcConfidentialMptConvertBackProofVerifier(),
-      new BcPedersenCommitmentGenerator()
+      new JnaPedersenCommitmentGenerator()
     );
   }
 

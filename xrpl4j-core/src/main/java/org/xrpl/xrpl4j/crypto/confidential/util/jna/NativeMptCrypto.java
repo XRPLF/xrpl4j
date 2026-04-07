@@ -86,4 +86,86 @@ public interface NativeMptCrypto {
    * @return 1 if the proof is valid, 0 otherwise.
    */
   int verifyConvertProof(byte[] proof, byte[] pubkey, byte[] ctxHash);
+
+  /**
+   * Generates a Pedersen Commitment: C = amount * G + blindingFactor * H.
+   *
+   * @param amount          The value to commit to.
+   * @param blindingFactor  The 32-byte blinding factor (rho).
+   * @param outCommitment   A 33-byte buffer to receive the compressed commitment.
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  int generatePedersenCommitment(long amount, byte[] blindingFactor, byte[] outCommitment);
+
+  /**
+   * Generates the combined proof for a ConfidentialMptSend transaction.
+   *
+   * <p>The proof includes same-plaintext, amount linkage, balance linkage, and range proofs.</p>
+   *
+   * @param privkey              The sender's 32-byte private key.
+   * @param amount               The amount being sent.
+   * @param recipientPubkeys     Flat array of recipient public keys (n * 33 bytes).
+   * @param recipientCiphertexts Flat array of recipient encrypted amounts (n * 66 bytes).
+   * @param numRecipients        Number of recipients.
+   * @param txBlindingFactor     The 32-byte blinding factor used for encryption.
+   * @param contextHash          The 32-byte context hash.
+   * @param amountCommitment     The 33-byte Pedersen commitment for the amount.
+   * @param amountValue          The amount value in the amount params.
+   * @param amountCiphertext     The 66-byte encrypted amount in the amount params.
+   * @param amountBlinding       The 32-byte blinding factor in the amount params.
+   * @param balanceCommitment    The 33-byte Pedersen commitment for the balance.
+   * @param balanceValue         The balance value in the balance params.
+   * @param balanceCiphertext    The 66-byte encrypted amount in the balance params.
+   * @param balanceBlinding      The 32-byte blinding factor in the balance params.
+   * @param outProof             Buffer to receive the proof bytes.
+   * @param outLen               1-element array: input is buffer size, output is actual proof size.
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  int generateSendProof(
+    byte[] privkey, long amount,
+    byte[] recipientPubkeys, byte[] recipientCiphertexts, int numRecipients,
+    byte[] txBlindingFactor, byte[] contextHash,
+    byte[] amountCommitment, long amountValue, byte[] amountCiphertext, byte[] amountBlinding,
+    byte[] balanceCommitment, long balanceValue, byte[] balanceCiphertext, byte[] balanceBlinding,
+    byte[] outProof, int[] outLen
+  );
+
+  /**
+   * Generates the proof for a ConfidentialMptConvertBack transaction.
+   *
+   * @param privkey             The holder's 32-byte private key.
+   * @param pubkey              The holder's 33-byte public key.
+   * @param ctxHash             The 32-byte context hash.
+   * @param amount              The amount to convert back.
+   * @param balanceCommitment   The 33-byte Pedersen commitment for the balance.
+   * @param balanceValue        The balance value.
+   * @param balanceCiphertext   The 66-byte encrypted balance.
+   * @param balanceBlinding     The 32-byte blinding factor for the balance.
+   * @param outProof            An 883-byte buffer to receive the proof.
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  int generateConvertBackProof(
+    byte[] privkey, byte[] pubkey, byte[] ctxHash, long amount,
+    byte[] balanceCommitment, long balanceValue, byte[] balanceCiphertext, byte[] balanceBlinding,
+    byte[] outProof
+  );
+
+  /**
+   * Generates an equality proof for a ConfidentialMptClawback transaction.
+   *
+   * @param privkey         The issuer's 32-byte private key.
+   * @param pubkey          The issuer's 33-byte public key.
+   * @param ctxHash         The 32-byte context hash.
+   * @param amount          The amount to claw back.
+   * @param encryptedAmount The 66-byte issuer encrypted balance from the ledger.
+   * @param outProof        A 98-byte buffer to receive the equality proof.
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  int generateClawbackProof(
+    byte[] privkey, byte[] pubkey, byte[] ctxHash, long amount, byte[] encryptedAmount, byte[] outProof
+  );
 }

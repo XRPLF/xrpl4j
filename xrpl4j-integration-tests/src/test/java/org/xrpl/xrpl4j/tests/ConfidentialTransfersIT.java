@@ -346,8 +346,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ConfidentialMptConvertProof holder2ConvertProof = convertService.generateProof(
       holder2ElGamalKeyPair, holder2ConvertContext
     );
-    assertThat(convertService.verifyProof(holder2ConvertProof, holder2ElGamalKeyPair.publicKey(), holder2ConvertContext))
-      .isTrue();
+    assertThat(convertService.verifyProof(
+      holder2ConvertProof, holder2ElGamalKeyPair.publicKey(), holder2ConvertContext
+    )).isTrue();
 
     BlindingFactor holder2ConvertBlindingFactor = blindingFactorGenerator.generate();
     EncryptedAmount holder2EncryptedForConvert = encryptor.encrypt(

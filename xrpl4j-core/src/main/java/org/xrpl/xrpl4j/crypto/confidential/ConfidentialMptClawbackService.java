@@ -27,8 +27,8 @@ import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptClawback
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptClawbackProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptClawbackProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptClawbackProofVerifier;
-import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptClawbackProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptClawbackProofVerifier;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptClawbackProofGenerator;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -56,7 +56,7 @@ public class ConfidentialMptClawbackService {
    */
   public ConfidentialMptClawbackService() {
     this(
-      new BcConfidentialMptClawbackProofGenerator(),
+      new JnaConfidentialMptClawbackProofGenerator(),
       new BcConfidentialMptClawbackProofVerifier()
     );
   }

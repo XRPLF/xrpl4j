@@ -20,6 +20,10 @@
 name: Build mpt-crypto Native Libraries
 
 on:
+  # TODO: Remove push trigger after initial testing — only workflow_dispatch should remain
+  push:
+    branches:
+      - rp/conf-mpt-jna-workflow-setup
   workflow_dispatch:
     inputs:
       mpt_crypto_ref:
@@ -68,11 +72,12 @@ jobs:
 
     steps:
       # ── Checkout mpt-crypto source at the requested ref ──
+      # Falls back to f2243cf for push-triggered runs (TODO: remove fallback with push trigger)
       - name: Checkout mpt-crypto
         uses: actions/checkout@v5
         with:
           repository: XRPLF/mpt-crypto
-          ref: ${{ inputs.mpt_crypto_ref }}
+          ref: ${{ inputs.mpt_crypto_ref || 'f2243cf' }}
 
       # ── Set up build tools ──
       - name: Set up Python

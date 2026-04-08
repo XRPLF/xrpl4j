@@ -72,12 +72,18 @@ jobs:
 
     steps:
       # ── Checkout mpt-crypto source at the requested ref ──
+      # actions/checkout doesn't support arbitrary commit SHAs for external repos
+      # (it only matches branches/tags). So we do a full clone + checkout instead.
       # Falls back to f2243cf for push-triggered runs (TODO: remove fallback with push trigger)
-      - name: Checkout mpt-crypto
-        uses: actions/checkout@v5
-        with:
-          repository: XRPLF/mpt-crypto
-          ref: ${{ inputs.mpt_crypto_ref || 'f2243cf' }}
+      - name: Clone mpt-crypto
+        shell: bash
+        env:
+          MPT_REF: ${{ inputs.mpt_crypto_ref || 'f2243cf' }}
+        run: |
+          git clone https://github.com/XRPLF/mpt-crypto.git .
+          git checkout "${MPT_REF}"
+          echo "==> Checked out mpt-crypto at:"
+          git log --oneline -1
 
       # ── Set up build tools ──
       - name: Set up Python

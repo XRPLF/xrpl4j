@@ -34,8 +34,8 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  *
  * <p>For production code that needs dependency injection (e.g., for testing with deterministic values),
  * use {@link BlindingFactorGenerator} interface with {@link SecureRandomBlindingFactorGenerator} implementation.
- * For convenience, the static {@link #generate()} method is provided which uses the default secure random
- * generator.</p>
+ * For convenience, a {@link SecureRandomBlindingFactorGenerator} can be used to generate random blinding
+ * factors.</p>
  *
  * @see BlindingFactorGenerator
  * @see SecureRandomBlindingFactorGenerator

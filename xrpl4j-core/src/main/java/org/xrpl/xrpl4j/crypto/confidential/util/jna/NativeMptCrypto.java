@@ -204,14 +204,15 @@ public interface NativeMptCrypto {
   /**
    * Verifies the combined proof for a ConfidentialMptSend transaction.
    *
-   * @param recipientPubkeys     Flat array of recipient public keys (n * 33 bytes).
-   * @param recipientCiphertexts Flat array of recipient encrypted amounts (n * 66 bytes).
-   * @param numRecipients        Number of recipients.
-   * @param ctxHash              The 32-byte context hash.
-   * @param amountCommitment     The 33-byte Pedersen commitment for the amount.
-   * @param balanceCommitment    The 33-byte Pedersen commitment for the balance.
-   * @param proof                The proof bytes.
-   * @param proofLen             The proof length.
+   * @param recipientPubkeys        Flat array of recipient public keys (n * 33 bytes).
+   * @param recipientCiphertexts    Flat array of recipient encrypted amounts (n * 66 bytes).
+   * @param numRecipients           Number of recipients.
+   * @param senderSpendingCiphertext The sender's 66-byte encrypted balance ciphertext.
+   * @param ctxHash                 The 32-byte context hash.
+   * @param amountCommitment        The 33-byte Pedersen commitment for the amount.
+   * @param balanceCommitment       The 33-byte Pedersen commitment for the balance.
+   * @param proof                   The proof bytes.
+   * @param proofLen                The proof length.
    *
    * @return 0 on success (valid), non-zero on failure.
    */

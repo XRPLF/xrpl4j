@@ -47,11 +47,12 @@ public interface ConfidentialMptSendProofVerifier {
   /**
    * Verifies a ConfidentialMptSend proof.
    *
-   * @param proof             The proof to verify.
-   * @param recipients        The list of recipients (sender, destination, issuer, and optionally auditor).
-   * @param context           The context hash binding the proof to a specific transaction.
-   * @param amountCommitment  The Pedersen commitment for the amount.
-   * @param balanceCommitment The Pedersen commitment for the sender's balance.
+   * @param proof                    The proof to verify.
+   * @param recipients               The list of recipients (sender, destination, issuer, and optionally auditor).
+   * @param senderSpendingCiphertext The sender's encrypted balance ciphertext.
+   * @param context                  The context hash binding the proof to a specific transaction.
+   * @param amountCommitment         The Pedersen commitment for the amount.
+   * @param balanceCommitment        The Pedersen commitment for the sender's balance.
    *
    * @return {@code true} if the proof is valid, {@code false} otherwise.
    *

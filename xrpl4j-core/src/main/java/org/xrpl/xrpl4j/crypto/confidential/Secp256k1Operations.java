@@ -434,6 +434,10 @@ public final class Secp256k1Operations {
 
   /**
    * Reduces a 32-byte hash to a valid scalar (mod curve order).
+   *
+   * @param hash The 32-byte hash to reduce.
+   *
+   * @return A 32-byte scalar value reduced modulo the curve order.
    */
   public static byte[] reduceToScalar(byte[] hash) {
     BigInteger hashInt = new BigInteger(1, hash);

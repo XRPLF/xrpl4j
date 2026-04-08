@@ -1,0 +1,62 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Test mpt-crypto JNA on all platforms
+#
+# Runs the xrpl4j-mpt-crypto roundtrip tests on each supported platform to
+# verify that the native libraries (committed in src/main/resources/<platform>/)
+# load correctly and produce valid results.
+#
+# Workflow for adding/updating native libraries:
+#   1. Run the "Build mpt-crypto Native Libraries" workflow to build the binaries
+#   2. Download the artifacts and place them in xrpl4j-mpt-crypto/src/main/resources/
+#   3. Raise a PR — this workflow runs automatically to verify each platform
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: Test mpt-crypto JNA
+
+on:
+  # TODO: Remove push trigger after initial testing — only pull_request should remain
+  push:
+    branches:
+      - rp/conf-mpt-jna-workflow-setup
+    paths:
+      - 'xrpl4j-mpt-crypto/**'
+  pull_request:
+    paths:
+      - 'xrpl4j-mpt-crypto/**'
+
+jobs:
+  test:
+    name: Test ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            platform: darwin-aarch64
+          - os: macos-15-intel
+            platform: darwin-x86-64
+          - os: ubuntu-24.04-arm
+            platform: linux-aarch64
+          - os: ubuntu-latest
+            platform: linux-x86-64
+          - os: windows-latest
+            platform: win32-x86-64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout xrpl4j
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+          cache: 'maven'
+
+      - name: Build dependencies
+        run: mvn install -pl xrpl4j-mpt-crypto -am -DskipTests -q
+
+      - name: Run xrpl4j-mpt-crypto tests
+        run: mvn test -pl xrpl4j-mpt-crypto

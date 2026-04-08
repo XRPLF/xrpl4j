@@ -29,26 +29,32 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Temurin doesn't ship JDK 8 for macOS ARM64, so we use JDK 11 there.
           - os: macos-14
             platform: darwin-aarch64
+            java_version: '11'
           - os: macos-15-intel
             platform: darwin-x86-64
+            java_version: '8'
           - os: ubuntu-24.04-arm
             platform: linux-aarch64
+            java_version: '8'
           - os: ubuntu-latest
             platform: linux-x86-64
+            java_version: '8'
           - os: windows-latest
             platform: win32-x86-64
+            java_version: '8'
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v5
-      - name: Set up JDK 8
+      - name: Set up JDK ${{ matrix.java_version }}
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: ${{ matrix.java_version }}
           cache: 'maven'
       - name: Build
         run: mvn clean install -DskipITs

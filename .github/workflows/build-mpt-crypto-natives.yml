@@ -251,11 +251,14 @@ jobs:
           file output/${{ matrix.platform }}/${{ matrix.lib_filename }}
 
       # ── Upload per-platform artifact ──
+      # Upload output/ (not output/<platform>/) so the platform subdirectory
+      # is preserved inside the artifact. This ensures merge-multiple in the
+      # bundle job doesn't overwrite files with the same name across platforms.
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: mptcrypto-${{ matrix.platform }}
-          path: output/${{ matrix.platform }}/
+          path: output/
           if-no-files-found: error
 
   # ──────────────────────────────────────────────────────────────────────────

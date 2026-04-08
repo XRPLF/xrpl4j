@@ -44,10 +44,10 @@ import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptClawbackProo
 import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptClawbackProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptConvertBackProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptConvertBackProofVerifier;
-import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptSendProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptConvertProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptConvertProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptSendProofGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcConfidentialMptSendProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcMptAmountDecryptor;
 import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcMptAmountEncryptor;
 import org.xrpl.xrpl4j.crypto.confidential.util.bc.BcPedersenCommitmentGenerator;
@@ -56,10 +56,10 @@ import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptClawbackPr
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptClawbackProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptConvertBackProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptConvertBackProofVerifier;
-import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptSendProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptConvertProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptConvertProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptSendProofGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptSendProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaMptAmountDecryptor;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaMptAmountEncryptor;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaPedersenCommitmentGenerator;

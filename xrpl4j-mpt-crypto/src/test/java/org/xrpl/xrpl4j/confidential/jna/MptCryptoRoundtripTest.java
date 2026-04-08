@@ -246,7 +246,6 @@ class MptCryptoRoundtripTest {
   @Test
   void convertBackProofGenerateAndVerify() {
     long balance = 5000L;
-    long convertBackAmount = 1000L;
     byte[] ctxHash = new byte[32];
     Arrays.fill(ctxHash, (byte) 0xCD);
 
@@ -264,6 +263,7 @@ class MptCryptoRoundtripTest {
     assertThat(crypto.generatePedersenCommitment(balance, commitBf, balanceCommitment)).isZero();
 
     // Generate convert-back proof
+    long convertBackAmount = 1000L;
     byte[] proof = new byte[CONVERT_BACK_PROOF_SIZE];
     int genResult = crypto.generateConvertBackProof(
       privkey, pubkey, ctxHash, convertBackAmount,
@@ -283,7 +283,6 @@ class MptCryptoRoundtripTest {
   @Test
   void sendProofGenerateAndVerify() {
     long sendAmount = 100L;
-    long senderBalance = 5000L;
     byte[] ctxHash = new byte[32];
     Arrays.fill(ctxHash, (byte) 0xEF);
 
@@ -325,6 +324,7 @@ class MptCryptoRoundtripTest {
     assertThat(crypto.generatePedersenCommitment(sendAmount, amountBf, amountCommitment)).isZero();
 
     // Balance Pedersen commitment
+    long senderBalance = 5000L;
     byte[] balanceBf = new byte[BLINDING_FACTOR_SIZE];
     assertThat(crypto.generateBlindingFactor(balanceBf)).isZero();
     byte[] balanceCommitment = new byte[COMMITMENT_SIZE];

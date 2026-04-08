@@ -45,7 +45,7 @@ jobs:
             cmake_lib_filename: libmpt-crypto.dylib
 
           # ── macOS x86_64 (Intel) ──
-          - os: macos-13
+          - os: macos-15-intel
             platform: darwin-x86-64
             lib_filename: libmptcrypto.dylib
             cmake_lib_filename: libmpt-crypto.dylib
@@ -154,12 +154,14 @@ jobs:
       # ── Configure CMake ──
       #
       # The Conan toolchain file (conan_toolchain.cmake) configures:
-      #   - CMAKE_BUILD_TYPE=Release
+      #   - CMAKE_BUILD_TYPE=Release (single-config generators)
       #   - BUILD_SHARED_LIBS=ON (from shared=True)
       #   - Find-package paths for secp256k1 and OpenSSL
       #
-      # We use Ninja as the generator for consistent behavior across all platforms.
-      - name: Configure CMake
+      # Windows uses the VS generator because Ninja doesn't support
+      # CMAKE_GENERATOR_PLATFORM which Conan's MSVC toolchain sets.
+      - name: Configure CMake (Unix)
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           TOOLCHAIN=$(find build -name "conan_toolchain.cmake" -print -quit)
@@ -174,6 +176,22 @@ jobs:
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN}" \
             -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          TOOLCHAIN=$(find build -name "conan_toolchain.cmake" -print -quit)
+          if [ -z "${TOOLCHAIN}" ]; then
+            echo "ERROR: Could not find conan_toolchain.cmake under build/"
+            find build -type f -name "*.cmake" | head -20
+            exit 1
+          fi
+          echo "==> Using toolchain: ${TOOLCHAIN}"
+
+          cmake -B build -S . \
+            -G "Visual Studio 17 2022" \
+            -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN}"
 
       # ── Build ──
       - name: Build shared library

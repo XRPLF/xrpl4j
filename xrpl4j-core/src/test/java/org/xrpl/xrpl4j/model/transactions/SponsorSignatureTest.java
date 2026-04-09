@@ -133,5 +133,33 @@ public class SponsorSignatureTest {
       .hasMessageContaining("SigningPubKey must be empty when using Signers");
   }
 
+  @Test
+  public void buildWithMissingSigningPublicKeyAndSingleSignatureFails() {
+    // Test the case where transactionSignature is present but signingPublicKey is missing
+    assertThatThrownBy(() ->
+      SponsorSignature.builder()
+        .transactionSignature(Signature.fromBase16(TEST_SIGNATURE))
+        .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("SigningPubKey must be non-empty when using TxnSignature");
+  }
+
+  @Test
+  public void buildWithMissingSigningPublicKeyAndMultiSignatureFails() {
+    // Test the case where signers is present but signingPublicKey is missing
+    assertThatThrownBy(() ->
+      SponsorSignature.builder()
+        .signers(Collections.singletonList(
+          SignerWrapper.of(Signer.builder()
+            .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+            .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(TEST_PUBLIC_KEY))
+            .transactionSignature(Signature.fromBase16(TEST_SIGNATURE))
+            .build())
+        ))
+        .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("SigningPubKey must be empty when using Signers");
+  }
+
 }
 

@@ -90,5 +90,71 @@ public class AccountSponsoringResultTest {
     assertThat(result.validated()).isTrue();
   }
 
+  @Test
+  public void ledgerHashSafeThrowsWhenEmpty() {
+    AccountSponsoringResult result = AccountSponsoringResult.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .sponsoredObjects(Collections.emptyList())
+      .build();
+
+    org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, result::ledgerHashSafe);
+  }
+
+  @Test
+  public void ledgerHashSafeReturnsWhenPresent() {
+    Hash256 ledgerHash = Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321");
+    AccountSponsoringResult result = AccountSponsoringResult.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .sponsoredObjects(Collections.emptyList())
+      .ledgerHash(ledgerHash)
+      .build();
+
+    assertThat(result.ledgerHashSafe()).isEqualTo(ledgerHash);
+  }
+
+  @Test
+  public void ledgerIndexSafeThrowsWhenEmpty() {
+    AccountSponsoringResult result = AccountSponsoringResult.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .sponsoredObjects(Collections.emptyList())
+      .build();
+
+    org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, result::ledgerIndexSafe);
+  }
+
+  @Test
+  public void ledgerIndexSafeReturnsWhenPresent() {
+    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedInteger.valueOf(1000));
+    AccountSponsoringResult result = AccountSponsoringResult.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .sponsoredObjects(Collections.emptyList())
+      .ledgerIndex(ledgerIndex)
+      .build();
+
+    assertThat(result.ledgerIndexSafe()).isEqualTo(ledgerIndex);
+  }
+
+  @Test
+  public void ledgerCurrentIndexSafeThrowsWhenEmpty() {
+    AccountSponsoringResult result = AccountSponsoringResult.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .sponsoredObjects(Collections.emptyList())
+      .build();
+
+    org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, result::ledgerCurrentIndexSafe);
+  }
+
+  @Test
+  public void ledgerCurrentIndexSafeReturnsWhenPresent() {
+    LedgerIndex ledgerCurrentIndex = LedgerIndex.of(UnsignedInteger.valueOf(1001));
+    AccountSponsoringResult result = AccountSponsoringResult.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .sponsoredObjects(Collections.emptyList())
+      .ledgerCurrentIndex(ledgerCurrentIndex)
+      .build();
+
+    assertThat(result.ledgerCurrentIndexSafe()).isEqualTo(ledgerCurrentIndex);
+  }
+
 }
 

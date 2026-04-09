@@ -606,6 +606,74 @@ public class SignatureUtilsTest {
   }
 
   // ////////////////
+  // toSponsorMultiSignableBytes (Transaction)
+  // ////////////////
+
+  @Test
+  void toSponsorMultiSignableBytesWithNullTransaction() {
+    assertThrows(NullPointerException.class,
+      () -> signatureUtils.toSponsorMultiSignableBytes(null, sourcePublicKey.deriveAddress()));
+  }
+
+  @Test
+  void toSponsorMultiSignableBytesWithNullAddress() {
+    Payment payment = createPayment1();
+    assertThrows(NullPointerException.class, () -> signatureUtils.toSponsorMultiSignableBytes(payment, null));
+  }
+
+  @Test
+  void toSponsorMultiSignableBytes() throws JsonProcessingException {
+    Payment payment = createPayment1();
+
+    when(xrplBinaryCodecMock.encodeForMultiSigningWithSigningPubKey(anyString(), anyString())).thenReturn("CAFE1234");
+
+    UnsignedByteArray actual = signatureUtils.toSponsorMultiSignableBytes(
+      payment, sourcePublicKey.deriveAddress()
+    );
+    assertThat(actual.hexValue()).isEqualTo("CAFE1234");
+
+    verify(objectMapperMock).writeValueAsString(payment);
+    verifyNoMoreInteractions(objectMapperMock);
+    verify(xrplBinaryCodecMock).encodeForMultiSigningWithSigningPubKey(anyString(), anyString());
+    verifyNoMoreInteractions(xrplBinaryCodecMock);
+  }
+
+  @Test
+  void toSponsorMultiSignableBytesWithJsonException() throws JsonProcessingException {
+    Payment payment = createPayment1();
+    doThrow(new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)))
+      .when(objectMapperMock).writeValueAsString(payment);
+    assertThrows(RuntimeException.class,
+      () -> signatureUtils.toSponsorMultiSignableBytes(payment, sourcePublicKey.deriveAddress()));
+  }
+
+  @Test
+  void toSponsorMultiSignableBytesActual() {
+    // Create a payment with a SigningPubKey set so we can verify
+    // that toSponsorMultiSignableBytes preserves it (unlike toMultiSignableBytes)
+    Payment paymentWithSigningPubKey = Payment.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.valueOf(1))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .destination(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    Address signerAddress = sourcePublicKey.deriveAddress();
+
+    UnsignedByteArray sponsorBytes = SignatureUtils.getInstance()
+      .toSponsorMultiSignableBytes(paymentWithSigningPubKey, signerAddress);
+    assertThat(sponsorBytes).isNotNull();
+    assertThat(sponsorBytes.hexValue()).isNotEmpty();
+
+    // Should differ from normal multiSignableBytes because SigningPubKey is preserved
+    UnsignedByteArray normalMultiSignBytes = SignatureUtils.getInstance()
+      .toMultiSignableBytes(paymentWithSigningPubKey, signerAddress);
+    assertThat(sponsorBytes.hexValue()).isNotEqualTo(normalMultiSignBytes.hexValue());
+  }
+
+  // ////////////////
   // Batch edge cases
   // ////////////////
 

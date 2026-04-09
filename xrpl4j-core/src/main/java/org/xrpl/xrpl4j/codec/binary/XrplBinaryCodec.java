@@ -141,7 +141,8 @@ public class XrplBinaryCodec {
    * {@code SigningPubKey} field. Unlike {@link #encodeForMultiSigning(String, String)}, this method does <b>not</b>
    * clear the {@code SigningPubKey} field. This is necessary when a co-signer multi-signs a transaction where the
    * first-party signer's {@code SigningPubKey} must remain intact in the signed data (e.g., sponsor multi-signing
-   * in dual-signed transactions such as sponsored fee transactions).
+   * in dual-signed transactions such as sponsored fee transactions, or counterparty multi-signing in dual-signed
+   * transactions such as {@code LoanSet}).
    *
    * <p>The resulting bytes use the same multi-signing prefix ({@code SMT\0}) and account ID suffix as
    * {@link #encodeForMultiSigning(String, String)}.</p>
@@ -236,35 +237,6 @@ public class XrplBinaryCodec {
     result.append(UnsignedByteArray.fromHex(accountIdHex));
 
     return result;
-  }
-
-  /**
-   * Encodes JSON to canonical XRPL binary as a hex string for multi-signing purposes, preserving the existing
-   * {@code SigningPubKey} field. Unlike {@link #encodeForMultiSigning(String, String)}, this method does <b>not</b>
-   * clear the {@code SigningPubKey} field. This is necessary when a co-signer multi-signs a transaction where the
-   * first-party signer's {@code SigningPubKey} must remain intact in the signed data (e.g., counterparty multi-signing
-   * in dual-signed transactions such as {@code LoanSet}).
-   *
-   * <p>The resulting bytes use the same multi-signing prefix ({@code SMT\0}) and account ID suffix as
-   * {@link #encodeForMultiSigning(String, String)}.</p>
-   *
-   * @param json         A {@link String} containing JSON to be encoded.
-   * @param xrpAccountId A {@link String} containing the XRPL AccountId of the signer.
-   *
-   * @return hex encoded representation
-   *
-   * @throws JsonProcessingException if JSON is not valid.
-   */
-  public String encodeForMultiSigningWithSigningPubKey(
-    String json, String xrpAccountId
-  ) throws JsonProcessingException {
-    JsonNode node = BINARY_CODEC_OBJECT_MAPPER.readTree(json);
-    if (!node.isObject()) {
-      throw new IllegalArgumentException("JSON object required for signing");
-    }
-    // NOTE: Unlike encodeForMultiSigning, we do NOT clear SigningPubKey here.
-    String suffix = new AccountIdType().fromJson(new TextNode(xrpAccountId)).toHex();
-    return TRX_MULTI_SIGNATURE_PREFIX + encode(removeNonSigningFields(node)) + suffix;
   }
 
   /**

@@ -84,6 +84,20 @@ public class SponsorshipTransferTest {
   }
 
   @Test
+  public void defaultFlagsFails() {
+    // When flags() is not explicitly set, it defaults to empty flags which should fail validation
+    assertThatThrownBy(() ->
+      SponsorshipTransfer.builder()
+        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .sequence(UnsignedInteger.ONE)
+        .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
+        .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("SponsorshipTransfer must have exactly one mode flag set");
+  }
+
+  @Test
   public void multipleModeFlagsFails() {
     assertThatThrownBy(() ->
       SponsorshipTransfer.builder()

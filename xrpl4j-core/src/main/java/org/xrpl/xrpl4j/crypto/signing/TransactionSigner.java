@@ -170,11 +170,14 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   Signature counterpartyMultiSign(P privateKeyable, LoanSet transaction);
 
   /**
-   * Obtain a sponsor single-signature for the supplied transaction. The sponsor signs the same bytes as
-   * the first-party signer (using {@link #sign(PrivateKeyable, Transaction)}), but this method returns only
-   * the raw {@link Signature} rather than a {@link SingleSignedTransaction} wrapper, since the sponsor's
-   * signature is placed into the {@link Transaction#sponsorSignature()} field, not the transaction's
-   * {@code TxnSignature}.
+   * Obtain a sponsor single-signature for the supplied transaction. Per rippled's Sponsorship amendment
+   * implementation, the sponsor signs the same serialized bytes (using the {@code STX} / 0x53545800 prefix) as the
+   * account-owner. Domain separation is achieved structurally: the sponsor's signature is placed into the
+   * {@link Transaction#sponsorSignature()} field rather than the transaction's {@code TxnSignature}, and the
+   * account-owner and sponsor use different key pairs.
+   *
+   * <p>This method returns only the raw {@link Signature} rather than a {@link SingleSignedTransaction}
+   * wrapper.</p>
    *
    * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
    * Its API is subject to change.</p>

@@ -142,9 +142,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
 
-    // Sponsor single-signing uses the same signable bytes as regular single-signing.
-    // The sponsor signs the complete transaction binary (including the sponsee's SigningPubKey).
-    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSignableBytes(transaction);
+    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSponsorSignableBytes(transaction);
     return this.signingHelper(privateKeyable, signableTransactionBytes);
   }
 

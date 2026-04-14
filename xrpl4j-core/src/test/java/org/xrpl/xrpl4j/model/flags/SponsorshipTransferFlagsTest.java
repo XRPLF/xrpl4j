@@ -23,7 +23,7 @@ public class SponsorshipTransferFlagsTest {
       .build();
 
     assertThat(flags.tfSponsorshipEnd()).isTrue();
-    assertThat(flags.getValue()).isEqualTo(0x80010000L);
+    assertThat(flags.getValue()).isEqualTo(0x80000001L);
   }
 
   @Test
@@ -33,7 +33,7 @@ public class SponsorshipTransferFlagsTest {
       .build();
 
     assertThat(flags.tfSponsorshipCreate()).isTrue();
-    assertThat(flags.getValue()).isEqualTo(0x80020000L);
+    assertThat(flags.getValue()).isEqualTo(0x80000002L);
   }
 
   @Test
@@ -43,13 +43,13 @@ public class SponsorshipTransferFlagsTest {
       .build();
 
     assertThat(flags.tfSponsorshipReassign()).isTrue();
-    assertThat(flags.getValue()).isEqualTo(0x80040000L);
+    assertThat(flags.getValue()).isEqualTo(0x80000004L);
   }
 
   @Test
   public void ofMethod() {
-    SponsorshipTransferFlags flags = SponsorshipTransferFlags.of(0x80010000L);
-    assertThat(flags.getValue()).isEqualTo(0x80010000L);
+    SponsorshipTransferFlags flags = SponsorshipTransferFlags.of(0x80000001L);
+    assertThat(flags.getValue()).isEqualTo(0x80000001L);
     assertThat(flags.tfSponsorshipEnd()).isTrue();
     assertThat(flags.tfSponsorshipCreate()).isFalse();
     assertThat(flags.tfSponsorshipReassign()).isFalse();
@@ -85,8 +85,8 @@ public class SponsorshipTransferFlagsTest {
     assertThat(flags.tfSponsorshipEnd()).isTrue();
     assertThat(flags.tfSponsorshipCreate()).isTrue();
     assertThat(flags.tfSponsorshipReassign()).isTrue();
-    // 0x80000000 + 0x10000 + 0x20000 + 0x40000 = 0x80070000
-    assertThat(flags.getValue()).isEqualTo(0x80070000L);
+    // 0x80000000 + 0x00000001 + 0x00000002 + 0x00000004 = 0x80000007
+    assertThat(flags.getValue()).isEqualTo(0x80000007L);
   }
 
 }

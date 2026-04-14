@@ -78,11 +78,18 @@ public class RippledContainer {
   private XrplAdminClient xrplAdminClient;
   private boolean started;
 
+  // TODO: Change to a Docker image with featureSponsorship once the rippled PR is merged and
+  //  the amendment is properly registered in Feature.cpp. Currently the sponsorship code exists
+  //  in some images (e.g., legleux/xrpld:sponsor) but the feature flag is not registered,
+  //  causing temDISABLED errors.
+  //  See: https://github.com/XRPLF/rippled/pull/5887
+  private static final String RIPPLED_DOCKER_IMAGE = "rippleci/rippled:develop";
+
   /**
    * No-args constructor.
    */
   public RippledContainer() {
-    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:develop")) {
+    try (GenericContainer<?> container = new GenericContainer<>(RIPPLED_DOCKER_IMAGE)) {
       this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
           cmd.withEntrypoint("/opt/xrpld/bin/xrpld"))
         .withCommand("-a --start --conf /config/xrpld.cfg")

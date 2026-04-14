@@ -105,6 +105,7 @@ public class AbstractTransactionSignerTest {
     when(signatureUtilsMock.toSignableInnerBytes(any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableInnerBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toCounterpartyMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toSponsorSignableBytes(any())).thenReturn(UnsignedByteArray.empty());
 
     when(signerMock.signingPublicKey()).thenReturn(publicKeyMock);
     when(signerMock.transactionSignature()).thenReturn(fauxEd25519Signature);
@@ -519,7 +520,7 @@ public class AbstractTransactionSignerTest {
     Signature signature = transactionSigner.sponsorSign(privateKeyableMock, transactionMock);
     assertThat(signature).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toSignableBytes(transactionMock);
+    verify(signatureUtilsMock).toSponsorSignableBytes(transactionMock);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -530,7 +531,7 @@ public class AbstractTransactionSignerTest {
     Signature signature = transactionSigner.sponsorSign(privateKeyableMock, transactionMock);
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toSignableBytes(transactionMock);
+    verify(signatureUtilsMock).toSponsorSignableBytes(transactionMock);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 

@@ -63,12 +63,12 @@ public class XrplMethods {
    * Constant for the {@code account_sponsoring} Clio API method, which retrieves a list of ledger objects
    * that an account is sponsoring.
    *
-   * <p>This constant will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
-   * is enabled on mainnet. Its API is subject to change.</p>
+   * <p>This constant will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
    *
    * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
    */
-  @com.google.common.annotations.Beta
+  @Beta
   public static final String ACCOUNT_SPONSORING = "account_sponsoring";
 
   /**

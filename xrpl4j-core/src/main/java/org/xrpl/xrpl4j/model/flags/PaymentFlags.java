@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.model.flags;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.annotations.Beta;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 
 /**
@@ -51,10 +52,10 @@ public class PaymentFlags extends TransactionFlags {
    * Constant {@link PaymentFlags} for the {@code tfSponsorCreatedAccount} flag. This flag is only valid if the
    * Payment is used to create an account. If enabled, the created account will be sponsored by the transaction sender.
    *
-   * <p>This constant will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
-   * is enabled on mainnet. Its API is subject to change.</p>
+   * <p>This constant will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
    */
-  @com.google.common.annotations.Beta
+  @Beta
   protected static final PaymentFlags SPONSOR_CREATED_ACCOUNT = new PaymentFlags(0x00080000L);
 
   /**
@@ -156,12 +157,12 @@ public class PaymentFlags extends TransactionFlags {
    * This flag is only valid if the Payment is used to create an account. If enabled, the created account will be
    * sponsored by the transaction sender.
    *
-   * <p>This method will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
-   * is enabled on mainnet. Its API is subject to change.</p>
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
    *
    * @return {@code true} if {@code tfSponsorCreatedAccount} is set, otherwise {@code false}.
    */
-  @com.google.common.annotations.Beta
+  @Beta
   public boolean tfSponsorCreatedAccount() {
     return this.isSet(PaymentFlags.SPONSOR_CREATED_ACCOUNT);
   }
@@ -227,14 +228,14 @@ public class PaymentFlags extends TransactionFlags {
     /**
      * Set {@code tfSponsorCreatedAccount} to the given value.
      *
-     * <p>This method will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
-     * is enabled on mainnet. Its API is subject to change.</p>
+     * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
      *
      * @param tfSponsorCreatedAccount A boolean value.
      *
      * @return The same {@link Builder}.
      */
-    @com.google.common.annotations.Beta
+    @Beta
     public Builder tfSponsorCreatedAccount(boolean tfSponsorCreatedAccount) {
       this.tfSponsorCreatedAccount = tfSponsorCreatedAccount;
       return this;

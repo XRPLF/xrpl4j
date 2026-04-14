@@ -27,7 +27,7 @@ import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.SponsorshipFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.SponsorshipSet;
@@ -51,8 +51,8 @@ import java.util.Optional;
  *   <li>The number of reserve units sponsored ({@link #reserveCount()})</li>
  * </ul>
  *
- * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
- * amendment is enabled on mainnet. Its API is subject to change.</p>
+ * <p>This class will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+ * Its API is subject to change.</p>
  *
  * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
  */
@@ -83,14 +83,22 @@ public interface SponsorshipObject extends LedgerObject {
   }
 
   /**
-   * A bit-map of boolean flags. No flags are defined for {@link SponsorshipObject}, so this value is always 0.
+   * A bit-map of boolean flags enabled for this {@link SponsorshipObject}.
    *
-   * @return Always {@link Flags#UNSET}.
+   * <p>Possible flags include:</p>
+   * <ul>
+   *   <li>{@link SponsorshipFlags#REQUIRE_SIGN_FOR_FEE} - Transactions using this for fee sponsorship require
+   *   a sponsor signature.</li>
+   *   <li>{@link SponsorshipFlags#REQUIRE_SIGN_FOR_RESERVE} - Transactions using this for reserve sponsorship
+   *   require a sponsor signature.</li>
+   * </ul>
+   *
+   * @return The {@link SponsorshipFlags} for this object.
    */
   @JsonProperty("Flags")
   @Value.Default
-  default Flags flags() {
-    return Flags.UNSET;
+  default SponsorshipFlags flags() {
+    return SponsorshipFlags.UNSET;
   }
 
   /**

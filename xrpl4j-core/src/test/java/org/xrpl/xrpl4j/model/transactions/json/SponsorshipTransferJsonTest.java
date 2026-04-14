@@ -33,7 +33,7 @@ public class SponsorshipTransferJsonTest extends AbstractJsonTest {
       "  \"Fee\": \"10\"," +
       "  \"Sequence\": 1," +
       "  \"ObjectID\": \"E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321\"," +
-      "  \"Flags\": 2147549184," +
+      "  \"Flags\": 2147483649," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
 
@@ -61,7 +61,7 @@ public class SponsorshipTransferJsonTest extends AbstractJsonTest {
       "  \"Sequence\": 1," +
       "  \"ObjectID\": \"E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321\"," +
       "  \"Sponsor\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\"," +
-      "  \"Flags\": 2147614720," +
+      "  \"Flags\": 2147483650," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
 
@@ -89,7 +89,7 @@ public class SponsorshipTransferJsonTest extends AbstractJsonTest {
       "  \"Sequence\": 1," +
       "  \"ObjectID\": \"E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321\"," +
       "  \"Sponsor\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\"," +
-      "  \"Flags\": 2147745792," +
+      "  \"Flags\": 2147483652," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
 

@@ -74,7 +74,7 @@ public final class SponsorshipValidations {
     Optional<UnsignedInteger> sponsorFlags = transaction.sponsorFlags();
 
     // If SponsorFlags is present, Sponsor must also be present
-    if (sponsorFlags.isPresent() && sponsor.isEmpty()) {
+    if (sponsorFlags.isPresent() && !sponsor.isPresent()) {
       throw new IllegalStateException(
         "SponsorFlags must not be present without Sponsor field. " +
           "Per XLS-0068, SponsorFlags requires Sponsor to be set."
@@ -82,7 +82,7 @@ public final class SponsorshipValidations {
     }
 
     // If Sponsor is present, SponsorFlags must also be present
-    if (sponsor.isPresent() && sponsorFlags.isEmpty()) {
+    if (sponsor.isPresent() && !sponsorFlags.isPresent()) {
       throw new IllegalStateException(
         "Sponsor field requires SponsorFlags to be set. " +
           "Per XLS-0068, at least one of spfSponsorFee or spfSponsorReserve must be specified."

@@ -53,12 +53,22 @@ public final class SponsorshipValidations {
   /**
    * Validates the sponsorship fields on a transaction according to XLS-0068.
    *
+   * <p>Note: {@link SponsorshipSet} and {@link SponsorshipTransfer} transactions are exempt from this validation
+   * because they use the {@code Sponsor} field differently - to specify the new sponsor in a sponsorship
+   * management operation, not to indicate who is sponsoring this transaction's fee/reserve.</p>
+   *
    * @param transaction The transaction to validate.
    *
    * @throws IllegalStateException if the sponsorship fields are invalid.
    */
   public static void validateSponsorFields(Transaction transaction) {
     Objects.requireNonNull(transaction, "transaction must not be null");
+
+    // SponsorshipSet and SponsorshipTransfer transactions use the Sponsor field differently
+    // (to specify the new sponsor), so they are exempt from this validation
+    if (transaction instanceof SponsorshipSet || transaction instanceof SponsorshipTransfer) {
+      return;
+    }
 
     Optional<Address> sponsor = transaction.sponsor();
     Optional<UnsignedInteger> sponsorFlags = transaction.sponsorFlags();

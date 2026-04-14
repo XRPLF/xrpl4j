@@ -299,6 +299,9 @@ public interface Transaction {
   @JsonProperty("SponsorSignature")
   Optional<SponsorSignature> sponsorSignature();
 
+  // TODO: Add Granular Permission fields (SponsorFee, SponsorReserve) for sponsorship once #689 is merged.
+  //  See XLS-0068 Section 9.1 and https://github.com/XRPLF/xrpl4j/pull/689
+
   @JsonAnyGetter
   @JsonInclude(Include.NON_ABSENT)
   Map<String, Object> unknownFields();

@@ -78,12 +78,7 @@ public class RippledContainer {
   private XrplAdminClient xrplAdminClient;
   private boolean started;
 
-  // TODO: Change to a Docker image with featureSponsorship once the rippled PR is merged and
-  //  the amendment is properly registered in Feature.cpp. Currently the sponsorship code exists
-  //  in some images (e.g., legleux/xrpld:sponsor) but the feature flag is not registered,
-  //  causing temDISABLED errors.
-  //  See: https://github.com/XRPLF/rippled/pull/5887
-  private static final String RIPPLED_DOCKER_IMAGE = "rippleci/rippled:develop";
+  private static final String RIPPLED_DOCKER_IMAGE = "legleux/xrpld:sponsor";
 
   /**
    * No-args constructor.
@@ -98,7 +93,7 @@ public class RippledContainer {
         .withClasspathResourceMapping("xrpld",
           "/config",
           BindMode.READ_ONLY)
-        .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
+        .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Process starting.*"));
     }
 
     ledgerAcceptor = Executors.newScheduledThreadPool(1);

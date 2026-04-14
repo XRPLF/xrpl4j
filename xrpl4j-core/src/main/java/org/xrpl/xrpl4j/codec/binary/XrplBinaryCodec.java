@@ -137,29 +137,6 @@ public class XrplBinaryCodec {
   }
 
   /**
-   * Encodes a JSON transaction to a hex string for multi-signing purposes, preserving the SigningPubKey field.
-   * This is used for sponsor multi-signing where the transaction's SigningPubKey should be preserved
-   * (e.g., when the sponsee has already set their SigningPubKey and the sponsor is adding their multi-signature).
-   *
-   * @param json         A {@link String} containing JSON to be encoded.
-   * @param xrpAccountId A {@link String} containing the XRPL AccountId of the signer.
-   *
-   * @return hex encoded representations
-   *
-   * @throws JsonProcessingException if JSON is not valid.
-   */
-  public String encodeForMultiSigningWithSigningPubKey(String json, String xrpAccountId)
-    throws JsonProcessingException {
-    JsonNode node = BINARY_CODEC_OBJECT_MAPPER.readTree(json);
-    if (!node.isObject()) {
-      throw new IllegalArgumentException("JSON object required for signing");
-    }
-    // Preserve SigningPubKey - don't clear it like encodeForMultiSigning does
-    String suffix = new AccountIdType().fromJson(new TextNode(xrpAccountId)).toHex();
-    return TRX_MULTI_SIGNATURE_PREFIX + encode(removeNonSigningFields(node)) + suffix;
-  }
-
-  /**
    * Encodes a {@link Batch} transaction to canonical XRPL binary as a hex string for signing purposes. Note that this
    * function slightly diverges from the pattern of the other encodeForSigning functions because the bytes to be signed
    * for a Batch transaction are not simply the canonical binary representation of the JSON. Instead, we have distinct
@@ -229,6 +206,35 @@ public class XrplBinaryCodec {
     result.append(UnsignedByteArray.fromHex(accountIdHex));
 
     return result;
+  }
+
+  /**
+   * Encodes JSON to canonical XRPL binary as a hex string for multi-signing purposes, preserving the existing
+   * {@code SigningPubKey} field. Unlike {@link #encodeForMultiSigning(String, String)}, this method does <b>not</b>
+   * clear the {@code SigningPubKey} field. This is necessary when a co-signer multi-signs a transaction where the
+   * first-party signer's {@code SigningPubKey} must remain intact in the signed data (e.g., counterparty multi-signing
+   * in dual-signed transactions such as {@code LoanSet}).
+   *
+   * <p>The resulting bytes use the same multi-signing prefix ({@code SMT\0}) and account ID suffix as
+   * {@link #encodeForMultiSigning(String, String)}.</p>
+   *
+   * @param json         A {@link String} containing JSON to be encoded.
+   * @param xrpAccountId A {@link String} containing the XRPL AccountId of the signer.
+   *
+   * @return hex encoded representation
+   *
+   * @throws JsonProcessingException if JSON is not valid.
+   */
+  public String encodeForMultiSigningWithSigningPubKey(
+    String json, String xrpAccountId
+  ) throws JsonProcessingException {
+    JsonNode node = BINARY_CODEC_OBJECT_MAPPER.readTree(json);
+    if (!node.isObject()) {
+      throw new IllegalArgumentException("JSON object required for signing");
+    }
+    // NOTE: Unlike encodeForMultiSigning, we do NOT clear SigningPubKey here.
+    String suffix = new AccountIdType().fromJson(new TextNode(xrpAccountId)).toHex();
+    return TRX_MULTI_SIGNATURE_PREFIX + encode(removeNonSigningFields(node)) + suffix;
   }
 
   /**

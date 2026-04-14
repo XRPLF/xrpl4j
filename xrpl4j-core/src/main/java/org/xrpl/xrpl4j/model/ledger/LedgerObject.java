@@ -69,6 +69,7 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableVaultObject.class, name = "Vault"),
   @JsonSubTypes.Type(value = ImmutableLoanBrokerObject.class, name = "LoanBroker"),
   @JsonSubTypes.Type(value = ImmutableLoanObject.class, name = "Loan"),
+  @JsonSubTypes.Type(value = ImmutableSponsorshipObject.class, name = "Sponsorship"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -252,7 +253,16 @@ public interface LedgerObject {
      * Its API is subject to change.</p>
      */
     @Beta
-    LOAN("Loan");
+    LOAN("Loan"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Sponsorship} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    SPONSORSHIP("Sponsorship");
 
     private final String value;
 

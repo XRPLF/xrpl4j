@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.Beta;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.primitives.UnsignedInteger;
@@ -123,6 +124,8 @@ public interface Transaction {
       .put(ImmutableLoanDelete.class, TransactionType.LOAN_DELETE)
       .put(ImmutableLoanManage.class, TransactionType.LOAN_MANAGE)
       .put(ImmutableLoanPay.class, TransactionType.LOAN_PAY)
+      .put(ImmutableSponsorshipTransfer.class, TransactionType.SPONSORSHIP_TRANSFER)
+      .put(ImmutableSponsorshipSet.class, TransactionType.SPONSORSHIP_SET)
       .build();
 
   /**
@@ -253,6 +256,52 @@ public interface Transaction {
 
   @JsonProperty("NetworkID")
   Optional<NetworkId> networkId();
+
+  /**
+   * The account that is sponsoring the transaction fee and/or reserve requirements. If specified, the sponsor
+   * will pay the transaction fee and/or cover reserve requirements instead of the transaction sender.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An {@link Optional} {@link Address} of the sponsoring account.
+   */
+  @Beta
+  @JsonProperty("Sponsor")
+  Optional<Address> sponsor();
+
+  /**
+   * Flags indicating what type of sponsorship this transaction uses. The flags are:
+   * <ul>
+   *   <li>tfSponsorFee (1) - The sponsor is paying the transaction fee</li>
+   *   <li>tfSponsorReserve (2) - The sponsor is covering reserve requirements</li>
+   * </ul>
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An {@link Optional} {@link UnsignedInteger} containing the sponsor flags.
+   */
+  @Beta
+  @JsonProperty("SponsorFlags")
+  Optional<UnsignedInteger> sponsorFlags();
+
+  /**
+   * Contains the signing information for the sponsor. This field is required if the transaction is sponsored
+   * and the sponsor is not using a pre-funded Sponsorship object. The sponsor can sign with either a single
+   * signature or multi-signature.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An {@link Optional} {@link SponsorSignature} containing the sponsor's signature information.
+   */
+  @Beta
+  @JsonProperty("SponsorSignature")
+  Optional<SponsorSignature> sponsorSignature();
+
+  // TODO: Add Granular Permission fields (SponsorFee, SponsorReserve) for sponsorship once #689 is merged.
+  //  See XLS-0068 Section 9.1 and https://github.com/XRPLF/xrpl4j/pull/689
 
   @JsonAnyGetter
   @JsonInclude(Include.NON_ABSENT)

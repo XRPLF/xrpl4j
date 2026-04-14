@@ -170,6 +170,50 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   Signature counterpartyMultiSign(P privateKeyable, LoanSet transaction);
 
   /**
+   * Obtain a sponsor single-signature for the supplied transaction. Per rippled's Sponsorship amendment
+   * implementation, the sponsor signs the same serialized bytes (using the {@code STX} / 0x53545800 prefix) as the
+   * account-owner. Domain separation is achieved structurally: the sponsor's signature is placed into the
+   * {@link Transaction#sponsorSignature()} field rather than the transaction's {@code TxnSignature}, and the
+   * account-owner and sponsor use different key pairs.
+   *
+   * <p>This method returns only the raw {@link Signature} rather than a {@link SingleSignedTransaction}
+   * wrapper.</p>
+   *
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param privateKeyable The {@link P} used to sign {@code transaction}.
+   * @param transaction    The {@link Transaction} to sign as the sponsor.
+   * @param <T>            The type of the transaction to be signed.
+   *
+   * @return A {@link Signature} for the sponsor.
+   */
+  @Beta
+  <T extends Transaction> Signature sponsorSign(P privateKeyable, T transaction);
+
+  /**
+   * Obtain a sponsor multi-signature for the supplied transaction. Unlike
+   * {@link #multiSign(PrivateKeyable, Transaction)}, this method does <b>not</b> clear the {@code SigningPubKey}
+   * field, preserving the first-party signer's public key in the signed data. The resulting bytes use the same
+   * multi-signing prefix ({@code SMT\0}) and the sponsor signer's account ID suffix.
+   *
+   * <p>This is necessary for sponsored transactions where the sponsor must co-sign without overwriting
+   * the transaction sender's signature. The sponsor's multi-signature is placed in the
+   * {@link Transaction#sponsorSignature()} {@code Signers} array.</p>
+   *
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param privateKeyable The {@link P} used to sign {@code transaction}.
+   * @param transaction    The {@link Transaction} to sponsor multi-sign.
+   * @param <T>            The type of the transaction to be signed.
+   *
+   * @return A {@link Signature} for the sponsor signer.
+   */
+  @Beta
+  <T extends Transaction> Signature sponsorMultiSign(P privateKeyable, T transaction);
+
+  /**
    * Obtain a signature for the supplied unsigned transaction using the supplied {@link P}.
    * <p>
    * As is the case with {@link #multiSign(PrivateKeyable, Transaction)}, the primary reason this method's signature

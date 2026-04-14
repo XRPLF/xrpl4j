@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
+import org.xrpl.xrpl4j.model.transactions.SponsorshipValidations;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
@@ -77,6 +78,10 @@ public class SignatureUtils {
    */
   public UnsignedByteArray toSignableBytes(final Transaction transaction) {
     Objects.requireNonNull(transaction);
+
+    // Validate sponsorship fields per XLS-0068
+    SponsorshipValidations.validateSponsorFields(transaction);
+
     try {
       final String unsignedJson = objectMapper.writeValueAsString(transaction);
       final String unsignedBinaryHex = binaryCodec.encodeForSigning(unsignedJson);
@@ -141,6 +146,9 @@ public class SignatureUtils {
   public UnsignedByteArray toMultiSignableBytes(final Transaction transaction, final Address signerAddress) {
     Objects.requireNonNull(transaction);
     Objects.requireNonNull(signerAddress);
+
+    // Validate sponsorship fields per XLS-0068
+    SponsorshipValidations.validateSponsorFields(transaction);
 
     try {
       final String unsignedJson = objectMapper.writeValueAsString(transaction);
@@ -219,4 +227,72 @@ public class SignatureUtils {
     }
   }
 
+  /**
+   * Helper method to convert a {@link Transaction} into bytes that can be single-signed by a sponsor.
+   *
+   * <p>Per the rippled implementation of the Sponsorship amendment, sponsor single-signing uses the same
+   * {@code HashPrefix::txSign} (STX, 0x53545800) prefix and serialization as regular single-signing. The sponsor
+   * signs the complete transaction binary (including the sponsee's {@code SigningPubKey}). Domain separation between
+   * the account-owner and sponsor roles is not required at the signing-bytes level because the resulting signatures
+   * are placed in distinct transaction fields ({@code TxnSignature} vs {@code SponsorSignature.TxnSignature}), and
+   * the account-owner and sponsor use different key pairs.</p>
+   *
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param transaction A {@link Transaction} to be sponsor single-signed.
+   *
+   * @return An {@link UnsignedByteArray}.
+   */
+  @Beta
+  public UnsignedByteArray toSponsorSignableBytes(final Transaction transaction) {
+    Objects.requireNonNull(transaction);
+
+    // Validate sponsorship fields per XLS-0068
+    SponsorshipValidations.validateSponsorFields(transaction);
+
+    try {
+      final String unsignedJson = objectMapper.writeValueAsString(transaction);
+      final String unsignedBinaryHex = binaryCodec.encodeForSigning(unsignedJson);
+      return UnsignedByteArray.fromHex(unsignedBinaryHex);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Helper method to convert a {@link Transaction} into bytes that can be multi-signed by a sponsor.
+   *
+   * <p>Unlike {@link #toMultiSignableBytes(Transaction, Address)}, this method preserves the existing
+   * {@code SigningPubKey} field in the encoded bytes. This is necessary when a sponsor multi-signs a transaction
+   * where the first-party signer's {@code SigningPubKey} must remain intact in the signed data.</p>
+   *
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param transaction   A {@link Transaction} to be sponsor multi-signed.
+   * @param signerAddress The {@link Address} of the sponsor signer.
+   *
+   * @return An {@link UnsignedByteArray}.
+   */
+  @Beta
+  public UnsignedByteArray toSponsorMultiSignableBytes(final Transaction transaction, final Address signerAddress) {
+    Objects.requireNonNull(transaction);
+    Objects.requireNonNull(signerAddress);
+
+    // Validate sponsorship fields per XLS-0068
+    SponsorshipValidations.validateSponsorFields(transaction);
+
+    try {
+      final String unsignedJson = objectMapper.writeValueAsString(transaction);
+      final String unsignedBinaryHex = binaryCodec.encodeForMultiSigningWithSigningPubKey(
+        unsignedJson, signerAddress.value()
+      );
+      return UnsignedByteArray.fromHex(unsignedBinaryHex);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
 }
+

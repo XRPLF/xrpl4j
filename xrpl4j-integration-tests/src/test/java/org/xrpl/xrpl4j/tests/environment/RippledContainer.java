@@ -78,11 +78,13 @@ public class RippledContainer {
   private XrplAdminClient xrplAdminClient;
   private boolean started;
 
+  private static final String RIPPLED_DOCKER_IMAGE = "legleux/xrpld:sponsor";
+
   /**
    * No-args constructor.
    */
   public RippledContainer() {
-    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:develop")) {
+    try (GenericContainer<?> container = new GenericContainer<>(RIPPLED_DOCKER_IMAGE)) {
       this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
           cmd.withEntrypoint("/opt/xrpld/bin/xrpld"))
         .withCommand("-a --start --conf /config/xrpld.cfg")
@@ -91,7 +93,7 @@ public class RippledContainer {
         .withClasspathResourceMapping("xrpld",
           "/config",
           BindMode.READ_ONLY)
-        .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
+        .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Process starting.*"));
     }
 
     ledgerAcceptor = Executors.newScheduledThreadPool(1);

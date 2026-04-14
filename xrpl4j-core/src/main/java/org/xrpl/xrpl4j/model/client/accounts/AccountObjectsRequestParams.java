@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
@@ -180,7 +181,14 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
     /**
      * MPToken object type.
      */
-    MP_TOKEN("mptoken");
+    MP_TOKEN("mptoken"),
+    /**
+     * Sponsorship object type.
+     *
+     * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
+     */
+    @Beta
+    SPONSORSHIP("sponsorship");
 
     private final String value;
 

@@ -336,6 +336,8 @@
           <configuration>
             <source>${maven.compiler.source}</source>
             <target>${maven.compiler.target}</target>
+            <!-- Prevents annotation processor ordering issues with Immutables -->
+            <useIncrementalCompilation>false</useIncrementalCompilation>
 
             <annotationProcessorPaths>
               <path>

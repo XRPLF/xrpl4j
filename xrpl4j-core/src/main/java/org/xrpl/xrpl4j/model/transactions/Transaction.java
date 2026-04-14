@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.Beta;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.primitives.UnsignedInteger;
@@ -265,7 +266,7 @@ public interface Transaction {
    *
    * @return An {@link Optional} {@link Address} of the sponsoring account.
    */
-  @com.google.common.annotations.Beta
+  @Beta
   @JsonProperty("Sponsor")
   Optional<Address> sponsor();
 
@@ -281,7 +282,7 @@ public interface Transaction {
    *
    * @return An {@link Optional} {@link UnsignedInteger} containing the sponsor flags.
    */
-  @com.google.common.annotations.Beta
+  @Beta
   @JsonProperty("SponsorFlags")
   Optional<UnsignedInteger> sponsorFlags();
 
@@ -295,7 +296,7 @@ public interface Transaction {
    *
    * @return An {@link Optional} {@link SponsorSignature} containing the sponsor's signature information.
    */
-  @com.google.common.annotations.Beta
+  @Beta
   @JsonProperty("SponsorSignature")
   Optional<SponsorSignature> sponsorSignature();
 

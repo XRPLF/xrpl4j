@@ -20,16 +20,22 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Default;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 
+import java.math.BigInteger;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Contains the signing information for a sponsor in a sponsored transaction. A sponsor can sign a transaction
@@ -81,19 +87,33 @@ public interface SponsorSignature {
    * multi-signature sponsorship. If this field is present, {@link #signingPublicKey()} and
    * {@link #transactionSignature()} must not be present.
    *
-   * @return An {@link Optional} {@link List} of {@link Signer} objects.
+   * @return An {@link Optional} {@link List} of {@link Signer} objects, sorted by account address.
    */
   @JsonProperty("Signers")
   Optional<List<SignerWrapper>> signers();
 
   /**
-   * Validates that the SponsorSignature has exactly one signature type (either single-signature or multi-signature)
-   * and that the fields are consistent with the chosen signature type.
+   * Whether the signers list has already been sorted. This is an internal flag used to prevent re-sorting during
+   * object construction and is not serialized to JSON.
    *
+   * @return {@code true} if signers have been sorted.
+   */
+  @JsonIgnore
+  @Default
+  default boolean sortedSigners() {
+    return false;
+  }
+
+  /**
+   * Validates that the SponsorSignature has exactly one signature type (either single-signature or multi-signature),
+   * that the fields are consistent with the chosen signature type, and normalizes the signer order by account address
+   * if multi-signing.
+   *
+   * @return A normalized {@link SponsorSignature}.
    * @throws IllegalStateException if validation fails.
    */
   @Value.Check
-  default void check() {
+  default SponsorSignature checkAndNormalize() {
     boolean hasSingleSignature = transactionSignature().isPresent();
     boolean hasMultiSignature = signers().isPresent();
 
@@ -113,12 +133,25 @@ public interface SponsorSignature {
       }
     }
 
-    // If using multi-signature, SigningPubKey must be empty (the multi-sign marker)
+    // If using multi-signature, SigningPubKey must be the multi-sign marker, and signers must be sorted by AccountID
     if (hasMultiSignature) {
       if (!signingPublicKey().isPresent() || !signingPublicKey().get().equals(PublicKey.MULTI_SIGN_PUBLIC_KEY)) {
         throw new IllegalStateException("SigningPubKey must be empty when using Signers");
       }
+      if (!sortedSigners()) {
+        return ImmutableSponsorSignature.builder()
+          .from(this)
+          .signers(signers().get().stream()
+            .sorted(Comparator.comparing(wrapper -> new BigInteger(
+              AddressCodec.getInstance().decodeAccountId(wrapper.signer().account()).hexValue(), 16
+            )))
+            .collect(Collectors.toList()))
+          .sortedSigners(true)
+          .build();
+      }
     }
+
+    return this;
   }
 
 }

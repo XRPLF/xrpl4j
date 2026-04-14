@@ -48,6 +48,7 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.SponsorFlags;
 import org.xrpl.xrpl4j.model.flags.SponsorshipSetFlags;
 import org.xrpl.xrpl4j.model.flags.SponsorshipTransferFlags;
+import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
 import org.xrpl.xrpl4j.model.ledger.SponsorshipObject;
@@ -78,10 +79,6 @@ import java.util.stream.Collectors;
  *   <li>SponsorshipTransfer transaction - transferring sponsorship ownership</li>
  *   <li>account_sponsoring RPC method - querying sponsorship information</li>
  * </ul>
- *
- * <p>TODO: Remove @Disabled once the featureSponsorship amendment is properly enabled in the Docker image.
- * The amendment is not yet registered in rippled's Feature.cpp. Once the rippled PR is merged and a Docker
- * image with the feature properly registered is available, these tests should work.</p>
  *
  * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
  * @see "https://github.com/XRPLF/rippled/pull/5887"
@@ -219,6 +216,57 @@ public class SponsorshipIT extends AbstractIT {
         feeAmount.value().longValue() - feeResult.drops().openLedgerFee().value().longValue()
       );
       assertThat(updatedSponsorship.feeAmount()).hasValue(expectedFeeAmount);
+
+      // Step 4: Bob transfers sponsorship ownership to Charlie
+      AccountInfoResult bobInfoForTransfer = scanForResult(() -> getValidatedAccountInfo(bobAddress));
+      Hash256 sponsorshipObjectId = updatedSponsorship.index();
+
+      SponsorshipTransfer unsignedTransfer = SponsorshipTransfer.builder()
+        .account(bobAddress)
+        .fee(feeResult.drops().openLedgerFee())
+        .sequence(bobInfoForTransfer.accountData().sequence())
+        .flags(SponsorshipTransferFlags.builder().tfSponsorshipReassign(true).build())
+        .objectId(sponsorshipObjectId)
+        .sponsor(charlieAddress)
+        .signingPublicKey(bobKeyPair.publicKey())
+        .build();
+
+      SingleSignedTransaction<SponsorshipTransfer> bobSignedTransfer = signatureService.sign(
+        bobKeyPair.privateKey(), unsignedTransfer
+      );
+
+      Signature charlieSponsorSig = signatureService.sponsorSign(
+        charlieKeyPair.privateKey(), unsignedTransfer
+      );
+      SponsorSignature transferSponsorSig = SponsorSignature.builder()
+        .signingPublicKey(charlieKeyPair.publicKey())
+        .transactionSignature(charlieSponsorSig)
+        .build();
+
+      SponsorshipTransfer signedTransfer = SponsorshipTransfer.builder()
+        .from(unsignedTransfer)
+        .sponsorSignature(transferSponsorSig)
+        .transactionSignature(bobSignedTransfer.signature())
+        .build();
+
+      SingleSignedTransaction<SponsorshipTransfer> finalTransferTx = SingleSignedTransaction
+        .<SponsorshipTransfer>builder()
+        .unsignedTransaction(SponsorshipTransfer.builder().from(unsignedTransfer).sponsorSignature(transferSponsorSig).build())
+        .signature(bobSignedTransfer.signature())
+        .signedTransaction(signedTransfer)
+        .build();
+
+      SubmitResult<SponsorshipTransfer> transferResult = xrplClient.submit(finalTransferTx);
+      assertThat(transferResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+      logInfo(signedTransfer.transactionType(), transferResult.transactionResult().hash());
+
+      scanForResult(() -> getValidatedTransaction(finalTransferTx.hash(), SponsorshipTransfer.class));
+
+      // Step 5: Assert Charlie is now the sponsor in the ledger object
+      SponsorshipObject finalSponsorship = getSponsorshipObject(charlieAddress, bobAddress);
+      assertThat(finalSponsorship.owner()).isEqualTo(charlieAddress);
+      assertThat(finalSponsorship.sponsee()).isEqualTo(bobAddress);
+      assertThat(finalSponsorship.feeAmount()).hasValue(expectedFeeAmount);
     }
 
     /**
@@ -390,6 +438,47 @@ public class SponsorshipIT extends AbstractIT {
       AccountInfoResult aliceFinalInfo = scanForResult(() -> getValidatedAccountInfo(aliceAddress));
       assertThat(aliceFinalInfo.accountData().ownerCount().intValue())
         .isGreaterThan(aliceInitialOwnerCount.intValue());
+      final UnsignedInteger aliceOwnerCountWithSponsorship = aliceFinalInfo.accountData().ownerCount();
+
+      // Step 4: Bob ends the reserve sponsorship for the Check object
+      // Get the Check object ID created in step 2
+      AccountObjectsResult bobAccountObjects = xrplClient.accountObjects(
+        AccountObjectsRequestParams.builder()
+          .account(bobAddress)
+          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+          .type(AccountObjectType.CHECK)
+          .build()
+      );
+      Hash256 checkObjectId = ((CheckObject) bobAccountObjects.accountObjects().get(0)).index();
+
+      AccountInfoResult bobInfoForTransfer = scanForResult(() -> getValidatedAccountInfo(bobAddress));
+
+      SponsorshipTransfer endTransfer = SponsorshipTransfer.builder()
+        .account(bobAddress)
+        .fee(feeResult.drops().openLedgerFee())
+        .sequence(bobInfoForTransfer.accountData().sequence())
+        .flags(SponsorshipTransferFlags.builder().tfSponsorshipEnd(true).build())
+        .objectId(checkObjectId)
+        .signingPublicKey(bobKeyPair.publicKey())
+        .build();
+
+      SingleSignedTransaction<SponsorshipTransfer> signedEndTransfer = signatureService.sign(
+        bobKeyPair.privateKey(), endTransfer
+      );
+      SubmitResult<SponsorshipTransfer> endResult = xrplClient.submit(signedEndTransfer);
+      assertThat(endResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+      logInfo(endTransfer.transactionType(), endResult.transactionResult().hash());
+
+      scanForResult(() -> getValidatedTransaction(endResult.transactionResult().hash(), SponsorshipTransfer.class));
+
+      // Step 5: Assert Alice's owner count returns to initial (reserve released)
+      AccountInfoResult aliceAfterEnd = scanForResult(() -> getValidatedAccountInfo(aliceAddress));
+      assertThat(aliceAfterEnd.accountData().ownerCount().intValue())
+        .isLessThan(aliceOwnerCountWithSponsorship.intValue());
+
+      // Bob's owner count should still be unchanged
+      AccountInfoResult bobAfterEnd = scanForResult(() -> getValidatedAccountInfo(bobAddress));
+      assertThat(bobAfterEnd.accountData().ownerCount()).isEqualTo(bobInitialOwnerCount);
     }
   }
 

@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
+import org.xrpl.xrpl4j.model.transactions.SponsorshipValidations;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
@@ -77,6 +78,10 @@ public class SignatureUtils {
    */
   public UnsignedByteArray toSignableBytes(final Transaction transaction) {
     Objects.requireNonNull(transaction);
+
+    // Validate sponsorship fields per XLS-0068
+    SponsorshipValidations.validateSponsorFields(transaction);
+
     try {
       final String unsignedJson = objectMapper.writeValueAsString(transaction);
       final String unsignedBinaryHex = binaryCodec.encodeForSigning(unsignedJson);
@@ -141,6 +146,9 @@ public class SignatureUtils {
   public UnsignedByteArray toMultiSignableBytes(final Transaction transaction, final Address signerAddress) {
     Objects.requireNonNull(transaction);
     Objects.requireNonNull(signerAddress);
+
+    // Validate sponsorship fields per XLS-0068
+    SponsorshipValidations.validateSponsorFields(transaction);
 
     try {
       final String unsignedJson = objectMapper.writeValueAsString(transaction);
@@ -239,6 +247,10 @@ public class SignatureUtils {
   @Beta
   public UnsignedByteArray toSponsorSignableBytes(final Transaction transaction) {
     Objects.requireNonNull(transaction);
+
+    // Validate sponsorship fields per XLS-0068
+    SponsorshipValidations.validateSponsorFields(transaction);
+
     try {
       final String unsignedJson = objectMapper.writeValueAsString(transaction);
       final String unsignedBinaryHex = binaryCodec.encodeForSigning(unsignedJson);
@@ -268,6 +280,9 @@ public class SignatureUtils {
     Objects.requireNonNull(transaction);
     Objects.requireNonNull(signerAddress);
 
+    // Validate sponsorship fields per XLS-0068
+    SponsorshipValidations.validateSponsorFields(transaction);
+
     try {
       final String unsignedJson = objectMapper.writeValueAsString(transaction);
       final String unsignedBinaryHex = binaryCodec.encodeForMultiSigningWithSigningPubKey(
@@ -280,3 +295,4 @@ public class SignatureUtils {
   }
 
 }
+

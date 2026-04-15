@@ -15,7 +15,6 @@ class MetaLoanBrokerObjectTest extends AbstractJsonTest {
   @Test
   void testMetaLoanBrokerObjectWithAllFields() throws JsonProcessingException, JSONException {
     MetaLoanBrokerObject metaLoanBrokerObject = ImmutableMetaLoanBrokerObject.builder()
-      .flags(UnsignedInteger.ZERO)
       .previousTransactionId(Hash256.of("7E5F3FB60E1177F8AF8A9EAC7982F27FA5494FDEA871B23B4B149939A5A7A7BB"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(82357607))
       .sequence(UnsignedInteger.valueOf(5))
@@ -67,6 +66,7 @@ class MetaLoanBrokerObjectTest extends AbstractJsonTest {
       .build();
 
     String json = "{" +
+      "  \"Flags\": 0," +
       "  \"DebtTotal\": \"250000\"," +
       "  \"CoverAvailable\": \"50000\"" +
       "}";

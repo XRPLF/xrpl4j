@@ -192,9 +192,7 @@ public interface LoanSet extends Transaction {
   default void check() {
     // 1. LoanBrokerID must not be zero.
     Preconditions.checkArgument(
-      !loanBrokerId().value().equals(
-        "0000000000000000000000000000000000000000000000000000000000000000"
-      ),
+      !loanBrokerId().equals(Hash256.ZERO),
       "LoanBrokerID must not be zero."
     );
 

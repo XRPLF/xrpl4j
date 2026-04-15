@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
+import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -31,7 +33,10 @@ public interface MetaLoanBrokerObject extends MetaLedgerObject {
    * @return An optionally-present {@link UnsignedInteger}.
    */
   @JsonProperty("Flags")
-  Optional<UnsignedInteger> flags();
+  @Value.Derived
+  default Flags flags() {
+    return Flags.UNSET;
+  }
 
   /**
    * The ID of the transaction that last modified this object.

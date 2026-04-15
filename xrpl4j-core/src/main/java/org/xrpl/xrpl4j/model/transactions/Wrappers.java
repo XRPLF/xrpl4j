@@ -155,6 +155,13 @@ public class Wrappers {
   @JsonDeserialize(as = Hash256.class, using = Hash256Deserializer.class)
   abstract static class _Hash256 extends Wrapper<String> implements Serializable {
 
+    /**
+     * A {@link Hash256} containing all zeros.
+     */
+    static final Hash256 ZERO = Hash256.of(
+      "0000000000000000000000000000000000000000000000000000000000000000"
+    );
+
     @Override
     public String toString() {
       return this.value();
@@ -959,49 +966,43 @@ public class Wrappers {
   }
 
   /**
-   * A wrapped {@link String} containing vault metadata in hex format, limited to 256 bytes.
-   *
-   * <p>This class will be marked Beta until the SingleAssetVault amendment is enabled on mainnet. Its API is
-   * subject to change.</p>
+   * Base class for hex-encoded metadata wrappers with length validation.
+   * Provides shared validation, equality, and string handling for metadata types.
+   * Subclasses must override {@link #maxBytes()} to specify their size limit.
    */
-  @Value.Immutable
-  @Wrapped
-  @JsonSerialize(as = VaultData.class, using = VaultDataSerializer.class)
-  @JsonDeserialize(as = VaultData.class, using = VaultDataDeserializer.class)
-  @Beta
-  abstract static class _VaultData extends Wrapper<String> implements Serializable {
+  abstract static class Metadata extends Wrapper<String> implements Serializable {
 
     /**
-     * Constructs a {@link VaultData} from a plaintext string by hex-encoding it.
+     * Maximum allowed size in bytes.
      *
-     * @param plaintext A string value representing the vault data in plaintext.
-     *
-     * @return A {@link VaultData} of hex-encoded plaintext.
+     * @return The maximum number of bytes allowed.
      */
-    public static VaultData ofPlainText(String plaintext) {
-      return VaultData.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
-    }
+    protected abstract UnsignedInteger maxBytes();
 
     /**
-     * Validates that a {@link VaultData}'s value is not empty and does not exceed 256 bytes (512 hex characters).
+     * Validates that the value is not empty and does not exceed the maximum byte length.
      */
     @Value.Check
     public void validateLength() {
-      Preconditions.checkArgument(!this.value().isEmpty(), "VaultData must not be empty.");
+      String typeName = getClass().getSimpleName();
+      final int maxHexLength = maxBytes().times(UnsignedInteger.valueOf(2)).intValue();
+
+      Preconditions.checkArgument(!this.value().isEmpty(), "%s must not be empty.", typeName);
       Preconditions.checkArgument(
-        this.value().length() <= 512,
-        "VaultData must be <= 256 bytes or <= 512 hex characters.");
+        this.value().length() <= maxHexLength,
+        "%s must be <= %s bytes or <= %s hex characters.", typeName, maxBytes(), maxHexLength);
     }
 
     /**
-     * Validates that a {@link VaultData}'s value is encoded in hexadecimal characters.
+     * Validates that the value is encoded in hexadecimal characters.
      */
     @Value.Check
     public void validateHexEncoding() {
+      String typeName = getClass().getSimpleName();
       try {
         BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
       } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException("VaultData must be encoded in hexadecimal.", e);
+        throw new IllegalArgumentException(typeName + " must be encoded in hexadecimal.", e);
       }
     }
 
@@ -1012,8 +1013,8 @@ public class Wrappers {
 
     @Override
     public boolean equals(Object obj) {
-      if (obj instanceof VaultData) {
-        String otherValue = ((VaultData) obj).value();
+      if (obj != null && this.getClass() == obj.getClass()) {
+        String otherValue = ((Metadata) obj).value();
         return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;
@@ -1022,6 +1023,37 @@ public class Wrappers {
     @Override
     public int hashCode() {
       return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing vault metadata in hex format, limited to 256 bytes.
+   *
+   * <p>This class will be marked Beta until the SingleAssetVault amendment is enabled on mainnet. Its API is
+   * subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = VaultData.class, using = VaultDataSerializer.class)
+  @JsonDeserialize(as = VaultData.class, using = VaultDataDeserializer.class)
+  @Beta
+  abstract static class _VaultData extends Metadata {
+
+    @Override
+    protected UnsignedInteger maxBytes() {
+      return UnsignedInteger.valueOf(256);
+    }
+
+    /**
+     * Constructs a {@link VaultData} from a plaintext string by hex-encoding it.
+     *
+     * @param plaintext A string value representing the vault data in plaintext.
+     *
+     * @return A {@link VaultData} of hex-encoded plaintext.
+     */
+    public static VaultData ofPlainText(String plaintext) {
+      return VaultData.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
     }
 
   }
@@ -1037,7 +1069,12 @@ public class Wrappers {
   @JsonSerialize(as = LoanBrokerData.class, using = LoanBrokerDataSerializer.class)
   @JsonDeserialize(as = LoanBrokerData.class, using = LoanBrokerDataDeserializer.class)
   @Beta
-  abstract static class _LoanBrokerData extends Wrapper<String> implements Serializable {
+  abstract static class _LoanBrokerData extends Metadata {
+
+    @Override
+    protected UnsignedInteger maxBytes() {
+      return UnsignedInteger.valueOf(256);
+    }
 
     /**
      * Constructs a {@link LoanBrokerData} from a plaintext string by hex-encoding it.
@@ -1048,48 +1085,6 @@ public class Wrappers {
      */
     public static LoanBrokerData ofPlainText(String plaintext) {
       return LoanBrokerData.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
-    }
-
-    /**
-     * Validates that a {@link LoanBrokerData}'s value is not empty and does not exceed 256 bytes (512 hex characters).
-     */
-    @Value.Check
-    public void validateLength() {
-      Preconditions.checkArgument(!this.value().isEmpty(), "LoanBrokerData must not be empty.");
-      Preconditions.checkArgument(
-        this.value().length() <= 512,
-        "LoanBrokerData must be <= 256 bytes or <= 512 hex characters.");
-    }
-
-    /**
-     * Validates that a {@link LoanBrokerData}'s value is encoded in hexadecimal characters.
-     */
-    @Value.Check
-    public void validateHexEncoding() {
-      try {
-        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
-      } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException("LoanBrokerData must be encoded in hexadecimal.", e);
-      }
-    }
-
-    @Override
-    public String toString() {
-      return this.value();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (obj instanceof LoanBrokerData) {
-        String otherValue = ((LoanBrokerData) obj).value();
-        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
-      }
-      return false;
-    }
-
-    @Override
-    public int hashCode() {
-      return value().toUpperCase(Locale.ENGLISH).hashCode();
     }
 
   }
@@ -1105,7 +1100,12 @@ public class Wrappers {
   @JsonSerialize(as = LoanData.class, using = LoanDataSerializer.class)
   @JsonDeserialize(as = LoanData.class, using = LoanDataDeserializer.class)
   @Beta
-  abstract static class _LoanData extends Wrapper<String> implements Serializable {
+  abstract static class _LoanData extends Metadata {
+
+    @Override
+    protected UnsignedInteger maxBytes() {
+      return UnsignedInteger.valueOf(256);
+    }
 
     /**
      * Constructs a {@link LoanData} from a plaintext string by hex-encoding it.
@@ -1116,48 +1116,6 @@ public class Wrappers {
      */
     public static LoanData ofPlainText(String plaintext) {
       return LoanData.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
-    }
-
-    /**
-     * Validates that a {@link LoanData}'s value is not empty and does not exceed 256 bytes (512 hex characters).
-     */
-    @Value.Check
-    public void validateLength() {
-      Preconditions.checkArgument(!this.value().isEmpty(), "LoanData must not be empty.");
-      Preconditions.checkArgument(
-        this.value().length() <= 512,
-        "LoanData must be <= 256 bytes or <= 512 hex characters.");
-    }
-
-    /**
-     * Validates that a {@link LoanData}'s value is encoded in hexadecimal characters.
-     */
-    @Value.Check
-    public void validateHexEncoding() {
-      try {
-        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
-      } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException("LoanData must be encoded in hexadecimal.", e);
-      }
-    }
-
-    @Override
-    public String toString() {
-      return this.value();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (obj instanceof LoanData) {
-        String otherValue = ((LoanData) obj).value();
-        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
-      }
-      return false;
-    }
-
-    @Override
-    public int hashCode() {
-      return value().toUpperCase(Locale.ENGLISH).hashCode();
     }
 
   }

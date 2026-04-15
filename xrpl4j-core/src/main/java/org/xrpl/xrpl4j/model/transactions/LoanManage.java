@@ -54,9 +54,7 @@ public interface LoanManage extends Transaction {
   @Value.Check
   default void check() {
     Preconditions.checkArgument(
-      !loanId().value().equals(
-        "0000000000000000000000000000000000000000000000000000000000000000"
-      ),
+      !loanId().equals(Hash256.ZERO),
       "LoanID must not be zero."
     );
 

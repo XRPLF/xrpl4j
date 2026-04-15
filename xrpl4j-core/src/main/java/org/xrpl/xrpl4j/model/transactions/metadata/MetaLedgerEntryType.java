@@ -55,6 +55,12 @@ public interface MetaLedgerEntryType {
   @Beta
   MetaLedgerEntryType VAULT = MetaLedgerEntryType.of("Vault");
 
+  @Beta
+  MetaLedgerEntryType LOAN_BROKER = MetaLedgerEntryType.of("LoanBroker");
+
+  @Beta
+  MetaLedgerEntryType LOAN = MetaLedgerEntryType.of("Loan");
+
 
   /**
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.
@@ -122,6 +128,10 @@ public interface MetaLedgerEntryType {
         return MetaPermissionedDomainObject.class;
       case "Vault":
         return MetaVaultObject.class;
+      case "LoanBroker":
+        return MetaLoanBrokerObject.class;
+      case "Loan":
+        return MetaLoanObject.class;
       default:
         return MetaUnknownObject.class;
     }

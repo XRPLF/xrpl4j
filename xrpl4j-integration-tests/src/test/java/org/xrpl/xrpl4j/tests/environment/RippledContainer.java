@@ -82,7 +82,8 @@ public class RippledContainer {
    * No-args constructor.
    */
   public RippledContainer() {
-    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:develop")) {
+    //TODO: Revert this to develop once docker image issue is fixed.
+    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:56c9d1d4")) {
       this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
           cmd.withEntrypoint("/opt/xrpld/bin/xrpld"))
         .withCommand("-a --start --conf /config/xrpld.cfg")

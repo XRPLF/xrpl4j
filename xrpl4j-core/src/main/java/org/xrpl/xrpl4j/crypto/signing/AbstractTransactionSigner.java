@@ -28,6 +28,7 @@ import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
@@ -113,6 +114,27 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     final UnsignedByteArray signableBytes = this.signatureUtils.toMultiSignableInnerBytes(batchTransaction, address);
 
     return this.signingHelper(privateKeyable, signableBytes);
+  }
+
+  @Override
+  public Signature counterpartySign(final P privateKeyable, final LoanSet transaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(transaction);
+
+    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSignableBytes(transaction);
+    return this.signingHelper(privateKeyable, signableTransactionBytes);
+  }
+
+  @Override
+  public Signature counterpartyMultiSign(final P privateKeyable, final LoanSet transaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(transaction);
+
+    final Address address = derivePublicKey(privateKeyable).deriveAddress();
+    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toCounterpartyMultiSignableBytes(
+      transaction, address
+    );
+    return this.signingHelper(privateKeyable, signableTransactionBytes);
   }
 
   /**

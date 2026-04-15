@@ -26,6 +26,7 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -132,6 +133,41 @@ public interface TransactionSigner<P extends PrivateKeyable> {
    * @return A {@link Signature} for the batch transaction with multi-sig format.
    */
   Signature multiSignInner(P privateKeyable, Batch batchTransaction);
+
+  /**
+   * Obtain a counterparty single-signature for the supplied {@link LoanSet} transaction. The counterparty signs the
+   * same bytes as the first-party signer, but this method returns only the raw
+   * {@link Signature} rather than a {@link SingleSignedTransaction} wrapper, since the counterparty's signature is
+   * placed into the {@link org.xrpl.xrpl4j.model.transactions.CounterpartySignature} field, not the transaction's
+   * {@code TxnSignature}.
+   *
+   * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   *
+   * @param privateKeyable The {@link P} used to sign {@code transaction}.
+   * @param transaction    The {@link LoanSet} transaction to sign by counterparty.
+   *
+   * @return A {@link Signature} for the counterparty.
+   */
+  @Beta
+  Signature counterpartySign(P privateKeyable, LoanSet transaction);
+
+  /**
+   * Obtain a counterparty multi-signature for the supplied {@link LoanSet} transaction. Unlike
+   * {@link #multiSign(PrivateKeyable, Transaction)}, this method does <b>not</b> clear the {@code SigningPubKey}
+   * field, preserving the first-party signer's public key in the signed data. The resulting bytes use the same
+   * multi-signing prefix ({@code SMT\0}) and the counterparty signer's account ID suffix.
+   *
+   * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   *
+   * @param privateKeyable The {@link P} used to sign {@code transaction}.
+   * @param transaction    The {@link LoanSet} transaction to counterparty multi-sign.
+   *
+   * @return A {@link Signature} for the counterparty signer.
+   */
+  @Beta
+  Signature counterpartyMultiSign(P privateKeyable, LoanSet transaction);
 
   /**
    * Obtain a signature for the supplied unsigned transaction using the supplied {@link P}.

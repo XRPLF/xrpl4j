@@ -185,6 +185,55 @@ public class FeeUtils {
   }
 
   /**
+   * Computes the fee necessary for a {@code LoanSet} transaction with a {@code CounterpartySignature}.
+   *
+   * <p>Per the Lending Protocol specification, the total fee for a standalone {@code LoanSet}
+   * transaction (not part of a Batch) is {@code (1 + |tx.Signers| + |signatures|) × base_fee}, where
+   * {@code |signatures| = max(1, |tx.CounterpartySignature.Signers|)}. The minimum fee is always
+   * {@code 2 × base_fee}, even without a {@code tx.Signers} list.</p>
+   *
+   * @param feeResult              {@link FeeResult} obtained by querying the ledger (e.g., via
+   *                               {@code XrplClient#fee()}).
+   * @param numFirstPartySigners   The number of signers in the transaction's {@code Signers} array. Use 0 for
+   *                               single-signed transactions.
+   * @param numCounterpartySigners The number of signers in the {@code CounterpartySignature.Signers} array. Use 0 for
+   *                               single-signed counterparty.
+   *
+   * @return A {@link ComputedNetworkFees} with low, medium and high fee levels scaled for the LoanSet transaction.
+   */
+  public static ComputedNetworkFees computeLoanSetNetworkFees(
+    final FeeResult feeResult,
+    final UnsignedInteger numFirstPartySigners,
+    final UnsignedInteger numCounterpartySigners
+  ) {
+    Objects.requireNonNull(feeResult);
+    Objects.requireNonNull(numFirstPartySigners);
+    Objects.requireNonNull(numCounterpartySigners);
+    Preconditions.checkArgument(
+      numFirstPartySigners.compareTo(UnsignedInteger.valueOf(32)) <= 0,
+      "numFirstPartySigners must not exceed 32 (XRPL signer list limit)."
+    );
+    Preconditions.checkArgument(
+      numCounterpartySigners.compareTo(UnsignedInteger.valueOf(32)) <= 0,
+      "numCounterpartySigners must not exceed 32 (XRPL signer list limit)."
+    );
+
+    ComputedNetworkFees computedNetworkFees = computeNetworkFees(feeResult);
+    // |signatures| = max(1, |tx.CounterpartySignature.Signers|)
+    // Fee multiplier = (1 + |tx.Signers| + |signatures|)
+    final long counterpartySigCount = Math.max(1L, numCounterpartySigners.longValue());
+    XrpCurrencyAmount numberOfSignaturesAsAmount = XrpCurrencyAmount.of(
+      UnsignedLong.valueOf(1L + numFirstPartySigners.longValue() + counterpartySigCount)
+    );
+    return ComputedNetworkFees.builder()
+      .feeLow(computedNetworkFees.feeLow().times(numberOfSignaturesAsAmount))
+      .feeMedium(computedNetworkFees.feeMedium().times(numberOfSignaturesAsAmount))
+      .feeHigh(computedNetworkFees.feeHigh().times(numberOfSignaturesAsAmount))
+      .queuePercentage(computedNetworkFees.queuePercentage())
+      .build();
+  }
+
+  /**
    * Calculate the lowest fee the user is able to pay if the queue is empty.
    *
    * @param decomposedFees A {@link DecomposedFees} that contains information about current XRPL fees.

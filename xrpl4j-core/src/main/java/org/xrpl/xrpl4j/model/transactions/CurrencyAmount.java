@@ -45,6 +45,13 @@ public interface CurrencyAmount {
   boolean isNegative();
 
   /**
+   * Indicates whether this amount is zero.
+   *
+   * @return {@code true} if this amount is zero; {@code false} otherwise.
+   */
+  boolean isZero();
+
+  /**
    * Handle this {@link CurrencyAmount} depending on its actual polymorphic subtype.
    *
    * @param xrpCurrencyAmountHandler     A {@link Consumer} that is called if this instance is of type

@@ -482,6 +482,35 @@ public class XrpCurrencyAmountTest {
     assertThat(deserialized).isEqualTo(wrapper);
   }
 
+  // /////////////////
+  // isZero
+  // /////////////////
+
+  @Test
+  public void isZeroWithZeroDrops() {
+    assertThat(XrpCurrencyAmount.ofDrops(0L).isZero()).isTrue();
+  }
+
+  @Test
+  public void isZeroWithZeroUnsignedLong() {
+    assertThat(XrpCurrencyAmount.ofDrops(UnsignedLong.ZERO).isZero()).isTrue();
+  }
+
+  @Test
+  public void isZeroWithPositiveDrops() {
+    assertThat(XrpCurrencyAmount.ofDrops(1L).isZero()).isFalse();
+  }
+
+  @Test
+  public void isZeroWithNegativeDrops() {
+    assertThat(XrpCurrencyAmount.ofDrops(-1L).isZero()).isFalse();
+  }
+
+  @Test
+  public void isZeroWithLargeValue() {
+    assertThat(XrpCurrencyAmount.ofDrops(MAX_XRP_IN_DROPS).isZero()).isFalse();
+  }
+
   @Value.Immutable
   @JsonSerialize(as = ImmutableXrpCurrencyAmountWrapper.class)
   @JsonDeserialize(as = ImmutableXrpCurrencyAmountWrapper.class)

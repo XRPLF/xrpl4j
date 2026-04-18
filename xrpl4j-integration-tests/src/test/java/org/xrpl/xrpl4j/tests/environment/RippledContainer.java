@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.images.PullPolicy;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplAdminClient;
 import org.xrpl.xrpl4j.client.XrplClient;
@@ -78,7 +77,7 @@ public class RippledContainer {
   private XrplAdminClient xrplAdminClient;
   private boolean started;
 
-  private static final String RIPPLED_DOCKER_IMAGE = "legleux/xrpld:sponsor";
+  private static final String RIPPLED_DOCKER_IMAGE = "xrpld:sponsor-local";
 
   /**
    * No-args constructor.
@@ -89,7 +88,6 @@ public class RippledContainer {
           cmd.withEntrypoint("/opt/xrpld/bin/xrpld"))
         .withCommand("-a --start --conf /config/xrpld.cfg")
         .withExposedPorts(5005)
-        .withImagePullPolicy(PullPolicy.alwaysPull())
         .withClasspathResourceMapping("xrpld",
           "/config",
           BindMode.READ_ONLY)

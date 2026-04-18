@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -38,8 +37,6 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.AccountObjectType;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
-import org.xrpl.xrpl4j.model.client.accounts.AccountSponsoringRequestParams;
-import org.xrpl.xrpl4j.model.client.accounts.AccountSponsoringResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
@@ -83,7 +80,9 @@ import java.util.stream.Collectors;
  * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
  * @see "https://github.com/XRPLF/rippled/pull/5887"
  */
-@Disabled("featureSponsorship amendment is not yet registered in rippled's Feature.cpp - see PR #5887")
+// Requires a rippled build that registers the featureSponsorship amendment (PR #5887) and has it
+// enabled in xrpld.cfg. The xrpld:sponsor-local image referenced by RippledContainer satisfies
+// this requirement.
 public class SponsorshipIT extends AbstractIT {
 
   // ==================== Fee Sponsorship Tests ====================
@@ -99,6 +98,12 @@ public class SponsorshipIT extends AbstractIT {
      * 1. Alice creates a SponsorshipSet with FeeAmount for Bob
      * 2. Bob submits a Payment transaction with Alice as sponsor
      * 3. Assert that fees were deducted from Alice's FeeAmount, not Bob's balance
+     *
+     * <p>Reassignment of sponsorship for a sponsored object is not exercised here — a sponsored
+     * Payment leaves no reassignable ledger object behind, and rippled does not treat the
+     * {@link SponsorshipObject} relationship itself as a reassign target (see
+     * {@code SponsorshipTransfer::getLedgerEntryOwner}). Reassignment is covered by
+     * {@link SponsorshipTransferTests#testSponsorshipTransferReassign()}.
      */
     @Test
     void testFeeSponsorshipLifecycle() throws JsonRpcClientErrorException, JsonProcessingException {
@@ -216,57 +221,6 @@ public class SponsorshipIT extends AbstractIT {
         feeAmount.value().longValue() - feeResult.drops().openLedgerFee().value().longValue()
       );
       assertThat(updatedSponsorship.feeAmount()).hasValue(expectedFeeAmount);
-
-      // Step 4: Bob transfers sponsorship ownership to Charlie
-      AccountInfoResult bobInfoForTransfer = scanForResult(() -> getValidatedAccountInfo(bobAddress));
-      Hash256 sponsorshipObjectId = updatedSponsorship.index();
-
-      SponsorshipTransfer unsignedTransfer = SponsorshipTransfer.builder()
-        .account(bobAddress)
-        .fee(feeResult.drops().openLedgerFee())
-        .sequence(bobInfoForTransfer.accountData().sequence())
-        .flags(SponsorshipTransferFlags.builder().tfSponsorshipReassign(true).build())
-        .objectId(sponsorshipObjectId)
-        .sponsor(charlieAddress)
-        .signingPublicKey(bobKeyPair.publicKey())
-        .build();
-
-      SingleSignedTransaction<SponsorshipTransfer> bobSignedTransfer = signatureService.sign(
-        bobKeyPair.privateKey(), unsignedTransfer
-      );
-
-      Signature charlieSponsorSig = signatureService.sponsorSign(
-        charlieKeyPair.privateKey(), unsignedTransfer
-      );
-      SponsorSignature transferSponsorSig = SponsorSignature.builder()
-        .signingPublicKey(charlieKeyPair.publicKey())
-        .transactionSignature(charlieSponsorSig)
-        .build();
-
-      SponsorshipTransfer signedTransfer = SponsorshipTransfer.builder()
-        .from(unsignedTransfer)
-        .sponsorSignature(transferSponsorSig)
-        .transactionSignature(bobSignedTransfer.signature())
-        .build();
-
-      SingleSignedTransaction<SponsorshipTransfer> finalTransferTx = SingleSignedTransaction
-        .<SponsorshipTransfer>builder()
-        .unsignedTransaction(SponsorshipTransfer.builder().from(unsignedTransfer).sponsorSignature(transferSponsorSig).build())
-        .signature(bobSignedTransfer.signature())
-        .signedTransaction(signedTransfer)
-        .build();
-
-      SubmitResult<SponsorshipTransfer> transferResult = xrplClient.submit(finalTransferTx);
-      assertThat(transferResult.engineResult()).isEqualTo(SUCCESS_STATUS);
-      logInfo(signedTransfer.transactionType(), transferResult.transactionResult().hash());
-
-      scanForResult(() -> getValidatedTransaction(finalTransferTx.hash(), SponsorshipTransfer.class));
-
-      // Step 5: Assert Charlie is now the sponsor in the ledger object
-      SponsorshipObject finalSponsorship = getSponsorshipObject(charlieAddress, bobAddress);
-      assertThat(finalSponsorship.owner()).isEqualTo(charlieAddress);
-      assertThat(finalSponsorship.sponsee()).isEqualTo(bobAddress);
-      assertThat(finalSponsorship.feeAmount()).hasValue(expectedFeeAmount);
     }
 
     /**
@@ -371,13 +325,16 @@ public class SponsorshipIT extends AbstractIT {
         sponsorshipResult.transactionResult().hash(), SponsorshipSet.class
       ));
 
-      // Record initial owner counts
-      final UnsignedInteger bobInitialOwnerCount = scanForResult(
+      // Record initial sponsor-aware owner counts. XLS-68 attributes a sponsored object's reserve via
+      // the sponsor's sfSponsoringOwnerCount and the sponsee's sfSponsoredOwnerCount; the sponsee's
+      // raw sfOwnerCount still increments when it owns the object (netReserve is ownerCount minus
+      // sponsoredOwnerCount). See rippled's adjustOwnerCount() in AccountRootHelpers.cpp.
+      final UnsignedInteger bobInitialSponsoredOwnerCount = scanForResult(
         () -> getValidatedAccountInfo(bobAddress)
-      ).accountData().ownerCount();
-      final UnsignedInteger aliceInitialOwnerCount = scanForResult(
+      ).accountData().sponsoredOwnerCount().orElse(UnsignedInteger.ZERO);
+      final UnsignedInteger aliceInitialSponsoringOwnerCount = scanForResult(
         () -> getValidatedAccountInfo(aliceAddress)
-      ).accountData().ownerCount();
+      ).accountData().sponsoringOwnerCount().orElse(UnsignedInteger.ZERO);
 
       // Step 2: Bob creates a Check with Alice as reserve sponsor
       AccountInfoResult bobAccountInfo = scanForResult(() -> getValidatedAccountInfo(bobAddress));
@@ -430,15 +387,17 @@ public class SponsorshipIT extends AbstractIT {
       scanForResult(() -> getValidatedTransaction(finalCheckTx.hash(), CheckCreate.class));
 
       // Step 3: Assert reserve sponsorship
-      // Bob's owner count should NOT increase (reserve sponsored by Alice)
+      // Bob's SponsoredOwnerCount should increase by 1 (his Check's reserve is attributed to Alice)
       AccountInfoResult bobFinalInfo = scanForResult(() -> getValidatedAccountInfo(bobAddress));
-      assertThat(bobFinalInfo.accountData().ownerCount()).isEqualTo(bobInitialOwnerCount);
+      assertThat(bobFinalInfo.accountData().sponsoredOwnerCount().orElse(UnsignedInteger.ZERO).intValue())
+        .isEqualTo(bobInitialSponsoredOwnerCount.intValue() + 1);
 
-      // Alice's owner count should increase (she's covering the reserve)
+      // Alice's SponsoringOwnerCount should increase (she's covering the reserve)
       AccountInfoResult aliceFinalInfo = scanForResult(() -> getValidatedAccountInfo(aliceAddress));
-      assertThat(aliceFinalInfo.accountData().ownerCount().intValue())
-        .isGreaterThan(aliceInitialOwnerCount.intValue());
-      final UnsignedInteger aliceOwnerCountWithSponsorship = aliceFinalInfo.accountData().ownerCount();
+      assertThat(aliceFinalInfo.accountData().sponsoringOwnerCount().orElse(UnsignedInteger.ZERO).intValue())
+        .isGreaterThan(aliceInitialSponsoringOwnerCount.intValue());
+      final UnsignedInteger aliceSponsoringOwnerCountWithSponsorship =
+        aliceFinalInfo.accountData().sponsoringOwnerCount().orElse(UnsignedInteger.ZERO);
 
       // Step 4: Bob ends the reserve sponsorship for the Check object
       // Get the Check object ID created in step 2
@@ -471,14 +430,15 @@ public class SponsorshipIT extends AbstractIT {
 
       scanForResult(() -> getValidatedTransaction(endResult.transactionResult().hash(), SponsorshipTransfer.class));
 
-      // Step 5: Assert Alice's owner count returns to initial (reserve released)
+      // Step 5: Assert Alice's SponsoringOwnerCount returns toward initial (reserve released)
       AccountInfoResult aliceAfterEnd = scanForResult(() -> getValidatedAccountInfo(aliceAddress));
-      assertThat(aliceAfterEnd.accountData().ownerCount().intValue())
-        .isLessThan(aliceOwnerCountWithSponsorship.intValue());
+      assertThat(aliceAfterEnd.accountData().sponsoringOwnerCount().orElse(UnsignedInteger.ZERO).intValue())
+        .isLessThan(aliceSponsoringOwnerCountWithSponsorship.intValue());
 
-      // Bob's owner count should still be unchanged
+      // Bob's SponsoredOwnerCount should return to initial (Check's reserve no longer attributed elsewhere)
       AccountInfoResult bobAfterEnd = scanForResult(() -> getValidatedAccountInfo(bobAddress));
-      assertThat(bobAfterEnd.accountData().ownerCount()).isEqualTo(bobInitialOwnerCount);
+      assertThat(bobAfterEnd.accountData().sponsoredOwnerCount().orElse(UnsignedInteger.ZERO).intValue())
+        .isEqualTo(bobInitialSponsoredOwnerCount.intValue());
     }
   }
 
@@ -491,21 +451,35 @@ public class SponsorshipIT extends AbstractIT {
   class SponsorshipTransferTests {
 
     /**
-     * Test: Transfer sponsorship from Alice to Charlie.
-     * 1. Alice sponsors Bob (SponsorshipSet)
-     * 2. Bob transfers sponsorship to Charlie (SponsorshipTransfer with tfSponsorshipReassign)
-     * 3. Assert Charlie is now the sponsor in the ledger object
+     * Test: Transfer reserve sponsorship for a sponsored Check from Alice to Charlie.
+     *
+     * <p>rippled's {@code SponsorshipTransfer::getLedgerEntryOwner} only returns a non-empty
+     * owner for object types that have an owning account (Check, Escrow, Offer, etc.). It does
+     * NOT treat a {@code Sponsorship} ledger entry as a reassignable target, so pointing
+     * {@code objectId} at a {@code SponsorshipObject} index yields {@code tecNO_PERMISSION}.
+     * This test therefore targets a sponsored {@link CheckObject} whose reserve burden is being
+     * reassigned from one sponsor to another.
+     *
+     * <ol>
+     *   <li>Alice sponsors Bob's reserves via SponsorshipSet.reserveCount.</li>
+     *   <li>Bob creates a Check, with Alice co-signing as the reserve sponsor.</li>
+     *   <li>Bob submits SponsorshipTransfer (tfSponsorshipReassign) naming Charlie as the new
+     *       sponsor; Charlie co-signs. The Check's sponsor moves from Alice to Charlie.</li>
+     *   <li>Assert the Check's sponsor field now equals Charlie.</li>
+     * </ol>
      */
     @Test
     void testSponsorshipTransferReassign() throws JsonRpcClientErrorException, JsonProcessingException {
       KeyPair aliceKeyPair = createRandomAccountEd25519();
       KeyPair bobKeyPair = createRandomAccountEd25519();
+      KeyPair charlieKeyPair = createRandomAccountEd25519();
       Address aliceAddress = aliceKeyPair.publicKey().deriveAddress();
       Address bobAddress = bobKeyPair.publicKey().deriveAddress();
+      Address charlieAddress = charlieKeyPair.publicKey().deriveAddress();
 
       FeeResult feeResult = xrplClient.fee();
 
-      // Step 1: Alice creates sponsorship for Bob
+      // Step 1: Alice sponsors Bob's reserves.
       AccountInfoResult aliceAccountInfo = scanForResult(() -> getValidatedAccountInfo(aliceAddress));
 
       SponsorshipSet sponsorshipSet = SponsorshipSet.builder()
@@ -513,7 +487,7 @@ public class SponsorshipIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .sequence(aliceAccountInfo.accountData().sequence())
         .sponsee(bobAddress)
-        .feeAmount(XrpCurrencyAmount.ofDrops(500000))
+        .reserveCount(UnsignedInteger.valueOf(5))
         .signingPublicKey(aliceKeyPair.publicKey())
         .build();
 
@@ -525,67 +499,125 @@ public class SponsorshipIT extends AbstractIT {
 
       scanForResult(() -> getValidatedTransaction(result.transactionResult().hash(), SponsorshipSet.class));
 
-      // Verify Alice is the sponsor
-      SponsorshipObject initialSponsorship = getSponsorshipObject(aliceAddress, bobAddress);
-      assertThat(initialSponsorship.owner()).isEqualTo(aliceAddress);
-
-      // Step 2: Bob transfers sponsorship to Charlie
-      KeyPair charlieKeyPair = createRandomAccountEd25519();
-      Address charlieAddress = charlieKeyPair.publicKey().deriveAddress();
+      // Step 2: Bob creates a Check with Alice as reserve sponsor.
       AccountInfoResult bobAccountInfo = scanForResult(() -> getValidatedAccountInfo(bobAddress));
-      Hash256 sponsorshipObjectId = initialSponsorship.index();
+
+      CheckCreate unsignedCheck = CheckCreate.builder()
+        .account(bobAddress)
+        .destination(aliceAddress)
+        .sendMax(XrpCurrencyAmount.ofDrops(1000000))
+        .fee(feeResult.drops().openLedgerFee())
+        .sequence(bobAccountInfo.accountData().sequence())
+        .sponsor(aliceAddress)
+        .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
+        .signingPublicKey(bobKeyPair.publicKey())
+        .build();
+
+      SingleSignedTransaction<CheckCreate> bobSignedCheck = signatureService.sign(
+        bobKeyPair.privateKey(), unsignedCheck
+      );
+
+      Signature aliceSponsorSig = signatureService.sponsorSign(
+        aliceKeyPair.privateKey(), unsignedCheck
+      );
+      SponsorSignature aliceSponsorSignature = SponsorSignature.builder()
+        .signingPublicKey(aliceKeyPair.publicKey())
+        .transactionSignature(aliceSponsorSig)
+        .build();
+
+      CheckCreate signedCheck = CheckCreate.builder()
+        .from(unsignedCheck)
+        .sponsorSignature(aliceSponsorSignature)
+        .transactionSignature(bobSignedCheck.signature())
+        .build();
+
+      CheckCreate unsignedCheckWithSponsorSig = CheckCreate.builder()
+        .from(unsignedCheck)
+        .sponsorSignature(aliceSponsorSignature)
+        .build();
+
+      SingleSignedTransaction<CheckCreate> finalCheckTx = SingleSignedTransaction
+        .<CheckCreate>builder()
+        .unsignedTransaction(unsignedCheckWithSponsorSig)
+        .signature(bobSignedCheck.signature())
+        .signedTransaction(signedCheck)
+        .build();
+
+      SubmitResult<CheckCreate> checkResult = xrplClient.submit(finalCheckTx);
+      assertThat(checkResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+      scanForResult(() -> getValidatedTransaction(finalCheckTx.hash(), CheckCreate.class));
+
+      // Look up the newly-created Check by scanning Bob's account_objects.
+      AccountObjectsResult bobAccountObjects = xrplClient.accountObjects(
+        AccountObjectsRequestParams.builder()
+          .account(bobAddress)
+          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+          .type(AccountObjectType.CHECK)
+          .build()
+      );
+      CheckObject initialCheck = (CheckObject) bobAccountObjects.accountObjects().get(0);
+      assertThat(initialCheck.sponsor()).hasValue(aliceAddress);
+      Hash256 checkObjectId = initialCheck.index();
+
+      // Step 3: Bob reassigns the Check's reserve sponsorship to Charlie.
+      AccountInfoResult bobInfoForTransfer = scanForResult(() -> getValidatedAccountInfo(bobAddress));
 
       SponsorshipTransfer unsignedTransfer = SponsorshipTransfer.builder()
         .account(bobAddress)
         .fee(feeResult.drops().openLedgerFee())
-        .sequence(bobAccountInfo.accountData().sequence())
+        .sequence(bobInfoForTransfer.accountData().sequence())
         .flags(SponsorshipTransferFlags.builder().tfSponsorshipReassign(true).build())
-        .objectId(sponsorshipObjectId)
+        .objectId(checkObjectId)
         .sponsor(charlieAddress)
+        .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
         .signingPublicKey(bobKeyPair.publicKey())
         .build();
 
-      // Bob signs first
-      SingleSignedTransaction<SponsorshipTransfer> bobSigned = signatureService.sign(
+      SingleSignedTransaction<SponsorshipTransfer> bobSignedTransfer = signatureService.sign(
         bobKeyPair.privateKey(), unsignedTransfer
       );
 
-      // Charlie co-signs as new sponsor
       Signature charlieSponsorSig = signatureService.sponsorSign(
         charlieKeyPair.privateKey(), unsignedTransfer
       );
-      SponsorSignature sponsorSignature = SponsorSignature.builder()
+      SponsorSignature transferSponsorSig = SponsorSignature.builder()
         .signingPublicKey(charlieKeyPair.publicKey())
         .transactionSignature(charlieSponsorSig)
         .build();
 
       SponsorshipTransfer signedTransfer = SponsorshipTransfer.builder()
         .from(unsignedTransfer)
-        .sponsorSignature(sponsorSignature)
-        .transactionSignature(bobSigned.signature())
+        .sponsorSignature(transferSponsorSig)
+        .transactionSignature(bobSignedTransfer.signature())
         .build();
 
-      SponsorshipTransfer unsignedWithSponsorSig = SponsorshipTransfer.builder()
+      SponsorshipTransfer unsignedTransferWithSponsorSig = SponsorshipTransfer.builder()
         .from(unsignedTransfer)
-        .sponsorSignature(sponsorSignature)
+        .sponsorSignature(transferSponsorSig)
         .build();
 
-      SingleSignedTransaction<SponsorshipTransfer> finalTx = SingleSignedTransaction
+      SingleSignedTransaction<SponsorshipTransfer> finalTransferTx = SingleSignedTransaction
         .<SponsorshipTransfer>builder()
-        .unsignedTransaction(unsignedWithSponsorSig)
-        .signature(bobSigned.signature())
+        .unsignedTransaction(unsignedTransferWithSponsorSig)
+        .signature(bobSignedTransfer.signature())
         .signedTransaction(signedTransfer)
         .build();
 
-      SubmitResult<SponsorshipTransfer> transferResult = xrplClient.submit(finalTx);
+      SubmitResult<SponsorshipTransfer> transferResult = xrplClient.submit(finalTransferTx);
       assertThat(transferResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+      scanForResult(() -> getValidatedTransaction(finalTransferTx.hash(), SponsorshipTransfer.class));
 
-      scanForResult(() -> getValidatedTransaction(finalTx.hash(), SponsorshipTransfer.class));
-
-      // Step 3: Assert Charlie is now the sponsor
-      SponsorshipObject finalSponsorship = getSponsorshipObject(charlieAddress, bobAddress);
-      assertThat(finalSponsorship.owner()).isEqualTo(charlieAddress);
-      assertThat(finalSponsorship.sponsee()).isEqualTo(bobAddress);
+      // Step 4: Assert Charlie is now the Check's reserve sponsor.
+      AccountObjectsResult bobObjectsAfter = xrplClient.accountObjects(
+        AccountObjectsRequestParams.builder()
+          .account(bobAddress)
+          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+          .type(AccountObjectType.CHECK)
+          .build()
+      );
+      CheckObject reassignedCheck = (CheckObject) bobObjectsAfter.accountObjects().get(0);
+      assertThat(reassignedCheck.index()).isEqualTo(checkObjectId);
+      assertThat(reassignedCheck.sponsor()).hasValue(charlieAddress);
     }
 
     /**
@@ -608,6 +640,7 @@ public class SponsorshipIT extends AbstractIT {
         .sequence(sponseeAccountInfo.accountData().sequence())
         .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
         .sponsor(newSponsorAddress)
+        .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
         .signingPublicKey(sponseeKeyPair.publicKey())
         .build();
 
@@ -656,13 +689,18 @@ public class SponsorshipIT extends AbstractIT {
     @Test
     void testSponsorshipTransferMultiSponseeMultiSponsor() throws JsonRpcClientErrorException,
       JsonProcessingException {
-      // Create accounts
+      // Create accounts. sponsorAccount is the account being sponsor-multi-signed *for*;
+      // sponsor1 and sponsor2 are the two signers on that account's SignerList.
+      // (SetSignerList forbids including the account itself in its own signer list, so the
+      // sponsor account must be distinct from sponsor1/sponsor2.)
       KeyPair sponseeKeyPair = createRandomAccountEd25519();
       KeyPair alice = createRandomAccountEd25519();
       KeyPair bob = createRandomAccountEd25519();
+      KeyPair sponsorAccount = createRandomAccountEd25519();
       KeyPair sponsor1 = createRandomAccountEd25519();
       KeyPair sponsor2 = createRandomAccountEd25519();
       Address sponseeAddress = sponseeKeyPair.publicKey().deriveAddress();
+      Address sponsorAddress = sponsorAccount.publicKey().deriveAddress();
 
       FeeResult feeResult = xrplClient.fee();
 
@@ -694,15 +732,52 @@ public class SponsorshipIT extends AbstractIT {
         signerListResult.transactionResult().hash(), SignerListSet.class
       ));
 
+      // Set up multi-sig for the sponsor account (signers = sponsor1, sponsor2, quorum 2).
+      // Without this, rippled's Transactor::checkMultiSign returns tefNOT_MULTI_SIGNING because
+      // keylet::signers(sponsorAddress) does not resolve when the sponsor multi-signs.
+      AccountInfoResult sponsorAccountInfo = scanForResult(() -> getValidatedAccountInfo(sponsorAddress));
+
+      SignerListSet sponsorSignerListSet = SignerListSet.builder()
+        .account(sponsorAddress)
+        .fee(feeResult.drops().openLedgerFee())
+        .sequence(sponsorAccountInfo.accountData().sequence())
+        .signerQuorum(UnsignedInteger.valueOf(2))
+        .addSignerEntries(
+          SignerEntryWrapper.of(SignerEntry.builder()
+            .account(sponsor1.publicKey().deriveAddress())
+            .signerWeight(UnsignedInteger.ONE).build()),
+          SignerEntryWrapper.of(SignerEntry.builder()
+            .account(sponsor2.publicKey().deriveAddress())
+            .signerWeight(UnsignedInteger.ONE).build())
+        )
+        .signingPublicKey(sponsorAccount.publicKey())
+        .build();
+
+      SingleSignedTransaction<SignerListSet> signedSponsorSignerList = signatureService.sign(
+        sponsorAccount.privateKey(), sponsorSignerListSet
+      );
+      SubmitResult<SignerListSet> sponsorSignerListResult = xrplClient.submit(signedSponsorSignerList);
+      assertThat(sponsorSignerListResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+      scanForResult(() -> getValidatedTransaction(
+        sponsorSignerListResult.transactionResult().hash(), SignerListSet.class
+      ));
+
       // Create unsigned SponsorshipTransfer
       AccountInfoResult updatedSponseeInfo = scanForResult(() -> getValidatedAccountInfo(sponseeAddress));
 
+      // Fee must cover baseFee * (1 + sponseeSigners + sponsorSigners). With 2 sponsee
+      // signers + 2 sponsor signers that's 5x the reference base fee, further scaled by
+      // load (see Transactor::calculateBaseFee() + scaleFeeLoad()). Use a generous fixed
+      // amount to avoid flake from load scaling between the preceding SignerListSets.
+      XrpCurrencyAmount multiSignFee = XrpCurrencyAmount.ofDrops(100000);
+
       SponsorshipTransfer unsignedTransfer = SponsorshipTransfer.builder()
         .account(sponseeAddress)
-        .fee(feeResult.drops().openLedgerFee())
+        .fee(multiSignFee)
         .sequence(updatedSponseeInfo.accountData().sequence())
         .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
-        .sponsor(sponsor1.publicKey().deriveAddress())
+        .sponsor(sponsorAddress)
+        .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
         .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
         .build();
 
@@ -750,72 +825,10 @@ public class SponsorshipIT extends AbstractIT {
     }
   }
 
-  // ==================== account_sponsoring RPC Tests ====================
-
-  /**
-   * Tests for the account_sponsoring RPC method.
-   */
-  @Nested
-  class AccountSponsoringRpcTests {
-
-    @Test
-    void testAccountSponsoringWithNewAccount() throws JsonRpcClientErrorException {
-      KeyPair keyPair = createRandomAccountEd25519();
-      Address address = keyPair.publicKey().deriveAddress();
-
-      AccountSponsoringResult result = xrplClient.accountSponsoring(
-        AccountSponsoringRequestParams.builder()
-          .account(address)
-          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-          .build()
-      );
-
-      assertThat(result.account()).isEqualTo(address);
-      assertThat(result.sponsoredObjects()).isEmpty();
-      assertThat(result.validated()).isTrue();
-    }
-
-    @Test
-    void testAccountSponsoringWithSponsorships() throws JsonRpcClientErrorException, JsonProcessingException {
-      KeyPair sponsorKeyPair = createRandomAccountEd25519();
-      KeyPair sponseeKeyPair = createRandomAccountEd25519();
-      Address sponsorAddress = sponsorKeyPair.publicKey().deriveAddress();
-      Address sponseeAddress = sponseeKeyPair.publicKey().deriveAddress();
-
-      FeeResult feeResult = xrplClient.fee();
-
-      // Create a sponsorship
-      AccountInfoResult sponsorAccountInfo = scanForResult(() -> getValidatedAccountInfo(sponsorAddress));
-
-      SponsorshipSet sponsorshipSet = SponsorshipSet.builder()
-        .account(sponsorAddress)
-        .fee(feeResult.drops().openLedgerFee())
-        .sequence(sponsorAccountInfo.accountData().sequence())
-        .sponsee(sponseeAddress)
-        .feeAmount(XrpCurrencyAmount.ofDrops(100000))
-        .signingPublicKey(sponsorKeyPair.publicKey())
-        .build();
-
-      SingleSignedTransaction<SponsorshipSet> signedTx = signatureService.sign(
-        sponsorKeyPair.privateKey(), sponsorshipSet
-      );
-      SubmitResult<SponsorshipSet> result = xrplClient.submit(signedTx);
-      assertThat(result.engineResult()).isEqualTo(SUCCESS_STATUS);
-
-      scanForResult(() -> getValidatedTransaction(result.transactionResult().hash(), SponsorshipSet.class));
-
-      // Query account_sponsoring
-      AccountSponsoringResult sponsoringResult = xrplClient.accountSponsoring(
-        AccountSponsoringRequestParams.builder()
-          .account(sponsorAddress)
-          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-          .build()
-      );
-
-      assertThat(sponsoringResult.account()).isEqualTo(sponsorAddress);
-      assertThat(sponsoringResult.sponsoredObjects()).isNotEmpty();
-    }
-  }
+  // account_sponsoring RPC integration tests intentionally omitted: rippled's `sponsor` branch
+  // does not yet register the `account_sponsoring` RPC handler, so end-to-end coverage is not
+  // possible against xrpld:sponsor-local. The client-side request/result types and
+  // XrplClient.accountSponsoring() are exercised by unit tests in xrpl4j-core and xrpl4j-client.
 
   // ==================== SponsorshipSet Flag Tests ====================
 

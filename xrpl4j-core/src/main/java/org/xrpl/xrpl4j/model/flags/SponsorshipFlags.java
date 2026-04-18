@@ -44,7 +44,7 @@ public class SponsorshipFlags extends Flags {
    * <p>If enabled, transactions that use this Sponsorship object for fee sponsorship must include
    * a sponsor signature on the transaction.</p>
    */
-  public static final SponsorshipFlags REQUIRE_SIGN_FOR_FEE = new SponsorshipFlags(0x00000001L);
+  public static final SponsorshipFlags REQUIRE_SIGN_FOR_FEE = new SponsorshipFlags(0x00010000L);
 
   /**
    * Constant {@link SponsorshipFlags} for the {@code lsfSponsorshipRequireSignForReserve} flag.
@@ -52,7 +52,7 @@ public class SponsorshipFlags extends Flags {
    * <p>If enabled, transactions that use this Sponsorship object for reserve sponsorship must include
    * a sponsor signature on the transaction.</p>
    */
-  public static final SponsorshipFlags REQUIRE_SIGN_FOR_RESERVE = new SponsorshipFlags(0x00000002L);
+  public static final SponsorshipFlags REQUIRE_SIGN_FOR_RESERVE = new SponsorshipFlags(0x00020000L);
 
   /**
    * Required-args Constructor.

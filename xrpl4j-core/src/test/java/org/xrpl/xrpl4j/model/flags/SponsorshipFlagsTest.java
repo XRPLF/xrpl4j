@@ -44,7 +44,7 @@ public class SponsorshipFlagsTest extends AbstractFlagsTest {
 
     assertThat(flags.lsfSponsorshipRequireSignForFee()).isTrue();
     assertThat(flags.lsfSponsorshipRequireSignForReserve()).isFalse();
-    assertThat(flags.getValue()).isEqualTo(1L);
+    assertThat(flags.getValue()).isEqualTo(0x00010000L);
   }
 
   @Test
@@ -54,15 +54,15 @@ public class SponsorshipFlagsTest extends AbstractFlagsTest {
 
     assertThat(flags.lsfSponsorshipRequireSignForFee()).isFalse();
     assertThat(flags.lsfSponsorshipRequireSignForReserve()).isTrue();
-    assertThat(flags.getValue()).isEqualTo(2L);
+    assertThat(flags.getValue()).isEqualTo(0x00020000L);
   }
 
   @Test
   void testOfWithCombinedFlags() {
-    SponsorshipFlags flags = SponsorshipFlags.of(0x00000001L | 0x00000002L);
+    SponsorshipFlags flags = SponsorshipFlags.of(0x00010000L | 0x00020000L);
     assertThat(flags.lsfSponsorshipRequireSignForFee()).isTrue();
     assertThat(flags.lsfSponsorshipRequireSignForReserve()).isTrue();
-    assertThat(flags.getValue()).isEqualTo(3L);
+    assertThat(flags.getValue()).isEqualTo(0x00030000L);
   }
 
   @Test

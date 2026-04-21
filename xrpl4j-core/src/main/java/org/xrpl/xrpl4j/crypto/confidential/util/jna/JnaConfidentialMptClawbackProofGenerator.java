@@ -35,7 +35,7 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link ConfidentialMptClawbackProofGenerator} that delegates to the native
- * mpt-crypto C library via the {@link NativeMptCrypto} bridge.
+ * mpt-crypto C library via {@link MptCryptoLibrary}.
  *
  * <p>Calls {@code mpt_get_clawback_proof} from the native library to generate a 64-byte
  * compact sigma proof.</p>
@@ -44,22 +44,24 @@ public class JnaConfidentialMptClawbackProofGenerator implements ConfidentialMpt
 
   private static final int PROOF_SIZE = 64;
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
+   *
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaConfidentialMptClawbackProofGenerator() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaConfidentialMptClawbackProofGenerator(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaConfidentialMptClawbackProofGenerator(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
@@ -88,7 +90,7 @@ public class JnaConfidentialMptClawbackProofGenerator implements ConfidentialMpt
     byte[] encryptedAmount = issuerEncryptedBalance.toBytes().toByteArray();
 
     byte[] outProof = new byte[PROOF_SIZE];
-    int result = nativeCrypto.generateClawbackProof(
+    int result = lib.mpt_get_clawback_proof(
       privkey, pubkey, ctxHash, amount.longValue(), encryptedAmount, outProof
     );
 

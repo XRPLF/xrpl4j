@@ -33,29 +33,34 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link ConfidentialMptSendProofVerifier} that delegates to the native
- * mpt-crypto C library via the {@link NativeMptCrypto} bridge.
+ * mpt-crypto C library via {@link MptCryptoLibrary}.
+ *
+ * <p>Calls {@code mpt_verify_send_proof} from the native library to verify a compact
+ * AND-composed sigma proof + aggregated Bulletproof.</p>
  */
 public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendProofVerifier {
 
   private static final int PUBKEY_SIZE = 33;
   private static final int CIPHERTEXT_SIZE = 66;
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
+   *
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaConfidentialMptSendProofVerifier() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaConfidentialMptSendProofVerifier(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaConfidentialMptSendProofVerifier(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
@@ -75,27 +80,30 @@ public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendP
     Preconditions.checkArgument(!recipients.isEmpty(), "recipients must not be empty");
 
     int numRecipients = recipients.size();
-    byte[] recipientPubkeys = new byte[numRecipients * PUBKEY_SIZE];
-    byte[] recipientCiphertexts = new byte[numRecipients * CIPHERTEXT_SIZE];
+
+    // Build the MptConfidentialRecipient struct array for the native library
+    MptCryptoLibrary.MptConfidentialRecipient firstRecipient = new MptCryptoLibrary.MptConfidentialRecipient();
+    MptCryptoLibrary.MptConfidentialRecipient[] recipientArray =
+      (MptCryptoLibrary.MptConfidentialRecipient[]) firstRecipient.toArray(numRecipients);
     for (int i = 0; i < numRecipients; i++) {
       MptConfidentialParty party = recipients.get(i);
       System.arraycopy(
-        party.publicKey().value().toByteArray(), 0, recipientPubkeys, i * PUBKEY_SIZE, PUBKEY_SIZE
+        party.publicKey().value().toByteArray(), 0, recipientArray[i].pubkey, 0, PUBKEY_SIZE
       );
       System.arraycopy(
         party.encryptedAmount().toBytes().toByteArray(), 0,
-        recipientCiphertexts, i * CIPHERTEXT_SIZE, CIPHERTEXT_SIZE
+        recipientArray[i].ciphertext, 0, CIPHERTEXT_SIZE
       );
     }
 
     byte[] proofBytes = proof.value().toByteArray();
-    return nativeCrypto.verifySendProof(
-      recipientPubkeys, recipientCiphertexts, numRecipients,
+    return lib.mpt_verify_send_proof(
+      proofBytes,
+      recipientArray[0], (byte) numRecipients,
       senderSpendingCiphertext.toBytes().toByteArray(),
-      context.value().toByteArray(),
       amountCommitment.value().toByteArray(),
       balanceCommitment.value().toByteArray(),
-      proofBytes
+      context.value().toByteArray()
     ) == 0;
   }
 }

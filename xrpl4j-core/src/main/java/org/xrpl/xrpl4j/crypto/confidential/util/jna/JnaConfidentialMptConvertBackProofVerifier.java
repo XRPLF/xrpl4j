@@ -34,26 +34,31 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link ConfidentialMptConvertBackProofVerifier} that delegates to the native
- * mpt-crypto C library via the {@link NativeMptCrypto} bridge.
+ * mpt-crypto C library via {@link MptCryptoLibrary}.
+ *
+ * <p>Calls {@code mpt_verify_convert_back_proof} from the native library to verify an 816-byte
+ * convert-back proof.</p>
  */
 public class JnaConfidentialMptConvertBackProofVerifier implements ConfidentialMptConvertBackProofVerifier {
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
+   *
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaConfidentialMptConvertBackProofVerifier() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaConfidentialMptConvertBackProofVerifier(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaConfidentialMptConvertBackProofVerifier(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
@@ -76,13 +81,13 @@ public class JnaConfidentialMptConvertBackProofVerifier implements ConfidentialM
       senderPublicKey.keyType() == KeyType.SECP256K1, "senderPublicKey must be SECP256K1"
     );
 
-    return nativeCrypto.verifyConvertBackProof(
+    return lib.mpt_verify_convert_back_proof(
+      proof.value().toByteArray(),
       senderPublicKey.value().toByteArray(),
-      context.value().toByteArray(),
-      amount.longValue(),
       encryptedBalance.toBytes().toByteArray(),
       balanceCommitment.value().toByteArray(),
-      proof.value().toByteArray()
+      amount.longValue(),
+      context.value().toByteArray()
     ) == 0;
   }
 }

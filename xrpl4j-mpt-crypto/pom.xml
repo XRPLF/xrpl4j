@@ -11,32 +11,7 @@
 
   <artifactId>xrpl4j-mpt-crypto</artifactId>
   <name>xrpl4j :: mpt-crypto</name>
-  <description>JNA bindings for the mpt-crypto native library providing confidential MPT cryptographic operations.</description>
-
-  <dependencies>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>xrpl4j-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna</artifactId>
-    </dependency>
-    <!-- Test -->
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+  <description>Native mpt-crypto library binaries for confidential MPT cryptographic operations.
+    This module contains only platform-specific native libraries (.dylib, .so, .dll) as resources.
+    The JNA bindings are in xrpl4j-core.</description>
 </project>

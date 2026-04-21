@@ -31,7 +31,7 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link ConfidentialMptConvertProofVerifier} that delegates to the native mpt-crypto
- * C library via the {@link NativeMptCrypto} bridge.
+ * C library via {@link MptCryptoLibrary}.
  *
  * <p>Calls {@code mpt_verify_convert_proof} from the native library to verify a 64-byte
  * compact Schnorr proof.</p>
@@ -42,24 +42,24 @@ public class JnaConfidentialMptConvertProofVerifier implements ConfidentialMptCo
   private static final int CONTEXT_HASH_SIZE = 32;
   private static final int PROOF_SIZE = 64;
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge from {@code xrpl4j-mpt-crypto}.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
    *
-   * @throws IllegalStateException if {@code xrpl4j-mpt-crypto} is not on the classpath.
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaConfidentialMptConvertProofVerifier() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaConfidentialMptConvertProofVerifier(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaConfidentialMptConvertProofVerifier(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
@@ -99,6 +99,6 @@ public class JnaConfidentialMptConvertProofVerifier implements ConfidentialMptCo
       CONTEXT_HASH_SIZE, ctxHash.length
     );
 
-    return nativeCrypto.verifyConvertProof(proofBytes, pubkeyBytes, ctxHash) == 0;
+    return lib.mpt_verify_convert_proof(proofBytes, pubkeyBytes, ctxHash) == 0;
   }
 }

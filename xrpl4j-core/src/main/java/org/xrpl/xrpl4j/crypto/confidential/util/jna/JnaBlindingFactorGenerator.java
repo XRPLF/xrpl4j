@@ -27,39 +27,39 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link BlindingFactorGenerator} that delegates to the native mpt-crypto C library
- * via the {@link NativeMptCrypto} bridge.
+ * via {@link MptCryptoLibrary}.
  *
- * <p>This class lives in {@code xrpl4j-core} and has no compile-time dependency on JNA.
- * The {@link NativeMptCrypto} implementation is loaded from {@code xrpl4j-mpt-crypto} at runtime.</p>
+ * <p>This class calls {@code mpt_generate_blinding_factor} from the native library to produce
+ * a 32-byte random blinding factor suitable for ElGamal encryption.</p>
  */
 public class JnaBlindingFactorGenerator implements BlindingFactorGenerator {
 
   private static final int BLINDING_FACTOR_SIZE = 32;
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge from {@code xrpl4j-mpt-crypto}.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
    *
-   * @throws IllegalStateException if {@code xrpl4j-mpt-crypto} is not on the classpath.
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaBlindingFactorGenerator() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaBlindingFactorGenerator(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaBlindingFactorGenerator(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
   public BlindingFactor generate() {
     byte[] outFactor = new byte[BLINDING_FACTOR_SIZE];
-    int result = nativeCrypto.generateBlindingFactor(outFactor);
+    int result = lib.mpt_generate_blinding_factor(outFactor);
     if (result != 0) {
       throw new IllegalStateException("mpt_generate_blinding_factor failed with error code: " + result);
     }

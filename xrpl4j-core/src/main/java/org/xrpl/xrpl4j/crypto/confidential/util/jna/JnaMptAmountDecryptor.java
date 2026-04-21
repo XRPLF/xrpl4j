@@ -32,34 +32,34 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link MptAmountDecryptor} that delegates to the native mpt-crypto C library
- * via the {@link NativeMptCrypto} bridge.
+ * via {@link MptCryptoLibrary}.
  *
- * <p>This class lives in {@code xrpl4j-core} and has no compile-time dependency on JNA.
- * The {@link NativeMptCrypto} implementation is loaded from {@code xrpl4j-mpt-crypto} at runtime.</p>
+ * <p>This class calls {@code mpt_decrypt_amount} from the native library to perform ElGamal
+ * decryption of an encrypted amount using a secp256k1 private key.</p>
  */
 public class JnaMptAmountDecryptor implements MptAmountDecryptor {
 
   private static final int CIPHERTEXT_SIZE = 66;
   private static final int PRIVKEY_SIZE = 32;
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge from {@code xrpl4j-mpt-crypto}.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
    *
-   * @throws IllegalStateException if {@code xrpl4j-mpt-crypto} is not on the classpath.
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaMptAmountDecryptor() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaMptAmountDecryptor(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaMptAmountDecryptor(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
@@ -96,7 +96,7 @@ public class JnaMptAmountDecryptor implements MptAmountDecryptor {
     );
 
     long[] outAmount = new long[1];
-    int result = nativeCrypto.decryptAmount(ciphertextBytes, privkeyBytes, outAmount);
+    int result = lib.mpt_decrypt_amount(ciphertextBytes, privkeyBytes, outAmount);
 
     naturalBytes.destroy();
 

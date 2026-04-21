@@ -30,28 +30,33 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link PedersenCommitmentGenerator} that delegates to the native mpt-crypto
- * C library via the {@link NativeMptCrypto} bridge.
+ * C library via {@link MptCryptoLibrary}.
+ *
+ * <p>This class calls {@code mpt_get_pedersen_commitment} from the native library to compute
+ * a Pedersen Commitment: C = amount * G + blindingFactor * H.</p>
  */
 public class JnaPedersenCommitmentGenerator implements PedersenCommitmentGenerator {
 
   private static final int COMMITMENT_SIZE = 33;
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
+   *
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaPedersenCommitmentGenerator() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaPedersenCommitmentGenerator(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaPedersenCommitmentGenerator(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
@@ -60,7 +65,7 @@ public class JnaPedersenCommitmentGenerator implements PedersenCommitmentGenerat
     Objects.requireNonNull(blindingFactor, "blindingFactor must not be null");
 
     byte[] outCommitment = new byte[COMMITMENT_SIZE];
-    int result = nativeCrypto.generatePedersenCommitment(
+    int result = lib.mpt_get_pedersen_commitment(
       amount.longValue(), blindingFactor.toBytes(), outCommitment
     );
     if (result != 0) {

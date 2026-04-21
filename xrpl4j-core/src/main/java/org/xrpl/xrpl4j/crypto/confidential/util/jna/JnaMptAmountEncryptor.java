@@ -32,10 +32,10 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link MptAmountEncryptor} that delegates to the native mpt-crypto C library
- * via the {@link NativeMptCrypto} bridge.
+ * via {@link MptCryptoLibrary}.
  *
- * <p>This class lives in {@code xrpl4j-core} and has no compile-time dependency on JNA.
- * The {@link NativeMptCrypto} implementation is loaded from {@code xrpl4j-mpt-crypto} at runtime.</p>
+ * <p>This class calls {@code mpt_encrypt_amount} from the native library to perform ElGamal
+ * encryption of an amount using a secp256k1 public key.</p>
  */
 public class JnaMptAmountEncryptor implements MptAmountEncryptor {
 
@@ -43,24 +43,24 @@ public class JnaMptAmountEncryptor implements MptAmountEncryptor {
   private static final int BLINDING_FACTOR_SIZE = 32;
   private static final int CIPHERTEXT_SIZE = 66;
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge from {@code xrpl4j-mpt-crypto}.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
    *
-   * @throws IllegalStateException if {@code xrpl4j-mpt-crypto} is not on the classpath.
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaMptAmountEncryptor() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaMptAmountEncryptor(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaMptAmountEncryptor(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
@@ -94,7 +94,7 @@ public class JnaMptAmountEncryptor implements MptAmountEncryptor {
     );
 
     byte[] outCiphertext = new byte[CIPHERTEXT_SIZE];
-    int result = nativeCrypto.encryptAmount(amount.longValue(), pubkeyBytes, blindingBytes, outCiphertext);
+    int result = lib.mpt_encrypt_amount(amount.longValue(), pubkeyBytes, blindingBytes, outCiphertext);
     if (result != 0) {
       throw new IllegalStateException("mpt_encrypt_amount failed with error code: " + result);
     }

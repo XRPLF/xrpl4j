@@ -32,7 +32,7 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link ConfidentialMptConvertProofGenerator} that delegates to the native mpt-crypto
- * C library via the {@link NativeMptCrypto} bridge.
+ * C library via {@link MptCryptoLibrary}.
  *
  * <p>Calls {@code mpt_get_convert_proof} from the native library to generate a 64-byte
  * compact Schnorr proof.</p>
@@ -44,24 +44,24 @@ public class JnaConfidentialMptConvertProofGenerator implements ConfidentialMptC
   private static final int CONTEXT_HASH_SIZE = 32;
   private static final int PROOF_SIZE = 64;
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge from {@code xrpl4j-mpt-crypto}.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
    *
-   * @throws IllegalStateException if {@code xrpl4j-mpt-crypto} is not on the classpath.
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaConfidentialMptConvertProofGenerator() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaConfidentialMptConvertProofGenerator(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaConfidentialMptConvertProofGenerator(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
@@ -101,7 +101,7 @@ public class JnaConfidentialMptConvertProofGenerator implements ConfidentialMptC
     );
 
     byte[] outProof = new byte[PROOF_SIZE];
-    int result = nativeCrypto.generateConvertProof(pubkeyBytes, privkeyBytes, ctxHash, outProof);
+    int result = lib.mpt_get_convert_proof(pubkeyBytes, privkeyBytes, ctxHash, outProof);
 
     naturalBytes.destroy();
 

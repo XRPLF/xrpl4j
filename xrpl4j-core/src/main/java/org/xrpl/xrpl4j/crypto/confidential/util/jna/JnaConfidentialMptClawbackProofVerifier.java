@@ -33,29 +33,31 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link ConfidentialMptClawbackProofVerifier} that delegates to the native
- * mpt-crypto C library via the {@link NativeMptCrypto} bridge.
+ * mpt-crypto C library via {@link MptCryptoLibrary}.
  *
  * <p>Calls {@code mpt_verify_clawback_proof} from the native library to verify
  * a 64-byte compact sigma proof.</p>
  */
 public class JnaConfidentialMptClawbackProofVerifier implements ConfidentialMptClawbackProofVerifier {
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
+   *
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaConfidentialMptClawbackProofVerifier() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaConfidentialMptClawbackProofVerifier(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaConfidentialMptClawbackProofVerifier(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
@@ -77,12 +79,15 @@ public class JnaConfidentialMptClawbackProofVerifier implements ConfidentialMptC
       "issuerPublicKey must be SECP256K1"
     );
 
-    return nativeCrypto.verifyClawbackProof(
+    // MptCryptoLibrary.mpt_verify_clawback_proof takes a single 66-byte ciphertext (c1 || c2),
+    // so concatenate c1 and c2 from the EncryptedAmount.
+    byte[] ciphertext = issuerEncryptedBalance.toBytes().toByteArray();
+
+    return lib.mpt_verify_clawback_proof(
       proof.value().toByteArray(),
-      issuerEncryptedBalance.c1().toByteArray(),
-      issuerEncryptedBalance.c2().toByteArray(),
-      issuerPublicKey.value().toByteArray(),
       amount.longValue(),
+      issuerPublicKey.value().toByteArray(),
+      ciphertext,
       context.value().toByteArray()
     ) == 0;
   }

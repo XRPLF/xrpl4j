@@ -36,7 +36,7 @@ import java.util.Objects;
 
 /**
  * JNA-backed implementation of {@link ContextHashGenerator} that delegates to the native
- * mpt-crypto C library for context hash generation.
+ * mpt-crypto C library via {@link MptCryptoLibrary} for context hash generation.
  *
  * <p>This implementation calls the native {@code mpt_get_*_context_hash} functions from mpt_utility.h,
  * which compute SHA512Half over the transaction-specific serialization format.</p>
@@ -46,22 +46,24 @@ public class JnaContextHashGenerator implements ContextHashGenerator {
   private static final int HASH_SIZE = 32;
   private static final AddressCodec ADDRESS_CODEC = new AddressCodec();
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
+   *
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaContextHashGenerator() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaContextHashGenerator(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaContextHashGenerator(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
@@ -74,11 +76,11 @@ public class JnaContextHashGenerator implements ContextHashGenerator {
     Objects.requireNonNull(sequence, "sequence must not be null");
     Objects.requireNonNull(issuanceId, "issuanceId must not be null");
 
-    byte[] accountBytes = ADDRESS_CODEC.decodeAccountId(account).toByteArray();
-    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
+    MptCryptoLibrary.MptAccountId accountStruct = toAccountId(account);
+    MptCryptoLibrary.MptIssuanceId issuanceStruct = toIssuanceId(issuanceId);
     byte[] outHash = new byte[HASH_SIZE];
 
-    int result = nativeCrypto.generateConvertContextHash(accountBytes, issuanceIdBytes, sequence.intValue(), outHash);
+    int result = lib.mpt_get_convert_context_hash(accountStruct, issuanceStruct, sequence.intValue(), outHash);
     if (result != 0) {
       throw new IllegalStateException("mpt_get_convert_context_hash failed with error code: " + result);
     }
@@ -98,12 +100,12 @@ public class JnaContextHashGenerator implements ContextHashGenerator {
     Objects.requireNonNull(issuanceId, "issuanceId must not be null");
     Objects.requireNonNull(version, "version must not be null");
 
-    byte[] accountBytes = ADDRESS_CODEC.decodeAccountId(account).toByteArray();
-    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
+    MptCryptoLibrary.MptAccountId accountStruct = toAccountId(account);
+    MptCryptoLibrary.MptIssuanceId issuanceStruct = toIssuanceId(issuanceId);
     byte[] outHash = new byte[HASH_SIZE];
 
-    int result = nativeCrypto.generateConvertBackContextHash(
-      accountBytes, issuanceIdBytes, sequence.intValue(), version.intValue(), outHash
+    int result = lib.mpt_get_convert_back_context_hash(
+      accountStruct, issuanceStruct, sequence.intValue(), version.intValue(), outHash
     );
     if (result != 0) {
       throw new IllegalStateException("mpt_get_convert_back_context_hash failed with error code: " + result);
@@ -126,13 +128,13 @@ public class JnaContextHashGenerator implements ContextHashGenerator {
     Objects.requireNonNull(destination, "destination must not be null");
     Objects.requireNonNull(version, "version must not be null");
 
-    byte[] accountBytes = ADDRESS_CODEC.decodeAccountId(account).toByteArray();
-    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
-    byte[] destBytes = ADDRESS_CODEC.decodeAccountId(destination).toByteArray();
+    MptCryptoLibrary.MptAccountId accountStruct = toAccountId(account);
+    MptCryptoLibrary.MptIssuanceId issuanceStruct = toIssuanceId(issuanceId);
+    MptCryptoLibrary.MptAccountId destStruct = toAccountId(destination);
     byte[] outHash = new byte[HASH_SIZE];
 
-    int result = nativeCrypto.generateSendContextHash(
-      accountBytes, issuanceIdBytes, sequence.intValue(), destBytes, version.intValue(), outHash
+    int result = lib.mpt_get_send_context_hash(
+      accountStruct, issuanceStruct, sequence.intValue(), destStruct, version.intValue(), outHash
     );
     if (result != 0) {
       throw new IllegalStateException("mpt_get_send_context_hash failed with error code: " + result);
@@ -153,18 +155,46 @@ public class JnaContextHashGenerator implements ContextHashGenerator {
     Objects.requireNonNull(issuanceId, "issuanceId must not be null");
     Objects.requireNonNull(holder, "holder must not be null");
 
-    byte[] accountBytes = ADDRESS_CODEC.decodeAccountId(account).toByteArray();
-    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
-    byte[] holderBytes = ADDRESS_CODEC.decodeAccountId(holder).toByteArray();
+    MptCryptoLibrary.MptAccountId accountStruct = toAccountId(account);
+    MptCryptoLibrary.MptIssuanceId issuanceStruct = toIssuanceId(issuanceId);
+    MptCryptoLibrary.MptAccountId holderStruct = toAccountId(holder);
     byte[] outHash = new byte[HASH_SIZE];
 
-    int result = nativeCrypto.generateClawbackContextHash(
-      accountBytes, issuanceIdBytes, sequence.intValue(), holderBytes, outHash
+    int result = lib.mpt_get_clawback_context_hash(
+      accountStruct, issuanceStruct, sequence.intValue(), holderStruct, outHash
     );
     if (result != 0) {
       throw new IllegalStateException("mpt_get_clawback_context_hash failed with error code: " + result);
     }
 
     return ConfidentialMptClawbackContext.of(UnsignedByteArray.of(outHash));
+  }
+
+  /**
+   * Converts an {@link Address} to a JNA {@link MptCryptoLibrary.MptAccountId} struct.
+   *
+   * @param address The XRPL address.
+   *
+   * @return The populated struct.
+   */
+  private static MptCryptoLibrary.MptAccountId toAccountId(final Address address) {
+    MptCryptoLibrary.MptAccountId accountId = new MptCryptoLibrary.MptAccountId();
+    byte[] decoded = ADDRESS_CODEC.decodeAccountId(address).toByteArray();
+    System.arraycopy(decoded, 0, accountId.bytes, 0, 20);
+    return accountId;
+  }
+
+  /**
+   * Converts an {@link MpTokenIssuanceId} to a JNA {@link MptCryptoLibrary.MptIssuanceId} struct.
+   *
+   * @param issuanceId The MPTokenIssuanceId.
+   *
+   * @return The populated struct.
+   */
+  private static MptCryptoLibrary.MptIssuanceId toIssuanceId(final MpTokenIssuanceId issuanceId) {
+    MptCryptoLibrary.MptIssuanceId issId = new MptCryptoLibrary.MptIssuanceId();
+    byte[] decoded = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
+    System.arraycopy(decoded, 0, issId.bytes, 0, 24);
+    return issId;
   }
 }

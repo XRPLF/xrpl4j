@@ -34,7 +34,7 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link ConfidentialMptConvertBackProofGenerator} that delegates to the native
- * mpt-crypto C library via the {@link NativeMptCrypto} bridge.
+ * mpt-crypto C library via {@link MptCryptoLibrary}.
  *
  * <p>Calls {@code mpt_get_convert_back_proof} from the native library to generate an 816-byte
  * proof (128-byte compact sigma + 688-byte range proof).</p>
@@ -43,22 +43,24 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
 
   private static final int PROOF_SIZE = 816;
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
+   *
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaConfidentialMptConvertBackProofGenerator() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaConfidentialMptConvertBackProofGenerator(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaConfidentialMptConvertBackProofGenerator(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
@@ -83,12 +85,17 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     byte[] pubkey = senderKeyPair.publicKey().value().toByteArray();
     byte[] ctxHash = context.value().toByteArray();
 
+    // Construct the MptPedersenProofParams struct for the native library
+    MptCryptoLibrary.MptPedersenProofParams params = new MptCryptoLibrary.MptPedersenProofParams();
+    System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, params.pedersenCommitment, 0, 33);
+    params.amount = balanceParams.amount().longValue();
+    System.arraycopy(balanceParams.encryptedAmount().toBytes().toByteArray(), 0, params.encryptedAmount, 0, 66);
+    System.arraycopy(balanceParams.blindingFactor().toBytes(), 0, params.blindingFactor, 0, 32);
+
     byte[] outProof = new byte[PROOF_SIZE];
-    int result = nativeCrypto.generateConvertBackProof(
+    int result = lib.mpt_get_convert_back_proof(
       privkey, pubkey, ctxHash, amount.longValue(),
-      balanceParams.pedersenCommitment().toByteArray(), balanceParams.amount().longValue(),
-      balanceParams.encryptedAmount().toBytes().toByteArray(), balanceParams.blindingFactor().toBytes(),
-      outProof
+      params, outProof
     );
 
     naturalBytes.destroy();

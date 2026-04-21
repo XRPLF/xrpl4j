@@ -38,7 +38,7 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link ConfidentialMptSendProofGenerator} that delegates to the native mpt-crypto
- * C library via the {@link NativeMptCrypto} bridge.
+ * C library via {@link MptCryptoLibrary}.
  *
  * <p>Calls {@code mpt_get_confidential_send_proof} from the native library to generate a compact
  * AND-composed sigma proof (192 bytes) + aggregated Bulletproof (754 bytes) = 946 bytes total.</p>
@@ -46,26 +46,27 @@ import java.util.Objects;
 public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSendProofGenerator {
 
   private static final int PUBKEY_SIZE = 33;
-  private static final int PRIVKEY_SIZE = 32;
   private static final int CIPHERTEXT_SIZE = 66;
   private static final int MAX_PROOF_SIZE = 4096;
 
-  private final NativeMptCrypto nativeCrypto;
+  private final MptCryptoLibrary lib;
 
   /**
-   * Constructs a new instance by reflectively loading the native bridge.
+   * Constructs a new instance using the default {@link MptCryptoLibrary} singleton.
+   *
+   * @throws UnsatisfiedLinkError if the native mpt-crypto library cannot be loaded.
    */
   public JnaConfidentialMptSendProofGenerator() {
-    this(NativeMptCryptoLoader.getInstance());
+    this(MptCryptoLibrary.getInstance());
   }
 
   /**
-   * Constructs a new instance with the specified {@link NativeMptCrypto} bridge.
+   * Constructs a new instance with the specified {@link MptCryptoLibrary}.
    *
-   * @param nativeCrypto The native bridge to delegate to.
+   * @param lib The native library to delegate to.
    */
-  public JnaConfidentialMptSendProofGenerator(final NativeMptCrypto nativeCrypto) {
-    this.nativeCrypto = Objects.requireNonNull(nativeCrypto);
+  public JnaConfidentialMptSendProofGenerator(final MptCryptoLibrary lib) {
+    this.lib = Objects.requireNonNull(lib);
   }
 
   @Override
@@ -99,27 +100,33 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     byte[] privkey = naturalBytes.toByteArray();
     byte[] pubkey = senderKeyPair.publicKey().value().toByteArray();
 
-    // Flatten recipient pubkeys and ciphertexts into contiguous arrays
-    byte[] recipientPubkeys = new byte[numRecipients * PUBKEY_SIZE];
-    byte[] recipientCiphertexts = new byte[numRecipients * CIPHERTEXT_SIZE];
+    // Build the MptConfidentialRecipient struct array for the native library
+    MptCryptoLibrary.MptConfidentialRecipient firstRecipient = new MptCryptoLibrary.MptConfidentialRecipient();
+    MptCryptoLibrary.MptConfidentialRecipient[] recipientArray =
+      (MptCryptoLibrary.MptConfidentialRecipient[]) firstRecipient.toArray(numRecipients);
     for (int i = 0; i < numRecipients; i++) {
       MptConfidentialParty party = recipients.get(i);
-      System.arraycopy(party.publicKey().value().toByteArray(), 0, recipientPubkeys, i * PUBKEY_SIZE, PUBKEY_SIZE);
+      System.arraycopy(party.publicKey().value().toByteArray(), 0, recipientArray[i].pubkey, 0, PUBKEY_SIZE);
       System.arraycopy(
-        party.encryptedAmount().toBytes().toByteArray(), 0, recipientCiphertexts, i * CIPHERTEXT_SIZE, CIPHERTEXT_SIZE
+        party.encryptedAmount().toBytes().toByteArray(), 0, recipientArray[i].ciphertext, 0, CIPHERTEXT_SIZE
       );
     }
 
-    byte[] outProof = new byte[MAX_PROOF_SIZE];
-    int[] outLen = new int[]{MAX_PROOF_SIZE};
+    // Build the MptPedersenProofParams struct for the balance
+    MptCryptoLibrary.MptPedersenProofParams balanceStruct = new MptCryptoLibrary.MptPedersenProofParams();
+    System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, balanceStruct.pedersenCommitment, 0, 33);
+    balanceStruct.amount = balanceParams.amount().longValue();
+    System.arraycopy(balanceParams.encryptedAmount().toBytes().toByteArray(), 0, balanceStruct.encryptedAmount, 0, 66);
+    System.arraycopy(balanceParams.blindingFactor().toBytes(), 0, balanceStruct.blindingFactor, 0, 32);
 
-    int result = nativeCrypto.generateSendProof(
+    byte[] outProof = new byte[MAX_PROOF_SIZE];
+    long[] outLen = new long[]{MAX_PROOF_SIZE};
+
+    int result = lib.mpt_get_confidential_send_proof(
       privkey, pubkey, amount.longValue(),
-      recipientPubkeys, recipientCiphertexts, numRecipients,
+      recipientArray[0], numRecipients,
       txBlindingFactor.toBytes(), context.value().toByteArray(),
-      amountCommitment.value().toByteArray(),
-      balanceParams.pedersenCommitment().toByteArray(), balanceParams.amount().longValue(),
-      balanceParams.encryptedAmount().toBytes().toByteArray(), balanceParams.blindingFactor().toBytes(),
+      amountCommitment.value().toByteArray(), balanceStruct,
       outProof, outLen
     );
 
@@ -129,8 +136,8 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
       throw new IllegalStateException("mpt_get_confidential_send_proof failed with error code: " + result);
     }
 
-    byte[] proof = new byte[outLen[0]];
-    System.arraycopy(outProof, 0, proof, 0, outLen[0]);
+    byte[] proof = new byte[(int) outLen[0]];
+    System.arraycopy(outProof, 0, proof, 0, (int) outLen[0]);
     return ConfidentialMptSendProof.of(UnsignedByteArray.of(proof));
   }
 }

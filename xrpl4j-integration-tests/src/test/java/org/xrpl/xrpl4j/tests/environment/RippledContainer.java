@@ -78,7 +78,7 @@ public class RippledContainer {
   private XrplAdminClient xrplAdminClient;
   private boolean started;
 
-  private static final String RIPPLED_DOCKER_IMAGE = "xrpld:sponsor-local";
+  private static final String RIPPLED_DOCKER_IMAGE = "legleux/xrpld:sponsor";
 
   /**
    * No-args constructor.
@@ -89,7 +89,7 @@ public class RippledContainer {
           cmd.withEntrypoint("/opt/xrpld/bin/xrpld"))
         .withCommand("-a --start --conf /config/xrpld.cfg")
         .withExposedPorts(5005)
-        .withImagePullPolicy(PullPolicy.defaultPolicy())
+        .withImagePullPolicy(PullPolicy.alwaysPull())
         .withClasspathResourceMapping("xrpld",
           "/config",
           BindMode.READ_ONLY)

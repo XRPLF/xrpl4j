@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
+import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
@@ -36,28 +37,27 @@ import java.util.List;
  * <p>This interface mirrors the C function {@code mpt_get_confidential_send_proof} from mpt_utility.h,
  * but uses Java-friendly types.</p>
  *
- * <p>The proof consists of:
- * <ul>
- *   <li>Same plaintext multi proof - proves all ciphertexts encrypt the same amount</li>
- *   <li>Amount linkage proof - links ElGamal ciphertext to Pedersen commitment for amount</li>
- *   <li>Balance linkage proof - links ElGamal ciphertext to Pedersen commitment for balance</li>
- *   <li>Aggregated bulletproof range proof - proves amount and remaining balance are in valid range</li>
- * </ul>
+ * <p>The proof is a compact AND-composed sigma proof (192 bytes) that simultaneously proves ciphertext
+ * equality, Pedersen commitment linkage, and balance ownership, followed by an aggregated Bulletproof
+ * range proof (754 bytes). Total proof size is fixed at 946 bytes.</p>
  */
 public interface ConfidentialMptSendProofGenerator {
 
   /**
    * Generates a ConfidentialMptSend proof.
    *
+   * <p>The amount commitment (pc_m) must be computed as m*G + r*H where r is the txBlindingFactor,
+   * since the compact sigma proof binds pc_m to the ciphertext randomness r.</p>
+   *
    * @param senderKeyPair     The sender's key pair (must be secp256k1).
    * @param amount            The amount being sent.
-   * @param recipients        The list of recipients (sender, destination, issuer, and optionally auditor).
-   * @param txBlindingFactor  The single blinding factor used to encrypt the amount for all recipients.
+   * @param recipients        The list of participants (sender, destination, issuer, and optionally auditor).
+   * @param txBlindingFactor  The ElGamal randomness r (also used as blinding factor for pc_m).
    * @param context           The context hash binding the proof to a specific transaction.
-   * @param amountParams      The Pedersen proof parameters for the amount.
+   * @param amountCommitment  The Pedersen commitment pc_m = m*G + r*H.
    * @param balanceParams     The Pedersen proof parameters for the sender's balance.
    *
-   * @return A {@link ConfidentialMptSendProof} containing the complete proof.
+   * @return A {@link ConfidentialMptSendProof} containing the 946-byte proof.
    *
    * @throws NullPointerException     if any parameter is null.
    * @throws IllegalArgumentException if senderKeyPair is not secp256k1, or if recipients is empty.
@@ -69,7 +69,7 @@ public interface ConfidentialMptSendProofGenerator {
     List<MptConfidentialParty> recipients,
     BlindingFactor txBlindingFactor,
     ConfidentialMptSendContext context,
-    PedersenProofParams amountParams,
+    PedersenCommitment amountCommitment,
     PedersenProofParams balanceParams
   );
 }

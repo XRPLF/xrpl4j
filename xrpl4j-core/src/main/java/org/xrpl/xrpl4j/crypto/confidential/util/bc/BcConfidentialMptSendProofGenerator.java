@@ -34,6 +34,7 @@ import org.xrpl.xrpl4j.crypto.confidential.bulletproof.bc.BcRangeProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.bulletproof.bc.BcSamePlaintextProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
+import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
@@ -47,7 +48,11 @@ import java.util.Objects;
 /**
  * BouncyCastle implementation of {@link ConfidentialMptSendProofGenerator}.
  *
- * <p>This implementation delegates to port implementations for the actual cryptographic operations.</p>
+ * <p>NOTE: The interface signature changed to match the updated mpt_utility.h compact proof format.
+ * The amountParams parameter was replaced with amountCommitment (PedersenCommitment) because the
+ * compact AND-composed sigma proof only requires the commitment point, not the full PedersenProofParams.
+ * This BC implementation is not compatible with the new compact proof format and will throw
+ * {@link UnsupportedOperationException}. Use the JNA implementation instead.</p>
  */
 public class BcConfidentialMptSendProofGenerator implements ConfidentialMptSendProofGenerator {
 
@@ -83,6 +88,14 @@ public class BcConfidentialMptSendProofGenerator implements ConfidentialMptSendP
     this.rangeProofGenerator = Objects.requireNonNull(rangeProofGenerator);
   }
 
+  /**
+   * NOTE: This BC implementation is not compatible with the new compact proof format from mpt_utility.h.
+   * The interface signature changed: amountParams (PedersenProofParams) was replaced with
+   * amountCommitment (PedersenCommitment) to match the updated C function which only needs the
+   * commitment point for the compact AND-composed sigma proof.
+   *
+   * @throws UnsupportedOperationException always. Use the JNA implementation instead.
+   */
   @Override
   public ConfidentialMptSendProof generateProof(
     final KeyPair senderKeyPair,
@@ -90,175 +103,13 @@ public class BcConfidentialMptSendProofGenerator implements ConfidentialMptSendP
     final List<MptConfidentialParty> recipients,
     final BlindingFactor txBlindingFactor,
     final ConfidentialMptSendContext context,
-    final PedersenProofParams amountParams,
+    final PedersenCommitment amountCommitment,
     final PedersenProofParams balanceParams
   ) {
-    // Validate inputs
-    Objects.requireNonNull(senderKeyPair, "senderKeyPair must not be null");
-    Objects.requireNonNull(amount, "amount must not be null");
-    Objects.requireNonNull(recipients, "recipients must not be null");
-    Objects.requireNonNull(txBlindingFactor, "txBlindingFactor must not be null");
-    Objects.requireNonNull(context, "context must not be null");
-    Objects.requireNonNull(amountParams, "amountParams must not be null");
-    Objects.requireNonNull(balanceParams, "balanceParams must not be null");
-
-    Preconditions.checkArgument(
-      senderKeyPair.publicKey().keyType() == KeyType.SECP256K1,
-      "senderKeyPair must be SECP256K1, but was %s", senderKeyPair.publicKey().keyType()
+    throw new UnsupportedOperationException(
+      "BcConfidentialMptSendProofGenerator is not compatible with the new compact proof format. " +
+      "Use JnaConfidentialMptSendProofGenerator instead."
     );
-    Preconditions.checkArgument(!recipients.isEmpty(), "recipients must not be empty");
-
-    int numRecipients = recipients.size();
-
-    // Build lists for same-plaintext proof (shared r: single c1, list of c2 and pk)
-    List<UnsignedByteArray> c2List = new java.util.ArrayList<>();
-    List<UnsignedByteArray> pkList = new java.util.ArrayList<>();
-
-    UnsignedByteArray txBlindingBytes = UnsignedByteArray.of(txBlindingFactor.toBytes());
-    // All recipients share the same C1 since they use the same blinding factor r
-    UnsignedByteArray c1 = recipients.get(0).encryptedAmount().c1();
-    for (int i = 0; i < numRecipients; i++) {
-      MptConfidentialParty party = recipients.get(i);
-      EncryptedAmount ciphertext = party.encryptedAmount();
-      c2List.add(ciphertext.c2());
-      pkList.add(party.publicKey().value());
-    }
-
-    // 1. Generate same-plaintext proof with shared r
-    UnsignedByteArray samePlaintextProof = samePlaintextProofGenerator.generateProof(
-      amount, txBlindingBytes, c1, c2List, pkList, context.value()
-    );
-
-    // 2. Generate amount linkage proof (uses the transaction blinding factor)
-    MptConfidentialParty senderParty = recipients.get(0);
-    UnsignedByteArray amountLinkageProof = generateAmountLinkageProof(
-      senderParty, txBlindingFactor, context, amountParams
-    );
-
-    // 3. Generate balance linkage proof
-    UnsignedByteArray balanceLinkageProof = generateBalanceLinkageProof(
-      senderKeyPair, senderParty, context, balanceParams
-    );
-
-    // 4. Generate aggregated bulletproof range proof
-    UnsignedByteArray rangeProof = generateRangeProof(amount, amountParams, balanceParams, context);
-
-    // Combine all proofs
-    return combineProofs(samePlaintextProof, amountLinkageProof, balanceLinkageProof, rangeProof);
-  }
-
-  private UnsignedByteArray generateAmountLinkageProof(
-    MptConfidentialParty firstRecipient,
-    BlindingFactor txBlindingFactor,
-    ConfidentialMptSendContext context,
-    PedersenProofParams amountParams
-  ) {
-    EncryptedAmount ciphertext = amountParams.encryptedAmount();
-    // Get compressed Pedersen commitment (first 33 bytes)
-    byte[] pcmBytes = Arrays.copyOfRange(
-      amountParams.pedersenCommitment().toByteArray(), 0, Secp256k1Operations.PUBKEY_SIZE
-    );
-    UnsignedByteArray pcm = UnsignedByteArray.of(pcmBytes);
-
-    // Amount linkage: c1, c2, pk, pcm (matching C code order)
-    return pedersenLinkProofGenerator.generateProof(
-      ciphertext.c1(),
-      ciphertext.c2(),
-      firstRecipient.publicKey().value(),
-      pcm,
-      amountParams.amount(),
-      UnsignedByteArray.of(txBlindingFactor.toBytes()),
-      UnsignedByteArray.of(amountParams.blindingFactor().toBytes()),
-      context.value()
-    );
-  }
-
-  private UnsignedByteArray generateBalanceLinkageProof(
-    KeyPair senderKeyPair,
-    MptConfidentialParty firstRecipient,
-    ConfidentialMptSendContext context,
-    PedersenProofParams balanceParams
-  ) {
-    EncryptedAmount ciphertext = balanceParams.encryptedAmount();
-    // Get compressed Pedersen commitment (first 33 bytes)
-    byte[] pcmBytes = Arrays.copyOfRange(
-      balanceParams.pedersenCommitment().toByteArray(), 0, Secp256k1Operations.PUBKEY_SIZE
-    );
-    UnsignedByteArray pcm = UnsignedByteArray.of(pcmBytes);
-
-    // Balance linkage: pk, c2, c1, pcm (matching C code order - note swapped c1/c2)
-    // Uses private key as blinding factor
-    return pedersenLinkProofGenerator.generateProof(
-      firstRecipient.publicKey().value(),
-      ciphertext.c2(),
-      ciphertext.c1(),
-      pcm,
-      balanceParams.amount(),
-      senderKeyPair.privateKey().naturalBytes(),
-      UnsignedByteArray.of(balanceParams.blindingFactor().toBytes()),
-      context.value()
-    );
-  }
-
-  private UnsignedByteArray generateRangeProof(
-    UnsignedLong amount,
-    PedersenProofParams amountParams,
-    PedersenProofParams balanceParams,
-    ConfidentialMptSendContext context
-  ) {
-    // Values: [amount, remaining_balance]
-    UnsignedLong remainingBalance = UnsignedLong.valueOf(
-      balanceParams.amount().longValue() - amount.longValue()
-    );
-    UnsignedLong[] values = new UnsignedLong[] { amount, remainingBalance };
-
-    // Blindings: [rho_amount, rho_balance - rho_amount]
-    byte[] rhoAmount = amountParams.blindingFactor().toBytes();
-    byte[] rhoBalance = balanceParams.blindingFactor().toBytes();
-    byte[] negRhoAmount = Secp256k1Operations.scalarNegate(rhoAmount);
-    byte[] rhoRem = Secp256k1Operations.scalarAdd(rhoBalance, negRhoAmount);
-
-    byte[] blindingsFlat = new byte[64];
-    System.arraycopy(rhoAmount, 0, blindingsFlat, 0, 32);
-    System.arraycopy(rhoRem, 0, blindingsFlat, 32, 32);
-
-    // pk_base is H generator
-    UnsignedByteArray pkBase = UnsignedByteArray.of(
-      Secp256k1Operations.serializeCompressed(Secp256k1Operations.getH())
-    );
-
-    return rangeProofGenerator.generateProof(
-      values,
-      UnsignedByteArray.of(blindingsFlat),
-      pkBase,
-      context.value()
-    );
-  }
-
-  private ConfidentialMptSendProof combineProofs(
-    UnsignedByteArray samePlaintextProof,
-    UnsignedByteArray amountLinkageProof,
-    UnsignedByteArray balanceLinkageProof,
-    UnsignedByteArray rangeProof
-  ) {
-    int totalSize = samePlaintextProof.length() + amountLinkageProof.length() +
-      balanceLinkageProof.length() + rangeProof.length();
-
-    byte[] combined = new byte[totalSize];
-    int offset = 0;
-
-    System.arraycopy(samePlaintextProof.toByteArray(), 0, combined, offset, samePlaintextProof.length());
-    offset += samePlaintextProof.length();
-
-    System.arraycopy(amountLinkageProof.toByteArray(), 0, combined, offset, amountLinkageProof.length());
-    offset += amountLinkageProof.length();
-
-    System.arraycopy(balanceLinkageProof.toByteArray(), 0, combined, offset, balanceLinkageProof.length());
-    offset += balanceLinkageProof.length();
-
-    System.arraycopy(rangeProof.toByteArray(), 0, combined, offset, rangeProof.length());
-
-    return ConfidentialMptSendProof.of(UnsignedByteArray.of(combined));
   }
 }
 

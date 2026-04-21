@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.confidential.BlindingFactorGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptClawbackService;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptConvertBackService;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptConvertService;
@@ -424,17 +424,19 @@ public class ConfidentialTransfersIT extends AbstractIT {
       senderBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
     );
 
-    // Generate Pedersen commitments for the amount and remaining balance (for range proofs)
-    BlindingFactor amountBlindingFactor = blindingFactorGenerator.generate();
-    BlindingFactor balanceBlindingFactor = blindingFactorGenerator.generate();
-    PedersenProofParams amountParams = sendService.generatePedersenProofParams(
-      sendAmount, senderCiphertext, amountBlindingFactor
+    // Generate Pedersen commitment for the amount using txBlindingFactor as the blinding factor
+    // (per spec: pc_m = m*G + r*H where r is the shared ElGamal randomness)
+    PedersenCommitment amountCommitment = sendService.generatePedersenCommitment(
+      sendAmount, sendBlindingFactor
     );
+
+    // Generate Pedersen proof params for the sender's balance (full params needed)
+    BlindingFactor balanceBlindingFactor = blindingFactorGenerator.generate();
     PedersenProofParams balanceParams = sendService.generatePedersenProofParams(
       senderCurrentBalance, senderBalanceCiphertext, balanceBlindingFactor
     );
 
-    // Generate the combined ZK proof (range proofs + plaintext equality proofs)
+    // Generate the compact ZK proof (AND-composed sigma + aggregated Bulletproof = 946 bytes)
     ConfidentialMptSendProof sendProof = sendService.generateProof(
       holderElGamalKeyPair,
       sendAmount,
@@ -445,7 +447,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       ),
       sendBlindingFactor,
       sendContext,
-      amountParams,
+      amountCommitment,
       balanceParams
     );
     assertThat(sendService.verifyProof(
@@ -457,7 +459,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       ),
       senderBalanceCiphertext,
       sendContext,
-      PedersenCommitment.of(amountParams.pedersenCommitment()),
+      amountCommitment,
       PedersenCommitment.of(balanceParams.pedersenCommitment())
     )).isTrue();
 
@@ -473,7 +475,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .destinationEncryptedAmount(destCiphertext.toHex())
       .issuerEncryptedAmount(issuerCiphertextForSend.toHex())
       .zkProof(sendProof.hexValue())
-      .amountCommitment(amountParams.pedersenCommitment().hexValue())
+      .amountCommitment(amountCommitment.hexValue())
       .balanceCommitment(balanceParams.pedersenCommitment().hexValue())
       .build();
 

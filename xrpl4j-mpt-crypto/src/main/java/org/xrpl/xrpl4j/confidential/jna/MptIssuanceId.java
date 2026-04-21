@@ -1,8 +1,8 @@
-package org.xrpl.xrpl4j.crypto.confidential;
+package org.xrpl.xrpl4j.confidential.jna;
 
 /*-
  * ========================LICENSE_START=================================
- * xrpl4j :: core
+ * xrpl4j :: mpt-crypto
  * %%
  * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
  * %%
@@ -20,11 +20,24 @@ package org.xrpl.xrpl4j.crypto.confidential;
  * =========================LICENSE_END==================================
  */
 
-/**
- * @deprecated Use {@link org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator} instead.
- */
-@Deprecated
-public interface BlindingFactorGenerator
-  extends org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator {
-}
+import com.sun.jna.Structure;
 
+/**
+ * JNA mapping for the C struct {@code mpt_issuance_id}, passed by value.
+ *
+ * <pre>
+ * typedef struct {
+ *     uint8_t bytes[24];
+ * } mpt_issuance_id;
+ * </pre>
+ */
+@Structure.FieldOrder({"bytes"})
+public class MptIssuanceId extends Structure implements Structure.ByValue {
+
+  /** The 24-byte MPTokenIssuance ID. */
+  public byte[] bytes = new byte[24];
+
+  /** Default constructor required by JNA. */
+  public MptIssuanceId() {
+  }
+}

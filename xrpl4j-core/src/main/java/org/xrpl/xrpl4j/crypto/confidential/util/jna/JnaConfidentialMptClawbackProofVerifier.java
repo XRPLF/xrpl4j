@@ -35,8 +35,8 @@ import java.util.Objects;
  * Implementation of {@link ConfidentialMptClawbackProofVerifier} that delegates to the native
  * mpt-crypto C library via the {@link NativeMptCrypto} bridge.
  *
- * <p>Calls {@code secp256k1_equality_plaintext_verify} from the native library to verify
- * a 98-byte equality proof.</p>
+ * <p>Calls {@code mpt_verify_clawback_proof} from the native library to verify
+ * a 64-byte compact sigma proof.</p>
  */
 public class JnaConfidentialMptClawbackProofVerifier implements ConfidentialMptClawbackProofVerifier {
 

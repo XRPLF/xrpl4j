@@ -20,34 +20,23 @@ package org.xrpl.xrpl4j.crypto.confidential;
  * =========================LICENSE_END==================================
  */
 
-import org.xrpl.xrpl4j.crypto.SecureRandomUtils;
-
 /**
- * A {@link BlindingFactorGenerator} that uses secure random entropy.
+ * NOTE: This pure-Java implementation is not compatible with the new compact proof format.
+ * Use {@link org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaBlindingFactorGenerator} instead,
+ * which delegates to the native mpt-crypto C library for blinding factor generation.
  *
- * <p>The generated values are guaranteed to be valid secp256k1 scalars
- * (0 &lt; value &lt; curve order) using rejection sampling, matching the
- * behavior of the C reference implementation.</p>
- *
- * <p>This is the default implementation used in production. For testing,
- * a mock implementation can be injected to produce deterministic values.</p>
+ * @deprecated Use JnaBlindingFactorGenerator instead.
  */
+@Deprecated
 public class SecureRandomBlindingFactorGenerator implements BlindingFactorGenerator {
 
   /**
-   * Generates a random blinding factor using secure random entropy.
-   *
-   * <p>Uses rejection sampling to ensure the generated value is a valid
-   * secp256k1 scalar (0 &lt; value &lt; curve order).</p>
-   *
-   * @return A newly generated {@link BlindingFactor}.
+   * @throws UnsupportedOperationException always.
    */
   @Override
   public BlindingFactor generate() {
-    byte[] bytes = new byte[Secp256k1Operations.BLINDING_FACTOR_SIZE];
-    do {
-      SecureRandomUtils.secureRandom().nextBytes(bytes);
-    } while (!Secp256k1Operations.isValidScalar(bytes));
-    return BlindingFactor.fromBytes(bytes);
+    throw new UnsupportedOperationException(
+      "SecureRandomBlindingFactorGenerator is deprecated. Use JnaBlindingFactorGenerator instead."
+    );
   }
 }

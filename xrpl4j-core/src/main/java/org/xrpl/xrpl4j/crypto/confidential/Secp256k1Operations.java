@@ -63,13 +63,31 @@ public final class Secp256k1Operations {
   public static final int PEDERSEN_COMMIT_SIZE = 33;
 
   /**
-   * Size of a Schnorr proof in bytes (kMPT_SCHNORR_PROOF_SIZE).
+   * Size of a compact Schnorr proof in bytes (kMPT_SCHNORR_PROOF_SIZE).
    */
-  public static final int SCHNORR_PROOF_SIZE = 65;
+  public static final int SCHNORR_PROOF_SIZE = 64;
+
+  /**
+   * Size of a compact clawback proof in bytes (SECP256K1_COMPACT_CLAWBACK_PROOF_SIZE).
+   */
+  public static final int COMPACT_CLAWBACK_PROOF_SIZE = 64;
+
+  /**
+   * Size of a compact ConvertBack sigma proof in bytes (SECP256K1_COMPACT_CONVERTBACK_PROOF_SIZE).
+   */
+  public static final int COMPACT_CONVERTBACK_PROOF_SIZE = 128;
+
+  /**
+   * Size of a compact Send sigma proof in bytes (SECP256K1_COMPACT_STANDARD_PROOF_SIZE).
+   */
+  public static final int COMPACT_STANDARD_PROOF_SIZE = 192;
 
   /**
    * Size of an equality proof in bytes (kMPT_EQUALITY_PROOF_SIZE).
+   *
+   * @deprecated Use {@link #COMPACT_CLAWBACK_PROOF_SIZE} for the updated compact proof format.
    */
+  @Deprecated
   public static final int EQUALITY_PROOF_SIZE = 98;
 
   /**

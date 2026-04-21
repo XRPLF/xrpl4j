@@ -65,25 +65,25 @@ public interface NativeMptCrypto {
   int generateBlindingFactor(byte[] outFactor);
 
   /**
-   * Generates a Schnorr Proof of Knowledge for a Confidential MPT conversion.
+   * Generates a compact Schnorr Proof of Knowledge for a Confidential MPT conversion.
    *
    * @param pubkey   The 33-byte compressed secp256k1 public key.
    * @param privkey  The 32-byte private key.
    * @param ctxHash  The 32-byte context hash binding the proof to a transaction.
-   * @param outProof A 65-byte buffer to receive the proof (T || s).
+   * @param outProof A 64-byte buffer to receive the compact Schnorr proof.
    *
    * @return 0 on success, -1 on failure.
    */
   int generateConvertProof(byte[] pubkey, byte[] privkey, byte[] ctxHash, byte[] outProof);
 
   /**
-   * Verifies a Schnorr Proof of Knowledge for a Confidential MPT conversion.
+   * Verifies a compact Schnorr Proof of Knowledge for a Confidential MPT conversion.
    *
-   * @param proof   The 65-byte proof (T || s).
+   * @param proof   The 64-byte compact Schnorr proof.
    * @param pubkey  The 33-byte compressed secp256k1 public key.
    * @param ctxHash The 32-byte context hash.
    *
-   * @return 1 if the proof is valid, 0 otherwise.
+   * @return 0 on success (valid), -1 on failure (invalid).
    */
   int verifyConvertProof(byte[] proof, byte[] pubkey, byte[] ctxHash);
 
@@ -99,35 +99,34 @@ public interface NativeMptCrypto {
   int generatePedersenCommitment(long amount, byte[] blindingFactor, byte[] outCommitment);
 
   /**
-   * Generates the combined proof for a ConfidentialMptSend transaction.
+   * Generates the compact send proof for a ConfidentialMptSend transaction.
    *
-   * <p>The proof includes same-plaintext, amount linkage, balance linkage, and range proofs.</p>
+   * <p>Produces a compact AND-composed sigma proof (192 bytes) + aggregated Bulletproof (754 bytes).
+   * Total proof size is fixed at 946 bytes.</p>
    *
    * @param privkey              The sender's 32-byte private key.
+   * @param pubkey               The sender's 33-byte public key.
    * @param amount               The amount being sent.
-   * @param recipientPubkeys     Flat array of recipient public keys (n * 33 bytes).
-   * @param recipientCiphertexts Flat array of recipient encrypted amounts (n * 66 bytes).
-   * @param numRecipients        Number of recipients.
-   * @param txBlindingFactor     The 32-byte blinding factor used for encryption.
+   * @param recipientPubkeys     Flat array of participant public keys (n * 33 bytes).
+   * @param recipientCiphertexts Flat array of participant encrypted amounts (n * 66 bytes).
+   * @param numRecipients        Number of participants (3 or 4).
+   * @param txBlindingFactor     The 32-byte ElGamal randomness r (also blinding factor for pc_m).
    * @param contextHash          The 32-byte context hash.
-   * @param amountCommitment     The 33-byte Pedersen commitment for the amount.
-   * @param amountValue          The amount value in the amount params.
-   * @param amountCiphertext     The 66-byte encrypted amount in the amount params.
-   * @param amountBlinding       The 32-byte blinding factor in the amount params.
+   * @param amountCommitment     The 33-byte Pedersen commitment pc_m = m*G + r*H.
    * @param balanceCommitment    The 33-byte Pedersen commitment for the balance.
-   * @param balanceValue         The balance value in the balance params.
-   * @param balanceCiphertext    The 66-byte encrypted amount in the balance params.
-   * @param balanceBlinding      The 32-byte blinding factor in the balance params.
-   * @param outProof             Buffer to receive the proof bytes.
+   * @param balanceValue         The balance value.
+   * @param balanceCiphertext    The 66-byte encrypted balance.
+   * @param balanceBlinding      The 32-byte blinding factor for the balance.
+   * @param outProof             Buffer to receive the 946-byte proof.
    * @param outLen               1-element array: input is buffer size, output is actual proof size.
    *
    * @return 0 on success, -1 on failure.
    */
   int generateSendProof(
-    byte[] privkey, long amount,
+    byte[] privkey, byte[] pubkey, long amount,
     byte[] recipientPubkeys, byte[] recipientCiphertexts, int numRecipients,
     byte[] txBlindingFactor, byte[] contextHash,
-    byte[] amountCommitment, long amountValue, byte[] amountCiphertext, byte[] amountBlinding,
+    byte[] amountCommitment,
     byte[] balanceCommitment, long balanceValue, byte[] balanceCiphertext, byte[] balanceBlinding,
     byte[] outProof, int[] outLen
   );
@@ -143,7 +142,7 @@ public interface NativeMptCrypto {
    * @param balanceValue        The balance value.
    * @param balanceCiphertext   The 66-byte encrypted balance.
    * @param balanceBlinding     The 32-byte blinding factor for the balance.
-   * @param outProof            An 883-byte buffer to receive the proof.
+   * @param outProof            An 816-byte buffer to receive the proof.
    *
    * @return 0 on success, -1 on failure.
    */
@@ -154,14 +153,14 @@ public interface NativeMptCrypto {
   );
 
   /**
-   * Generates an equality proof for a ConfidentialMptClawback transaction.
+   * Generates a compact sigma proof for a ConfidentialMptClawback transaction.
    *
    * @param privkey         The issuer's 32-byte private key.
    * @param pubkey          The issuer's 33-byte public key.
    * @param ctxHash         The 32-byte context hash.
    * @param amount          The amount to claw back.
    * @param encryptedAmount The 66-byte issuer encrypted balance from the ledger.
-   * @param outProof        A 98-byte buffer to receive the equality proof.
+   * @param outProof        A 64-byte buffer to receive the compact sigma proof.
    *
    * @return 0 on success, -1 on failure.
    */
@@ -170,16 +169,16 @@ public interface NativeMptCrypto {
   );
 
   /**
-   * Verifies an equality proof for a ConfidentialMptClawback transaction.
+   * Verifies a compact sigma proof for a ConfidentialMptClawback transaction.
    *
-   * @param proof           The 98-byte equality proof.
+   * @param proof           The 64-byte compact sigma proof.
    * @param c1              The 33-byte C1 component of the encrypted balance.
    * @param c2              The 33-byte C2 component of the encrypted balance.
    * @param pubkey          The 33-byte issuer public key.
    * @param amount          The clawback amount.
    * @param ctxHash         The 32-byte context hash.
    *
-   * @return 1 if the proof is valid, 0 otherwise.
+   * @return 0 on success (valid), -1 on failure (invalid).
    */
   int verifyClawbackProof(byte[] proof, byte[] c1, byte[] c2, byte[] pubkey, long amount, byte[] ctxHash);
 
@@ -191,7 +190,7 @@ public interface NativeMptCrypto {
    * @param amount              The amount converted back.
    * @param encryptedBalance    The 66-byte encrypted balance from the ledger.
    * @param balanceCommitment   The 33-byte Pedersen commitment for the balance.
-   * @param proof               The 883-byte proof.
+   * @param proof               The 816-byte proof.
    *
    * @return 0 on success (valid), non-zero on failure.
    */
@@ -202,17 +201,17 @@ public interface NativeMptCrypto {
   );
 
   /**
-   * Verifies the combined proof for a ConfidentialMptSend transaction.
+   * Verifies the compact send proof for a ConfidentialMptSend transaction.
+   * Proof size is fixed at 946 bytes.
    *
-   * @param recipientPubkeys        Flat array of recipient public keys (n * 33 bytes).
-   * @param recipientCiphertexts    Flat array of recipient encrypted amounts (n * 66 bytes).
-   * @param numRecipients           Number of recipients.
+   * @param recipientPubkeys        Flat array of participant public keys (n * 33 bytes).
+   * @param recipientCiphertexts    Flat array of participant encrypted amounts (n * 66 bytes).
+   * @param numRecipients           Number of participants (3 or 4).
    * @param senderSpendingCiphertext The sender's 66-byte encrypted balance ciphertext.
    * @param ctxHash                 The 32-byte context hash.
    * @param amountCommitment        The 33-byte Pedersen commitment for the amount.
    * @param balanceCommitment       The 33-byte Pedersen commitment for the balance.
-   * @param proof                   The proof bytes.
-   * @param proofLen                The proof length.
+   * @param proof                   The 946-byte proof.
    *
    * @return 0 on success (valid), non-zero on failure.
    */
@@ -220,6 +219,64 @@ public interface NativeMptCrypto {
     byte[] recipientPubkeys, byte[] recipientCiphertexts, int numRecipients,
     byte[] senderSpendingCiphertext,
     byte[] ctxHash, byte[] amountCommitment, byte[] balanceCommitment,
-    byte[] proof, int proofLen
+    byte[] proof
   );
+
+  // =========================================================================
+  // Context Hash Generation
+  // =========================================================================
+
+  /**
+   * Generates the context hash for a ConfidentialMPTConvert transaction.
+   *
+   * @param account    The 20-byte account ID.
+   * @param issuanceId The 24-byte MPTokenIssuance ID.
+   * @param sequence   The transaction sequence number.
+   * @param outHash    A 32-byte buffer to receive the hash.
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  int generateConvertContextHash(byte[] account, byte[] issuanceId, int sequence, byte[] outHash);
+
+  /**
+   * Generates the context hash for a ConfidentialMPTConvertBack transaction.
+   *
+   * @param account    The 20-byte account ID.
+   * @param issuanceId The 24-byte MPTokenIssuance ID.
+   * @param sequence   The transaction sequence number.
+   * @param version    The confidential balance version.
+   * @param outHash    A 32-byte buffer to receive the hash.
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  int generateConvertBackContextHash(byte[] account, byte[] issuanceId, int sequence, int version, byte[] outHash);
+
+  /**
+   * Generates the context hash for a ConfidentialMPTSend transaction.
+   *
+   * @param account     The 20-byte sender account ID.
+   * @param issuanceId  The 24-byte MPTokenIssuance ID.
+   * @param sequence    The transaction sequence number.
+   * @param destination The 20-byte destination account ID.
+   * @param version     The confidential balance version.
+   * @param outHash     A 32-byte buffer to receive the hash.
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  int generateSendContextHash(
+    byte[] account, byte[] issuanceId, int sequence, byte[] destination, int version, byte[] outHash
+  );
+
+  /**
+   * Generates the context hash for a ConfidentialMPTClawback transaction.
+   *
+   * @param account    The 20-byte issuer account ID.
+   * @param issuanceId The 24-byte MPTokenIssuance ID.
+   * @param sequence   The transaction sequence number.
+   * @param holder     The 20-byte holder account ID.
+   * @param outHash    A 32-byte buffer to receive the hash.
+   *
+   * @return 0 on success, -1 on failure.
+   */
+  int generateClawbackContextHash(byte[] account, byte[] issuanceId, int sequence, byte[] holder, byte[] outHash);
 }

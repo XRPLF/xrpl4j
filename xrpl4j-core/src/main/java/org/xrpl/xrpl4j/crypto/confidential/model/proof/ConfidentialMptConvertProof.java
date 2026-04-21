@@ -27,33 +27,27 @@ import org.immutables.value.Value.Lazy;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 
 /**
- * Represents a Schnorr proof of knowledge of a secret key for Confidential MPT conversions.
+ * A * Represents a compact Schnorr proof of knowledge of a secret key for Confidential MPT conversions.
  *
- * <p>The proof consists of:
- * <ul>
- *   <li>T (33 bytes) - commitment point (compressed EC point)</li>
- *   <li>s (32 bytes) - response scalar</li>
- * </ul>
- *
- * <p>Total size: 65 bytes.</p>
+ * <p>Total size: 64 bytes (kMPT_SCHNORR_PROOF_SIZE).</p>
  */
 @Value.Immutable
 public interface ConfidentialMptConvertProof {
 
   /**
-   * The length of the proof in bytes (33 + 32 = 65).
+   * The length of the compact Schnorr proof in bytes (kMPT_SCHNORR_PROOF_SIZE).
    */
-  int PROOF_LENGTH = 65;
+  int PROOF_LENGTH = 64;
 
   /**
    * Creates a proof from an {@link UnsignedByteArray}.
    *
-   * @param value The 65-byte proof (T || s).
+   * @param value The 64-byte compact Schnorr proof.
    *
    * @return A {@link ConfidentialMptConvertProof}.
    *
    * @throws NullPointerException     if value is null.
-   * @throws IllegalArgumentException if value is not exactly 65 bytes.
+   * @throws IllegalArgumentException if value is not exactly 64 bytes.
    */
   static ConfidentialMptConvertProof of(final UnsignedByteArray value) {
     return ImmutableConfidentialMptConvertProof.builder()
@@ -64,26 +58,26 @@ public interface ConfidentialMptConvertProof {
   /**
    * Creates a proof from a hex string.
    *
-   * @param hex The 130-character hex string representing the proof.
+   * @param hex The 128-character hex string representing the proof.
    *
    * @return A {@link ConfidentialMptConvertProof}.
    *
    * @throws NullPointerException     if hex is null.
-   * @throws IllegalArgumentException if hex is not a valid 65-byte hex string.
+   * @throws IllegalArgumentException if hex is not a valid 64-byte hex string.
    */
   static ConfidentialMptConvertProof fromHex(final String hex) {
     return of(UnsignedByteArray.fromHex(hex));
   }
 
   /**
-   * The 65-byte proof value (T || s).
+   * The 64-byte compact Schnorr proof value.
    *
    * @return An {@link UnsignedByteArray} containing the proof bytes.
    */
   UnsignedByteArray value();
 
   /**
-   * Validates that the proof is exactly 65 bytes.
+   * Validates that the proof is exactly 64 bytes.
    */
   @Value.Check
   default void check() {

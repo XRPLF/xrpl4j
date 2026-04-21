@@ -37,12 +37,12 @@ import java.util.Objects;
  * Implementation of {@link ConfidentialMptClawbackProofGenerator} that delegates to the native
  * mpt-crypto C library via the {@link NativeMptCrypto} bridge.
  *
- * <p>Calls {@code mpt_get_clawback_proof} from the native library to generate a 98-byte
- * equality proof (T1 || T2 || s).</p>
+ * <p>Calls {@code mpt_get_clawback_proof} from the native library to generate a 64-byte
+ * compact sigma proof.</p>
  */
 public class JnaConfidentialMptClawbackProofGenerator implements ConfidentialMptClawbackProofGenerator {
 
-  private static final int PROOF_SIZE = 98;
+  private static final int PROOF_SIZE = 64;
 
   private final NativeMptCrypto nativeCrypto;
 

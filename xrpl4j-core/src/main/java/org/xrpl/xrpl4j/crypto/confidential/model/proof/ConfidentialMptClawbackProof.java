@@ -32,10 +32,10 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 /**
  * Represents the proof for a ConfidentialMptClawback transaction.
  *
- * <p>The proof is a plaintext equality proof (Chaum-Pedersen style) that proves
- * the issuer knows the plaintext amount being clawed back.</p>
+ * <p>The proof is a compact sigma proof that proves the issuer can decrypt the ciphertext
+ * and it equals exactly the claimed amount.</p>
  *
- * <p>The proof format is: T1 (33 bytes) || T2 (33 bytes) || s (32 bytes) = 98 bytes total.</p>
+ * <p>Total size: 64 bytes (SECP256K1_COMPACT_CLAWBACK_PROOF_SIZE).</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableConfidentialMptClawbackProof.class)
@@ -43,9 +43,9 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 public interface ConfidentialMptClawbackProof {
 
   /**
-   * Expected proof size: T1 (33) + T2 (33) + s (32) = 98 bytes.
+   * Expected proof size: 64 bytes (SECP256K1_COMPACT_CLAWBACK_PROOF_SIZE).
    */
-  int EXPECTED_SIZE = 98;
+  int EXPECTED_SIZE = 64;
 
   /**
    * Creates a new builder for {@link ConfidentialMptClawbackProof}.

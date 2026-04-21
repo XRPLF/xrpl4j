@@ -41,14 +41,14 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 public interface ConfidentialMptConvertProofGenerator {
 
   /**
-   * Generates a Schnorr Proof of Knowledge for a Confidential MPT conversion.
+   * Generates a compact Schnorr Proof of Knowledge for a Confidential MPT conversion.
    *
-   * <p>The proof format is: T (33 bytes compressed point) || s (32 bytes scalar) = 65 bytes total.</p>
+   * <p>The proof is 64 bytes (kMPT_SCHNORR_PROOF_SIZE).</p>
    *
    * @param keyPair The secp256k1 key pair (both public and private key).
    * @param context The context hash binding the proof to a specific transaction.
    *
-   * @return A {@link ConfidentialMptConvertProof} containing the 65-byte proof.
+   * @return A {@link ConfidentialMptConvertProof} containing the 64-byte proof.
    *
    * @throws NullPointerException     if any parameter is null.
    * @throws IllegalArgumentException if keyPair is not a secp256k1 key pair.

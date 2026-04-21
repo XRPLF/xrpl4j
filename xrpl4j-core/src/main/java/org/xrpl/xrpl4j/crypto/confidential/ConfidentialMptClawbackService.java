@@ -27,8 +27,10 @@ import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptClawback
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptClawbackProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptClawbackProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptClawbackProofVerifier;
+import org.xrpl.xrpl4j.crypto.confidential.util.ContextHashGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptClawbackProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptClawbackProofVerifier;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaContextHashGenerator;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -48,14 +50,16 @@ import java.util.Objects;
  */
 public class ConfidentialMptClawbackService {
 
+  private final ContextHashGenerator contextHashGenerator;
   private final ConfidentialMptClawbackProofGenerator proofGenerator;
   private final ConfidentialMptClawbackProofVerifier proofVerifier;
 
   /**
-   * Creates a new instance with default BouncyCastle implementations.
+   * Creates a new instance with default JNA implementations.
    */
   public ConfidentialMptClawbackService() {
     this(
+      new JnaContextHashGenerator(),
       new JnaConfidentialMptClawbackProofGenerator(),
       new JnaConfidentialMptClawbackProofVerifier()
     );
@@ -64,13 +68,16 @@ public class ConfidentialMptClawbackService {
   /**
    * Creates a new instance with custom implementations.
    *
-   * @param proofGenerator The proof generator to use.
-   * @param proofVerifier  The proof verifier to use.
+   * @param contextHashGenerator The context hash generator to use.
+   * @param proofGenerator       The proof generator to use.
+   * @param proofVerifier        The proof verifier to use.
    */
   public ConfidentialMptClawbackService(
+    final ContextHashGenerator contextHashGenerator,
     final ConfidentialMptClawbackProofGenerator proofGenerator,
     final ConfidentialMptClawbackProofVerifier proofVerifier
   ) {
+    this.contextHashGenerator = Objects.requireNonNull(contextHashGenerator, "contextHashGenerator must not be null");
     this.proofGenerator = Objects.requireNonNull(proofGenerator, "proofGenerator must not be null");
     this.proofVerifier = Objects.requireNonNull(proofVerifier, "proofVerifier must not be null");
   }
@@ -91,7 +98,7 @@ public class ConfidentialMptClawbackService {
     final MpTokenIssuanceId issuanceId,
     final Address holder
   ) {
-    return ConfidentialMptContextUtil.generateClawbackContext(account, sequence, issuanceId, holder);
+    return contextHashGenerator.generateClawbackContext(account, sequence, issuanceId, holder);
   }
 
   /**
@@ -106,7 +113,7 @@ public class ConfidentialMptClawbackService {
    * @param issuerPrivateKey       The issuer's ElGamal private key.
    * @param context                The context hash binding the proof to a specific transaction.
    *
-   * @return A {@link ConfidentialMptClawbackProof} containing the 98-byte proof.
+   * @return A {@link ConfidentialMptClawbackProof} containing the 64-byte compact sigma proof.
    */
   public ConfidentialMptClawbackProof generateProof(
     final EncryptedAmount issuerEncryptedBalance,

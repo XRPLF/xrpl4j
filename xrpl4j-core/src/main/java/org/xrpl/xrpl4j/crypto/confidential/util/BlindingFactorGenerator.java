@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.confidential;
+package org.xrpl.xrpl4j.crypto.confidential.util;
 
 /*-
  * ========================LICENSE_START=================================
@@ -20,11 +20,21 @@ package org.xrpl.xrpl4j.crypto.confidential;
  * =========================LICENSE_END==================================
  */
 
-/**
- * @deprecated Use {@link org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator} instead.
- */
-@Deprecated
-public interface BlindingFactorGenerator
-  extends org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator {
-}
+import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
 
+/**
+ * Interface for generating blinding factors used in ElGamal encryption and zero-knowledge proofs.
+ *
+ * @see BlindingFactor
+ */
+public interface BlindingFactorGenerator {
+
+  /**
+   * Generates a new blinding factor.
+   *
+   * <p>The generated value must be a valid secp256k1 scalar (0 &lt; value &lt; curve order).</p>
+   *
+   * @return A newly generated {@link BlindingFactor}.
+   */
+  BlindingFactor generate();
+}

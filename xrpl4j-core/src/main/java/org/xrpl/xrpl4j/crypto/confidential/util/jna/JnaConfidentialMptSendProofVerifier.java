@@ -95,7 +95,7 @@ public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendP
       context.value().toByteArray(),
       amountCommitment.value().toByteArray(),
       balanceCommitment.value().toByteArray(),
-      proofBytes, proofBytes.length
+      proofBytes
     ) == 0;
   }
 }

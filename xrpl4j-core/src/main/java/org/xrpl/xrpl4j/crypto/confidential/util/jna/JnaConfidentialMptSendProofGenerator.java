@@ -26,6 +26,7 @@ import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
+import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
@@ -39,8 +40,8 @@ import java.util.Objects;
  * Implementation of {@link ConfidentialMptSendProofGenerator} that delegates to the native mpt-crypto
  * C library via the {@link NativeMptCrypto} bridge.
  *
- * <p>Calls {@code mpt_get_confidential_send_proof} from the native library to generate the combined
- * proof (same-plaintext + amount linkage + balance linkage + range proof).</p>
+ * <p>Calls {@code mpt_get_confidential_send_proof} from the native library to generate a compact
+ * AND-composed sigma proof (192 bytes) + aggregated Bulletproof (754 bytes) = 946 bytes total.</p>
  */
 public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSendProofGenerator {
 
@@ -74,7 +75,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     final List<MptConfidentialParty> recipients,
     final BlindingFactor txBlindingFactor,
     final ConfidentialMptSendContext context,
-    final PedersenProofParams amountParams,
+    final PedersenCommitment amountCommitment,
     final PedersenProofParams balanceParams
   ) {
     Objects.requireNonNull(senderKeyPair, "senderKeyPair must not be null");
@@ -82,7 +83,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     Objects.requireNonNull(recipients, "recipients must not be null");
     Objects.requireNonNull(txBlindingFactor, "txBlindingFactor must not be null");
     Objects.requireNonNull(context, "context must not be null");
-    Objects.requireNonNull(amountParams, "amountParams must not be null");
+    Objects.requireNonNull(amountCommitment, "amountCommitment must not be null");
     Objects.requireNonNull(balanceParams, "balanceParams must not be null");
 
     Preconditions.checkArgument(
@@ -93,9 +94,10 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
 
     int numRecipients = recipients.size();
 
-    // Extract sender private key
+    // Extract sender keys
     UnsignedByteArray naturalBytes = senderKeyPair.privateKey().naturalBytes();
     byte[] privkey = naturalBytes.toByteArray();
+    byte[] pubkey = senderKeyPair.publicKey().value().toByteArray();
 
     // Flatten recipient pubkeys and ciphertexts into contiguous arrays
     byte[] recipientPubkeys = new byte[numRecipients * PUBKEY_SIZE];
@@ -112,11 +114,10 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     int[] outLen = new int[]{MAX_PROOF_SIZE};
 
     int result = nativeCrypto.generateSendProof(
-      privkey, amount.longValue(),
+      privkey, pubkey, amount.longValue(),
       recipientPubkeys, recipientCiphertexts, numRecipients,
       txBlindingFactor.toBytes(), context.value().toByteArray(),
-      amountParams.pedersenCommitment().toByteArray(), amountParams.amount().longValue(),
-      amountParams.encryptedAmount().toBytes().toByteArray(), amountParams.blindingFactor().toBytes(),
+      amountCommitment.value().toByteArray(),
       balanceParams.pedersenCommitment().toByteArray(), balanceParams.amount().longValue(),
       balanceParams.encryptedAmount().toBytes().toByteArray(), balanceParams.blindingFactor().toBytes(),
       outProof, outLen

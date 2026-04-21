@@ -33,14 +33,14 @@ import java.util.Objects;
  * Implementation of {@link ConfidentialMptConvertProofVerifier} that delegates to the native mpt-crypto
  * C library via the {@link NativeMptCrypto} bridge.
  *
- * <p>Calls {@code secp256k1_mpt_pok_sk_verify} from the native library to verify a 65-byte
- * Schnorr Proof of Knowledge.</p>
+ * <p>Calls {@code mpt_verify_convert_proof} from the native library to verify a 64-byte
+ * compact Schnorr proof.</p>
  */
 public class JnaConfidentialMptConvertProofVerifier implements ConfidentialMptConvertProofVerifier {
 
   private static final int PUBKEY_SIZE = 33;
   private static final int CONTEXT_HASH_SIZE = 32;
-  private static final int PROOF_SIZE = 65;
+  private static final int PROOF_SIZE = 64;
 
   private final NativeMptCrypto nativeCrypto;
 

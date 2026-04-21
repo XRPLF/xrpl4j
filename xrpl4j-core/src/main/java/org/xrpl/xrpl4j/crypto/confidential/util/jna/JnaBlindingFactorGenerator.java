@@ -21,7 +21,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  */
 
 import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.confidential.BlindingFactorGenerator;
+import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
 
 import java.util.Objects;
 

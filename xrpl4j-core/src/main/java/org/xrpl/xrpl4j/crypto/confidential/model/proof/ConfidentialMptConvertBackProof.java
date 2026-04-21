@@ -28,18 +28,16 @@ import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Lazy;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.Secp256k1Operations;
 
 /**
  * Represents the proof for a ConfidentialMptConvertBack transaction.
  *
- * <p>The proof consists of:
- * <ul>
- *   <li>Balance linkage proof (195 bytes) - links ElGamal ciphertext to Pedersen commitment for balance</li>
- *   <li>Single bulletproof range proof (688 bytes) - proves remaining balance is in valid range [0, 2^64)</li>
- * </ul>
+ * <p>The proof consists of a compact AND-composed sigma proof (128 bytes) over the balance
+ * witness, followed by a single Bulletproof range proof (688 bytes) over the remainder
+ * commitment.</p>
  *
- * <p>Total size: 195 + 688 = 883 bytes</p>
+ * <p>Total size: 128 + 688 = 816 bytes
+ * (SECP256K1_COMPACT_CONVERTBACK_PROOF_SIZE + kMPT_SINGLE_BULLETPROOF_SIZE)</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableConfidentialMptConvertBackProof.class)
@@ -47,14 +45,19 @@ import org.xrpl.xrpl4j.crypto.confidential.Secp256k1Operations;
 public interface ConfidentialMptConvertBackProof {
 
   /**
+   * Size of the compact AND-composed sigma proof (SECP256K1_COMPACT_CONVERTBACK_PROOF_SIZE).
+   */
+  int COMPACT_SIGMA_SIZE = 128;
+
+  /**
    * Size of a single bulletproof range proof (for 1 value).
    */
   int SINGLE_BULLETPROOF_SIZE = 688;
 
   /**
-   * Expected total proof size: balance linkage (195) + single bulletproof (688) = 883 bytes.
+   * Expected total proof size: compact sigma (128) + single bulletproof (688) = 816 bytes.
    */
-  int EXPECTED_SIZE = Secp256k1Operations.PEDERSEN_LINK_SIZE + SINGLE_BULLETPROOF_SIZE;
+  int EXPECTED_SIZE = COMPACT_SIGMA_SIZE + SINGLE_BULLETPROOF_SIZE;
 
   /**
    * Creates a new builder for {@link ConfidentialMptConvertBackProof}.

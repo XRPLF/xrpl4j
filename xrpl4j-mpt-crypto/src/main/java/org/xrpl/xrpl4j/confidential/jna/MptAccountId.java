@@ -1,8 +1,8 @@
-package org.xrpl.xrpl4j.crypto.confidential;
+package org.xrpl.xrpl4j.confidential.jna;
 
 /*-
  * ========================LICENSE_START=================================
- * xrpl4j :: core
+ * xrpl4j :: mpt-crypto
  * %%
  * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
  * %%
@@ -20,11 +20,24 @@ package org.xrpl.xrpl4j.crypto.confidential;
  * =========================LICENSE_END==================================
  */
 
-/**
- * @deprecated Use {@link org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator} instead.
- */
-@Deprecated
-public interface BlindingFactorGenerator
-  extends org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator {
-}
+import com.sun.jna.Structure;
 
+/**
+ * JNA mapping for the C struct {@code account_id}, passed by value.
+ *
+ * <pre>
+ * typedef struct account_id {
+ *     uint8_t bytes[20];
+ * } account_id;
+ * </pre>
+ */
+@Structure.FieldOrder({"bytes"})
+public class MptAccountId extends Structure implements Structure.ByValue {
+
+  /** The 20-byte account ID. */
+  public byte[] bytes = new byte[20];
+
+  /** Default constructor required by JNA. */
+  public MptAccountId() {
+  }
+}

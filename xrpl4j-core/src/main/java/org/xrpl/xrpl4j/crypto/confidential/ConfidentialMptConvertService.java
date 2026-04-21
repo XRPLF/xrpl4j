@@ -25,8 +25,10 @@ import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertC
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertProofVerifier;
+import org.xrpl.xrpl4j.crypto.confidential.util.ContextHashGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptConvertProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptConvertProofVerifier;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaContextHashGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -46,26 +48,34 @@ import java.util.Objects;
  */
 public class ConfidentialMptConvertService {
 
+  private final ContextHashGenerator contextHashGenerator;
   private final ConfidentialMptConvertProofGenerator proofGenerator;
   private final ConfidentialMptConvertProofVerifier proofVerifier;
 
   /**
-   * Creates a new instance with default BouncyCastle implementations.
+   * Creates a new instance with default JNA implementations.
    */
   public ConfidentialMptConvertService() {
-    this(new JnaConfidentialMptConvertProofGenerator(), new JnaConfidentialMptConvertProofVerifier());
+    this(
+      new JnaContextHashGenerator(),
+      new JnaConfidentialMptConvertProofGenerator(),
+      new JnaConfidentialMptConvertProofVerifier()
+    );
   }
 
   /**
    * Creates a new instance with custom implementations.
    *
-   * @param proofGenerator The proof generator to use.
-   * @param proofVerifier  The proof verifier to use.
+   * @param contextHashGenerator The context hash generator to use.
+   * @param proofGenerator       The proof generator to use.
+   * @param proofVerifier        The proof verifier to use.
    */
   public ConfidentialMptConvertService(
+    final ContextHashGenerator contextHashGenerator,
     final ConfidentialMptConvertProofGenerator proofGenerator,
     final ConfidentialMptConvertProofVerifier proofVerifier
   ) {
+    this.contextHashGenerator = Objects.requireNonNull(contextHashGenerator, "contextHashGenerator must not be null");
     this.proofGenerator = Objects.requireNonNull(proofGenerator, "proofGenerator must not be null");
     this.proofVerifier = Objects.requireNonNull(proofVerifier, "proofVerifier must not be null");
   }
@@ -84,7 +94,7 @@ public class ConfidentialMptConvertService {
     final UnsignedInteger sequence,
     final MpTokenIssuanceId issuanceId
   ) {
-    return ConfidentialMptContextUtil.generateConvertContext(account, sequence, issuanceId);
+    return contextHashGenerator.generateConvertContext(account, sequence, issuanceId);
   }
 
   /**
@@ -93,7 +103,7 @@ public class ConfidentialMptConvertService {
    * @param keyPair The secp256k1 key pair (ElGamal key pair).
    * @param context The context hash binding the proof to a specific transaction.
    *
-   * @return A {@link ConfidentialMptConvertProof} containing the 65-byte proof.
+   * @return A {@link ConfidentialMptConvertProof} containing the 64-byte compact Schnorr proof.
    */
   public ConfidentialMptConvertProof generateProof(
     final KeyPair keyPair,

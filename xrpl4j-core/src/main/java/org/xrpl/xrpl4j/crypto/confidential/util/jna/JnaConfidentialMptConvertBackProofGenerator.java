@@ -36,12 +36,12 @@ import java.util.Objects;
  * Implementation of {@link ConfidentialMptConvertBackProofGenerator} that delegates to the native
  * mpt-crypto C library via the {@link NativeMptCrypto} bridge.
  *
- * <p>Calls {@code mpt_get_convert_back_proof} from the native library to generate an 883-byte
- * proof (195-byte balance linkage + 688-byte range proof).</p>
+ * <p>Calls {@code mpt_get_convert_back_proof} from the native library to generate an 816-byte
+ * proof (128-byte compact sigma + 688-byte range proof).</p>
  */
 public class JnaConfidentialMptConvertBackProofGenerator implements ConfidentialMptConvertBackProofGenerator {
 
-  private static final int PROOF_SIZE = 883;
+  private static final int PROOF_SIZE = 816;
 
   private final NativeMptCrypto nativeCrypto;
 

@@ -27,20 +27,15 @@ import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Lazy;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.Secp256k1Operations;
 
 /**
  * Represents the proof for a ConfidentialMptSend transaction.
  *
- * <p>The proof consists of:
- * <ul>
- *   <li>Same plaintext multi proof - proves all ciphertexts encrypt the same amount</li>
- *   <li>Amount linkage proof (195 bytes) - links ElGamal ciphertext to Pedersen commitment for amount</li>
- *   <li>Balance linkage proof (195 bytes) - links ElGamal ciphertext to Pedersen commitment for balance</li>
- *   <li>Aggregated bulletproof range proof (754 bytes) - proves amount and remaining balance are in valid range</li>
- * </ul>
+ * <p>The proof consists of a compact AND-composed sigma proof (192 bytes) that simultaneously
+ * proves ciphertext equality, Pedersen commitment linkage, and balance ownership,
+ * followed by an aggregated Bulletproof range proof (754 bytes).</p>
  *
- * <p>Total size varies based on number of recipients.</p>
+ * <p>Total size: fixed at 946 bytes (SECP256K1_COMPACT_STANDARD_PROOF_SIZE + kMPT_DOUBLE_BULLETPROOF_SIZE).</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableConfidentialMptSendProof.class)
@@ -48,9 +43,19 @@ import org.xrpl.xrpl4j.crypto.confidential.Secp256k1Operations;
 public interface ConfidentialMptSendProof {
 
   /**
+   * Size of the compact AND-composed sigma proof (SECP256K1_COMPACT_STANDARD_PROOF_SIZE).
+   */
+  int COMPACT_SIGMA_SIZE = 192;
+
+  /**
    * Size of the aggregated bulletproof for 2 values (amount + remaining balance).
    */
   int DOUBLE_BULLETPROOF_SIZE = 754;
+
+  /**
+   * Fixed total proof size: 192 (compact sigma) + 754 (double bulletproof) = 946 bytes.
+   */
+  int EXPECTED_SIZE = COMPACT_SIGMA_SIZE + DOUBLE_BULLETPROOF_SIZE;
 
   /**
    * Creates a new builder for {@link ConfidentialMptSendProof}.
@@ -96,16 +101,12 @@ public interface ConfidentialMptSendProof {
   UnsignedByteArray value();
 
   /**
-   * Calculates the expected proof size for a given number of recipients.
-   *
-   * @param numRecipients The number of recipients (typically 3: sender, destination, issuer).
+   * Returns the fixed expected proof size (946 bytes).
    *
    * @return The expected proof size in bytes.
    */
-  static int expectedSize(int numRecipients) {
-    // Same plaintext multi proof size + 2 * linkage proof size + double bulletproof size
-    int samePlaintextSize = Secp256k1Operations.samePlaintextMultiProofSize(numRecipients);
-    return samePlaintextSize + (2 * Secp256k1Operations.PEDERSEN_LINK_SIZE) + DOUBLE_BULLETPROOF_SIZE;
+  static int expectedSize() {
+    return EXPECTED_SIZE;
   }
 
   /**

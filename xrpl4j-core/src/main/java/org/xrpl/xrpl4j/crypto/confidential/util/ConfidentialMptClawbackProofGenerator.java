@@ -52,7 +52,7 @@ public interface ConfidentialMptClawbackProofGenerator {
    * @param issuerPrivateKey       The issuer's ElGamal private key (used as "randomness" in the proof).
    * @param context                The context hash binding the proof to a specific transaction.
    *
-   * @return A {@link ConfidentialMptClawbackProof} containing the 98-byte proof.
+   * @return A {@link ConfidentialMptClawbackProof} containing the 64-byte compact sigma proof.
    *
    * @throws NullPointerException     if any parameter is null.
    * @throws IllegalArgumentException if any parameter is invalid.

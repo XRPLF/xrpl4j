@@ -110,7 +110,7 @@ public class MptCryptoImpl implements NativeMptCrypto {
     byte[] recipientPubkeys, byte[] recipientCiphertexts, int numRecipients,
     byte[] senderSpendingCiphertext,
     byte[] ctxHash, byte[] amountCommitment, byte[] balanceCommitment,
-    byte[] proof, int proofLen
+    byte[] proof
   ) {
     MptConfidentialRecipient[] recipients =
       (MptConfidentialRecipient[]) new MptConfidentialRecipient().toArray(numRecipients);
@@ -120,7 +120,7 @@ public class MptCryptoImpl implements NativeMptCrypto {
     }
 
     return lib.mpt_verify_send_proof(
-      proof, proofLen,
+      proof,
       recipients[0], (byte) numRecipients,
       senderSpendingCiphertext, amountCommitment,
       balanceCommitment, ctxHash
@@ -141,14 +141,13 @@ public class MptCryptoImpl implements NativeMptCrypto {
 
   @Override
   public int generateSendProof(
-    byte[] privkey, long amount,
+    byte[] privkey, byte[] pubkey, long amount,
     byte[] recipientPubkeys, byte[] recipientCiphertexts, int numRecipients,
     byte[] txBlindingFactor, byte[] contextHash,
-    byte[] amountCommitment, long amountValue, byte[] amountCiphertext, byte[] amountBlinding,
+    byte[] amountCommitment,
     byte[] balanceCommitment, long balanceValue, byte[] balanceCiphertext, byte[] balanceBlinding,
     byte[] outProof, int[] outLen
   ) {
-    // Build contiguous array of mpt_confidential_recipient structs
     MptConfidentialRecipient[] recipients =
       (MptConfidentialRecipient[]) new MptConfidentialRecipient().toArray(numRecipients);
     for (int i = 0; i < numRecipients; i++) {
@@ -156,23 +155,52 @@ public class MptCryptoImpl implements NativeMptCrypto {
       System.arraycopy(recipientCiphertexts, i * 66, recipients[i].ciphertext, 0, 66);
     }
 
-    MptPedersenProofParams amountParams = newPedersenParams(
-      amountCommitment, amountValue, amountCiphertext, amountBlinding
-    );
     MptPedersenProofParams balanceParams = newPedersenParams(
       balanceCommitment, balanceValue, balanceCiphertext, balanceBlinding
     );
 
     long[] nativeOutLen = new long[]{outLen[0]};
     int result = lib.mpt_get_confidential_send_proof(
-      privkey, amount,
+      privkey, pubkey, amount,
       recipients[0], numRecipients,
       txBlindingFactor, contextHash,
-      amountParams, balanceParams,
+      amountCommitment, balanceParams,
       outProof, nativeOutLen
     );
     outLen[0] = (int) nativeOutLen[0];
     return result;
+  }
+
+  @Override
+  public int generateConvertContextHash(byte[] account, byte[] issuanceId, int sequence, byte[] outHash) {
+    return lib.mpt_get_convert_context_hash(newAccountId(account), newIssuanceId(issuanceId), sequence, outHash);
+  }
+
+  @Override
+  public int generateConvertBackContextHash(
+    byte[] account, byte[] issuanceId, int sequence, int version, byte[] outHash
+  ) {
+    return lib.mpt_get_convert_back_context_hash(
+      newAccountId(account), newIssuanceId(issuanceId), sequence, version, outHash
+    );
+  }
+
+  @Override
+  public int generateSendContextHash(
+    byte[] account, byte[] issuanceId, int sequence, byte[] destination, int version, byte[] outHash
+  ) {
+    return lib.mpt_get_send_context_hash(
+      newAccountId(account), newIssuanceId(issuanceId), sequence, newAccountId(destination), version, outHash
+    );
+  }
+
+  @Override
+  public int generateClawbackContextHash(
+    byte[] account, byte[] issuanceId, int sequence, byte[] holder, byte[] outHash
+  ) {
+    return lib.mpt_get_clawback_context_hash(
+      newAccountId(account), newIssuanceId(issuanceId), sequence, newAccountId(holder), outHash
+    );
   }
 
   private static MptPedersenProofParams newPedersenParams(
@@ -184,5 +212,17 @@ public class MptCryptoImpl implements NativeMptCrypto {
     System.arraycopy(ciphertext, 0, params.encryptedAmount, 0, ciphertext.length);
     System.arraycopy(blinding, 0, params.blindingFactor, 0, blinding.length);
     return params;
+  }
+
+  private static MptAccountId newAccountId(byte[] bytes) {
+    MptAccountId id = new MptAccountId();
+    System.arraycopy(bytes, 0, id.bytes, 0, bytes.length);
+    return id;
+  }
+
+  private static MptIssuanceId newIssuanceId(byte[] bytes) {
+    MptIssuanceId id = new MptIssuanceId();
+    System.arraycopy(bytes, 0, id.bytes, 0, bytes.length);
+    return id;
   }
 }

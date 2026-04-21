@@ -336,28 +336,28 @@ class MptCryptoRoundtripTest {
     byte[] balanceCiphertext = new byte[CIPHERTEXT_SIZE];
     assertThat(crypto.encryptAmount(senderBalance, pubkey, balanceEncBf, balanceCiphertext)).isZero();
 
-    // Generate send proof
-    long proofSize = MptCryptoLibrary.INSTANCE.get_confidential_send_proof_size(numRecipients);
-    byte[] proof = new byte[(int) proofSize];
-    int[] outLen = new int[]{(int) proofSize};
+    // Generate send proof (fixed at 946 bytes)
+    int proofSize = 946;
+    byte[] proof = new byte[proofSize];
+    int[] outLen = new int[]{proofSize};
 
     int genResult = crypto.generateSendProof(
-      privkey, sendAmount,
+      privkey, pubkey, sendAmount,
       recipientPubkeys, recipientCiphertexts, numRecipients,
       txBf, ctxHash,
-      amountCommitment, sendAmount, senderCt, amountBf,
+      amountCommitment,
       balanceCommitment, senderBalance, balanceCiphertext, balanceBf,
       proof, outLen
     );
     assertThat(genResult).isZero();
-    assertThat(outLen[0]).isGreaterThan(0);
+    assertThat(outLen[0]).isEqualTo(proofSize);
 
     // Verify send proof — senderSpendingCiphertext is the balance ciphertext (what the sender spends from)
     int verifyResult = crypto.verifySendProof(
       recipientPubkeys, recipientCiphertexts, numRecipients,
       balanceCiphertext, ctxHash,
       amountCommitment, balanceCommitment,
-      proof, outLen[0]
+      proof
     );
     assertThat(verifyResult).isZero();
   }

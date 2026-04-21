@@ -30,9 +30,11 @@ import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendCont
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofVerifier;
+import org.xrpl.xrpl4j.crypto.confidential.util.ContextHashGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.PedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptSendProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptSendProofVerifier;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaContextHashGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaPedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -54,15 +56,17 @@ import java.util.Objects;
  */
 public class ConfidentialMptSendService {
 
+  private final ContextHashGenerator contextHashGenerator;
   private final ConfidentialMptSendProofGenerator proofGenerator;
   private final ConfidentialMptSendProofVerifier proofVerifier;
   private final PedersenCommitmentGenerator commitmentGenerator;
 
   /**
-   * Creates a new instance with default BouncyCastle implementations.
+   * Creates a new instance with default JNA implementations.
    */
   public ConfidentialMptSendService() {
     this(
+      new JnaContextHashGenerator(),
       new JnaConfidentialMptSendProofGenerator(),
       new JnaConfidentialMptSendProofVerifier(),
       new JnaPedersenCommitmentGenerator()
@@ -72,15 +76,18 @@ public class ConfidentialMptSendService {
   /**
    * Creates a new instance with custom implementations.
    *
-   * @param proofGenerator      The proof generator to use.
-   * @param proofVerifier       The proof verifier to use.
-   * @param commitmentGenerator The Pedersen commitment generator to use.
+   * @param contextHashGenerator The context hash generator to use.
+   * @param proofGenerator       The proof generator to use.
+   * @param proofVerifier        The proof verifier to use.
+   * @param commitmentGenerator  The Pedersen commitment generator to use.
    */
   public ConfidentialMptSendService(
+    final ContextHashGenerator contextHashGenerator,
     final ConfidentialMptSendProofGenerator proofGenerator,
     final ConfidentialMptSendProofVerifier proofVerifier,
     final PedersenCommitmentGenerator commitmentGenerator
   ) {
+    this.contextHashGenerator = Objects.requireNonNull(contextHashGenerator, "contextHashGenerator must not be null");
     this.proofGenerator = Objects.requireNonNull(proofGenerator, "proofGenerator must not be null");
     this.proofVerifier = Objects.requireNonNull(proofVerifier, "proofVerifier must not be null");
     this.commitmentGenerator = Objects.requireNonNull(commitmentGenerator, "commitmentGenerator must not be null");
@@ -104,7 +111,22 @@ public class ConfidentialMptSendService {
     final Address destination,
     final UnsignedInteger version
   ) {
-    return ConfidentialMptContextUtil.generateSendContext(account, sequence, issuanceId, destination, version);
+    return contextHashGenerator.generateSendContext(account, sequence, issuanceId, destination, version);
+  }
+
+  /**
+   * Generates a Pedersen commitment for the given amount and blinding factor.
+   *
+   * @param amount         The amount to commit to.
+   * @param blindingFactor The blinding factor.
+   *
+   * @return A {@link PedersenCommitment}.
+   */
+  public PedersenCommitment generatePedersenCommitment(
+    final UnsignedLong amount,
+    final BlindingFactor blindingFactor
+  ) {
+    return commitmentGenerator.generateCommitment(amount, blindingFactor);
   }
 
   /**
@@ -145,23 +167,20 @@ public class ConfidentialMptSendService {
   /**
    * Generates a ConfidentialMptSend proof.
    *
-   * <p>The proof consists of:</p>
-   * <ul>
-   *   <li>Same plaintext multi proof - proves all ciphertexts encrypt the same amount</li>
-   *   <li>Amount linkage proof - links ElGamal ciphertext to Pedersen commitment for amount</li>
-   *   <li>Balance linkage proof - links ElGamal ciphertext to Pedersen commitment for balance</li>
-   *   <li>Aggregated bulletproof range proof - proves amount and remaining balance are in valid range</li>
-   * </ul>
+   * <p>The proof is a compact AND-composed sigma proof (192 bytes) + aggregated Bulletproof (754 bytes).
+   * Total proof size is fixed at 946 bytes.</p>
+   *
+   * <p>The amount commitment (pc_m) must be computed as m*G + r*H where r is the txBlindingFactor.</p>
    *
    * @param senderKeyPair     The sender's key pair (must be secp256k1).
    * @param amount            The amount being sent.
-   * @param recipients        The list of recipients (sender, destination, issuer, and optionally auditor).
-   * @param txBlindingFactor  The single blinding factor used to encrypt the amount for all recipients.
+   * @param recipients        The list of participants (sender, destination, issuer, and optionally auditor).
+   * @param txBlindingFactor  The ElGamal randomness r (also used as blinding factor for pc_m).
    * @param context           The context hash binding the proof to a specific transaction.
-   * @param amountParams      The Pedersen proof parameters for the amount.
+   * @param amountCommitment  The Pedersen commitment pc_m = m*G + r*H.
    * @param balanceParams     The Pedersen proof parameters for the sender's balance.
    *
-   * @return A {@link ConfidentialMptSendProof} containing the complete proof.
+   * @return A {@link ConfidentialMptSendProof} containing the 946-byte proof.
    */
   public ConfidentialMptSendProof generateProof(
     final KeyPair senderKeyPair,
@@ -169,7 +188,7 @@ public class ConfidentialMptSendService {
     final List<MptConfidentialParty> recipients,
     final BlindingFactor txBlindingFactor,
     final ConfidentialMptSendContext context,
-    final PedersenProofParams amountParams,
+    final PedersenCommitment amountCommitment,
     final PedersenProofParams balanceParams
   ) {
     return proofGenerator.generateProof(
@@ -178,7 +197,7 @@ public class ConfidentialMptSendService {
       recipients,
       txBlindingFactor,
       context,
-      amountParams,
+      amountCommitment,
       balanceParams
     );
   }

@@ -32,11 +32,9 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
  * <p>This interface mirrors the C function {@code mpt_get_convert_back_proof} from mpt_utility.h,
  * but uses Java-friendly types.</p>
  *
- * <p>The proof consists of:
- * <ul>
- *   <li>Balance linkage proof (195 bytes) - links ElGamal ciphertext to Pedersen commitment for balance</li>
- *   <li>Single bulletproof range proof (688 bytes) - proves remaining balance is in valid range [0, 2^64)</li>
- * </ul>
+ * <p>The proof consists of a compact AND-composed sigma proof (128 bytes) over the balance
+ * witness, followed by a single Bulletproof range proof (688 bytes) over the remainder
+ * commitment. Total size: 816 bytes.</p>
  */
 public interface ConfidentialMptConvertBackProofGenerator {
 

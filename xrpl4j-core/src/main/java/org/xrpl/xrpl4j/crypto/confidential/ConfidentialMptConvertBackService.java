@@ -29,9 +29,11 @@ import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertB
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertBackProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertBackProofVerifier;
+import org.xrpl.xrpl4j.crypto.confidential.util.ContextHashGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.PedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptConvertBackProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaConfidentialMptConvertBackProofVerifier;
+import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaContextHashGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaPedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -53,15 +55,17 @@ import java.util.Objects;
  */
 public class ConfidentialMptConvertBackService {
 
+  private final ContextHashGenerator contextHashGenerator;
   private final ConfidentialMptConvertBackProofGenerator proofGenerator;
   private final ConfidentialMptConvertBackProofVerifier proofVerifier;
   private final PedersenCommitmentGenerator commitmentGenerator;
 
   /**
-   * Creates a new instance with default BouncyCastle implementations.
+   * Creates a new instance with default JNA implementations.
    */
   public ConfidentialMptConvertBackService() {
     this(
+      new JnaContextHashGenerator(),
       new JnaConfidentialMptConvertBackProofGenerator(),
       new JnaConfidentialMptConvertBackProofVerifier(),
       new JnaPedersenCommitmentGenerator()
@@ -71,15 +75,18 @@ public class ConfidentialMptConvertBackService {
   /**
    * Creates a new instance with custom implementations.
    *
-   * @param proofGenerator      The proof generator to use.
-   * @param proofVerifier       The proof verifier to use.
-   * @param commitmentGenerator The Pedersen commitment generator to use.
+   * @param contextHashGenerator The context hash generator to use.
+   * @param proofGenerator       The proof generator to use.
+   * @param proofVerifier        The proof verifier to use.
+   * @param commitmentGenerator  The Pedersen commitment generator to use.
    */
   public ConfidentialMptConvertBackService(
+    final ContextHashGenerator contextHashGenerator,
     final ConfidentialMptConvertBackProofGenerator proofGenerator,
     final ConfidentialMptConvertBackProofVerifier proofVerifier,
     final PedersenCommitmentGenerator commitmentGenerator
   ) {
+    this.contextHashGenerator = Objects.requireNonNull(contextHashGenerator, "contextHashGenerator must not be null");
     this.proofGenerator = Objects.requireNonNull(proofGenerator, "proofGenerator must not be null");
     this.proofVerifier = Objects.requireNonNull(proofVerifier, "proofVerifier must not be null");
     this.commitmentGenerator = Objects.requireNonNull(commitmentGenerator, "commitmentGenerator must not be null");
@@ -101,7 +108,7 @@ public class ConfidentialMptConvertBackService {
     final MpTokenIssuanceId issuanceId,
     final UnsignedInteger version
   ) {
-    return ConfidentialMptContextUtil.generateConvertBackContext(account, sequence, issuanceId, version);
+    return contextHashGenerator.generateConvertBackContext(account, sequence, issuanceId, version);
   }
 
   /**

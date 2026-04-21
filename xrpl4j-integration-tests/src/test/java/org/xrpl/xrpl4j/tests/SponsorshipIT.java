@@ -472,7 +472,6 @@ public class SponsorshipIT extends AbstractIT {
     void testSponsorshipTransferReassign() throws JsonRpcClientErrorException, JsonProcessingException {
       KeyPair aliceKeyPair = createRandomAccountEd25519();
       KeyPair bobKeyPair = createRandomAccountEd25519();
-      KeyPair charlieKeyPair = createRandomAccountEd25519();
       Address aliceAddress = aliceKeyPair.publicKey().deriveAddress();
       Address bobAddress = bobKeyPair.publicKey().deriveAddress();
 
@@ -560,6 +559,7 @@ public class SponsorshipIT extends AbstractIT {
 
       // Step 3: Bob reassigns the Check's reserve sponsorship to Charlie.
       AccountInfoResult bobInfoForTransfer = scanForResult(() -> getValidatedAccountInfo(bobAddress));
+      KeyPair charlieKeyPair = createRandomAccountEd25519();
       Address charlieAddress = charlieKeyPair.publicKey().deriveAddress();
 
       SponsorshipTransfer unsignedTransfer = SponsorshipTransfer.builder()

@@ -147,6 +147,6 @@ public interface MptCryptoLibrary extends Library {
 
   /** @hidden */
   final class Holder {
-    private static final MptCryptoLibrary INSTANCE = Native.load("mptcrypto", MptCryptoLibrary.class);
+    private static final MptCryptoLibrary INSTANCE = Native.load("mpt-crypto", MptCryptoLibrary.class);
   }
 }

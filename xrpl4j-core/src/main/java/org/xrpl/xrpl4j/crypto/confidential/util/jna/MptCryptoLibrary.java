@@ -145,7 +145,9 @@ public interface MptCryptoLibrary extends Library {
   // Singleton Holder (lazy initialization)
   // =========================================================================
 
-  /** @hidden */
+  /**
+   * Holder class for lazy initialization of the native library singleton.
+   */
   final class Holder {
     private static final MptCryptoLibrary INSTANCE = Native.load("mpt-crypto", MptCryptoLibrary.class);
   }

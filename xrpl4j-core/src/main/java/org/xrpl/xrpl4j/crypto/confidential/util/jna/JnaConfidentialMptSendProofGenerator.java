@@ -95,11 +95,6 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
 
     int numRecipients = recipients.size();
 
-    // Extract sender keys
-    UnsignedByteArray naturalBytes = senderKeyPair.privateKey().naturalBytes();
-    byte[] privkey = naturalBytes.toByteArray();
-    byte[] pubkey = senderKeyPair.publicKey().value().toByteArray();
-
     // Build the MptConfidentialRecipient struct array for the native library
     MptCryptoLibrary.MptConfidentialRecipient firstRecipient = new MptCryptoLibrary.MptConfidentialRecipient();
     MptCryptoLibrary.MptConfidentialRecipient[] recipientArray =
@@ -121,6 +116,11 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
 
     byte[] outProof = new byte[MAX_PROOF_SIZE];
     long[] outLen = new long[]{MAX_PROOF_SIZE};
+
+    // Extract sender keys just before use
+    UnsignedByteArray naturalBytes = senderKeyPair.privateKey().naturalBytes();
+    byte[] privkey = naturalBytes.toByteArray();
+    byte[] pubkey = senderKeyPair.publicKey().value().toByteArray();
 
     int result = lib.mpt_get_confidential_send_proof(
       privkey, pubkey, amount.longValue(),

@@ -21,6 +21,8 @@ package org.xrpl.xrpl4j.crypto.confidential;
  */
 
 /**
+ * Generates random blinding factors for confidential MPT transactions.
+ *
  * @deprecated Use {@link org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator} instead.
  */
 @Deprecated

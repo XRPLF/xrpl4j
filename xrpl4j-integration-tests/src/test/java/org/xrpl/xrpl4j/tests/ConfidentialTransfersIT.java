@@ -30,7 +30,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptClawbackService;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptConvertBackService;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptConvertService;
@@ -47,6 +46,7 @@ import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptClawbackPr
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
+import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.MptAmountDecryptor;
 import org.xrpl.xrpl4j.crypto.confidential.util.MptAmountEncryptor;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaBlindingFactorGenerator;
@@ -172,11 +172,14 @@ public class ConfidentialTransfersIT extends AbstractIT {
     assertThat(issuance.flags().lsfMptCanConfidentialAmount()).isTrue();
 
     // =====================================================================
-    // 2. Register the issuer's ElGamal public key via MpTokenIssuanceSet.
-    //    The issuer needs an ElGamal key pair so that encrypted amounts can
-    //    be created for the issuer's mirror balance on each holder's MPToken.
+    // 2. Register the issuer's and auditor's ElGamal public keys via
+    //    MpTokenIssuanceSet. The issuer needs an ElGamal key pair so that
+    //    encrypted amounts can be created for the issuer's mirror balance
+    //    on each holder's MPToken. The auditor key enables a designated
+    //    auditor to decrypt confidential amounts for compliance.
     // =====================================================================
     KeyPair issuerElGamalKeyPair = Seed.elGamalSecp256k1Seed().deriveKeyPair();
+    KeyPair auditorElGamalKeyPair = Seed.elGamalSecp256k1Seed().deriveKeyPair();
     issuerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
@@ -189,6 +192,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .lastLedgerSequence(lastLedgerSeq(issuerAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .issuerEncryptionKey(issuerElGamalKeyPair.publicKey().base16Value())
+      .auditorEncryptionKey(auditorElGamalKeyPair.publicKey().base16Value())
       .build();
 
     signSubmitAndWait(issuanceSet, issuerKeyPair, MpTokenIssuanceSet.class);
@@ -268,6 +272,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
     EncryptedAmount issuerEncryptedForConvert = encryptor.encrypt(
       amountToConvert, issuerElGamalKeyPair.publicKey(), convertBlindingFactor
     );
+    EncryptedAmount auditorEncryptedForConvert = encryptor.encrypt(
+      amountToConvert, auditorElGamalKeyPair.publicKey(), convertBlindingFactor
+    );
 
     ConfidentialMptConvert confidentialConvert = ConfidentialMptConvert.builder()
       .account(holderKeyPair.publicKey().deriveAddress())
@@ -280,6 +287,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .holderEncryptionKey(holderElGamalKeyPair.publicKey().base16Value())
       .holderEncryptedAmount(holderEncryptedForConvert.toHex())
       .issuerEncryptedAmount(issuerEncryptedForConvert.toHex())
+      .auditorEncryptedAmount(auditorEncryptedForConvert.toHex())
       .blindingFactor(convertBlindingFactor.hexValue())
       .zkProof(convertZkProof.hexValue())
       .build();
@@ -357,6 +365,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
     EncryptedAmount issuerEncryptedForHolder2Convert = encryptor.encrypt(
       UnsignedLong.ZERO, issuerElGamalKeyPair.publicKey(), holder2ConvertBlindingFactor
     );
+    EncryptedAmount auditorEncryptedForHolder2Convert = encryptor.encrypt(
+      UnsignedLong.ZERO, auditorElGamalKeyPair.publicKey(), holder2ConvertBlindingFactor
+    );
 
     ConfidentialMptConvert holder2ConfidentialConvert = ConfidentialMptConvert.builder()
       .account(holder2KeyPair.publicKey().deriveAddress())
@@ -369,6 +380,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .holderEncryptionKey(holder2ElGamalKeyPair.publicKey().base16Value())
       .holderEncryptedAmount(holder2EncryptedForConvert.toHex())
       .issuerEncryptedAmount(issuerEncryptedForHolder2Convert.toHex())
+      .auditorEncryptedAmount(auditorEncryptedForHolder2Convert.toHex())
       .blindingFactor(holder2ConvertBlindingFactor.hexValue())
       .zkProof(holder2ConvertProof.hexValue())
       .build();
@@ -379,10 +391,10 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     // =====================================================================
     // 7. ConfidentialMptSend: Holder 1 sends 100 confidential MPTs to Holder 2.
-    //    The send amount is encrypted for all three parties (sender, destination,
-    //    issuer) using the same blinding factor. Range proofs and Pedersen
-    //    commitments prove the amount is valid and the sender has sufficient
-    //    balance, without revealing the actual values.
+    //    The send amount is encrypted for all four parties (sender, destination,
+    //    issuer, auditor) using the same blinding factor. Range proofs and
+    //    Pedersen commitments prove the amount is valid and the sender has
+    //    sufficient balance, without revealing the actual values.
     // =====================================================================
     UnsignedLong sendAmount = UnsignedLong.valueOf(100);
 
@@ -403,7 +415,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holder1Version
     );
 
-    // Encrypt the send amount for all three parties using the same blinding factor
+    // Encrypt the send amount for all four parties using the same blinding factor
     BlindingFactor sendBlindingFactor = blindingFactorGenerator.generate();
     EncryptedAmount senderCiphertext = encryptor.encrypt(
       sendAmount, holderElGamalKeyPair.publicKey(), sendBlindingFactor
@@ -413,6 +425,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
     EncryptedAmount issuerCiphertextForSend = encryptor.encrypt(
       sendAmount, issuerElGamalKeyPair.publicKey(), sendBlindingFactor
+    );
+    EncryptedAmount auditorCiphertextForSend = encryptor.encrypt(
+      sendAmount, auditorElGamalKeyPair.publicKey(), sendBlindingFactor
     );
 
     // Decrypt the sender's current spending balance to use in Pedersen proof params
@@ -436,14 +451,16 @@ public class ConfidentialTransfersIT extends AbstractIT {
       senderCurrentBalance, senderBalanceCiphertext, balanceBlindingFactor
     );
 
-    // Generate the compact ZK proof (AND-composed sigma + aggregated Bulletproof = 946 bytes)
+    // Generate the compact ZK proof with 4 participants (sender, dest, issuer, auditor)
+    // AND-composed sigma (192 bytes) + aggregated Bulletproof (754 bytes) = 946 bytes
     ConfidentialMptSendProof sendProof = sendService.generateProof(
       holderElGamalKeyPair,
       sendAmount,
       Arrays.asList(
         MptConfidentialParty.of(holderElGamalKeyPair.publicKey(), senderCiphertext),
         MptConfidentialParty.of(holder2ElGamalKeyPair.publicKey(), destCiphertext),
-        MptConfidentialParty.of(issuerElGamalKeyPair.publicKey(), issuerCiphertextForSend)
+        MptConfidentialParty.of(issuerElGamalKeyPair.publicKey(), issuerCiphertextForSend),
+        MptConfidentialParty.of(auditorElGamalKeyPair.publicKey(), auditorCiphertextForSend)
       ),
       sendBlindingFactor,
       sendContext,
@@ -455,7 +472,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       Arrays.asList(
         MptConfidentialParty.of(holderElGamalKeyPair.publicKey(), senderCiphertext),
         MptConfidentialParty.of(holder2ElGamalKeyPair.publicKey(), destCiphertext),
-        MptConfidentialParty.of(issuerElGamalKeyPair.publicKey(), issuerCiphertextForSend)
+        MptConfidentialParty.of(issuerElGamalKeyPair.publicKey(), issuerCiphertextForSend),
+        MptConfidentialParty.of(auditorElGamalKeyPair.publicKey(), auditorCiphertextForSend)
       ),
       senderBalanceCiphertext,
       sendContext,
@@ -474,6 +492,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .senderEncryptedAmount(senderCiphertext.toHex())
       .destinationEncryptedAmount(destCiphertext.toHex())
       .issuerEncryptedAmount(issuerCiphertextForSend.toHex())
+      .auditorEncryptedAmount(auditorCiphertextForSend.toHex())
       .zkProof(sendProof.hexValue())
       .amountCommitment(amountCommitment.hexValue())
       .balanceCommitment(balanceParams.pedersenCommitment().hexValue())
@@ -509,13 +528,16 @@ public class ConfidentialTransfersIT extends AbstractIT {
     UnsignedInteger holderVersionForConvertBack = holderMpTokenForConvertBack
       .confidentialBalanceVersion().orElse(UnsignedInteger.ZERO);
 
-    // Encrypt the convert-back amount for holder and issuer
+    // Encrypt the convert-back amount for holder, issuer, and auditor
     BlindingFactor convertBackBlindingFactor = blindingFactorGenerator.generate();
     EncryptedAmount holderEncryptedForConvertBack = encryptor.encrypt(
       convertBackAmount, holderElGamalKeyPair.publicKey(), convertBackBlindingFactor
     );
     EncryptedAmount issuerEncryptedForConvertBack = encryptor.encrypt(
       convertBackAmount, issuerElGamalKeyPair.publicKey(), convertBackBlindingFactor
+    );
+    EncryptedAmount auditorEncryptedForConvertBack = encryptor.encrypt(
+      convertBackAmount, auditorElGamalKeyPair.publicKey(), convertBackBlindingFactor
     );
 
     // Generate context hash for the convert-back transaction
@@ -566,6 +588,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mptAmount(MpTokenNumericAmount.of(convertBackAmount))
       .holderEncryptedAmount(holderEncryptedForConvertBack.toHex())
       .issuerEncryptedAmount(issuerEncryptedForConvertBack.toHex())
+      .auditorEncryptedAmount(auditorEncryptedForConvertBack.toHex())
       .blindingFactor(convertBackBlindingFactor.hexValue())
       .balanceCommitment(convertBackCommitment.hexValue())
       .zkProof(convertBackProof.hexValue())

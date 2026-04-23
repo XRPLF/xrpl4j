@@ -80,11 +80,6 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
       "senderKeyPair must be SECP256K1"
     );
 
-    UnsignedByteArray naturalBytes = senderKeyPair.privateKey().naturalBytes();
-    byte[] privkey = naturalBytes.toByteArray();
-    byte[] pubkey = senderKeyPair.publicKey().value().toByteArray();
-    byte[] ctxHash = context.value().toByteArray();
-
     // Construct the MptPedersenProofParams struct for the native library
     MptCryptoLibrary.MptPedersenProofParams params = new MptCryptoLibrary.MptPedersenProofParams();
     System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, params.pedersenCommitment, 0, 33);
@@ -93,6 +88,13 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     System.arraycopy(balanceParams.blindingFactor().toBytes(), 0, params.blindingFactor, 0, 32);
 
     byte[] outProof = new byte[PROOF_SIZE];
+
+    // Extract keys and context just before use
+    UnsignedByteArray naturalBytes = senderKeyPair.privateKey().naturalBytes();
+    byte[] privkey = naturalBytes.toByteArray();
+    byte[] pubkey = senderKeyPair.publicKey().value().toByteArray();
+    byte[] ctxHash = context.value().toByteArray();
+
     int result = lib.mpt_get_convert_back_proof(
       privkey, pubkey, ctxHash, amount.longValue(),
       params, outProof

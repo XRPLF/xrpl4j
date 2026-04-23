@@ -31,7 +31,10 @@ package org.xrpl.xrpl4j.crypto.confidential;
 public class SecureRandomBlindingFactorGenerator implements BlindingFactorGenerator {
 
   /**
-   * @throws UnsupportedOperationException always.
+   * Generates a blinding factor (not supported in this deprecated implementation).
+   *
+   * @return never returns normally
+   * @throws UnsupportedOperationException always
    */
   @Override
   public BlindingFactor generate() {

@@ -1191,6 +1191,16 @@
       }
     ],
     [
+      "SponseeNode",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 32,
+        "type": "UInt64"
+      }
+    ],
+    [
       "EmailHash",
       {
         "isSerialized": true,

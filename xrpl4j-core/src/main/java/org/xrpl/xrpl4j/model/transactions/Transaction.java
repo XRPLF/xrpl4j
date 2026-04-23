@@ -280,4 +280,26 @@ public interface Transaction {
     }
   }
 
+  /**
+   * Used to prompt Immutables to add a `withTransactionSignature` builder helper to each Transaction subclass.
+   *
+   * @param signature The {@link Signature} to associate with this transaction.
+   *
+   * @return A new {@link Transaction} instance with the provided signature applied.
+   */
+  @JsonIgnore
+  Transaction withTransactionSignature(Signature signature);
+
+  /**
+   * Used to prompt Immutables to add a `withSigners` builder helper to each Transaction subclass. Note: For this to
+   * work, the input type must be {@link Iterable} and not a concrete collection (to avoid conflicts with other
+   * generated builder methods related to collections).
+   *
+   * @param signers An {@link Iterable} of {@link SignerWrapper}s to be set for this transaction. Each
+   *                {@link SignerWrapper} wraps a {@link Signer} conforming to the XRPL transaction JSON structure.
+   *
+   * @return A new {@link Transaction} instance with the specified signers applied.
+   */
+  @JsonIgnore
+  Transaction withSigners(Iterable<? extends SignerWrapper> signers);
 }

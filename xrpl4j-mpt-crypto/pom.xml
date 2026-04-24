@@ -11,7 +11,56 @@
 
   <artifactId>xrpl4j-mpt-crypto</artifactId>
   <name>xrpl4j :: mpt-crypto</name>
-  <description>Native mpt-crypto library binaries for confidential MPT cryptographic operations.
-    This module contains only platform-specific native libraries (.dylib, .so, .dll) as resources.
-    The JNA bindings are in xrpl4j-core.</description>
+
+  <properties>
+    <mpt-crypto.version>0.3.0-rc2</mpt-crypto.version>
+    <mpt-crypto.natives.sha256>486c775b5b3c1fc18c3a9e8cbd4b458802b49eb307475df695fc899127226c0d</mpt-crypto.natives.sha256>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.googlecode.maven-download-plugin</groupId>
+        <artifactId>download-maven-plugin</artifactId>
+        <version>1.13.0</version>
+        <executions>
+          <execution>
+            <id>fetch-mpt-crypto-natives</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <url>https://github.com/XRPLF/mpt-crypto/releases/download/${mpt-crypto.version}/mpt-crypto-natives-${mpt-crypto.version}.tar.gz</url>
+              <outputDirectory>${project.build.directory}/generated-resources/mpt-crypto</outputDirectory>
+              <unpack>true</unpack>
+              <sha256>${mpt-crypto.natives.sha256}</sha256>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.6.1</version>
+        <executions>
+          <execution>
+            <id>add-native-resources</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>add-resource</goal>
+            </goals>
+            <configuration>
+              <resources>
+                <resource>
+                  <directory>${project.build.directory}/generated-resources/mpt-crypto</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

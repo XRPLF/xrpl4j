@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 public class NumberType extends SerializedType<NumberType> {
 
@@ -54,13 +55,17 @@ public class NumberType extends SerializedType<NumberType> {
   }
 
   @Override
-  public NumberType fromParser(BinaryParser parser) {
+  public NumberType fromParser(final BinaryParser parser) {
+    Objects.requireNonNull(parser);
+
     return new NumberType(parser.read(WIDTH));
   }
 
   // xrpld implementation: src/libxrpl/basics/Number.cpp -> doNormalize
   @Override
-  public NumberType fromJson(JsonNode node) {
+  public NumberType fromJson(final JsonNode node) {
+    Objects.requireNonNull(node);
+
     String value = node.asText();
     BigDecimal decimal = new BigDecimal(value).stripTrailingZeros();
 

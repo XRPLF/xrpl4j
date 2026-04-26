@@ -22,12 +22,10 @@ package org.xrpl.xrpl4j.crypto.confidential.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.confidential.Secp256k1Operations;
 
 /**
  * Parameters required to generate a Pedersen Linkage Proof.
@@ -84,17 +82,4 @@ public interface PedersenProofParams {
    * @return The blinding factor.
    */
   BlindingFactor blindingFactor();
-
-  /**
-   * Validates the parameters.
-   */
-  @Value.Check
-  default void check() {
-    Preconditions.checkArgument(
-      pedersenCommitment().length() == Secp256k1Operations.PEDERSEN_COMMIT_SIZE,
-      "pedersenCommitment must be %s bytes, but was %s bytes",
-      Secp256k1Operations.PEDERSEN_COMMIT_SIZE, pedersenCommitment().length()
-    );
-  }
 }
-

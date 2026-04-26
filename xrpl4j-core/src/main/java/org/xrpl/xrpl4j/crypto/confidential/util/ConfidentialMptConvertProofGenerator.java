@@ -20,7 +20,6 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  * =========================LICENSE_END==================================
  */
 
-import org.xrpl.xrpl4j.crypto.confidential.bulletproof.SecretKeyProofGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -34,7 +33,6 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
  * <p>The proof proves that the sender possesses the private key associated with the account,
  * binding it to the specific transaction via the context hash.</p>
  *
- * @see SecretKeyProofGenerator
  * @see ConfidentialMptConvertContext
  * @see ConfidentialMptConvertProof
  */

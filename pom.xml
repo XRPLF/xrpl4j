@@ -180,7 +180,7 @@
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.16.0</version>
+        <version>5.18.1</version>
       </dependency>
       <dependency>
         <groupId>org.awaitility</groupId>
@@ -275,7 +275,6 @@
 
     <!-- org.apache.maven.plugins:maven-checkstyle-plugin -->
     <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
-    <checkstyle.suppressions.location>checkstyle-suppressions.xml</checkstyle.suppressions.location>
     <checkstyle.violationSeverity>warning</checkstyle.violationSeverity>
 
     <cryptoconditions.version>1.0.5</cryptoconditions.version>
@@ -326,7 +325,7 @@
                   <ignoredDependency>com.google.code.findbugs:annotations</ignoredDependency>
                   <ignoredDependency>com.google.errorprone:error_prone_annotations</ignoredDependency>
                   <ignoredDependency>ch.qos.logback:logback-classic</ignoredDependency>
-                  <!-- Loaded via reflection in MptAmountEncryptor/Decryptor.create() -->
+                  <!-- Loaded via reflection-->
                   <ignoredDependency>org.xrpl:xrpl4j-mpt-crypto</ignoredDependency>
                   <!-- As part of SkyStreamer, but only for test scope-->
                   <ignoredDependency>com.vaadin.external.google:android-json</ignoredDependency>

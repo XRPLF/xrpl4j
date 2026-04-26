@@ -25,17 +25,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.confidential.model.ImmutableEncryptedAmount.Builder;
 
 /**
- * An immutable ElGamal ciphertext containing two compressed secp256k1 points (C1 and C2).
- *
- * <p>Mirrors the C function output where c1 and c2 are separate secp256k1_pubkey structures:</p>
- * <ul>
- *   <li>C1 = r * G (ephemeral public key, 33 bytes)</li>
- *   <li>C2 = m * G + r * Q (masked amount, 33 bytes)</li>
- * </ul>
+ * An immutable ElGamal ciphertext represented as a 66-byte value (two compressed secp256k1 points).
  */
 @Value.Immutable
 public interface EncryptedAmount {
@@ -50,21 +43,7 @@ public interface EncryptedAmount {
   }
 
   /**
-   * Creates a new ciphertext from c1 and c2 components.
-   *
-   * @param c1 The first ciphertext component (r * G), 33 bytes compressed.
-   * @param c2 The second ciphertext component (m * G + r * Q), 33 bytes compressed.
-   *
-   * @return A new {@link EncryptedAmount}.
-   *
-   * @throws IllegalArgumentException if c1 or c2 is not exactly 33 bytes.
-   */
-  static EncryptedAmount of(UnsignedByteArray c1, UnsignedByteArray c2) {
-    return builder().c1(c1).c2(c2).build();
-  }
-
-  /**
-   * Creates a ciphertext from a 66-byte concatenated buffer (c1 || c2).
+   * Creates a ciphertext from a 66-byte array.
    *
    * @param bytes The 66-byte ciphertext.
    *
@@ -75,18 +54,7 @@ public interface EncryptedAmount {
    */
   static EncryptedAmount fromBytes(byte[] bytes) {
     Preconditions.checkNotNull(bytes, "bytes must not be null");
-    Preconditions.checkArgument(
-      bytes.length == Secp256k1Operations.ELGAMAL_TOTAL_SIZE,
-      "bytes must be %s bytes, but was %s bytes",
-      Secp256k1Operations.ELGAMAL_TOTAL_SIZE, bytes.length
-    );
-    byte[] c1Bytes = new byte[Secp256k1Operations.ELGAMAL_CIPHER_SIZE];
-    byte[] c2Bytes = new byte[Secp256k1Operations.ELGAMAL_CIPHER_SIZE];
-    System.arraycopy(bytes, 0, c1Bytes, 0, Secp256k1Operations.ELGAMAL_CIPHER_SIZE);
-    System.arraycopy(
-      bytes, Secp256k1Operations.ELGAMAL_CIPHER_SIZE, c2Bytes, 0, Secp256k1Operations.ELGAMAL_CIPHER_SIZE
-    );
-    return of(UnsignedByteArray.of(c1Bytes), UnsignedByteArray.of(c2Bytes));
+    return builder().value(UnsignedByteArray.of(bytes)).build();
   }
 
   /**
@@ -101,7 +69,7 @@ public interface EncryptedAmount {
    */
   static EncryptedAmount fromBytes(UnsignedByteArray value) {
     Preconditions.checkNotNull(value, "value must not be null");
-    return fromBytes(value.toByteArray());
+    return builder().value(value).build();
   }
 
   /**
@@ -120,50 +88,21 @@ public interface EncryptedAmount {
   }
 
   /**
-   * The first ciphertext component C1 = r * G.
+   * The raw 66-byte ElGamal ciphertext.
    *
-   * @return The 33-byte compressed point.
+   * @return An {@link UnsignedByteArray} of 66 bytes.
    */
-  UnsignedByteArray c1();
+  UnsignedByteArray value();
 
   /**
-   * The second ciphertext component C2 = m * G + r * Q.
-   *
-   * @return The 33-byte compressed point.
-   */
-  UnsignedByteArray c2();
-
-  /**
-   * Validates that c1 and c2 are each exactly 33 bytes.
-   */
-  @Value.Check
-  default void validate() {
-    Preconditions.checkArgument(
-      c1().length() == Secp256k1Operations.ELGAMAL_CIPHER_SIZE,
-      "c1 must be %s bytes, but was %s bytes",
-      Secp256k1Operations.ELGAMAL_CIPHER_SIZE, c1().length()
-    );
-    Preconditions.checkArgument(
-      c2().length() == Secp256k1Operations.ELGAMAL_CIPHER_SIZE,
-      "c2 must be %s bytes, but was %s bytes",
-      Secp256k1Operations.ELGAMAL_CIPHER_SIZE, c2().length()
-    );
-  }
-
-  /**
-   * Returns the concatenated ciphertext (c1 || c2).
+   * Returns the ciphertext as a byte array.
    *
    * @return A 66-byte {@link UnsignedByteArray}.
    */
   @JsonIgnore
   @Value.Lazy
   default UnsignedByteArray toBytes() {
-    byte[] result = new byte[Secp256k1Operations.ELGAMAL_TOTAL_SIZE];
-    System.arraycopy(c1().toByteArray(), 0, result, 0, Secp256k1Operations.ELGAMAL_CIPHER_SIZE);
-    System.arraycopy(
-      c2().toByteArray(), 0, result, Secp256k1Operations.ELGAMAL_CIPHER_SIZE, Secp256k1Operations.ELGAMAL_CIPHER_SIZE
-    );
-    return UnsignedByteArray.of(result);
+    return value();
   }
 
   /**
@@ -174,7 +113,7 @@ public interface EncryptedAmount {
   @JsonIgnore
   @Value.Lazy
   default String toHex() {
-    return BaseEncoding.base16().encode(toBytes().toByteArray());
+    return BaseEncoding.base16().encode(value().toByteArray());
   }
 }
 

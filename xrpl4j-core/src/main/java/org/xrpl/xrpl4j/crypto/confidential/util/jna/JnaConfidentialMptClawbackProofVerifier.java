@@ -79,8 +79,6 @@ public class JnaConfidentialMptClawbackProofVerifier implements ConfidentialMptC
       "issuerPublicKey must be SECP256K1"
     );
 
-    // MptCryptoLibrary.mpt_verify_clawback_proof takes a single 66-byte ciphertext (c1 || c2),
-    // so concatenate c1 and c2 from the EncryptedAmount.
     byte[] ciphertext = issuerEncryptedBalance.toBytes().toByteArray();
 
     return lib.mpt_verify_clawback_proof(

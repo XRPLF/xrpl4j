@@ -21,7 +21,6 @@ package org.xrpl.xrpl4j.crypto.confidential;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
@@ -32,13 +31,6 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  * <p>A blinding factor must be a valid secp256k1 scalar (0 &lt; value &lt; curve order) because it is
  * used as a scalar multiplier in elliptic curve operations.</p>
  *
- * <p>For production code that needs dependency injection (e.g., for testing with deterministic values),
- * use {@link BlindingFactorGenerator} interface with {@link SecureRandomBlindingFactorGenerator} implementation.
- * For convenience, a {@link SecureRandomBlindingFactorGenerator} can be used to generate random blinding
- * factors.</p>
- *
- * @see BlindingFactorGenerator
- * @see SecureRandomBlindingFactorGenerator
  */
 @Value.Immutable
 public interface BlindingFactor {
@@ -97,22 +89,6 @@ public interface BlindingFactor {
    * @return The 32-byte value.
    */
   UnsignedByteArray value();
-
-  /**
-   * Validates that the blinding factor is exactly 32 bytes and is a valid secp256k1 scalar.
-   */
-  @Value.Check
-  default void validate() {
-    Preconditions.checkArgument(
-      value().length() == Secp256k1Operations.BLINDING_FACTOR_SIZE,
-      "Blinding factor must be %s bytes, but was %s bytes",
-      Secp256k1Operations.BLINDING_FACTOR_SIZE, value().length()
-    );
-    Preconditions.checkArgument(
-      Secp256k1Operations.isValidScalar(value().toByteArray()),
-      "Blinding factor must be a valid scalar (0 < value < curve order)"
-    );
-  }
 
   /**
    * Returns the blinding factor as a byte array.

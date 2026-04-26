@@ -25,7 +25,6 @@ import com.google.common.primitives.UnsignedInteger;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 

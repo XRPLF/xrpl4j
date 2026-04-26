@@ -28,13 +28,11 @@ import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Lazy;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptContextUtil;
 
 /**
  * Represents the context hash for a ConfidentialMptSend transaction.
  *
- * <p>The context hash is a 32-byte SHA512Half hash that binds the proof to a specific transaction.
- * Use {@link ConfidentialMptContextUtil#generateSendContext} to create instances.</p>
+ * <p>The context hash is a 32-byte SHA512Half hash that binds the proof to a specific transaction.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableConfidentialMptSendContext.class)

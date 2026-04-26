@@ -21,7 +21,6 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  */
 
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.crypto.confidential.elgamal.ElGamalDecryptor;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 
@@ -39,7 +38,6 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
  *   <li>Brute-force search for amount such that amount * G = M</li>
  * </ol>
  *
- * @see ElGamalDecryptor
  */
 public interface MptAmountDecryptor {
 

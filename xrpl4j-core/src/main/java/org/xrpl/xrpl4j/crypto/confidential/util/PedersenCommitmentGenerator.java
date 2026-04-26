@@ -22,7 +22,6 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
 
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.confidential.commitment.PedersenCommitment;
 
 /**
  * High-level interface for generating Pedersen Commitments.
@@ -32,7 +31,6 @@ import org.xrpl.xrpl4j.crypto.confidential.commitment.PedersenCommitment;
  *
  * <p>This interface uses Java-friendly types for all parameters and return values.</p>
  *
- * @see PedersenCommitment
  * @see org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment
  */
 public interface PedersenCommitmentGenerator {

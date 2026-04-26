@@ -22,7 +22,6 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
 
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.confidential.elgamal.ElGamalEncryptor;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
@@ -32,7 +31,6 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
  * <p>This interface mirrors the C utility function {@code mpt_encrypt_amount} from mpt_utility.h,
  * but uses Java-friendly types for all parameters and return values.</p>
  *
- * @see ElGamalEncryptor
  */
 public interface MptAmountEncryptor {
 

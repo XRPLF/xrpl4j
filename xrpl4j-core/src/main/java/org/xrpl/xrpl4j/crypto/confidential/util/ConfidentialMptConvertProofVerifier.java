@@ -20,7 +20,6 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  * =========================LICENSE_END==================================
  */
 
-import org.xrpl.xrpl4j.crypto.confidential.bulletproof.SecretKeyProofVerifier;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -31,7 +30,6 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
  * <p>This interface mirrors the C utility function for proof verification,
  * but uses Java-friendly types for all parameters.</p>
  *
- * @see SecretKeyProofVerifier
  * @see ConfidentialMptConvertContext
  * @see ConfidentialMptConvertProof
  */

@@ -51,7 +51,7 @@ class AmmObjectTest extends AbstractJsonTest {
     AmmObject ammObject = AmmObject.builder()
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
@@ -39,6 +40,30 @@ public interface MetaMpTokenIssuanceObject extends MetaLedgerObject {
 
   @JsonProperty("MPTokenMetadata")
   Optional<String> mpTokenMetadata();
+
+  /**
+   * The total amount of this token that is currently held in confidential balances.
+   *
+   * @return An {@link Optional} {@link MpTokenNumericAmount}.
+   */
+  @JsonProperty("ConfidentialOutstandingAmount")
+  Optional<MpTokenNumericAmount> confidentialOutstandingAmount();
+
+  /**
+   * A 33-byte compressed ElGamal public key for the issuer.
+   *
+   * @return An {@link Optional} {@link PublicKey}.
+   */
+  @JsonProperty("IssuerEncryptionKey")
+  Optional<PublicKey> issuerEncryptionKey();
+
+  /**
+   * A 33-byte compressed ElGamal public key for an optional on-chain auditor.
+   *
+   * @return An {@link Optional} {@link PublicKey}.
+   */
+  @JsonProperty("AuditorEncryptionKey")
+  Optional<PublicKey> auditorEncryptionKey();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.

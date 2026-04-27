@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -133,6 +134,54 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
       .build();
 
     assertThat(object.lockedAmount()).isEmpty();
+  }
+
+  @Test
+  void testJsonWithConfidentialFields() throws JSONException, JsonProcessingException {
+    MpTokenIssuanceObject object = MpTokenIssuanceObject.builder()
+      .assetScale(AssetScale.of(UnsignedInteger.valueOf(2)))
+      .flags(MpTokenIssuanceFlags.of(128))
+      .issuer(Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c"))
+      .maximumAmount(MpTokenNumericAmount.of(5000000))
+      .outstandingAmount(MpTokenNumericAmount.of(1000000))
+      .confidentialOutstandingAmount(MpTokenNumericAmount.of(500000))
+      .issuerEncryptionKey(PublicKey.fromBase16EncodedPublicKey(
+        "028D7500BFCD792B487E4E51664037AB543E76CEBACF0E7E17AD4B83057E1F2B30"
+      ))
+      .auditorEncryptionKey(PublicKey.fromBase16EncodedPublicKey(
+        "037C0863E64B648BFA3C89B921C57B11757E2B2054EE094E2CD05BFBFF0ED28CA4"
+      ))
+      .ownerNode("0")
+      .previousTransactionId(Hash256.of("8C20A85CE9EA44CEF32C8B06209890154D8810A8409D8582884566CD24DE694F"))
+      .previousTransactionLedgerSequence(UnsignedInteger.valueOf(420))
+      .sequence(UnsignedInteger.valueOf(377))
+      .transferFee(TransferFee.of(UnsignedInteger.valueOf(10)))
+      .index(Hash256.of("9295A1CC8C9E8C7CA77C823F2D10B9C599E63707C7A222B306F603D4CF511301"))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179C3493FFEB0869853DDEC0705800595424710FA7A"))
+      .build();
+
+    String json = "{\n" +
+                  "  \"AssetScale\" : 2,\n" +
+                  "  \"Flags\" : 128,\n" +
+                  "  \"Issuer\" : \"rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c\",\n" +
+                  "  \"LedgerEntryType\" : \"MPTokenIssuance\",\n" +
+                  "  \"MaximumAmount\" : \"5000000\",\n" +
+                  "  \"OutstandingAmount\" : \"1000000\",\n" +
+                  "  \"ConfidentialOutstandingAmount\" : \"500000\",\n" +
+                  "  \"IssuerEncryptionKey\" : " +
+                  "\"028D7500BFCD792B487E4E51664037AB543E76CEBACF0E7E17AD4B83057E1F2B30\",\n" +
+                  "  \"AuditorEncryptionKey\" : " +
+                  "\"037C0863E64B648BFA3C89B921C57B11757E2B2054EE094E2CD05BFBFF0ED28CA4\",\n" +
+                  "  \"OwnerNode\" : \"0\",\n" +
+                  "  \"PreviousTxnID\" : \"8C20A85CE9EA44CEF32C8B06209890154D8810A8409D8582884566CD24DE694F\",\n" +
+                  "  \"PreviousTxnLgrSeq\" : 420,\n" +
+                  "  \"Sequence\" : 377,\n" +
+                  "  \"TransferFee\" : 10,\n" +
+                  "  \"index\" : \"9295A1CC8C9E8C7CA77C823F2D10B9C599E63707C7A222B306F603D4CF511301\",\n" +
+                  "  \"mpt_issuance_id\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\"\n" +
+                  "}";
+
+    assertCanSerializeAndDeserialize(object, json);
   }
 
 }

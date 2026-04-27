@@ -397,7 +397,7 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @param issuanceId      The {@link MpTokenIssuanceId} of the token.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
    *
-   * @return A {@link LedgerEntryRequestParams} for {@link OracleObject}.
+   * @return A {@link LedgerEntryRequestParams} for {@link MpTokenIssuanceObject}.
    */
   static LedgerEntryRequestParams<MpTokenIssuanceObject> mpTokenIssuance(
     MpTokenIssuanceId issuanceId,

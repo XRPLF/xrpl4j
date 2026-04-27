@@ -27,6 +27,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
@@ -53,15 +54,20 @@ import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaBlindingFactorGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaMptAmountDecryptor;
 import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaMptAmountEncryptor;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.AccountObjectType;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.ledger.MpTokenLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptClawback;
@@ -196,6 +202,19 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .build();
 
     signSubmitAndWait(issuanceSet, issuerKeyPair, MpTokenIssuanceSet.class);
+
+    // Verify that the issuance now has the encryption keys and confidential outstanding amount
+    MpTokenIssuanceObject issuanceObject = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    assertThat(issuanceObject.issuerEncryptionKey().get()).isEqualTo(
+      PublicKey.fromBase16EncodedPublicKey(issuerElGamalKeyPair.publicKey().base16Value())
+    );
+    assertThat(issuanceObject.auditorEncryptionKey().get()).isEqualTo(
+      PublicKey.fromBase16EncodedPublicKey(auditorElGamalKeyPair.publicKey().base16Value())
+    );
+
+    assertMpTokenIssuanceEntryEqualsObjectFromAccountObjects(issuanceObject, mpTokenIssuanceId);
 
     // =====================================================================
     // 3. Create Holder 1, authorize the MPToken, and transfer 1000 public MPTs
@@ -708,5 +727,38 @@ public class ConfidentialTransfersIT extends AbstractIT {
   private UnsignedInteger lastLedgerSeq(AccountInfoResult accountInfo) {
     return accountInfo.ledgerIndexSafe()
       .plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue();
+  }
+
+  private void assertMpTokenIssuanceEntryEqualsObjectFromAccountObjects(
+    MpTokenIssuanceObject issuanceObject,
+    MpTokenIssuanceId mpTokenIssuanceId
+  ) throws JsonRpcClientErrorException {
+    LedgerEntryResult<MpTokenIssuanceObject> issuanceEntry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(issuanceEntry.node()).isEqualTo(issuanceObject);
+
+    LedgerEntryResult<MpTokenIssuanceObject> entryByIndex = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(issuanceObject.index(), MpTokenIssuanceObject.class, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(issuanceEntry.node());
+
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(issuanceObject.index(), LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndexUnTyped.node()).isEqualTo(issuanceEntry.node());
+
+    List<LedgerObject> accountObjects = xrplClient.accountObjects(
+      AccountObjectsRequestParams.builder()
+        .type(AccountObjectType.MPT_ISSUANCE)
+        .account(issuanceObject.issuer())
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+        .build()
+    ).accountObjects();
+
+    assertThat(accountObjects).contains(issuanceObject);
   }
 }

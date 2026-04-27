@@ -110,6 +110,7 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -955,7 +956,7 @@ public class XrplClientTest {
       .taker(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .takerGets(Issue.XRP)
       .takerPays(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
           .currency("USD")
           .build()

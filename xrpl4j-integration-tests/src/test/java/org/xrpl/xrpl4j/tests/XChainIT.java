@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
 import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
 import org.xrpl.xrpl4j.model.ledger.BridgeObject;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
@@ -391,14 +392,14 @@ public class XChainIT extends AbstractIT {
       XChainBridge.builder()
         .lockingChainDoor(lockingDoor.publicKey().deriveAddress())
         .lockingChainIssue(
-          Issue.builder()
+          IouIssue.builder()
             .issuer(lockingChainIssuer.publicKey().deriveAddress())
             .currency("USD")
             .build()
         )
         .issuingChainDoor(lockingChainSource.publicKey().deriveAddress())
         .issuingChainIssue(
-          Issue.builder()
+          IouIssue.builder()
             .issuer(lockingChainSource.publicKey().deriveAddress())
             .currency("USD")
             .build()
@@ -453,7 +454,7 @@ public class XChainIT extends AbstractIT {
 
     BigDecimal initialBalance = new BigDecimal(this.getValidatedAccountLines(
       destination.publicKey().deriveAddress(),
-      iouBridge.bridge().issuingChainIssue().issuer().get()
+      ((IouIssue) iouBridge.bridge().issuingChainIssue()).issuer()
     ).lines().get(0).balance());
 
     addClaimAttestation(
@@ -468,7 +469,7 @@ public class XChainIT extends AbstractIT {
 
     BigDecimal finalBalance = new BigDecimal(this.getValidatedAccountLines(
       destination.publicKey().deriveAddress(),
-      iouBridge.bridge().issuingChainIssue().issuer().get()
+      ((IouIssue) iouBridge.bridge().issuingChainIssue()).issuer()
     ).lines().get(0).balance());
 
     assertThat(finalBalance).isEqualTo(

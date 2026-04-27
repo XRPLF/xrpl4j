@@ -1,22 +1,15 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
 
 class AmmDepositTest extends AbstractJsonTest {
 
@@ -31,7 +24,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .flags(AmmDepositFlags.LP_TOKEN)
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -81,7 +74,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .flags(AmmDepositFlags.LP_TOKEN)
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -122,7 +115,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .flags(AmmDepositFlags.TWO_ASSET)
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -172,7 +165,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .flags(AmmDepositFlags.SINGLE_ASSET)
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -226,7 +219,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .flags(AmmDepositFlags.ONE_ASSET_LP_TOKEN)
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -289,7 +282,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .flags(AmmDepositFlags.LIMIT_LP_TOKEN)
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -342,7 +335,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .flags(AmmDepositFlags.TWO_ASSET_IF_EMPTY)
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -397,7 +390,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .flags(AmmDepositFlags.TWO_ASSET_IF_EMPTY)
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -453,7 +446,7 @@ class AmmDepositTest extends AbstractJsonTest {
       )
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -482,7 +475,7 @@ class AmmDepositTest extends AbstractJsonTest {
       )
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()

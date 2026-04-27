@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 
 class AmmVoteTest extends AbstractJsonTest {
@@ -19,7 +20,7 @@ class AmmVoteTest extends AbstractJsonTest {
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
@@ -57,7 +58,7 @@ class AmmVoteTest extends AbstractJsonTest {
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
@@ -97,7 +98,7 @@ class AmmVoteTest extends AbstractJsonTest {
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
@@ -137,7 +138,7 @@ class AmmVoteTest extends AbstractJsonTest {
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
@@ -177,7 +178,7 @@ class AmmVoteTest extends AbstractJsonTest {
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
@@ -200,7 +201,7 @@ class AmmVoteTest extends AbstractJsonTest {
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()

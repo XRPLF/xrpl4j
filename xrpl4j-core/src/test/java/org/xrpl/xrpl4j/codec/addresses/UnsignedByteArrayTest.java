@@ -160,6 +160,22 @@ public class UnsignedByteArrayTest {
   }
 
   @Test
+  void reverse() {
+    // Test basic reversal
+    UnsignedByteArray array1 = UnsignedByteArray.of(new byte[] {0, 1, 2, 3});
+    UnsignedByteArray array2 = UnsignedByteArray.of(new byte[] {3, 2, 1, 0});
+    assertThat(array1.reverse()).isEqualTo(array2);
+
+    assertThat(array1).isEqualTo(UnsignedByteArray.of(new byte[] {0, 1, 2, 3}));
+    assertThat(UnsignedByteArray.fromHex("01020304").reverse().hexValue()).isEqualTo("04030201");
+    assertThat(UnsignedByteArray.of(new byte[] {5}).reverse()).isEqualTo(UnsignedByteArray.of(new byte[] {5}));
+    assertThat(UnsignedByteArray.empty().reverse()).isEqualTo(UnsignedByteArray.empty());
+
+    UnsignedByteArray original = UnsignedByteArray.fromHex("ABCDEF0123");
+    assertThat(original.reverse().reverse()).isEqualTo(original);
+  }
+
+  @Test
   void hashcode() {
     UnsignedByteArray array1 = UnsignedByteArray.of(new byte[] {0, 1});
     assertThat(array1).isNotEqualTo(UnsignedByteArray.of(new byte[] {8, 9}));

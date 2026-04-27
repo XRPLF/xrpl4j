@@ -49,6 +49,7 @@ import org.xrpl.xrpl4j.model.flags.XChainModifyBridgeFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
@@ -1799,7 +1800,7 @@ public class BinarySerializationTests {
           .lockingChainIssue(Issue.XRP)
           .issuingChainDoor(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
           .issuingChainIssue(
-            Issue.builder()
+            IouIssue.builder()
               .currency("ETH")
               .issuer(Address.of("rPyfep3gcLzkosKC9XiE77Y8DZWG6iWDT9"))
               .build()
@@ -2281,12 +2282,12 @@ public class BinarySerializationTests {
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
       .flags(AmmWithdrawFlags.LP_TOKEN)
-      .asset(Issue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(Issue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2340,12 +2341,12 @@ public class BinarySerializationTests {
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A"))
-      .asset(Issue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(Issue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2422,12 +2423,12 @@ public class BinarySerializationTests {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
-      .asset(Issue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(Issue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2452,12 +2453,12 @@ public class BinarySerializationTests {
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
       .flags(AmmDepositFlags.SINGLE_ASSET)
-      .asset(Issue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(Issue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2514,12 +2515,12 @@ public class BinarySerializationTests {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
-      .asset(Issue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(Issue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()

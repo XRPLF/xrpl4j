@@ -275,6 +275,40 @@ class AmountTest extends AbstractJsonTest {
   }
 
   // -------------------------
+  // Amount.builder() - static factory method on the interface
+  // -------------------------
+
+  @Test
+  void builderReturnsNonNullBuilder() {
+    assertThat(Amount.builder()).isNotNull();
+  }
+
+  @Test
+  void builderProducesImmutableAmountInstance() {
+    Amount amount = Amount.builder().value("42").build();
+    assertThat(amount).isInstanceOf(ImmutableAmount.class);
+  }
+
+  @Test
+  void builderSetsValueCorrectly() {
+    Amount amount = Amount.builder().value("9999").build();
+    assertThat(amount.value()).isEqualTo("9999");
+  }
+
+  @Test
+  void builderWithoutValueThrows() {
+    assertThrows(IllegalStateException.class, () -> Amount.builder().build());
+  }
+
+  @Test
+  void builderFromCopiesValueCorrectly() {
+    Amount original = Amount.builder().value("12345").build();
+    Amount copy = Amount.builder().from(original).build();
+    assertThat(copy.value()).isEqualTo(original.value());
+    assertThat(copy).isEqualTo(original);
+  }
+
+  // -------------------------
   // JSON serialization
   // -------------------------
 

@@ -25,14 +25,17 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Auxiliary;
-import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
+import org.xrpl.xrpl4j.model.transactions.amount.IouTokenAmount;
 
 /**
  * A {@link CurrencyAmount} for Issued Currencies on the XRP Ledger.
  *
+ * @deprecated Use {@link IouTokenAmount} instead.
+ *
  * @see "https://xrpl.org/rippleapi-reference.html#value"
  */
+@Deprecated
 @Value.Immutable
 @JsonSerialize(as = ImmutableIssuedCurrencyAmount.class)
 @JsonDeserialize(as = ImmutableIssuedCurrencyAmount.class)

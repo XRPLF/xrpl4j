@@ -28,6 +28,13 @@ import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.amount.IouAmount;
+import org.xrpl.xrpl4j.model.transactions.amount.IouTokenAmount;
+import org.xrpl.xrpl4j.model.transactions.amount.MptAmount;
+import org.xrpl.xrpl4j.model.transactions.amount.MptTokenAmount;
+import org.xrpl.xrpl4j.model.transactions.amount.TokenAmount;
+import org.xrpl.xrpl4j.model.transactions.amount.XrpAmount;
+import org.xrpl.xrpl4j.model.transactions.amount.XrpTokenAmount;
 import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
 
 import java.time.ZonedDateTime;
@@ -56,6 +63,21 @@ public class Xrpl4jModule extends SimpleModule {
     );
 
     addDeserializer(CurrencyAmount.class, new CurrencyAmountDeserializer());
+
+    addSerializer(XrpAmount.class, new XrpAmountSerializer());
+    addDeserializer(XrpAmount.class, new XrpAmountDeserializer());
+    addSerializer(IouAmount.class, new IouAmountSerializer());
+    addDeserializer(IouAmount.class, new IouAmountDeserializer());
+    addSerializer(MptAmount.class, new MptAmountSerializer());
+    addDeserializer(MptAmount.class, new MptAmountDeserializer());
+
+    addDeserializer(TokenAmount.class, new TokenAmountDeserializer());
+    addSerializer(XrpTokenAmount.class, new XrpTokenAmountSerializer());
+    addDeserializer(XrpTokenAmount.class, new XrpTokenAmountDeserializer());
+    addSerializer(IouTokenAmount.class, new IouTokenAmountSerializer());
+    addDeserializer(IouTokenAmount.class, new IouTokenAmountDeserializer());
+    addSerializer(MptTokenAmount.class, new MptTokenAmountSerializer());
+    addDeserializer(MptTokenAmount.class, new MptTokenAmountDeserializer());
 
     addSerializer(LedgerIndex.class, new LedgerIndexSerializer());
     addDeserializer(LedgerIndex.class, new LedgerIndexDeserializer());

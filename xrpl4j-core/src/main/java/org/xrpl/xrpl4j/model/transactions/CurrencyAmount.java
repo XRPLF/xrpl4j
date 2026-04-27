@@ -20,6 +20,16 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.xrpl.xrpl4j.model.transactions.amount.Amount;
+import org.xrpl.xrpl4j.model.transactions.amount.IouAmount;
+import org.xrpl.xrpl4j.model.transactions.amount.IouTokenAmount;
+import org.xrpl.xrpl4j.model.transactions.amount.MptAmount;
+import org.xrpl.xrpl4j.model.transactions.amount.MptTokenAmount;
+import org.xrpl.xrpl4j.model.transactions.amount.TokenAmount;
+import org.xrpl.xrpl4j.model.transactions.amount.XrpAmount;
+import org.xrpl.xrpl4j.model.transactions.amount.XrpTokenAmount;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -29,12 +39,44 @@ import java.util.function.Function;
  * Marker interface for XRPL Currency Amounts.
  *
  * @see "https://xrpl.org/basic-data-types.html#specifying-currency-amounts"
+ * @deprecated Use {@link TokenAmount} instead. {@link CurrencyAmount} and its subtypes ({@link XrpCurrencyAmount},
+ *   {@link IssuedCurrencyAmount}, {@link MptCurrencyAmount}) will be removed in a future version. Migrate to
+ *   {@link TokenAmount} ({@link XrpTokenAmount}, {@link IouTokenAmount}, {@link MptTokenAmount}) and use {@link Amount}
+ *   for scalar numeric values without asset identity.
  */
+@Deprecated
 public interface CurrencyAmount {
 
+  /**
+   * One XRP, in drops.
+   *
+   * @deprecated Use {@link XrpAmount#ONE_XRP_IN_DROPS} instead.
+   */
+  @Deprecated
   long ONE_XRP_IN_DROPS = 1_000_000L;
+
+  /**
+   * Maximum number of XRP.
+   *
+   * @deprecated Use {@link XrpAmount#MAX_XRP} instead.
+   */
+  @Deprecated
   long MAX_XRP = 100_000_000_000L; // <-- per https://xrpl.org/rippleapi-reference.html#value
+
+  /**
+   * Maximum number of XRP, in drops.
+   *
+   * @deprecated Use {@link XrpAmount#MAX_XRP_IN_DROPS} instead.
+   */
+  @Deprecated
   long MAX_XRP_IN_DROPS = MAX_XRP * ONE_XRP_IN_DROPS;
+
+  /**
+   * Maximum number of XRP, as a BigDecimal.
+   *
+   * @deprecated Use {@link XrpAmount#MAX_XRP_BD} instead.
+   */
+  @Deprecated
   BigDecimal MAX_XRP_BD = BigDecimal.valueOf(MAX_XRP);
 
   /**
@@ -103,5 +145,26 @@ public interface CurrencyAmount {
     } else {
       throw new IllegalStateException(String.format("Unsupported CurrencyAmount Type: %s", this.getClass()));
     }
+  }
+
+  /**
+   * Returns the scalar numeric {@link Amount} for this currency amount, stripping currency metadata (currency code,
+   * issuer, MPT issuance ID). The concrete subtype determines which {@link Amount} implementation is returned:
+   * <ul>
+   *   <li>{@link XrpCurrencyAmount} → {@link XrpAmount} (drops, sign preserved)</li>
+   *   <li>{@link IssuedCurrencyAmount} → {@link IouAmount} (value string passed verbatim)</li>
+   *   <li>{@link MptCurrencyAmount} → {@link MptAmount} (magnitude + sign)</li>
+   * </ul>
+   *
+   * @return An {@link Amount} representing the numeric value of this currency amount.
+   */
+  @JsonIgnore
+  default Amount amount() {
+    return map(
+      xrp -> xrp.isNegative() ? XrpAmount.ofDrops(-xrp.value().longValue())
+        : XrpAmount.ofDrops(xrp.value()),
+      iou -> IouAmount.of(iou.value()),
+      mpt -> MptAmount.of(mpt.unsignedLongValue(), mpt.isNegative())
+    );
   }
 }

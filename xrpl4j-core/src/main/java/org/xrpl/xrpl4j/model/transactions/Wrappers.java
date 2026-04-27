@@ -182,7 +182,10 @@ public class Wrappers {
   /**
    * A {@link CurrencyAmount} for the XRP currency (non-issued). {@link XrpCurrencyAmount}s are a {@link String}
    * representation of an unsigned integer representing the amount in XRP drops.
+   *
+   * @deprecated Use `XrpTokenAmount` instead.
    */
+  @Deprecated
   @Value.Immutable(builder = true) // This is the default, but it's omitted without this.
   @Wrapped
   @JsonSerialize(as = XrpCurrencyAmount.class, using = XrpCurrencyAmountSerializer.class)

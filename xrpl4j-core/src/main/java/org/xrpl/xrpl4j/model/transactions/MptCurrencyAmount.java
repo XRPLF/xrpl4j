@@ -9,10 +9,14 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Auxiliary;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.transactions.amount.MptTokenAmount;
 
 /**
  * {@link CurrencyAmount} type for MPT amounts.
+ *
+ * @deprecated Use {@link MptTokenAmount} instead.
  */
+@Deprecated
 @Immutable
 @JsonSerialize(as = ImmutableMptCurrencyAmount.class)
 @JsonDeserialize(as = ImmutableMptCurrencyAmount.class)

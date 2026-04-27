@@ -104,4 +104,17 @@ public interface CurrencyAmount {
       throw new IllegalStateException(String.format("Unsupported CurrencyAmount Type: %s", this.getClass()));
     }
   }
+
+  /**
+   * Converts this {@link CurrencyAmount} to an {@link Amount}.
+   *
+   * @return An {@link Amount} representing the same value as this {@link CurrencyAmount}.
+   */
+  default Amount toAmount() {
+    return this.map(
+      xrpCurrencyAmount -> ImmutableAmount.builder().value(xrpCurrencyAmount.toString()).build(),
+      issuedCurrencyAmount -> ImmutableAmount.builder().value(issuedCurrencyAmount.value()).build(),
+      mptCurrencyAmount -> ImmutableAmount.builder().value(mptCurrencyAmount.value()).build()
+    );
+  }
 }

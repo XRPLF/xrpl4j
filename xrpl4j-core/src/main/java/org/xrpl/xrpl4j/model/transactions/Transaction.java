@@ -50,8 +50,8 @@ public interface Transaction {
    */
   BiMap<Class<? extends Transaction>, TransactionType> typeMap =
     new Builder<Class<? extends Transaction>, TransactionType>()
-      .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
       .put(ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE)
+      .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
       .put(ImmutableAmmBid.class, TransactionType.AMM_BID)
       .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
       .put(ImmutableAmmCreate.class, TransactionType.AMM_CREATE)

@@ -7,6 +7,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceMutableFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -166,4 +167,14 @@ public interface MpTokenIssuanceObject extends LedgerObject {
    */
   @JsonProperty("mpt_issuance_id")
   Optional<MpTokenIssuanceId> mpTokenIssuanceId();
+
+  /**
+   * An optional set of flags indicating which fields or flags of this issuance may be mutated via
+   * {@code MPTokenIssuanceSet}. Only present when the {@code DynamicMPT} amendment is enabled and mutability was
+   * declared at creation.
+   *
+   * @return An optionally-present {@link MpTokenIssuanceMutableFlags}.
+   */
+  @JsonProperty("MutableFlags")
+  Optional<MpTokenIssuanceMutableFlags> mutableFlags();
 }

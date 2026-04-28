@@ -90,6 +90,51 @@ class AmountTest extends AbstractJsonTest {
   }
 
   // -------------------------
+  // isZero()
+  // -------------------------
+
+  @Test
+  void isZeroReturnsTrueForZero() {
+    assertThat(Amount.of("0").isZero()).isTrue();
+  }
+
+  @Test
+  void isZeroReturnsTrueForNegativeZero() {
+    assertThat(Amount.of("-0").isZero()).isTrue();
+  }
+
+  @Test
+  void isZeroReturnsTrueForDecimalZero() {
+    assertThat(Amount.of("0.00").isZero()).isTrue();
+  }
+
+  @Test
+  void isZeroReturnsTrueForScientificNotationZero() {
+    assertThat(Amount.of("0e5").isZero()).isTrue();
+  }
+
+  @Test
+  void isZeroReturnsFalseForPositiveValue() {
+    assertThat(Amount.of("1000000").isZero()).isFalse();
+  }
+
+  @Test
+  void isZeroReturnsFalseForNegativeValue() {
+    assertThat(Amount.of("-1").isZero()).isFalse();
+  }
+
+  @Test
+  void isZeroReturnsFalseForSmallDecimal() {
+    assertThat(Amount.of("0.001").isZero()).isFalse();
+  }
+
+  @Test
+  void zeroConstantIsZero() {
+    assertThat(Amount.ZERO.isZero()).isTrue();
+    assertThat(Amount.ZERO.value()).isEqualTo("0");
+  }
+
+  // -------------------------
   // bigDecimalValue()
   // -------------------------
 

@@ -132,7 +132,7 @@ public interface VaultObject extends LedgerObject {
   @JsonProperty("AssetsTotal")
   @Value.Default
   default Amount assetsTotal() {
-    return Amount.of("0");
+    return Amount.ZERO;
   }
 
   /**
@@ -143,7 +143,7 @@ public interface VaultObject extends LedgerObject {
   @JsonProperty("AssetsAvailable")
   @Value.Default
   default Amount assetsAvailable() {
-    return Amount.of("0");
+    return Amount.ZERO;
   }
 
   /**
@@ -154,7 +154,7 @@ public interface VaultObject extends LedgerObject {
   @JsonProperty("AssetsMaximum")
   @Value.Default
   default Amount assetsMaximum() {
-    return Amount.of("0");
+    return Amount.ZERO;
   }
 
   /**
@@ -165,7 +165,7 @@ public interface VaultObject extends LedgerObject {
   @JsonProperty("LossUnrealized")
   @Value.Default
   default Amount lossUnrealized() {
-    return Amount.of("0");
+    return Amount.ZERO;
   }
 
   /**

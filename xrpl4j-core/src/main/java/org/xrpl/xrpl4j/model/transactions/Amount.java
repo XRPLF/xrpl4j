@@ -39,6 +39,11 @@ import java.util.Objects;
 public interface Amount {
 
   /**
+   * An {@link Amount} representing zero.
+   */
+  Amount ZERO = Amount.of("0");
+
+  /**
    * Creates an {@link Amount} instance from the given string value.
    *
    * @param value A non-null {@link String} representing the value of the amount.
@@ -70,6 +75,17 @@ public interface Amount {
   @JsonIgnore
   default boolean isNegative() {
     return value().startsWith("-");
+  }
+
+  /**
+   * Whether this amount is zero.
+   *
+   * @return {@code true} if the value is numerically zero; {@code false} otherwise.
+   */
+  @Auxiliary
+  @JsonIgnore
+  default boolean isZero() {
+    return bigDecimalValue().signum() == 0;
   }
 
   /**

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateMutableFlags;
 
 class MpTokenIssuanceCreateTest extends AbstractJsonTest {
 
@@ -83,6 +84,80 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
 
     assertThat(issuanceCreate.transactionFlags()).isEqualTo(issuanceCreate.flags());
     assertThat(((MpTokenIssuanceCreateFlags) issuanceCreate.transactionFlags()).tfMptCanTransfer()).isTrue();
+  }
+
+  @Test
+  void testJsonWithMutableFlags() throws JSONException, JsonProcessingException {
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(321))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
+      )
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptCanTransfer(true)
+        .build()
+      )
+      .mutableFlags(MpTokenIssuanceCreateMutableFlags.builder()
+        .tmfMptCanMutateMetadata(true)
+        .tmfMptCanMutateTransferFee(true)
+        .build()
+      )
+      .mpTokenMetadata(MpTokenMetadata.of("464F4F"))
+      .transferFee(TransferFee.of(UnsignedInteger.valueOf(100)))
+      .build();
+
+    // tmfMPTCanMutateMetadata (0x00010000) | tmfMPTCanMutateTransferFee (0x00020000) = 0x00030000 = 196608
+    String json =
+      "{\n" +
+      "  \"Account\" : \"rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ\",\n" +
+      "  \"TransactionType\" : \"MPTokenIssuanceCreate\",\n" +
+      "  \"Fee\" : \"15\",\n" +
+      "  \"Sequence\" : 321,\n" +
+      "  \"SigningPubKey\" : \"EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710\",\n" +
+      "  \"Flags\" : 2147483680,\n" +
+      "  \"MutableFlags\" : 196608,\n" +
+      "  \"MPTokenMetadata\" : \"464F4F\",\n" +
+      "  \"TransferFee\" : 100\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(issuanceCreate, json);
+  }
+
+  @Test
+  void mutableFlagsBuilderSetsCorrectBits() {
+    MpTokenIssuanceCreateMutableFlags flags = MpTokenIssuanceCreateMutableFlags.builder()
+      .tmfMptCanMutateCanLock(true)
+      .tmfMptCanMutateRequireAuth(true)
+      .tmfMptCanMutateCanEscrow(true)
+      .tmfMptCanMutateCanTrade(true)
+      .tmfMptCanMutateCanTransfer(true)
+      .tmfMptCanMutateCanClawback(true)
+      .tmfMptCanMutateMetadata(true)
+      .tmfMptCanMutateTransferFee(true)
+      .build();
+
+    assertThat(flags.tmfMptCanMutateCanLock()).isTrue();
+    assertThat(flags.tmfMptCanMutateRequireAuth()).isTrue();
+    assertThat(flags.tmfMptCanMutateCanEscrow()).isTrue();
+    assertThat(flags.tmfMptCanMutateCanTrade()).isTrue();
+    assertThat(flags.tmfMptCanMutateCanTransfer()).isTrue();
+    assertThat(flags.tmfMptCanMutateCanClawback()).isTrue();
+    assertThat(flags.tmfMptCanMutateMetadata()).isTrue();
+    assertThat(flags.tmfMptCanMutateTransferFee()).isTrue();
+
+    // 0x2 | 0x4 | 0x8 | 0x10 | 0x20 | 0x40 | 0x10000 | 0x20000 = 0x3007E = 196734
+    assertThat(flags.getValue()).isEqualTo(196734L);
+  }
+
+  @Test
+  void mutableFlagsOfParsesCorrectly() {
+    // tmfMPTCanMutateMetadata = 0x00010000 = 65536
+    MpTokenIssuanceCreateMutableFlags flags = MpTokenIssuanceCreateMutableFlags.of(65536L);
+    assertThat(flags.tmfMptCanMutateMetadata()).isTrue();
+    assertThat(flags.tmfMptCanMutateTransferFee()).isFalse();
+    assertThat(flags.tmfMptCanMutateCanLock()).isFalse();
   }
 
   @Test

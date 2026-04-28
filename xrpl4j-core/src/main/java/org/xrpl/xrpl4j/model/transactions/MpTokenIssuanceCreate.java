@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateMutableFlags;
 
 import java.util.Optional;
 
@@ -77,5 +78,14 @@ public interface MpTokenIssuanceCreate extends Transaction {
    */
   @JsonProperty("MPTokenMetadata")
   Optional<MpTokenMetadata> mpTokenMetadata();
+
+  /**
+   * An optional set of flags declaring which fields or flags of the created {@code MPTokenIssuance} may be mutated
+   * after issuance via {@code MPTokenIssuanceSet}. Requires the {@code DynamicMPT} amendment.
+   *
+   * @return An optionally present {@link MpTokenIssuanceCreateMutableFlags}.
+   */
+  @JsonProperty("MutableFlags")
+  Optional<MpTokenIssuanceCreateMutableFlags> mutableFlags();
 
 }

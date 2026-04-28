@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetMutableFlags;
 
 import java.util.Optional;
 
@@ -53,5 +54,32 @@ public interface MpTokenIssuanceSet extends Transaction {
    */
   @JsonProperty("Holder")
   Optional<Address> holder();
+
+  /**
+   * An optional set of flags to set or clear on the {@code MPTokenIssuance}. Only flags that were declared mutable at
+   * creation time may be modified. Requires the {@code DynamicMPT} amendment.
+   *
+   * @return An optionally present {@link MpTokenIssuanceSetMutableFlags}.
+   */
+  @JsonProperty("MutableFlags")
+  Optional<MpTokenIssuanceSetMutableFlags> mutableFlags();
+
+  /**
+   * New metadata to replace the existing {@code MPTokenMetadata} value. Setting an empty value removes the field.
+   * Requires {@code lsmfMPTCanMutateMetadata} to have been set at creation. Requires the {@code DynamicMPT} amendment.
+   *
+   * @return An optionally-present {@link MpTokenMetadata}.
+   */
+  @JsonProperty("MPTokenMetadata")
+  Optional<MpTokenMetadata> mpTokenMetadata();
+
+  /**
+   * New transfer fee value. Setting to zero removes the field. Requires {@code lsmfMPTCanMutateTransferFee} to have
+   * been set at creation. Requires the {@code DynamicMPT} amendment.
+   *
+   * @return An optionally-present {@link TransferFee}.
+   */
+  @JsonProperty("TransferFee")
+  Optional<TransferFee> transferFee();
 
 }

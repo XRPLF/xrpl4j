@@ -21,6 +21,6 @@ public class AmountDeserializer extends StdDeserializer<Amount> {
 
   @Override
   public Amount deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
-    return Amount.builder().value(jsonParser.getText()).build();
+    return Amount.of(jsonParser.getText());
   }
 }

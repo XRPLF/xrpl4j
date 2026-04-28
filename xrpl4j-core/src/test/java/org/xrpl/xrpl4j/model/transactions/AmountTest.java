@@ -4,7 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
+import org.immutables.value.Value;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -25,25 +28,25 @@ class AmountTest extends AbstractJsonTest {
 
   @Test
   void valueReturnsIntegerString() {
-    Amount amount = ImmutableAmount.builder().value("1000000").build();
+    Amount amount = Amount.of("1000000");
     assertThat(amount.value()).isEqualTo("1000000");
   }
 
   @Test
   void valueReturnsNegativeString() {
-    Amount amount = ImmutableAmount.builder().value("-1000000").build();
+    Amount amount = Amount.of("-1000000");
     assertThat(amount.value()).isEqualTo("-1000000");
   }
 
   @Test
   void valueReturnsZeroString() {
-    Amount amount = ImmutableAmount.builder().value("0").build();
+    Amount amount = Amount.of("0");
     assertThat(amount.value()).isEqualTo("0");
   }
 
   @Test
   void valueReturnsScientificNotationString() {
-    Amount amount = ImmutableAmount.builder().value("1.23e11").build();
+    Amount amount = Amount.of("1.23e11");
     assertThat(amount.value()).isEqualTo("1.23e11");
   }
 
@@ -53,44 +56,37 @@ class AmountTest extends AbstractJsonTest {
 
   @Test
   void isNegativeReturnsFalseForPositiveInteger() {
-    Amount amount = ImmutableAmount.builder().value("1000000").build();
-    assertThat(amount.isNegative()).isFalse();
+    assertThat(Amount.of("1000000").isNegative()).isFalse();
   }
 
   @Test
   void isNegativeReturnsTrueForNegativeInteger() {
-    Amount amount = ImmutableAmount.builder().value("-1000000").build();
-    assertThat(amount.isNegative()).isTrue();
+    assertThat(Amount.of("-1000000").isNegative()).isTrue();
   }
 
   @Test
   void isNegativeReturnsFalseForZero() {
-    Amount amount = ImmutableAmount.builder().value("0").build();
-    assertThat(amount.isNegative()).isFalse();
+    assertThat(Amount.of("0").isNegative()).isFalse();
   }
 
   @Test
   void isNegativeReturnsFalseForPositiveScientificNotation() {
-    Amount amount = ImmutableAmount.builder().value("1.23e11").build();
-    assertThat(amount.isNegative()).isFalse();
+    assertThat(Amount.of("1.23e11").isNegative()).isFalse();
   }
 
   @Test
   void isNegativeReturnsTrueForNegativeScientificNotation() {
-    Amount amount = ImmutableAmount.builder().value("-1.23e11").build();
-    assertThat(amount.isNegative()).isTrue();
+    assertThat(Amount.of("-1.23e11").isNegative()).isTrue();
   }
 
   @Test
   void isNegativeReturnsFalseForPositiveDecimal() {
-    Amount amount = ImmutableAmount.builder().value("1.5").build();
-    assertThat(amount.isNegative()).isFalse();
+    assertThat(Amount.of("1.5").isNegative()).isFalse();
   }
 
   @Test
   void isNegativeReturnsTrueForNegativeDecimal() {
-    Amount amount = ImmutableAmount.builder().value("-1.5").build();
-    assertThat(amount.isNegative()).isTrue();
+    assertThat(Amount.of("-1.5").isNegative()).isTrue();
   }
 
   // -------------------------
@@ -99,50 +95,42 @@ class AmountTest extends AbstractJsonTest {
 
   @Test
   void bigDecimalValueFromPositiveInteger() {
-    Amount amount = ImmutableAmount.builder().value("1").build();
-    assertThat(amount.bigDecimalValue()).isEqualByComparingTo(BigDecimal.ONE);
+    assertThat(Amount.of("1").bigDecimalValue()).isEqualByComparingTo(BigDecimal.ONE);
   }
 
   @Test
   void bigDecimalValueFromNegativeInteger() {
-    Amount amount = ImmutableAmount.builder().value("-1").build();
-    assertThat(amount.bigDecimalValue()).isEqualByComparingTo(BigDecimal.ONE.negate());
+    assertThat(Amount.of("-1").bigDecimalValue()).isEqualByComparingTo(BigDecimal.ONE.negate());
   }
 
   @Test
   void bigDecimalValueFromZero() {
-    Amount amount = ImmutableAmount.builder().value("0").build();
-    assertThat(amount.bigDecimalValue()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(Amount.of("0").bigDecimalValue()).isEqualByComparingTo(BigDecimal.ZERO);
   }
 
   @Test
   void bigDecimalValueFromPositiveDecimal() {
-    Amount amount = ImmutableAmount.builder().value("1.5").build();
-    assertThat(amount.bigDecimalValue()).isEqualByComparingTo(new BigDecimal("1.5"));
+    assertThat(Amount.of("1.5").bigDecimalValue()).isEqualByComparingTo(new BigDecimal("1.5"));
   }
 
   @Test
   void bigDecimalValueFromNegativeDecimal() {
-    Amount amount = ImmutableAmount.builder().value("-1.5").build();
-    assertThat(amount.bigDecimalValue()).isEqualByComparingTo(new BigDecimal("-1.5"));
+    assertThat(Amount.of("-1.5").bigDecimalValue()).isEqualByComparingTo(new BigDecimal("-1.5"));
   }
 
   @Test
   void bigDecimalValueFromPositiveScientificNotation() {
-    Amount amount = ImmutableAmount.builder().value("1.23e11").build();
-    assertThat(amount.bigDecimalValue()).isEqualByComparingTo(new BigDecimal("1.23e11"));
+    assertThat(Amount.of("1.23e11").bigDecimalValue()).isEqualByComparingTo(new BigDecimal("1.23e11"));
   }
 
   @Test
   void bigDecimalValueFromNegativeScientificNotation() {
-    Amount amount = ImmutableAmount.builder().value("-1.23e11").build();
-    assertThat(amount.bigDecimalValue()).isEqualByComparingTo(new BigDecimal("-1.23e11"));
+    assertThat(Amount.of("-1.23e11").bigDecimalValue()).isEqualByComparingTo(new BigDecimal("-1.23e11"));
   }
 
   @Test
   void bigDecimalValueInvalidStringThrows() {
-    Amount amount = ImmutableAmount.builder().value("not-a-number").build();
-    assertThrows(NumberFormatException.class, amount::bigDecimalValue);
+    assertThrows(NumberFormatException.class, () -> Amount.of("not-a-number").bigDecimalValue());
   }
 
   // -------------------------
@@ -151,8 +139,7 @@ class AmountTest extends AbstractJsonTest {
 
   @Test
   void toCurrencyAmountThrowsOnNullIssue() {
-    Amount amount = ImmutableAmount.builder().value("1000000").build();
-    assertThrows(NullPointerException.class, () -> amount.toCurrencyAmount(null));
+    assertThrows(NullPointerException.class, () -> Amount.of("1000000").toCurrencyAmount(null));
   }
 
   // -------------------------
@@ -161,8 +148,7 @@ class AmountTest extends AbstractJsonTest {
 
   @Test
   void toCurrencyAmountWithXrpIssuePositive() {
-    Amount amount = ImmutableAmount.builder().value("1000000").build();
-    CurrencyAmount result = amount.toCurrencyAmount(Issue.XRP);
+    CurrencyAmount result = Amount.of("1000000").toCurrencyAmount(Issue.XRP);
 
     assertThat(result).isInstanceOf(XrpCurrencyAmount.class);
     XrpCurrencyAmount xrp = (XrpCurrencyAmount) result;
@@ -172,8 +158,7 @@ class AmountTest extends AbstractJsonTest {
 
   @Test
   void toCurrencyAmountWithXrpIssueZero() {
-    Amount amount = ImmutableAmount.builder().value("0").build();
-    CurrencyAmount result = amount.toCurrencyAmount(Issue.XRP);
+    CurrencyAmount result = Amount.of("0").toCurrencyAmount(Issue.XRP);
 
     assertThat(result).isInstanceOf(XrpCurrencyAmount.class);
     XrpCurrencyAmount xrp = (XrpCurrencyAmount) result;
@@ -183,8 +168,7 @@ class AmountTest extends AbstractJsonTest {
 
   @Test
   void toCurrencyAmountWithXrpIssueNegative() {
-    Amount amount = ImmutableAmount.builder().value("-1000000").build();
-    CurrencyAmount result = amount.toCurrencyAmount(Issue.XRP);
+    CurrencyAmount result = Amount.of("-1000000").toCurrencyAmount(Issue.XRP);
 
     assertThat(result).isInstanceOf(XrpCurrencyAmount.class);
     XrpCurrencyAmount xrp = (XrpCurrencyAmount) result;
@@ -202,8 +186,7 @@ class AmountTest extends AbstractJsonTest {
       .currency("USD")
       .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
       .build();
-    Amount amount = ImmutableAmount.builder().value("100").build();
-    CurrencyAmount result = amount.toCurrencyAmount(iouIssue);
+    CurrencyAmount result = Amount.of("100").toCurrencyAmount(iouIssue);
 
     assertThat(result).isInstanceOf(IssuedCurrencyAmount.class);
     IssuedCurrencyAmount iou = (IssuedCurrencyAmount) result;
@@ -219,8 +202,7 @@ class AmountTest extends AbstractJsonTest {
       .currency("USD")
       .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
       .build();
-    Amount amount = ImmutableAmount.builder().value("-100").build();
-    CurrencyAmount result = amount.toCurrencyAmount(iouIssue);
+    CurrencyAmount result = Amount.of("-100").toCurrencyAmount(iouIssue);
 
     assertThat(result).isInstanceOf(IssuedCurrencyAmount.class);
     IssuedCurrencyAmount iou = (IssuedCurrencyAmount) result;
@@ -234,8 +216,7 @@ class AmountTest extends AbstractJsonTest {
       .currency("EUR")
       .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
       .build();
-    Amount amount = ImmutableAmount.builder().value("1.23e11").build();
-    CurrencyAmount result = amount.toCurrencyAmount(iouIssue);
+    CurrencyAmount result = Amount.of("1.23e11").toCurrencyAmount(iouIssue);
 
     assertThat(result).isInstanceOf(IssuedCurrencyAmount.class);
     IssuedCurrencyAmount iou = (IssuedCurrencyAmount) result;
@@ -251,8 +232,7 @@ class AmountTest extends AbstractJsonTest {
   void toCurrencyAmountWithMptIssuePositive() {
     MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000001A407AF5856CFF3379945D823561023E8E5CED9C9");
     MptIssue mptIssue = MptIssue.builder().mptIssuanceId(mptId).build();
-    Amount amount = ImmutableAmount.builder().value("500").build();
-    CurrencyAmount result = amount.toCurrencyAmount(mptIssue);
+    CurrencyAmount result = Amount.of("500").toCurrencyAmount(mptIssue);
 
     assertThat(result).isInstanceOf(MptCurrencyAmount.class);
     MptCurrencyAmount mpt = (MptCurrencyAmount) result;
@@ -265,8 +245,7 @@ class AmountTest extends AbstractJsonTest {
   void toCurrencyAmountWithMptIssueNegative() {
     MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000001A407AF5856CFF3379945D823561023E8E5CED9C9");
     MptIssue mptIssue = MptIssue.builder().mptIssuanceId(mptId).build();
-    Amount amount = ImmutableAmount.builder().value("-500").build();
-    CurrencyAmount result = amount.toCurrencyAmount(mptIssue);
+    CurrencyAmount result = Amount.of("-500").toCurrencyAmount(mptIssue);
 
     assertThat(result).isInstanceOf(MptCurrencyAmount.class);
     MptCurrencyAmount mpt = (MptCurrencyAmount) result;
@@ -275,37 +254,27 @@ class AmountTest extends AbstractJsonTest {
   }
 
   // -------------------------
-  // Amount.builder() - static factory method on the interface
+  // Amount.of() - static factory method on the interface
   // -------------------------
 
   @Test
-  void builderReturnsNonNullBuilder() {
-    assertThat(Amount.builder()).isNotNull();
+  void ofReturnsNonNullAmount() {
+    assertThat(Amount.of("42")).isNotNull();
   }
 
   @Test
-  void builderProducesImmutableAmountInstance() {
-    Amount amount = Amount.builder().value("42").build();
-    assertThat(amount).isInstanceOf(ImmutableAmount.class);
+  void ofProducesImmutableAmountInstance() {
+    assertThat(Amount.of("42")).isInstanceOf(ImmutableAmount.class);
   }
 
   @Test
-  void builderSetsValueCorrectly() {
-    Amount amount = Amount.builder().value("9999").build();
-    assertThat(amount.value()).isEqualTo("9999");
+  void ofSetsValueCorrectly() {
+    assertThat(Amount.of("9999").value()).isEqualTo("9999");
   }
 
   @Test
-  void builderWithoutValueThrows() {
-    assertThrows(IllegalStateException.class, () -> Amount.builder().build());
-  }
-
-  @Test
-  void builderFromCopiesValueCorrectly() {
-    Amount original = Amount.builder().value("12345").build();
-    Amount copy = Amount.builder().from(original).build();
-    assertThat(copy.value()).isEqualTo(original.value());
-    assertThat(copy).isEqualTo(original);
+  void ofWithNullValueThrows() {
+    assertThrows(NullPointerException.class, () -> Amount.of(null));
   }
 
   // -------------------------
@@ -314,19 +283,42 @@ class AmountTest extends AbstractJsonTest {
 
   @Test
   void testJsonSerializationAndDeserialization() throws JSONException, JsonProcessingException {
-    Amount amount = ImmutableAmount.builder().value("1000000").build();
-    assertCanSerializeAndDeserialize(amount, "1000000", Amount.class);
+    AmountWrapper wrapper = AmountWrapper.builder()
+      .amount(Amount.of("1000000"))
+      .build();
+    assertCanSerializeAndDeserialize(wrapper, "{\"amount\": \"1000000\"}", AmountWrapper.class);
   }
 
   @Test
   void testJsonSerializationNegativeValue() throws JSONException, JsonProcessingException {
-    Amount amount = ImmutableAmount.builder().value("-1000000").build();
-    assertCanSerializeAndDeserialize(amount, "{\"value\":\"-1000000\"}", Amount.class);
+    AmountWrapper wrapper = AmountWrapper.builder()
+      .amount(Amount.of("-1000000"))
+      .build();
+    assertCanSerializeAndDeserialize(wrapper, "{\"amount\": \"-1000000\"}", AmountWrapper.class);
   }
 
   @Test
   void testJsonSerializationScientificNotation() throws JSONException, JsonProcessingException {
-    Amount amount = ImmutableAmount.builder().value("1.23e11").build();
-    assertCanSerializeAndDeserialize(amount, "{\"value\":\"1.23e11\"}", Amount.class);
+    AmountWrapper wrapper = AmountWrapper.builder()
+      .amount(Amount.of("1.23e11"))
+      .build();
+    assertCanSerializeAndDeserialize(wrapper, "{\"amount\":\"1.23e11\"}", AmountWrapper.class);
+  }
+
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableAmountWrapper.class)
+  @JsonDeserialize(as = ImmutableAmountWrapper.class)
+  interface AmountWrapper {
+
+    /**
+     * Construct a {@code CurrencyAmountWrapper} builder.
+     *
+     * @return An {@link ImmutableAmountWrapper.Builder}.
+     */
+    static ImmutableAmountWrapper.Builder builder() {
+      return ImmutableAmountWrapper.builder();
+    }
+
+    Amount amount();
   }
 }

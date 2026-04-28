@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -158,6 +159,84 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
     assertThat(flags.tmfMptCanMutateMetadata()).isTrue();
     assertThat(flags.tmfMptCanMutateTransferFee()).isFalse();
     assertThat(flags.tmfMptCanMutateCanLock()).isFalse();
+  }
+
+  @Test
+  void testJsonWithDomainId() throws JSONException, JsonProcessingException {
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(321))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
+      )
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptRequireAuth(true)
+        .build()
+      )
+      .domainId(Hash256.of("A4C9D0EB468ED7F02A63EB8F5A2D5CAEE7EDE4D8E8F202C93B0FF5D78B72E921"))
+      .build();
+
+    String json =
+      "{\n" +
+      "  \"Account\" : \"rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ\",\n" +
+      "  \"TransactionType\" : \"MPTokenIssuanceCreate\",\n" +
+      "  \"Fee\" : \"15\",\n" +
+      "  \"Sequence\" : 321,\n" +
+      "  \"SigningPubKey\" : \"EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710\",\n" +
+      "  \"Flags\" : 2147483652,\n" +
+      "  \"DomainID\" : \"A4C9D0EB468ED7F02A63EB8F5A2D5CAEE7EDE4D8E8F202C93B0FF5D78B72E921\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(issuanceCreate, json);
+  }
+
+  @Test
+  void domainIdRequiresRequireAuthFlag() {
+    assertThatThrownBy(() -> MpTokenIssuanceCreate.builder()
+      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(321))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
+      )
+      // tfMPTRequireAuth is NOT set
+      .domainId(Hash256.of("A4C9D0EB468ED7F02A63EB8F5A2D5CAEE7EDE4D8E8F202C93B0FF5D78B72E921"))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("DomainID may only be set when the tfMPTRequireAuth flag is also set.");
+  }
+
+  @Test
+  void mutableFlagsRejectsReservedBitOne() {
+    // bit 0x1 is reserved for lsfMPTLocked and must not appear in MutableFlags
+    assertThatThrownBy(() -> MpTokenIssuanceCreate.builder()
+      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(321))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
+      )
+      .mutableFlags(MpTokenIssuanceCreateMutableFlags.of(0x1L))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("reserved");
+  }
+
+  @Test
+  void mutableFlagsRejectsUnknownBits() {
+    // bit 0x80 is not a valid MutableFlags bit for MPTokenIssuanceCreate
+    assertThatThrownBy(() -> MpTokenIssuanceCreate.builder()
+      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(321))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
+      )
+      .mutableFlags(MpTokenIssuanceCreateMutableFlags.of(0x80L))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("invalid or reserved bits");
   }
 
   @Test

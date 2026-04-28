@@ -65,6 +65,9 @@ public class MpTokenIssuanceMutableFlags extends Flags {
     super(value);
   }
 
+  private MpTokenIssuanceMutableFlags() {
+  }
+
   /**
    * Construct {@link MpTokenIssuanceMutableFlags} for the given raw value.
    *
@@ -74,6 +77,39 @@ public class MpTokenIssuanceMutableFlags extends Flags {
    */
   public static MpTokenIssuanceMutableFlags of(long value) {
     return new MpTokenIssuanceMutableFlags(value);
+  }
+
+  private static MpTokenIssuanceMutableFlags of(
+    boolean lsmfMPTCanMutateCanLock,
+    boolean lsmfMPTCanMutateRequireAuth,
+    boolean lsmfMPTCanMutateCanEscrow,
+    boolean lsmfMPTCanMutateCanTrade,
+    boolean lsmfMPTCanMutateCanTransfer,
+    boolean lsmfMPTCanMutateCanClawback,
+    boolean lsmfMPTCanMutateMetadata,
+    boolean lsmfMPTCanMutateTransferFee
+  ) {
+    return new MpTokenIssuanceMutableFlags(
+      Flags.of(
+        lsmfMPTCanMutateCanLock ? CAN_MUTATE_CAN_LOCK : UNSET,
+        lsmfMPTCanMutateRequireAuth ? CAN_MUTATE_REQUIRE_AUTH : UNSET,
+        lsmfMPTCanMutateCanEscrow ? CAN_MUTATE_CAN_ESCROW : UNSET,
+        lsmfMPTCanMutateCanTrade ? CAN_MUTATE_CAN_TRADE : UNSET,
+        lsmfMPTCanMutateCanTransfer ? CAN_MUTATE_CAN_TRANSFER : UNSET,
+        lsmfMPTCanMutateCanClawback ? CAN_MUTATE_CAN_CLAWBACK : UNSET,
+        lsmfMPTCanMutateMetadata ? CAN_MUTATE_METADATA : UNSET,
+        lsmfMPTCanMutateTransferFee ? CAN_MUTATE_TRANSFER_FEE : UNSET
+      ).getValue()
+    );
+  }
+
+  /**
+   * Create a new {@link Builder}.
+   *
+   * @return A new {@link Builder}.
+   */
+  public static Builder builder() {
+    return new Builder();
   }
 
   /**
@@ -146,5 +182,134 @@ public class MpTokenIssuanceMutableFlags extends Flags {
    */
   public boolean lsmfMptCanMutateTransferFee() {
     return this.isSet(CAN_MUTATE_TRANSFER_FEE);
+  }
+
+  /**
+   * A builder for {@link MpTokenIssuanceMutableFlags}.
+   */
+  public static class Builder {
+
+    private boolean lsmfMptCanMutateCanLock = false;
+    private boolean lsmfMptCanMutateRequireAuth = false;
+    private boolean lsmfMptCanMutateCanEscrow = false;
+    private boolean lsmfMptCanMutateCanTrade = false;
+    private boolean lsmfMptCanMutateCanTransfer = false;
+    private boolean lsmfMptCanMutateCanClawback = false;
+    private boolean lsmfMptCanMutateMetadata = false;
+    private boolean lsmfMptCanMutateTransferFee = false;
+
+    /**
+     * Set {@code lsmfMptCanMutateCanLock}.
+     *
+     * @param value A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder lsmfMptCanMutateCanLock(boolean value) {
+      this.lsmfMptCanMutateCanLock = value;
+      return this;
+    }
+
+    /**
+     * Set {@code lsmfMptCanMutateRequireAuth}.
+     *
+     * @param value A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder lsmfMptCanMutateRequireAuth(boolean value) {
+      this.lsmfMptCanMutateRequireAuth = value;
+      return this;
+    }
+
+    /**
+     * Set {@code lsmfMptCanMutateCanEscrow}.
+     *
+     * @param value A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder lsmfMptCanMutateCanEscrow(boolean value) {
+      this.lsmfMptCanMutateCanEscrow = value;
+      return this;
+    }
+
+    /**
+     * Set {@code lsmfMptCanMutateCanTrade}.
+     *
+     * @param value A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder lsmfMptCanMutateCanTrade(boolean value) {
+      this.lsmfMptCanMutateCanTrade = value;
+      return this;
+    }
+
+    /**
+     * Set {@code lsmfMptCanMutateCanTransfer}.
+     *
+     * @param value A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder lsmfMptCanMutateCanTransfer(boolean value) {
+      this.lsmfMptCanMutateCanTransfer = value;
+      return this;
+    }
+
+    /**
+     * Set {@code lsmfMptCanMutateCanClawback}.
+     *
+     * @param value A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder lsmfMptCanMutateCanClawback(boolean value) {
+      this.lsmfMptCanMutateCanClawback = value;
+      return this;
+    }
+
+    /**
+     * Set {@code lsmfMptCanMutateMetadata}.
+     *
+     * @param value A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder lsmfMptCanMutateMetadata(boolean value) {
+      this.lsmfMptCanMutateMetadata = value;
+      return this;
+    }
+
+    /**
+     * Set {@code lsmfMptCanMutateTransferFee}.
+     *
+     * @param value A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder lsmfMptCanMutateTransferFee(boolean value) {
+      this.lsmfMptCanMutateTransferFee = value;
+      return this;
+    }
+
+    /**
+     * Build a new {@link MpTokenIssuanceMutableFlags} from the current boolean values.
+     *
+     * @return A new {@link MpTokenIssuanceMutableFlags}.
+     */
+    public MpTokenIssuanceMutableFlags build() {
+      return MpTokenIssuanceMutableFlags.of(
+        lsmfMptCanMutateCanLock,
+        lsmfMptCanMutateRequireAuth,
+        lsmfMptCanMutateCanEscrow,
+        lsmfMptCanMutateCanTrade,
+        lsmfMptCanMutateCanTransfer,
+        lsmfMptCanMutateCanClawback,
+        lsmfMptCanMutateMetadata,
+        lsmfMptCanMutateTransferFee
+      );
+    }
   }
 }

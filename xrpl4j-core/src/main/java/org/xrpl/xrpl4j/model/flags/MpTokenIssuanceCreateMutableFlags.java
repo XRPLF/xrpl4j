@@ -70,6 +70,11 @@ public class MpTokenIssuanceCreateMutableFlags extends Flags {
   /**
    * Construct {@link MpTokenIssuanceCreateMutableFlags} for the given raw value.
    *
+   * <p><strong>Note:</strong> Bit {@code 0x00000001} is reserved — it mirrors {@code lsfMPTLocked} in the ledger
+   * {@code Flags} field and is not a valid bit for {@code MutableFlags}. Passing a value with this bit set will be
+   * rejected by rippled ({@code temINVALID_FLAG}) and will trigger an {@link IllegalStateException} when the
+   * {@link org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate} containing this value is built.
+   *
    * @param value The long-number encoded flags value.
    *
    * @return A new {@link MpTokenIssuanceCreateMutableFlags}.

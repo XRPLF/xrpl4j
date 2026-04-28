@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
@@ -17,6 +18,21 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableMpTokenIssuanceCreate.class)
 @JsonDeserialize(as = ImmutableMpTokenIssuanceCreate.class)
 public interface MpTokenIssuanceCreate extends Transaction {
+
+  /**
+   * Valid bits for {@code MutableFlags} on {@code MPTokenIssuanceCreate}.
+   *
+   * <p>Bit {@code 0x00000001} is reserved (it mirrors {@code lsfMPTLocked}) and must never be set.
+   */
+  long MUTABLE_FLAGS_VALID_MASK =
+    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_CAN_LOCK.getValue() |
+    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_REQUIRE_AUTH.getValue() |
+    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_CAN_ESCROW.getValue() |
+    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_CAN_TRADE.getValue() |
+    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_CAN_TRANSFER.getValue() |
+    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_CAN_CLAWBACK.getValue() |
+    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_METADATA.getValue() |
+    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_TRANSFER_FEE.getValue();
 
   /**
    * Construct a {@code MpTokenIssuanceCreate} builder.
@@ -83,9 +99,42 @@ public interface MpTokenIssuanceCreate extends Transaction {
    * An optional set of flags declaring which fields or flags of the created {@code MPTokenIssuance} may be mutated
    * after issuance via {@code MPTokenIssuanceSet}. Requires the {@code DynamicMPT} amendment.
    *
+   * <p>Bit {@code 0x00000001} is reserved and must not be set. Only bits defined in
+   * {@link MpTokenIssuanceCreateMutableFlags} are valid.
+   *
    * @return An optionally present {@link MpTokenIssuanceCreateMutableFlags}.
    */
   @JsonProperty("MutableFlags")
   Optional<MpTokenIssuanceCreateMutableFlags> mutableFlags();
 
+  /**
+   * The ID of a {@code PermissionedDomain} that governs admissibility for this issuance. May only be set when the
+   * {@code tfMPTRequireAuth} flag is also set. Requires the {@code DynamicMPT} amendment.
+   *
+   * @return An optionally present {@link Hash256} representing the DomainID.
+   */
+  @JsonProperty("DomainID")
+  Optional<Hash256> domainId();
+
+  /**
+   * Validates invariants for {@link MpTokenIssuanceCreate}.
+   * <ul>
+   *   <li>{@code MutableFlags}, when present, must only contain bits from the allowed set — bit {@code 0x1} is
+   *       reserved for {@code lsfMPTLocked} and may not appear here.</li>
+   *   <li>{@code DomainID}, when present, requires the {@code tfMPTRequireAuth} flag to be set.</li>
+   * </ul>
+   */
+  @Value.Check
+  default void check() {
+    mutableFlags().ifPresent(mf -> Preconditions.checkState(
+      (mf.getValue() & ~MUTABLE_FLAGS_VALID_MASK) == 0,
+      "MutableFlags contains invalid or reserved bits. " +
+        "Bit 0x1 is reserved (lsfMPTLocked) and must not be set in MutableFlags."
+    ));
+
+    domainId().ifPresent($ -> Preconditions.checkState(
+      flags().tfMptRequireAuth(),
+      "DomainID may only be set when the tfMPTRequireAuth flag is also set."
+    ));
+  }
 }

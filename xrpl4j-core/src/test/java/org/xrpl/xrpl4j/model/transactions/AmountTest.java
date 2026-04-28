@@ -132,6 +132,11 @@ class AmountTest extends AbstractJsonTest {
   void zeroConstantIsZero() {
     assertThat(Amount.ZERO.isZero()).isTrue();
     assertThat(Amount.ZERO.value()).isEqualTo("0");
+
+    assertThat(Amount.ZERO).isEqualTo(Amount.of("0"));
+    assertThat(Amount.ZERO).isEqualTo(Amount.of("-0"));
+    assertThat(Amount.ZERO).isEqualTo(Amount.of("0.00"));
+    assertThat(Amount.ZERO).isEqualTo(Amount.of("0e5"));
   }
 
   // -------------------------

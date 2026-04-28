@@ -36,8 +36,6 @@ import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.AssetAmountDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.AssetAmountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
@@ -841,20 +839,6 @@ public class Wrappers {
     @Override
     public String toString() {
       return this.value().toString();
-    }
-
-  }
-
-  @Value.Immutable
-  @Wrapped
-  @JsonSerialize(as = AssetAmount.class, using = AssetAmountSerializer.class)
-  @JsonDeserialize(as = AssetAmount.class, using = AssetAmountDeserializer.class)
-  @Beta
-  abstract static class _AssetAmount extends Wrapper<String> implements Serializable {
-
-    @Override
-    public String toString() {
-      return this.value();
     }
 
   }

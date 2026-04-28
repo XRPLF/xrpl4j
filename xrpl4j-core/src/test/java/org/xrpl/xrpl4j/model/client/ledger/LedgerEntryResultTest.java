@@ -39,7 +39,7 @@ import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.ledger.VoteEntry;
 import org.xrpl.xrpl4j.model.ledger.VoteEntryWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Credential;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
@@ -834,10 +834,10 @@ class LedgerEntryResultTest extends AbstractJsonTest {
               .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
               .build()
           )
-          .assetsTotal(AssetAmount.of("500000"))
-          .assetsAvailable(AssetAmount.of("400000"))
-          .assetsMaximum(AssetAmount.of("1000000"))
-          .lossUnrealized(AssetAmount.of("100"))
+          .assetsTotal(Amount.builder().value("500000").build())
+          .assetsAvailable(Amount.builder().value("400000").build())
+          .assetsMaximum(Amount.builder().value("1000000").build())
+          .lossUnrealized(Amount.builder().value("100").build())
           .shareMptId(MpTokenIssuanceId.of("00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836"))
           .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
           .scale(AssetScale.of(UnsignedInteger.valueOf(8)))

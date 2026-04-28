@@ -1,11 +1,14 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value.Auxiliary;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.jackson.modules.AmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AmountSerializer;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 
 import java.math.BigDecimal;
@@ -31,8 +34,8 @@ import java.util.Objects;
  * </p>
  */
 @Immutable
-@JsonSerialize(as = ImmutableAmount.class)
-@JsonDeserialize(as = ImmutableAmount.class)
+@JsonSerialize(as = ImmutableAmount.class, using = AmountSerializer.class)
+@JsonDeserialize(as = ImmutableAmount.class, using = AmountDeserializer.class)
 public interface Amount {
 
   /**

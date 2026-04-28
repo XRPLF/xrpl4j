@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.VaultData;
 import org.xrpl.xrpl4j.model.transactions.VaultSet;
@@ -25,7 +25,7 @@ public class VaultSetJsonTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(1))
       .vaultId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000001"))
-      .assetsMaximum(AssetAmount.of("5000000"))
+      .assetsMaximum(Amount.builder().value("5000000").build())
       .domainId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000002"))
       .data(VaultData.of("48656C6C6F"))
       .signingPublicKey(

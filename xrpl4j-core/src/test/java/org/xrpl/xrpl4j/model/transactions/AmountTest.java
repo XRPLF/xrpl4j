@@ -281,7 +281,7 @@ class AmountTest extends AbstractJsonTest {
   @Test
   void testJsonSerializationAndDeserialization() throws JSONException, JsonProcessingException {
     Amount amount = ImmutableAmount.builder().value("1000000").build();
-    assertCanSerializeAndDeserialize(amount, "{\"value\":\"1000000\"}", Amount.class);
+    assertCanSerializeAndDeserialize(amount, "1000000", Amount.class);
   }
 
   @Test

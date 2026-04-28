@@ -25,7 +25,7 @@ public class VaultSetJsonTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(1))
       .vaultId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000001"))
-      .assetsMaximum(Amount.builder().value("5000000").build())
+      .assetsMaximum(Amount.of("5000000"))
       .domainId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000002"))
       .data(VaultData.of("48656C6C6F"))
       .signingPublicKey(

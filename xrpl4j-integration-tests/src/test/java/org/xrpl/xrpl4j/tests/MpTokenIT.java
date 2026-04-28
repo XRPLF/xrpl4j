@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -422,6 +423,10 @@ public class MpTokenIT extends AbstractIT {
       issuerKeyPair.privateKey(), issuanceCreate
     );
     SubmitResult<MpTokenIssuanceCreate> createResult = xrplClient.submit(signedCreate);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(createResult.engineResult()),
+      "Skipping: DynamicMPT amendment not enabled on this node"
+    );
     assertThat(createResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
     this.scanForResult(
@@ -526,6 +531,10 @@ public class MpTokenIT extends AbstractIT {
       issuerKeyPair.privateKey(), issuanceCreate
     );
     SubmitResult<MpTokenIssuanceCreate> createResult = xrplClient.submit(signedCreate);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(createResult.engineResult()),
+      "Skipping: DynamicMPT amendment not enabled on this node"
+    );
     assertThat(createResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
     this.scanForResult(
@@ -614,6 +623,10 @@ public class MpTokenIT extends AbstractIT {
       issuerKeyPair.privateKey(), issuanceCreate
     );
     SubmitResult<MpTokenIssuanceCreate> createResult = xrplClient.submit(signedCreate);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(createResult.engineResult()),
+      "Skipping: DynamicMPT amendment not enabled on this node"
+    );
     assertThat(createResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
     this.scanForResult(

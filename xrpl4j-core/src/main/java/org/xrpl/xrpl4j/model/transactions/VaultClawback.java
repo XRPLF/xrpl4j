@@ -58,7 +58,7 @@ public interface VaultClawback extends Transaction {
   Address holder();
 
   /**
-   * The amount to clawback. When Amount is 0 clawback all funds, up to the total shares the Holder owns.
+   * The amount to clawback. When Amount is 0/absent, clawback all funds, up to the total shares the Holder owns.
    *
    * @return An optionally-present {@link CurrencyAmount}.
    */

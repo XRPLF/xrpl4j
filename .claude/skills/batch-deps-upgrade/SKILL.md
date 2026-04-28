@@ -21,13 +21,15 @@ Also note: Dependabot sometimes opens duplicate PRs for the same dependency acro
 
 ## Step 2: Apply
 
-1. Create a branch from main: `deps/batch-deps-upgrade-YYYY-QN` (use current year and quarter)
+1. If a target branch already exists (e.g. `Q1-dependency-upgrades`), work on that branch. Otherwise create a new branch from main: `deps/batch-deps-upgrade-YYYY-QN` (use current year and quarter).
 2. Inspect the root `pom.xml` to determine where each dependency's version is controlled:
    - **Version property**: a `<properties>` entry like `<jackson.version>2.14.0</jackson.version>` — update the property value
    - **Direct version in `<dependencyManagement>`**: a `<version>` element — update it directly
    - **BOM import in `<dependencyManagement>`**: a `<dependency>` with `<type>pom</type><scope>import</scope>` — update its `<version>`
    - **Maven plugin version**: in `<build><pluginManagement><plugins>` — update the `<version>` element
-3. Check for **compatibility constraints** before upgrading. Major version bumps may require source-level changes (e.g., changed APIs, removed methods, renamed classes). Flag these as needing extra validation.
+3. Check for **compatibility constraints** before upgrading:
+   - **Java version**: read `maven.compiler.source` from `pom.xml`. If a dependency's new version requires a higher Java version than the project's compiler source, mark it as Skipped immediately — do not attempt the upgrade. Known constraints: caffeine 3.x requires Java 11+, junit-bom 6.x requires Java 17+.
+   - **API changes**: major version bumps may require source-level changes (e.g., changed APIs, removed methods, renamed classes). Flag these as needing extra validation.
 4. Apply each upgrade by editing `pom.xml` directly. For version properties, use `mvn versions:set-property -Dproperty=<name> -DnewVersion=<version> -DprocessAllModules` as an alternative to manual XML edits — but verify the result looks correct before proceeding.
 5. Run `mvn dependency:resolve -q` to verify the dependency graph resolves without conflicts after applying all changes.
 6. Classify each Dependabot PR as:
@@ -48,7 +50,7 @@ Run the build and test suite in order:
    - **Checkstyle violations from new code patterns**: fix the style issue
    - **Compile errors from changed generics or type parameters**: adjust the type annotations
    - **Breaking changes in BouncyCastle** (crypto library): the API often changes significantly between major versions — check migration notes
-   - **JUnit 5 → 6 migration**: JUnit 6 has a new package (`org.junit.jupiter.api.v2` or similar) — update imports if needed
+   - **JUnit 5 → 6 migration**: junit-bom 6.x requires Java 17+ (class file version 61.0) — skip unless the project has already raised its minimum Java version to 17
 3. Only roll back and mark as Skipped if:
    - The fix requires a large-scale migration across many files
    - The upgrade is blocked by an incompatible transitive dependency you cannot resolve

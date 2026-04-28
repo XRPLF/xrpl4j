@@ -27,6 +27,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
+import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Lazy;
@@ -65,6 +66,8 @@ public interface PublicKey {
    * transactions.
    */
   PublicKey MULTI_SIGN_PUBLIC_KEY = PublicKey.builder().value(UnsignedByteArray.empty()).build();
+
+  PublicKey EMPTY_PUBLIC_KEY = PublicKey.builder().build();
 
   /**
    * Instantiates a new builder.
@@ -118,7 +121,10 @@ public interface PublicKey {
    *
    * @return An instance of {@link UnsignedByteArray}.
    */
-  UnsignedByteArray value();
+  @Default
+  default UnsignedByteArray value() {
+    return UnsignedByteArray.empty();
+  }
 
   /**
    * The public-key, as a base-58 encoded {@link String}.

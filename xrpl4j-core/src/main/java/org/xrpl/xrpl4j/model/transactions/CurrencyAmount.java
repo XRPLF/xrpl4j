@@ -112,9 +112,9 @@ public interface CurrencyAmount {
    */
   default Amount toAmount() {
     return this.map(
-      xrpCurrencyAmount -> ImmutableAmount.builder().value(xrpCurrencyAmount.toString()).build(),
-      issuedCurrencyAmount -> ImmutableAmount.builder().value(issuedCurrencyAmount.value()).build(),
-      mptCurrencyAmount -> ImmutableAmount.builder().value(mptCurrencyAmount.value()).build()
+      xrpCurrencyAmount -> Amount.of(xrpCurrencyAmount.toString()),
+      issuedCurrencyAmount -> Amount.of(issuedCurrencyAmount.value()),
+      mptCurrencyAmount -> Amount.of(mptCurrencyAmount.value())
     );
   }
 }

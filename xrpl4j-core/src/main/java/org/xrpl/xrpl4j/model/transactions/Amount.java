@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value.Auxiliary;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.jackson.modules.AmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AmountSerializer;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 
 import java.math.BigDecimal;
@@ -31,17 +33,22 @@ import java.util.Objects;
  * </p>
  */
 @Immutable
-@JsonSerialize(as = ImmutableAmount.class)
-@JsonDeserialize(as = ImmutableAmount.class)
+@JsonSerialize(as = ImmutableAmount.class, using = AmountSerializer.class)
+@JsonDeserialize(as = ImmutableAmount.class, using = AmountDeserializer.class)
 public interface Amount {
 
   /**
-   * Creates a builder for constructing an {@link ImmutableAmount} instance.
+   * Creates an {@link Amount} instance from the given string value.
    *
-   * @return An {@link ImmutableAmount.Builder} for building {@link ImmutableAmount} objects.
+   * @param value A non-null {@link String} representing the value of the amount.
+   *
+   * @return A non-null {@link Amount} instance with the specified value.
+   *
+   * @throws NullPointerException if {@code value} is null.
    */
-  static ImmutableAmount.Builder builder() {
-    return ImmutableAmount.builder();
+  static Amount of(final String value) {
+    Objects.requireNonNull(value);
+    return ImmutableAmount.builder().value(value).build();
   }
 
   /**

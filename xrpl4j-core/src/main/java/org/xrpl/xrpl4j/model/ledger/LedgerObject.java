@@ -42,6 +42,7 @@ import com.google.common.annotations.Beta;
   //    @JsonSubTypes.Type(value = ImmutableAmendmentsObject.class, name = "Amendments"),
   @JsonSubTypes.Type(value = ImmutableCheckObject.class, name = "Check"),
   @JsonSubTypes.Type(value = ImmutableCredentialObject.class, name = "Credential"),
+  @JsonSubTypes.Type(value = ImmutableDelegateObject.class, name = "Delegate"),
   @JsonSubTypes.Type(value = ImmutableDepositPreAuthObject.class, name = "DepositPreauth"),
   //    @JsonSubTypes.Type(value = ImmutableDirectoryNodeObject.class, name = "DirectoryNode"),
   @JsonSubTypes.Type(value = ImmutableEscrowObject.class, name = "Escrow"),
@@ -163,6 +164,15 @@ public interface LedgerObject {
      * The {@link LedgerEntryType} for {@code NfTokenPageObject} ledger objects.
      */
     NFTOKEN_PAGE("NFTokenPage"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Delegate} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on
+     * mainnet. Its API is subject to change.</p>
+     */
+    @Beta
+    DELEGATE("Delegate"),
 
     /**
      * The {@link LedgerEntryType} for {@code AmmObject} ledger objects.

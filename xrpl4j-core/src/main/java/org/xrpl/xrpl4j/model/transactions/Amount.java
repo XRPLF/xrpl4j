@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value.Auxiliary;
+import org.immutables.value.Value.Check;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.jackson.modules.AmountDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AmountSerializer;
@@ -38,6 +39,11 @@ import java.util.Objects;
 public interface Amount {
 
   /**
+   * An {@link Amount} representing zero.
+   */
+  Amount ZERO = Amount.of("0");
+
+  /**
    * Creates an {@link Amount} instance from the given string value.
    *
    * @param value A non-null {@link String} representing the value of the amount.
@@ -69,6 +75,17 @@ public interface Amount {
   @JsonIgnore
   default boolean isNegative() {
     return value().startsWith("-");
+  }
+
+  /**
+   * Whether this amount is zero.
+   *
+   * @return {@code true} if the value is numerically zero; {@code false} otherwise.
+   */
+  @Auxiliary
+  @JsonIgnore
+  default boolean isZero() {
+    return bigDecimalValue().signum() == 0;
   }
 
   /**
@@ -117,5 +134,31 @@ public interface Amount {
         .value(this.value())
         .build()
     );
+  }
+
+  /**
+   * Normalizes the {@code value} field so that any numeric representation of zero (e.g. {@code "-0"}, {@code "0.00"},
+   * {@code "0e5"}) is canonicalized to the string {@code "0"}.
+   *
+   * <p>This method is invoked by the Immutables framework after every construction path — both via the
+   * builder and via {@code copyOf}/{@code with*} — so the normalization cannot be bypassed even when callers use
+   * {@code ImmutableAmount.builder()} directly.</p>
+   *
+   * @return {@code this} if the value is already canonical, or a new {@link Amount} whose {@code value()} is
+   *   {@code "0"} if the value is numerically zero.
+   */
+  @Check
+  default Amount normalizeValue() {
+    try {
+      if (this.isZero()) {
+        if ("0".equals(value())) {
+          return this;
+        }
+        return Amount.ZERO;
+      }
+    } catch (NumberFormatException e) {
+      // Not a numeric string — leave as-is; bigDecimalValue() will throw if called.
+    }
+    return this;
   }
 }

@@ -28,6 +28,7 @@ import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PUBLIC_KEY_HEX;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY_B58;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY_HEX;
+import static org.xrpl.xrpl4j.crypto.keys.PublicKey.EMPTY_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,50 @@ import org.xrpl.xrpl4j.model.transactions.Address;
  * Unit tests for {@link PublicKey}.
  */
 public class PublicKeyTest {
+
+  private static final Address ADDRESS_DERIVED_FROM_EMPTY_PUBLIC_KEY = Address.of("rHTfx7p4ge8CfDhyoczpSwc84LWfiK3dhN");
+
+  @Test
+  void testEmptyPublicKey() {
+
+    // fromBase58EncodedPublicKey
+    assertThat(PublicKey.fromBase58EncodedPublicKey("").value()).isEqualTo(UnsignedByteArray.empty());
+    assertThat(PublicKey.fromBase58EncodedPublicKey("").base16Value()).isEqualTo("");
+    assertThat(PublicKey.fromBase58EncodedPublicKey("").base58Value()).isEqualTo("");
+    assertThat(PublicKey.fromBase58EncodedPublicKey("").deriveAddress()).isEqualTo(
+      ADDRESS_DERIVED_FROM_EMPTY_PUBLIC_KEY
+    );
+
+    // fromBase16EncodedPublicKey
+    assertThat(PublicKey.fromBase16EncodedPublicKey("").value()).isEqualTo(UnsignedByteArray.empty());
+    assertThat(PublicKey.fromBase16EncodedPublicKey("").base16Value()).isEqualTo("");
+    assertThat(PublicKey.fromBase16EncodedPublicKey("").base58Value()).isEqualTo("");
+    assertThat(PublicKey.fromBase16EncodedPublicKey("").deriveAddress()).isEqualTo(
+      ADDRESS_DERIVED_FROM_EMPTY_PUBLIC_KEY
+    );
+
+    // UnsignedByteArray.empty()
+    assertThat(PublicKey.builder().value(UnsignedByteArray.empty()).build().value()).isEqualTo(
+      UnsignedByteArray.empty()
+    );
+    assertThat(PublicKey.builder().value(UnsignedByteArray.empty()).build().base16Value()).isEqualTo("");
+    assertThat(PublicKey.builder().value(UnsignedByteArray.empty()).build().base58Value()).isEqualTo("");
+    assertThat(PublicKey.builder().value(UnsignedByteArray.empty()).build().deriveAddress()).isEqualTo(
+      ADDRESS_DERIVED_FROM_EMPTY_PUBLIC_KEY
+    );
+
+    // PublicKey.builder().build()
+    assertThat(PublicKey.builder().build().value()).isEqualTo(UnsignedByteArray.empty());
+    assertThat(PublicKey.builder().build().base16Value()).isEqualTo("");
+    assertThat(PublicKey.builder().build().base58Value()).isEqualTo("");
+    assertThat(PublicKey.builder().build().deriveAddress()).isEqualTo(ADDRESS_DERIVED_FROM_EMPTY_PUBLIC_KEY);
+
+    // EMPTY_PUBLIC_KEY
+    assertThat(EMPTY_PUBLIC_KEY.value()).isEqualTo(UnsignedByteArray.empty());
+    assertThat(EMPTY_PUBLIC_KEY.base16Value()).isEqualTo("");
+    assertThat(EMPTY_PUBLIC_KEY.base58Value()).isEqualTo("");
+    assertThat(EMPTY_PUBLIC_KEY.deriveAddress()).isEqualTo(ADDRESS_DERIVED_FROM_EMPTY_PUBLIC_KEY);
+  }
 
   @Test
   public void fromBase58EncodedStringEd25519WithTooFewBytes() {
@@ -225,7 +270,8 @@ public class PublicKeyTest {
 
   ///////////////////
   // Constants
-  ///////////////////
+
+  /// ////////////////
 
   @Test
   void testConstants() {

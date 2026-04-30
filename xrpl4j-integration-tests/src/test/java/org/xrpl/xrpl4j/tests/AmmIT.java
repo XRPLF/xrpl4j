@@ -976,7 +976,7 @@ public class AmmIT extends AbstractIT {
   private AmmInfoResult getAmmInfo(KeyPair issuerKeyPair) throws JsonRpcClientErrorException {
     AmmInfoResult ammInfoResult = xrplClient.ammInfo(
       AmmInfoRequestParams.from(
-        XrpIssue.XRP,
+        Issue.XRP,
         IouIssue.builder()
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .currency(xrpl4jCoin)

@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.model.ledger;
  * ========================LICENSE_START=================================
  * xrpl4j :: model
  * %%
- * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,7 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
- * Represents an IOU (issued currency) asset on the ledger without an amount.
- *
- * <p>This is one of the three implementations of {@link Issue}. An {@link IouIssue} identifies
- * an IOU token by its currency code and issuer address.</p>
- *
- * @see Issue
- * @see XrpIssue
- * @see MptIssue
+ * Represents an IOU (issued currency) asset on the ledger, identified by a currency code and issuer address.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableIouIssue.class)
@@ -42,7 +35,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 public interface IouIssue extends Issue {
 
   /**
-   * Construct a {@code IouIssue} builder.
+   * Construct an {@code IouIssue} builder.
    *
    * @return An {@link ImmutableIouIssue.Builder}.
    */
@@ -77,4 +70,3 @@ public interface IouIssue extends Issue {
     }
   }
 }
-

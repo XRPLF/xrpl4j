@@ -53,21 +53,21 @@ public interface Issue {
    * Validate that this Issue has valid field combinations.
    */
   @Value.Check
-  default void checkValidIssue() {
-    boolean hasCurrency = currency().isPresent();
-    boolean hasIssuer = issuer().isPresent();
-    boolean hasMptIssuanceId = mptIssuanceId().isPresent();
-
-    // Must be one of: XRP (currency only), IOU (currency + issuer), or MPT (mpt_issuance_id only)
-    if (hasMptIssuanceId) {
-      Preconditions.checkState(!hasCurrency && !hasIssuer,
-        "If mpt_issuance_id is present, currency and issuer must be empty.");
-    } else if (hasCurrency) {
+  default void checkFields() {
+    if (currency().isPresent()) {
+      Preconditions.checkState(
+        !mptIssuanceId().isPresent(),
+        "Issue cannot have both currency and mpt_issuance_id."
+      );
       if (currency().get().asText().equals("XRP")) {
-        Preconditions.checkState(!hasIssuer, "If Issue is XRP, issuer must be empty.");
+        Preconditions.checkState(!issuer().isPresent(), "If Issue is XRP, issuer must be empty.");
       }
     } else {
-      throw new IllegalStateException("Issue must have either currency or mpt_issuance_id.");
+      Preconditions.checkState(
+        mptIssuanceId().isPresent(),
+        "Issue must have either currency or mpt_issuance_id."
+      );
+      Preconditions.checkState(!issuer().isPresent(), "MPT Issue must not have an issuer.");
     }
   }
 

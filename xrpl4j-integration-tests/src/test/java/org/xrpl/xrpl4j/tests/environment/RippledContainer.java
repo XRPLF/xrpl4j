@@ -22,7 +22,6 @@ package org.xrpl.xrpl4j.tests.environment;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.google.common.base.Preconditions;
 import okhttp3.HttpUrl;
 import org.awaitility.Awaitility;
@@ -93,7 +92,7 @@ public class RippledContainer {
         .withExposedPorts(5005)
         .withImagePullPolicy(PullPolicy.defaultPolicy())
         .withClasspathResourceMapping("xrpld",
-          "/config",
+          "/etc/opt/xrpld/",
           BindMode.READ_ONLY)
         .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
     }

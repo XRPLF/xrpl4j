@@ -23,9 +23,14 @@ package org.xrpl.xrpl4j.codec.binary.types;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
+import org.xrpl.xrpl4j.model.AddressConstants;
+
+import java.util.regex.Pattern;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -36,6 +41,11 @@ public class IssueType extends SerializedType<IssueType> {
   private static final int MPT_WIDTH = 44; // 20 (issuer account) + 20 (no account marker) + 4 (sequence)
   private static final AccountIdType NO_ACCOUNT =
     new AccountIdType(UnsignedByteArray.fromHex("0000000000000000000000000000000000000001"));
+
+  private static final UnsignedByteArray ACCOUNT_ONE = AddressCodec.getInstance().decodeAccountId(
+    AddressConstants.ACCOUNT_ONE);
+
+  private static final Pattern MPT_ISSUANCE_ID_HEX_PATTERN = Pattern.compile("^[0-9A-Fa-f]{48}$");
 
   public IssueType() {
     this(UnsignedByteArray.ofSize(20));
@@ -53,42 +63,29 @@ public class IssueType extends SerializedType<IssueType> {
 
     Issue issue = objectMapper.treeToValue(node, Issue.class);
 
-    // Handle MPT issue
     if (issue.mptIssuanceId().isPresent()) {
+      // mpt_issuance_id (192-bit integer): sequence (4 bytes big-endian) || issuer (20 bytes) = 24 bytes
+      // Binary encoded representation: issuer (20 bytes) || ACCOUNT_ONE (20 bytes) || sequence (4 bytes) = 44 bytes
       String mptIssuanceId = issue.mptIssuanceId().get().asText();
-      if (mptIssuanceId.length() != 48) {
-        throw new IllegalArgumentException("Invalid mpt_issuance_id length: expected 48 characters, received " +
-          mptIssuanceId.length() + " characters.");
+
+      if (!MPT_ISSUANCE_ID_HEX_PATTERN.matcher(mptIssuanceId).matches()) {
+        throw new IllegalArgumentException(
+          "mpt_issuance_id must be a 48-character hexadecimal string, but was: " + mptIssuanceId
+        );
       }
 
-      // MPT issuance ID in JSON: 4 bytes sequence + 20 bytes issuer account
-      // MPT issuance ID in binary: 20 bytes issuer account + 20 bytes no-account marker + 4 bytes sequence
-      // Note: The 4-byte sequence uses different byte order in JSON vs binary representations
-      byte[] mptBytes = UnsignedByteArray.fromHex(mptIssuanceId).toByteArray();
-      byte[] sequenceFromJson = new byte[4];
-      byte[] issuerAccount = new byte[20];
+      UnsignedByteArray mptIssuanceIdBytes = UnsignedByteArray.fromHex(mptIssuanceId);
 
-      System.arraycopy(mptBytes, 0, sequenceFromJson, 0, 4);
-      System.arraycopy(mptBytes, 4, issuerAccount, 0, 20);
+      UnsignedByteArray sequenceBE = mptIssuanceIdBytes.slice(0, 4);
+      UnsignedByteArray issuerBytes = mptIssuanceIdBytes.slice(4, 24);
 
-      // Convert sequence from JSON byte order to binary byte order
-      ByteBuffer jsonBuffer = ByteBuffer.wrap(sequenceFromJson);
-      jsonBuffer.order(ByteOrder.BIG_ENDIAN);
-      int sequence = jsonBuffer.getInt();
+      // Convert sequence from big-endian to little-endian
+      UnsignedByteArray sequenceLE = sequenceBE.reverse();
 
-      byte[] sequenceForBinary = new byte[4];
-      ByteBuffer binaryBuffer = ByteBuffer.wrap(sequenceForBinary);
-      binaryBuffer.order(ByteOrder.LITTLE_ENDIAN);
-      binaryBuffer.putInt(sequence);
-
-      UnsignedByteArray result = UnsignedByteArray.of(issuerAccount)
-        .append(NO_ACCOUNT.value())
-        .append(UnsignedByteArray.of(sequenceForBinary));
-
-      return new IssueType(result);
+      UnsignedByteArray byteArray = issuerBytes.append(ACCOUNT_ONE).append(sequenceLE);
+      return new IssueType(byteArray);
     }
 
-    // Handle XRP or IOU issue
     UnsignedByteArray byteArray = new CurrencyType().fromJson(issue.currency().get()).value();
     issue.issuer().ifPresent(
       issuer -> byteArray.append(new AccountIdType().fromJson(issuer).value())
@@ -99,27 +96,21 @@ public class IssueType extends SerializedType<IssueType> {
 
   @Override
   public IssueType fromParser(BinaryParser parser) {
-    // Read first 20 bytes (currency or issuer account for MPT)
-    UnsignedByteArray currencyOrAccount = parser.read(20);
-    CurrencyType currency = new CurrencyType(currencyOrAccount);
-
-    // Check if XRP
-    if (currency.toJson().asText().equals("XRP")) {
-      return new IssueType(currencyOrAccount);
+    CurrencyType currencyOrIssuer = new CurrencyType().fromParser(parser);
+    if (currencyOrIssuer.toJson().asText().equals("XRP")) {
+      return new IssueType(currencyOrIssuer.value());
     }
 
-    // Read next 20 bytes (issuer account)
-    AccountIdType issuerAccountId = new AccountIdType().fromParser(parser);
+    AccountIdType accountId = new AccountIdType().fromParser(parser);
 
-    // Check if this is an MPT (issuer is the no-account marker)
-    if (NO_ACCOUNT.toHex().equals(issuerAccountId.toHex())) {
-      // Read 4-byte sequence number
-      UnsignedByteArray sequence = parser.read(4);
-      return new IssueType(currencyOrAccount.append(issuerAccountId.value()).append(sequence));
+    if (accountId.value().equals(ACCOUNT_ONE)) {
+      // MPT: issuer (20 bytes) + ACCOUNT_ONE (20 bytes) + sequence (4 bytes) = 44 bytes total
+      UnsignedByteArray sequenceBytes = parser.read(4);
+      return new IssueType(currencyOrIssuer.value().append(accountId.value()).append(sequenceBytes));
     }
 
-    // IOU case
-    return new IssueType(currencyOrAccount.append(issuerAccountId.value()));
+    // IOU: currency + issuer
+    return new IssueType(currencyOrIssuer.value().append(accountId.value()));
   }
 
   @Override
@@ -161,15 +152,34 @@ public class IssueType extends SerializedType<IssueType> {
 
     // Handle XRP or IOU issue
     BinaryParser parser = new BinaryParser(this.toHex());
-    JsonNode currency = new CurrencyType().fromParser(parser).toJson();
+    CurrencyType currency = new CurrencyType().fromParser(parser);
+    JsonNode currencyJson = currency.toJson();
 
-    ImmutableIssue.Builder builder = Issue.builder();
-    builder.currency(currency);
-    if (!currency.asText().equals("XRP")) {
-      JsonNode issuer = new AccountIdType().fromParser(parser).toJson();
-      builder.issuer(issuer);
+    // XRP
+    if (currencyJson.asText().equals("XRP")) {
+      return objectMapper.valueToTree(
+        Issue.builder().currency(currencyJson).build()
+      );
     }
 
-    return objectMapper.valueToTree(builder.build());
+    AccountIdType accountId = new AccountIdType().fromParser(parser);
+
+    // MPT
+    if (accountId.value().equals(ACCOUNT_ONE)) {
+      // Convert sequence from little-endian to big-endian
+      UnsignedByteArray sequenceLE = parser.read(4);
+      UnsignedByteArray sequenceBE = sequenceLE.reverse();
+
+      // Currency bytes hold the issuer when it's an MPT
+      String mptIssuanceIdHex = sequenceBE.append(currency.value()).hexValue();
+      return objectMapper.valueToTree(
+        Issue.builder().mptIssuanceId(new TextNode(mptIssuanceIdHex)).build()
+      );
+    }
+
+    // IOU
+    return objectMapper.valueToTree(
+      Issue.builder().currency(currencyJson).issuer(accountId.toJson()).build()
+    );
   }
 }

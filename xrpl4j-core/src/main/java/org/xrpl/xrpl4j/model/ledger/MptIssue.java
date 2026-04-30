@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.model.ledger;
  * ========================LICENSE_START=================================
  * xrpl4j :: model
  * %%
- * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,14 +28,10 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
 /**
- * Represents an MPToken asset on the ledger without an amount.
+ * Represents an MPT asset on the ledger, identified by its MPT issuance ID.
  *
- * <p>This is one of the two implementations of {@link Issue}. An {@link MptIssue} identifies
- * an MPToken by its issuance ID, as opposed to {@link CurrencyIssue} which identifies assets
- * by currency code and issuer.</p>
- *
- * @see Issue
- * @see CurrencyIssue
+ * <p>This class will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API is
+ * subject to change.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableMptIssue.class)
@@ -63,14 +59,11 @@ public interface MptIssue extends Issue {
   }
 
   /**
-   * The MPToken issuance ID that uniquely identifies this MPToken.
+   * The MPT issuance ID of this asset.
    *
-   * <p>The issuance ID is a 192-bit (48 character hex) identifier that combines
-   * the issuer's account ID and the sequence number of the MPTokenIssuanceCreate transaction.</p>
-   *
-   * @return An {@link MpTokenIssuanceId}.
+   * @return A {@link MpTokenIssuanceId}.
    */
   @JsonProperty("mpt_issuance_id")
   MpTokenIssuanceId mptIssuanceId();
-}
 
+}

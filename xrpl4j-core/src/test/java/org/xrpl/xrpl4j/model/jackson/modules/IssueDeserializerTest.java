@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  * ========================LICENSE_START=================================
  * xrpl4j :: model
  * %%
- * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,19 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
@@ -51,7 +54,7 @@ class IssueDeserializerTest {
   @BeforeEach
   void setUp() {
     deserializer = new IssueDeserializer();
-    objectMapper = new ObjectMapper();
+    objectMapper = ObjectMapperFactory.create();
   }
 
   @Test
@@ -156,11 +159,9 @@ class IssueDeserializerTest {
     JsonParser parser = objectMapper.treeAsTokens(node);
     parser.nextToken();
 
-    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-      () -> deserializer.deserialize(parser, mock(DeserializationContext.class)));
-
-    assertThat(exception.getMessage())
-      .isEqualTo("Invalid Issue JSON: must have either 'mpt_issuance_id' or 'currency' field");
+    assertThatThrownBy(() -> deserializer.deserialize(parser, mock(DeserializationContext.class)))
+      .isInstanceOf(IOException.class)
+      .hasMessageContaining("Cannot deserialize Issue");
   }
 
   @Test
@@ -171,70 +172,69 @@ class IssueDeserializerTest {
     JsonParser parser = objectMapper.treeAsTokens(node);
     parser.nextToken();
 
-    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-      () -> deserializer.deserialize(parser, mock(DeserializationContext.class)));
-
-    assertThat(exception.getMessage())
-      .isEqualTo("Invalid Issue JSON: must have either 'mpt_issuance_id' or 'currency' field");
+    assertThatThrownBy(() -> deserializer.deserialize(parser, mock(DeserializationContext.class)))
+      .isInstanceOf(IOException.class)
+      .hasMessageContaining("Cannot deserialize Issue");
   }
 
   @Test
-  void testDeserializeStandardXrpCurrencyCode() throws IOException {
-    // Standard 3-character ASCII code "XRP"
-    ObjectNode node = JsonNodeFactory.instance.objectNode();
-    node.put("currency", "XRP");
+  void deserializeXrpIssue() throws JsonProcessingException {
+    String json = "{\"currency\":\"XRP\"}";
+    Issue issue = objectMapper.readValue(json, Issue.class);
 
-    JsonParser parser = objectMapper.treeAsTokens(node);
-    parser.nextToken();
-
-    Issue result = deserializer.deserialize(parser, mock(DeserializationContext.class));
-
-    assertThat(result).isInstanceOf(XrpIssue.class);
-    XrpIssue xrpIssue = (XrpIssue) result;
-    assertThat(xrpIssue.currency()).isEqualTo("XRP");
+    assertThat(issue).isInstanceOf(XrpIssue.class);
+    assertThat(issue).isEqualTo(XrpIssue.XRP);
   }
 
   @Test
-  void testDeserializeNonStandardXrpCurrencyCodeWithZeroPrefix() throws IOException {
-    // Non-standard format: 160-bit hex with 0x00 prefix and XRP (585250) in normally disallowed positions
-    // Per https://xrpl.org/docs/references/protocol/binary-format#currency-codes
-    // Standard format disallows XRP in bytes 8-10 when prefix is 0x00
-    // But non-standard format technically allows it
-    ObjectNode node = JsonNodeFactory.instance.objectNode();
-    node.put("currency", "0000000000000000000000005852500000000000");
-    node.put("issuer", "rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
+  void deserializeIouIssue() throws JsonProcessingException {
+    String json = "{\"currency\":\"USD\",\"issuer\":\"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"}";
+    Issue issue = objectMapper.readValue(json, Issue.class);
 
-    JsonParser parser = objectMapper.treeAsTokens(node);
-    parser.nextToken();
-
-    Issue result = deserializer.deserialize(parser, mock(DeserializationContext.class));
-
-    // This should be treated as an IOU, not XRP, because it's in hex format
-    // The deserializer only recognizes the literal string "XRP" as XRP
-    assertThat(result).isInstanceOf(IouIssue.class);
-    IouIssue iouIssue = (IouIssue) result;
-    assertThat(iouIssue.currency()).isEqualTo("0000000000000000000000005852500000000000");
-    assertThat(iouIssue.issuer()).isEqualTo(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"));
+    assertThat(issue).isInstanceOf(IouIssue.class);
+    IouIssue iouIssue = (IouIssue) issue;
+    assertThat(iouIssue.currency()).isEqualTo("USD");
+    assertThat(iouIssue.issuer()).isEqualTo(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"));
   }
 
   @Test
-  void testDeserializeNonStandardXrpCurrencyCodeWithNonZeroPrefix() throws IOException {
-    // Non-standard format: 160-bit hex with non-zero prefix
-    // This allows XRP bytes (585250) in positions that would be disallowed in standard format
-    ObjectNode node = JsonNodeFactory.instance.objectNode();
-    node.put("currency", "0100000000000000000000005852500000000000");
-    node.put("issuer", "rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
+  void deserializeIouIssueWithHexCurrency() throws JsonProcessingException {
+    String json = "{\"currency\":\"7872706C346A436F696E00000000000000000000\"," +
+      "\"issuer\":\"rDeo7rDoYw6AUKGneWwfkHPsMJagxcGWy1\"}";
+    Issue issue = objectMapper.readValue(json, Issue.class);
 
-    JsonParser parser = objectMapper.treeAsTokens(node);
-    parser.nextToken();
+    assertThat(issue).isInstanceOf(IouIssue.class);
+    IouIssue iouIssue = (IouIssue) issue;
+    assertThat(iouIssue.currency()).isEqualTo("7872706C346A436F696E00000000000000000000");
+    assertThat(iouIssue.issuer()).isEqualTo(Address.of("rDeo7rDoYw6AUKGneWwfkHPsMJagxcGWy1"));
+  }
 
-    Issue result = deserializer.deserialize(parser, mock(DeserializationContext.class));
+  @Test
+  void deserializeMptIssue() throws JsonProcessingException {
+    String json = "{\"mpt_issuance_id\":\"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\"}";
+    Issue issue = objectMapper.readValue(json, Issue.class);
 
-    // This is a valid non-standard currency code with XRP bytes in it
-    assertThat(result).isInstanceOf(IouIssue.class);
-    IouIssue iouIssue = (IouIssue) result;
-    assertThat(iouIssue.currency()).isEqualTo("0100000000000000000000005852500000000000");
-    assertThat(iouIssue.issuer()).isEqualTo(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"));
+    assertThat(issue).isInstanceOf(MptIssue.class);
+    MptIssue mptIssue = (MptIssue) issue;
+    assertThat(mptIssue.mptIssuanceId()).isEqualTo(
+      MpTokenIssuanceId.of("00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836")
+    );
+  }
+
+  @Test
+  void deserializeInvalidIssueThrows() {
+    String json = "{\"unknown_field\":\"value\"}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, Issue.class))
+      .isInstanceOf(JsonProcessingException.class)
+      .hasMessageContaining("Cannot deserialize Issue");
+  }
+
+  @Test
+  void deserializeEmptyObjectThrows() {
+    String json = "{}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, Issue.class))
+      .isInstanceOf(JsonProcessingException.class)
+      .hasMessageContaining("Cannot deserialize Issue");
   }
 
   @Test
@@ -247,11 +247,8 @@ class IssueDeserializerTest {
     JsonParser parser = objectMapper.treeAsTokens(node);
     parser.nextToken();
 
-    // Currently the deserializer allows this, but it creates an XrpIssue and ignores the issuer
-    // This might be a bug - XRP with an issuer should probably throw an exception
-    Issue result = deserializer.deserialize(parser, mock(DeserializationContext.class));
-
     // Current behavior: creates XrpIssue and ignores issuer
+    Issue result = deserializer.deserialize(parser, mock(DeserializationContext.class));
     assertThat(result).isInstanceOf(XrpIssue.class);
   }
 
@@ -271,4 +268,3 @@ class IssueDeserializerTest {
     assertThat(xrpIssue.currency()).isEqualTo("XRP");
   }
 }
-

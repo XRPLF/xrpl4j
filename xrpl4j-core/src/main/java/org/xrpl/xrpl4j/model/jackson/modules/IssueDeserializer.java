@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  * ========================LICENSE_START=================================
  * xrpl4j :: model
  * %%
- * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,14 +34,8 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import java.io.IOException;
 
 /**
- * Custom Jackson deserializer for {@link Issue}s.
- *
- * <p>This deserializer determines which concrete type of Issue to create based on the JSON fields:
- * <ul>
- *   <li>If the JSON has a "mpt_issuance_id" field, creates an {@link MptIssue}</li>
- *   <li>If the JSON has a "currency" field with value "XRP" and no "issuer", creates an {@link XrpIssue}</li>
- *   <li>If the JSON has a "currency" field (not "XRP") and an "issuer" field, creates an {@link IouIssue}</li>
- * </ul>
+ * Custom Jackson deserializer for {@link Issue} that dispatches to the correct subtype
+ * ({@link XrpIssue}, {@link IouIssue}, or {@link MptIssue}) based on the JSON fields present.
  */
 public class IssueDeserializer extends StdDeserializer<Issue> {
 
@@ -67,7 +61,7 @@ public class IssueDeserializer extends StdDeserializer<Issue> {
 
       // Check if it's XRP (case-insensitive)
       if ("XRP".equalsIgnoreCase(currency)) {
-        return XrpIssue.builder().build();
+        return XrpIssue.XRP;
       }
 
       // Otherwise, it's an IOU (must have issuer)
@@ -83,9 +77,6 @@ public class IssueDeserializer extends StdDeserializer<Issue> {
       );
     }
 
-    throw new IllegalArgumentException(
-      "Invalid Issue JSON: must have either 'mpt_issuance_id' or 'currency' field"
-    );
+    throw new IOException("Cannot deserialize Issue: must contain 'currency' or 'mpt_issuance_id' field");
   }
 }
-

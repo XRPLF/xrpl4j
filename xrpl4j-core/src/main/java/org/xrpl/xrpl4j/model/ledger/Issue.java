@@ -20,35 +20,28 @@ package org.xrpl.xrpl4j.model.ledger;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.xrpl.xrpl4j.model.jackson.modules.IssueDeserializer;
+
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Marker interface for XRPL asset identifiers (without amounts).
- *
- * <p>An Issue can be one of three types:
+ * Represents an asset on the ledger without an amount. Can be one of:
  * <ul>
- *   <li>{@link XrpIssue} - Represents XRP (the native currency)</li>
- *   <li>{@link IouIssue} - Represents an IOU token (identified by currency code and issuer)</li>
- *   <li>{@link MptIssue} - Represents an MPToken (identified by mpt_issuance_id)</li>
+ *   <li>{@link XrpIssue} — the native XRP asset</li>
+ *   <li>{@link IouIssue} — an issued currency (IOU) with a currency code and issuer</li>
+ *   <li>{@link MptIssue} — a multi-purpose token identified by its issuance ID</li>
  * </ul>
- *
- * <p>This interface provides polymorphic helper methods to handle all three types in a type-safe manner.
- * Use {@link #map(Function, Function, Function)} to transform an Issue into another type, or
- * {@link #handle(Consumer, Consumer, Consumer)} to perform side effects based on the Issue type.</p>
- *
- * @see XrpIssue
- * @see IouIssue
- * @see MptIssue
- * @see "https://xrpl.org/currency-formats.html"
  */
+@JsonDeserialize(using = IssueDeserializer.class)
 public interface Issue {
 
   /**
    * Constant {@link Issue} representing XRP.
    */
-  Issue XRP = XrpIssue.of();
+  Issue XRP = ImmutableXrpIssue.builder().build();
 
   /**
    * Handle this {@link Issue} depending on its actual polymorphic subtype.

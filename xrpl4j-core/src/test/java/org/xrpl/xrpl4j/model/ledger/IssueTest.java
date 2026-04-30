@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.model.ledger;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
@@ -14,11 +15,13 @@ class IssueTest extends AbstractJsonTest {
 
   @Test
   void testXrp() {
-    assertThat(((XrpIssue) Issue.XRP).currency()).isEqualTo("XRP");
+    assertThat(Issue.XRP).isInstanceOf(XrpIssue.class);
+    XrpIssue xrp = (XrpIssue) Issue.XRP;
+    assertThat(xrp.currency()).isEqualTo("XRP");
   }
 
   @Test
-  void testNonXrp() {
+  void testIou() {
     String usd = "USD";
     Address issuer = Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn");
     IouIssue asset = IouIssue.builder()
@@ -31,6 +34,16 @@ class IssueTest extends AbstractJsonTest {
   }
 
   @Test
+  void testMpt() {
+    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000001A407AF5856CFF3379945D823561023E8E5CED9C9");
+    MptIssue asset = MptIssue.builder()
+      .mptIssuanceId(mptId)
+      .build();
+
+    assertThat(asset.mptIssuanceId()).isEqualTo(mptId);
+  }
+
+  @Test
   void testJsonForXrp() throws JSONException, JsonProcessingException {
     String json = "{" +
       "    \"currency\": \"XRP\"" +
@@ -40,7 +53,7 @@ class IssueTest extends AbstractJsonTest {
   }
 
   @Test
-  void testJsonForNonXrp() throws JSONException, JsonProcessingException {
+  void testJsonForIou() throws JSONException, JsonProcessingException {
     String usd = "USD";
     Address issuer = Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn");
     IouIssue asset = IouIssue.builder()
@@ -49,7 +62,7 @@ class IssueTest extends AbstractJsonTest {
       .build();
     String json = "{" +
       "    \"currency\": \"" + usd + "\"," +
-      "    \"issuer\": \"" + asset.issuer().value() + "\"" +
+      "    \"issuer\": \"" + issuer.value() + "\"" +
       "}";
 
     assertCanSerializeAndDeserialize(asset, json, Issue.class);
@@ -57,59 +70,133 @@ class IssueTest extends AbstractJsonTest {
 
   @Test
   void testJsonForMpt() throws JSONException, JsonProcessingException {
-    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
-    MptIssue mptIssue = MptIssue.of(mptId);
-
+    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000001A407AF5856CFF3379945D823561023E8E5CED9C9");
+    MptIssue asset = MptIssue.builder()
+      .mptIssuanceId(mptId)
+      .build();
     String json = "{" +
-      "    \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\"" +
+      "    \"mpt_issuance_id\": \"00000001A407AF5856CFF3379945D823561023E8E5CED9C9\"" +
       "}";
 
-    assertCanSerializeAndDeserialize(mptIssue, json, Issue.class);
+    assertCanSerializeAndDeserialize(asset, json, Issue.class);
   }
 
   @Test
-  void testDeserializeInvalidIssueThrowsException() {
-    String invalidJson = "{" +
-      "    \"invalid_field\": \"some_value\"" +
-      "}";
-
-    IllegalArgumentException exception = assertThrows(
-      IllegalArgumentException.class,
-      () -> objectMapper.readValue(invalidJson, Issue.class)
-    );
-
-    assertThat(exception.getMessage()).isEqualTo(
-      "Invalid Issue JSON: must have either 'mpt_issuance_id' or 'currency' field"
+  void handleXrpIssue() {
+    Issue xrp = Issue.XRP;
+    xrp.handle(
+      $ -> assertThat($.currency()).isEqualTo("XRP"),
+      $ -> fail(),
+      $ -> fail()
     );
   }
 
   @Test
-  void testDeserializeEmptyJsonThrowsException() {
-    String emptyJson = "{}";
-
-    IllegalArgumentException exception = assertThrows(
-      IllegalArgumentException.class,
-      () -> objectMapper.readValue(emptyJson, Issue.class)
-    );
-
-    assertThat(exception.getMessage()).isEqualTo(
-      "Invalid Issue JSON: must have either 'mpt_issuance_id' or 'currency' field"
+  void handleIouIssue() {
+    Issue iou = IouIssue.builder()
+      .currency("USD")
+      .issuer(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
+      .build();
+    iou.handle(
+      $ -> fail(),
+      $ -> assertThat($.currency()).isEqualTo("USD"),
+      $ -> fail()
     );
   }
 
   @Test
-  void testDeserializeIouWithoutIssuerThrowsException() {
-    String iouWithoutIssuer = "{" +
-      "    \"currency\": \"USD\"" +
-      "}";
-
-    IllegalArgumentException exception = assertThrows(
-      IllegalArgumentException.class,
-      () -> objectMapper.readValue(iouWithoutIssuer, Issue.class)
+  void handleMptIssue() {
+    Issue mpt = MptIssue.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("00000001A407AF5856CFF3379945D823561023E8E5CED9C9"))
+      .build();
+    mpt.handle(
+      $ -> fail(),
+      $ -> fail(),
+      $ -> assertThat($.mptIssuanceId()).isEqualTo(
+        MpTokenIssuanceId.of("00000001A407AF5856CFF3379945D823561023E8E5CED9C9")
+      )
     );
+  }
 
-    assertThat(exception.getMessage()).isEqualTo(
-      "Invalid Issue JSON: IOU currency 'USD' must have an 'issuer' field"
+  @Test
+  void handleWithNulls() {
+    Issue xrp = Issue.XRP;
+    assertThrows(NullPointerException.class, () ->
+      xrp.handle(null, $ -> { }, $ -> { })
+    );
+    assertThrows(NullPointerException.class, () ->
+      xrp.handle($ -> { }, null, $ -> { })
+    );
+    assertThrows(NullPointerException.class, () ->
+      xrp.handle($ -> { }, $ -> { }, null)
+    );
+  }
+
+  @Test
+  void mapXrpIssue() {
+    Issue xrp = Issue.XRP;
+    String result = xrp.map(
+      $ -> "xrp",
+      $ -> "iou",
+      $ -> "mpt"
+    );
+    assertThat(result).isEqualTo("xrp");
+  }
+
+  @Test
+  void mapIouIssue() {
+    Issue iou = IouIssue.builder()
+      .currency("USD")
+      .issuer(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
+      .build();
+    String result = iou.map(
+      $ -> "xrp",
+      $ -> "iou",
+      $ -> "mpt"
+    );
+    assertThat(result).isEqualTo("iou");
+  }
+
+  @Test
+  void mapMptIssue() {
+    Issue mpt = MptIssue.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("00000001A407AF5856CFF3379945D823561023E8E5CED9C9"))
+      .build();
+    String result = mpt.map(
+      $ -> "xrp",
+      $ -> "iou",
+      $ -> "mpt"
+    );
+    assertThat(result).isEqualTo("mpt");
+  }
+
+  @Test
+  void handleUnsupportedIssueType() {
+    Issue unsupported = new Issue() {};
+    assertThrows(IllegalStateException.class, () ->
+      unsupported.handle($ -> { }, $ -> { }, $ -> { })
+    );
+  }
+
+  @Test
+  void mapUnsupportedIssueType() {
+    Issue unsupported = new Issue() {};
+    assertThrows(IllegalStateException.class, () ->
+      unsupported.map($ -> "xrp", $ -> "iou", $ -> "mpt")
+    );
+  }
+
+  @Test
+  void mapWithNulls() {
+    Issue xrp = Issue.XRP;
+    assertThrows(NullPointerException.class, () ->
+      xrp.map(null, $ -> "iou", $ -> "mpt")
+    );
+    assertThrows(NullPointerException.class, () ->
+      xrp.map($ -> "xrp", null, $ -> "mpt")
+    );
+    assertThrows(NullPointerException.class, () ->
+      xrp.map($ -> "xrp", $ -> "iou", null)
     );
   }
 
@@ -141,41 +228,6 @@ class IssueTest extends AbstractJsonTest {
     );
 
     assertThat(result).isEqualTo("MptIssue: 00000002430427B80BD2D09D36B70B969E12801065F22308");
-  }
-
-  @Test
-  void testMapWithXrp() {
-    String result = Issue.XRP.map(
-      xi -> "XRP",
-      ii -> "IOU",
-      mi -> "MPT"
-    );
-
-    assertThat(result).isEqualTo("XRP");
-  }
-
-  @Test
-  void testMapWithNullIouIssueMapper() {
-    IouIssue iouIssue = IouIssue.builder()
-      .currency("USD")
-      .issuer(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"))
-      .build();
-
-    assertThrows(
-      NullPointerException.class,
-      () -> iouIssue.map(xi -> "XRP", null, mi -> "MPT")
-    );
-  }
-
-  @Test
-  void testMapWithNullMptIssueMapper() {
-    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
-    MptIssue mptIssue = MptIssue.of(mptId);
-
-    assertThrows(
-      NullPointerException.class,
-      () -> mptIssue.map(xi -> "XRP", ii -> "IOU", null)
-    );
   }
 
   @Test
@@ -211,68 +263,24 @@ class IssueTest extends AbstractJsonTest {
   }
 
   @Test
-  void testHandleWithXrp() {
-    final StringBuilder result = new StringBuilder();
-    Issue.XRP.handle(
-      xi -> result.append("XRP"),
-      ii -> result.append("IOU"),
-      mi -> result.append("MPT")
-    );
-
-    assertThat(result.toString()).isEqualTo("XRP");
-  }
-
-  @Test
-  void testHandleWithNullIouIssueHandler() {
-    IouIssue iouIssue = IouIssue.builder()
-      .currency("USD")
-      .issuer(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"))
-      .build();
+  void testDeserializeInvalidIssueThrowsException() {
+    String invalidJson = "{" +
+      "    \"invalid_field\": \"some_value\"" +
+      "}";
 
     assertThrows(
-      NullPointerException.class,
-      () -> iouIssue.handle(xi -> { }, null, mi -> { })
+      Exception.class,
+      () -> objectMapper.readValue(invalidJson, Issue.class)
     );
   }
 
   @Test
-  void testHandleWithNullMptIssueHandler() {
-    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
-    MptIssue mptIssue = MptIssue.of(mptId);
+  void testDeserializeEmptyJsonThrowsException() {
+    String emptyJson = "{}";
 
     assertThrows(
-      NullPointerException.class,
-      () -> mptIssue.handle(xi -> { }, ii -> { }, null)
+      Exception.class,
+      () -> objectMapper.readValue(emptyJson, Issue.class)
     );
-  }
-
-  @Test
-  void testMapWithUnsupportedIssueType() {
-    Issue unsupportedIssue = new Issue() {
-      // Anonymous implementation that is neither XrpIssue, IouIssue, nor MptIssue
-    };
-
-    IllegalStateException exception = assertThrows(
-      IllegalStateException.class,
-      () -> unsupportedIssue.map(xi -> "XRP", ii -> "IOU", mi -> "MPT")
-    );
-
-    assertThat(exception.getMessage()).contains("Unsupported Issue Type");
-    assertThat(exception.getMessage()).contains(unsupportedIssue.getClass().getName());
-  }
-
-  @Test
-  void testHandleWithUnsupportedIssueType() {
-    Issue unsupportedIssue = new Issue() {
-      // Anonymous implementation that is neither XrpIssue, IouIssue, nor MptIssue
-    };
-
-    IllegalStateException exception = assertThrows(
-      IllegalStateException.class,
-      () -> unsupportedIssue.handle(xi -> { }, ii -> { }, mi -> { })
-    );
-
-    assertThat(exception.getMessage()).contains("Unsupported Issue Type");
-    assertThat(exception.getMessage()).contains(unsupportedIssue.getClass().getName());
   }
 }

@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.model.ledger;
  * ========================LICENSE_START=================================
  * xrpl4j :: model
  * %%
- * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,19 +26,17 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
 /**
- * Represents XRP as an asset on the ledger without an amount.
- *
- * <p>This is one of the three implementations of {@link Issue}. An {@link XrpIssue} represents
- * the native XRP currency, which is identified solely by the currency code "XRP" with no issuer.</p>
- *
- * @see Issue
- * @see IouIssue
- * @see MptIssue
+ * Represents the XRP asset on the ledger.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableXrpIssue.class)
 @JsonDeserialize(as = ImmutableXrpIssue.class)
 public interface XrpIssue extends Issue {
+
+  /**
+   * The singleton XrpIssue instance.
+   */
+  XrpIssue XRP = ImmutableXrpIssue.builder().build();
 
   /**
    * Construct a {@code XrpIssue} instance.
@@ -59,14 +57,14 @@ public interface XrpIssue extends Issue {
   }
 
   /**
-   * The currency code, which is always "XRP" for {@link XrpIssue}.
+   * The currency code, which is always "XRP".
    *
-   * @return A {@link String} containing "XRP".
+   * @return The {@link String} "XRP".
    */
   @JsonProperty("currency")
   @Value.Derived
   default String currency() {
     return "XRP";
   }
-}
 
+}

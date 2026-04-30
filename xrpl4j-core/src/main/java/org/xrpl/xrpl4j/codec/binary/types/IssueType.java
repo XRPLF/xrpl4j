@@ -30,10 +30,9 @@ import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 import org.xrpl.xrpl4j.model.AddressConstants;
 
-import java.util.regex.Pattern;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.regex.Pattern;
 
 public class IssueType extends SerializedType<IssueType> {
 

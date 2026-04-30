@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -67,7 +68,14 @@ import java.util.Optional;
  *   <li>Verification of DelegateObject ledger entries</li>
  * </ul>
  */
+@DisabledIf(value = "shouldNotRun", disabledReason = "DelegateIT only runs on local rippled node.")
 public class DelegateIT extends AbstractIT {
+
+  static boolean shouldNotRun() {
+    return System.getProperty("useDevnet") != null ||
+      System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null;
+  }
 
   public static final String SUCCESS_STATUS = "tesSUCCESS";
 

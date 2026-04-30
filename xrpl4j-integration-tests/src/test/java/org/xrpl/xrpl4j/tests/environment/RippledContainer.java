@@ -26,7 +26,6 @@ import com.google.common.base.Preconditions;
 import okhttp3.HttpUrl;
 import org.awaitility.Awaitility;
 import org.slf4j.Logger;
-import com.github.dockerjava.api.command.CreateContainerCmd;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
@@ -82,16 +81,11 @@ public class RippledContainer {
    * No-args constructor.
    */
   public RippledContainer() {
-    // Use MPT-enabled rippled image for testing MPT features
-    String dockerImage = System.getProperty("rippled.docker.image", "rippled:mpt-v2e");
-    LOGGER.info("Using rippled Docker image: {}", dockerImage);
-
-    try (GenericContainer<?> container = new GenericContainer<>(dockerImage)) {
-      this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
-          cmd.withEntrypoint("/opt/xrpld/bin/xrpld"))
-        .withCommand("-a --start --conf /config/xrpld.cfg")
+    try (GenericContainer<?> container = new GenericContainer<>("rippleci/xrpld:develop")) {
+      this.rippledContainer = container
+        .withCommand("--standalone")
         .withExposedPorts(5005)
-        .withImagePullPolicy(PullPolicy.defaultPolicy())
+        .withImagePullPolicy(PullPolicy.alwaysPull())
         .withClasspathResourceMapping("xrpld",
           "/etc/opt/xrpld/",
           BindMode.READ_ONLY)

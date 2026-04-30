@@ -26,6 +26,7 @@ import com.google.common.base.Preconditions;
 import okhttp3.HttpUrl;
 import org.awaitility.Awaitility;
 import org.slf4j.Logger;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;

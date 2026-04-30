@@ -14,6 +14,7 @@ import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.BridgeObject;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.CredentialObject;
+import org.xrpl.xrpl4j.model.ledger.DelegateObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.DidObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
@@ -447,6 +448,25 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   }
 
   /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link DelegateObject} ledger entry.
+   *
+   * @param params          The {@link DelegateLedgerEntryParams} that uniquely identify the
+   *                        {@link DelegateObject} on ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link DelegateObject}.
+   */
+  static LedgerEntryRequestParams<DelegateObject> delegate(
+    DelegateLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<DelegateObject>builder()
+      .delegate(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
    * Construct a {@link LedgerEntryRequestParams} that requests a {@link VaultObject} ledger entry.
    *
    * <p>Note that although the rippled API allows you to specify either the Vault's ID or the owner and sequence
@@ -636,6 +656,13 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<PermissionedDomainLedgerEntryParams> permissionedDomain();
 
   /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.DelegateObject} by {@link DelegateLedgerEntryParams}.
+   *
+   * @return An optionally-present {@link DelegateLedgerEntryParams}.
+   */
+  Optional<DelegateLedgerEntryParams> delegate();
+
+  /**
    * Look up a {@link org.xrpl.xrpl4j.model.ledger.VaultObject} by {@link VaultLedgerEntryParams}.
    *
    * @return An {@link Optional} {@link VaultLedgerEntryParams}.
@@ -717,6 +744,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (permissionedDomain().isPresent()) {
       return (Class<T>) PermissionedDomainObject.class;
+    }
+
+    if (delegate().isPresent()) {
+      return (Class<T>) DelegateObject.class;
     }
 
     if (vault().isPresent()) {

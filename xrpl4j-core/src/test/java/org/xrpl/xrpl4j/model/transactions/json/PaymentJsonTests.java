@@ -197,4 +197,34 @@ public class PaymentJsonTests extends AbstractJsonTest {
 
     assertCanSerializeAndDeserialize(payment, json);
   }
+
+  @Test
+  public void testJsonWithDelegate() throws JsonProcessingException, JSONException {
+    Payment payment = Payment.builder()
+      .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
+      .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
+      .amount(XrpCurrencyAmount.ofDrops(25000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .flags(PaymentFlags.UNSET)
+      .sequence(UnsignedInteger.valueOf(2))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .delegate(Address.of("rDelegateAddress123456789012345678"))
+      .build();
+
+    String json = "{" +
+      "  \"Account\": \"r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb\"," +
+      "  \"Destination\": \"r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C\"," +
+      "  \"TransactionType\": \"Payment\"," +
+      "  \"Amount\": \"25000000\"," +
+      "  \"Fee\": \"10\"," +
+      "  \"Flags\": 0," +
+      "  \"Delegate\": \"rDelegateAddress123456789012345678\"," +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"Sequence\": 2" +
+      "}";
+
+    assertCanSerializeAndDeserialize(payment, json);
+  }
 }

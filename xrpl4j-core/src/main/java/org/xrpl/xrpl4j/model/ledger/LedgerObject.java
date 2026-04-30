@@ -67,6 +67,7 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableOracleObject.class, name = "Oracle"),
   @JsonSubTypes.Type(value = ImmutableMpTokenIssuanceObject.class, name = "MPTokenIssuance"),
   @JsonSubTypes.Type(value = ImmutableMpTokenObject.class, name = "MPToken"),
+  @JsonSubTypes.Type(value = ImmutableVaultObject.class, name = "Vault"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -232,7 +233,16 @@ public interface LedgerObject {
     MP_TOKEN_ISSUANCE("MPTokenIssuance"),
 
     @Beta
-    MP_TOKEN("MPToken");
+    MP_TOKEN("MPToken"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Vault} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    VAULT("Vault");
 
     private final String value;
 

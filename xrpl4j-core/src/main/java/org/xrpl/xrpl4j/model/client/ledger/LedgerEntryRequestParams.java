@@ -28,6 +28,7 @@ import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
+import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
@@ -466,6 +467,30 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   }
 
   /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link VaultObject} ledger entry.
+   *
+   * <p>Note that although the rippled API allows you to specify either the Vault's ID or the owner and sequence
+   * number of the transaction that created the Vault, this class does not allow developers to request a
+   * {@link VaultObject} by ID via this method. Instead, developers should use {@link LedgerEntryRequestParams#index()}
+   * and specify {@link VaultObject} as the {@code ledgerObjectClass} parameter.</p>
+   *
+   * @param params          The {@link VaultLedgerEntryParams} that uniquely identify the {@link VaultObject} on
+   *                        ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link VaultObject}.
+   */
+  static LedgerEntryRequestParams<VaultObject> vault(
+    VaultLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<VaultObject>builder()
+      .vault(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
    * or a shortcut value.
    *
@@ -638,6 +663,13 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<DelegateLedgerEntryParams> delegate();
 
   /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.VaultObject} by {@link VaultLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link VaultLedgerEntryParams}.
+   */
+  Optional<VaultLedgerEntryParams> vault();
+
+  /**
    * The {@link Class} of {@link T}. This field is helpful when telling Jackson how to deserialize rippled's response to
    * a {@link T}.
    *
@@ -716,6 +748,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (delegate().isPresent()) {
       return (Class<T>) DelegateObject.class;
+    }
+
+    if (vault().isPresent()) {
+      return (Class<T>) VaultObject.class;
     }
 
     return (Class<T>) LedgerObject.class;

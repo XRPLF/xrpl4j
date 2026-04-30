@@ -24,6 +24,7 @@ import org.xrpl.xrpl4j.model.ledger.DelegateObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.DidObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
@@ -35,6 +36,7 @@ import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
+import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
@@ -157,7 +159,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     AmmLedgerEntryParams ammParams = AmmLedgerEntryParams.builder()
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
@@ -869,12 +871,53 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
     assertThat(params.permissionedDomain()).isEmpty();
+    assertThat(params.vault()).isEmpty();
 
     String json = "{" +
       "  \"delegate\": {" +
       "    \"account\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMtthP4\"," +
       "    \"authorize\": \"rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8\"" +
       "  }," +
+      "  \"binary\": false," +
+      "  \"ledger_index\": \"validated\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  void testVaultParams() throws JSONException, JsonProcessingException {
+    VaultLedgerEntryParams vaultParams = VaultLedgerEntryParams.builder()
+      .owner(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMgk5j"))
+      .seq(UnsignedInteger.valueOf(123))
+      .build();
+    LedgerEntryRequestParams<VaultObject> params = LedgerEntryRequestParams.vault(
+      vaultParams,
+      LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.ledgerObjectClass()).isEqualTo(VaultObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.amm()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.rippleState()).isEmpty();
+    assertThat(params.check()).isEmpty();
+    assertThat(params.escrow()).isEmpty();
+    assertThat(params.paymentChannel()).isEmpty();
+    assertThat(params.depositPreAuth()).isEmpty();
+    assertThat(params.ticket()).isEmpty();
+    assertThat(params.nftPage()).isEmpty();
+    assertThat(params.did()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.mptIssuance()).isEmpty();
+    assertThat(params.credential()).isEmpty();
+    assertThat(params.permissionedDomain()).isEmpty();
+    assertThat(params.delegate()).isEmpty();
+    assertThat(params.vault()).isNotEmpty().get().isEqualTo(vaultParams);
+
+    String json = "{" +
+      "  \"vault\" : " + objectMapper.writeValueAsString(vaultParams) + "," +
       "  \"binary\": false," +
       "  \"ledger_index\": \"validated\"" +
       "}";

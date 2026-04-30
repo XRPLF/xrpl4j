@@ -22,7 +22,6 @@ package org.xrpl.xrpl4j.tests.environment;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.google.common.base.Preconditions;
 import okhttp3.HttpUrl;
 import org.awaitility.Awaitility;
@@ -82,14 +81,13 @@ public class RippledContainer {
    * No-args constructor.
    */
   public RippledContainer() {
-    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:develop")) {
-      this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
-          cmd.withEntrypoint("/opt/xrpld/bin/xrpld"))
-        .withCommand("-a --start --conf /config/xrpld.cfg")
+    try (GenericContainer<?> container = new GenericContainer<>("rippleci/xrpld:develop")) {
+      this.rippledContainer = container
+        .withCommand("--standalone")
         .withExposedPorts(5005)
         .withImagePullPolicy(PullPolicy.alwaysPull())
         .withClasspathResourceMapping("xrpld",
-          "/config",
+          "/etc/opt/xrpld/",
           BindMode.READ_ONLY)
         .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
     }

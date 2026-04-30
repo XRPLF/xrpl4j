@@ -55,6 +55,9 @@ public interface MetaLedgerEntryType {
   @Beta
   MetaLedgerEntryType DELEGATE = MetaLedgerEntryType.of("Delegate");
 
+  @Beta
+  MetaLedgerEntryType VAULT = MetaLedgerEntryType.of("Vault");
+
 
   /**
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.
@@ -122,6 +125,8 @@ public interface MetaLedgerEntryType {
         return MetaPermissionedDomainObject.class;
       case "Delegate":
         return MetaDelegateObject.class;
+      case "Vault":
+        return MetaVaultObject.class;
       default:
         return MetaUnknownObject.class;
     }

@@ -109,6 +109,12 @@ public interface Transaction {
       .put(ImmutableMpTokenIssuanceSet.class, TransactionType.MPT_ISSUANCE_SET)
       .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
       .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
+      .put(ImmutableVaultCreate.class, TransactionType.VAULT_CREATE)
+      .put(ImmutableVaultSet.class, TransactionType.VAULT_SET)
+      .put(ImmutableVaultDelete.class, TransactionType.VAULT_DELETE)
+      .put(ImmutableVaultDeposit.class, TransactionType.VAULT_DEPOSIT)
+      .put(ImmutableVaultWithdraw.class, TransactionType.VAULT_WITHDRAW)
+      .put(ImmutableVaultClawback.class, TransactionType.VAULT_CLAWBACK)
       .put(ImmutableBatch.class, TransactionType.BATCH)
       .build();
 

@@ -66,7 +66,7 @@ public class PathCurrencyDeserializer extends StdDeserializer<PathCurrency> {
 
       // Check if it's XRP
       if ("XRP".equals(currency)) {
-        return PathCurrency.of(XrpIssue.builder().build());
+        return PathCurrency.of(XrpIssue.of());
       }
 
       // Otherwise, it's an IOU

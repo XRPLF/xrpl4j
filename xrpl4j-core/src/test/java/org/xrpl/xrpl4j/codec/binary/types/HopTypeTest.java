@@ -127,17 +127,18 @@ class HopTypeTest {
   }
 
   @Test
-  void testFromJsonThrowsWhenCurrencyAndMptBothPresent() {
-    // This validation is appropriate for fromJson (user-initiated encoding)
-    // because we control what we send and should prevent invalid data.
-    // However, fromParser should be permissive (see testFromParserWithBothCurrencyAndMptFlags).
+  void testFromJsonPrefersCurrencyWhenBothCurrencyAndMptPresent() throws JsonProcessingException {
+    // fromJson is permissive like fromParser: when both fields are present, currency takes precedence.
     ObjectNode json = objectMapper.createObjectNode();
     json.put("currency", "USD");
     json.put("mpt_issuance_id", "00000001B5F762798A53D543A014CAF8B297CFF8F2F937E8");
 
-    assertThatThrownBy(() -> new HopType().fromJson(json))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("Currency and mpt_issuance_id are mutually exclusive");
+    HopType hopType = new HopType().fromJson(json);
+
+    // Should encode as currency (TYPE_CURRENCY = 0x10), not MPT
+    int typeByte = hopType.value().get(0).asInt();
+    assertThat(typeByte & HopType.TYPE_CURRENCY).isEqualTo((int) HopType.TYPE_CURRENCY);
+    assertThat(typeByte & HopType.TYPE_MPT).isEqualTo(0);
   }
 
   @Test

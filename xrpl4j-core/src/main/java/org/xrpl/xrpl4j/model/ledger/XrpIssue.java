@@ -34,26 +34,12 @@ import org.immutables.value.Value;
 public interface XrpIssue extends Issue {
 
   /**
-   * The singleton XrpIssue instance.
-   */
-  XrpIssue XRP = ImmutableXrpIssue.builder().build();
-
-  /**
    * Construct a {@code XrpIssue} instance.
    *
    * @return A {@link XrpIssue}.
    */
   static XrpIssue of() {
     return ImmutableXrpIssue.builder().build();
-  }
-
-  /**
-   * Construct a {@code XrpIssue} builder.
-   *
-   * @return An {@link ImmutableXrpIssue.Builder}.
-   */
-  static ImmutableXrpIssue.Builder builder() {
-    return ImmutableXrpIssue.builder();
   }
 
   /**

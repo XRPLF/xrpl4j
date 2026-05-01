@@ -52,7 +52,7 @@ import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
-import org.xrpl.xrpl4j.model.ledger.XrpIssue;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -143,7 +143,7 @@ public class OfferIT extends AbstractIT {
             .issuer(offerCreate.account())
             .build()
         )
-        .takerPays(XrpIssue.XRP)
+        .takerPays(Issue.XRP)
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
     );
@@ -406,7 +406,7 @@ public class OfferIT extends AbstractIT {
             .issuer(offerCreate.account())
             .build()
         )
-        .takerPays(XrpIssue.XRP)
+        .takerPays(Issue.XRP)
         .domain(permissionedDomainObject.index())
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
@@ -740,7 +740,7 @@ public class OfferIT extends AbstractIT {
             .issuer(offerCreate.account())
             .build()
         )
-        .takerPays(XrpIssue.XRP)
+        .takerPays(Issue.XRP)
         .domain(permissionedDomainObject.index())
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
@@ -963,7 +963,7 @@ public class OfferIT extends AbstractIT {
       BookOffersRequestParams.builder()
         .taker(issuerKeyPair.publicKey().deriveAddress())
         .takerGets(MptIssue.of(mptIssuanceId))
-        .takerPays(XrpIssue.XRP)
+        .takerPays(Issue.XRP)
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
     );
@@ -1095,7 +1095,7 @@ public class OfferIT extends AbstractIT {
     BookOffersResult bookOffersBeforeCross = xrplClient.bookOffers(
       BookOffersRequestParams.builder()
         .takerGets(MptIssue.of(mptIssuanceId))
-        .takerPays(XrpIssue.XRP)
+        .takerPays(Issue.XRP)
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
     );

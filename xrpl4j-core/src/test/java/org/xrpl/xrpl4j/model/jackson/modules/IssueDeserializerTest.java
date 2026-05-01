@@ -183,7 +183,7 @@ class IssueDeserializerTest {
     Issue issue = objectMapper.readValue(json, Issue.class);
 
     assertThat(issue).isInstanceOf(XrpIssue.class);
-    assertThat(issue).isEqualTo(XrpIssue.XRP);
+    assertThat(issue).isEqualTo(Issue.XRP);
   }
 
   @Test
@@ -266,5 +266,24 @@ class IssueDeserializerTest {
     assertThat(result).isInstanceOf(XrpIssue.class);
     XrpIssue xrpIssue = (XrpIssue) result;
     assertThat(xrpIssue.currency()).isEqualTo("XRP");
+  }
+
+  @Test
+  void testDeserializeNonStandardXrpHexIsNotNativeXrp() throws IOException {
+    // "585250" is the hex encoding of ASCII "XRP". In the non-standard 40-char currency code
+    // format these bytes represent a distinct IOU, not native XRP, and must not be conflated.
+    ObjectNode node = JsonNodeFactory.instance.objectNode();
+    node.put("currency", "5852500000000000000000000000000000000000");
+    node.put("issuer", "rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
+
+    JsonParser parser = objectMapper.treeAsTokens(node);
+    parser.nextToken();
+
+    Issue result = deserializer.deserialize(parser, mock(DeserializationContext.class));
+
+    assertThat(result).isInstanceOf(IouIssue.class);
+    IouIssue iouIssue = (IouIssue) result;
+    assertThat(iouIssue.currency()).isEqualTo("5852500000000000000000000000000000000000");
+    assertThat(iouIssue.issuer()).isEqualTo(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"));
   }
 }

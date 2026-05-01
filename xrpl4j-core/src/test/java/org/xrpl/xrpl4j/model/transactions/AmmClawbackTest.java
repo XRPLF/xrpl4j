@@ -259,7 +259,7 @@ public class AmmClawbackTest extends AbstractJsonTest {
           .build()
       )
       .asset(MptIssue.of(mptIssuanceId))
-      .asset2(XrpIssue.builder().build())
+      .asset2(XrpIssue.of())
       .holder(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(6))

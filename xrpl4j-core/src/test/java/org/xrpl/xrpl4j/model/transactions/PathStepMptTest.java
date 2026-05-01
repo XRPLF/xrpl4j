@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -55,17 +54,17 @@ public class PathStepMptTest extends AbstractJsonTest {
   }
 
   @Test
-  public void mptIssuanceIdWithIssuerShouldFail() {
-    // According to PathStep validation, mpt_issuance_id is mutually exclusive with issuer
+  public void mptIssuanceIdWithIssuerShouldSucceed() {
+    // Per XLS-82d, issuer may optionally accompany mpt_issuance_id in a PathStep
     MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
     Address issuer = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
 
-    assertThrows(IllegalArgumentException.class, () -> {
-      PathStep.builder()
-        .mptIssuanceId(mptId)
-        .issuer(issuer)
-        .build();
-    });
+    PathStep step = PathStep.builder()
+      .mptIssuanceId(mptId)
+      .issuer(issuer)
+      .build();
+    assertThat(step.mptIssuanceId()).isPresent();
+    assertThat(step.issuer()).isPresent();
   }
 
   @Test
@@ -93,29 +92,17 @@ public class PathStepMptTest extends AbstractJsonTest {
     });
   }
 
-  /**
-   * CRITICAL TEST: Verify that if ripple_path_find returns both mpt_issuance_id AND issuer,
-   * the deserialization will fail due to PathStep validation.
-   * 
-   * <p>This test documents the potential issue: if the spec says ripple_path_find returns
-   * issuer along with mpt_issuance_id, but PathStep enforces mutual exclusivity, then
-   * deserialization will break.</p>
-   */
   @Test
-  public void deserializeMptWithIssuerShouldFail() {
-    // This JSON represents what ripple_path_find might return according to spec
+  public void deserializeMptWithIssuerShouldSucceed() throws JsonProcessingException {
+    // Per XLS-82d, ripple_path_find may return both mpt_issuance_id and issuer; deserialization should succeed.
     String jsonWithBothFields = "{\"mpt_issuance_id\":\"00000002430427B80BD2D09D36B70B969E12801065F22308\"," +
                                 "\"issuer\":\"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk\"}";
 
-    // This should fail because PathStep validation enforces mutual exclusivity
-    // Jackson wraps the IllegalArgumentException in ValueInstantiationException
-    ValueInstantiationException exception = assertThrows(ValueInstantiationException.class, () -> {
-      objectMapper.readValue(jsonWithBothFields, PathStep.class);
-    });
-
-    // Verify the root cause is IllegalArgumentException from PathStep validation
-    assertThat(exception.getCause()).isInstanceOf(IllegalArgumentException.class);
-    assertThat(exception.getCause().getMessage()).contains("mpt_issuance_id is mutually exclusive");
+    PathStep step = objectMapper.readValue(jsonWithBothFields, PathStep.class);
+    assertThat(step.mptIssuanceId()).isPresent();
+    assertThat(step.issuer()).isPresent();
+    assertThat(step.account()).isEmpty();
+    assertThat(step.currency()).isEmpty();
   }
 
   @Test

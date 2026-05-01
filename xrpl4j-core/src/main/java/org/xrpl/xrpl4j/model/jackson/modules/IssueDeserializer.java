@@ -61,7 +61,7 @@ public class IssueDeserializer extends StdDeserializer<Issue> {
 
       // Check if it's XRP (case-insensitive)
       if ("XRP".equalsIgnoreCase(currency)) {
-        return XrpIssue.XRP;
+        return Issue.XRP;
       }
 
       // Otherwise, it's an IOU (must have issuer)

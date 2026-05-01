@@ -21,7 +21,6 @@ package org.xrpl.xrpl4j.codec.binary.types;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -161,29 +160,17 @@ class PathSetMptTest {
   }
 
   @Test
-  void testCurrencyAndMptMutuallyExclusive() {
-    String mptIssuanceId = "00000001B5F762798A53D543A014CAF8B297CFF8F2F937E8";
-    String currency = "USD";
-
-    // Create hop with both currency and mpt_issuance_id (invalid)
+  void testCurrencyTakesPrecedenceOverMptWhenBothPresent() throws JsonProcessingException {
+    // When both currency and mpt_issuance_id appear in a hop, currency takes precedence (permissive behavior).
     ObjectNode hop = objectMapper.createObjectNode();
-    hop.put("currency", currency);
-    hop.put("mpt_issuance_id", mptIssuanceId);
+    hop.put("currency", "USD");
+    hop.put("mpt_issuance_id", "00000001B5F762798A53D543A014CAF8B297CFF8F2F937E8");
 
-    ArrayNode path = objectMapper.createArrayNode();
-    path.add(hop);
-
-    ArrayNode pathSet = objectMapper.createArrayNode();
-    pathSet.add(path);
-
-    // Should throw exception
-    PathSetType pathSetType = new PathSetType();
-    IllegalArgumentException exception = assertThrows(
-      IllegalArgumentException.class,
-      () -> pathSetType.fromJson(pathSet)
-    );
-
-    assertThat(exception.getMessage()).contains("mutually exclusive");
+    HopType hopType = new HopType().fromJson(hop);
+    // TYPE_CURRENCY bit (0x10) must be set; TYPE_MPT bit (0x40) must not
+    int typeByte = hopType.value().get(0).asInt();
+    assertThat(typeByte & HopType.TYPE_CURRENCY).isEqualTo((int) HopType.TYPE_CURRENCY);
+    assertThat(typeByte & HopType.TYPE_MPT).isEqualTo(0);
   }
 
   @Test

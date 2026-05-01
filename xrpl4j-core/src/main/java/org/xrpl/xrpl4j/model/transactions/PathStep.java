@@ -70,9 +70,10 @@ public interface PathStep {
    * If present, this path step represents changing currencies and this address defines the issuer of the new currency.
    * If omitted in a step with a non-XRP currency, a previous step of the path defines the issuer.
    * If present when currency is omitted, indicates a path step that uses an order book between same-named
-   * currencies with different issuers.
-   * MUST be omitted if the currency is XRP. MUST NOT be provided if this step specifies the {@link PathStep#account()}
-   * or {@link PathStep#mptIssuanceId()} fields.
+   * currencies with different issuers. May optionally be present alongside {@link PathStep#mptIssuanceId()}
+   * to identify the issuer of the MPT.
+   * MUST be omitted if the currency is XRP. MUST NOT be provided if this step specifies the
+   * {@link PathStep#account()} field.
    *
    * @return The {@link Optional} {@link Address} of the currency issuer.
    */
@@ -81,8 +82,9 @@ public interface PathStep {
   /**
    * If present, this {@link PathStep} represents changing assets through an MPT order book.
    * The {@link MpTokenIssuanceId} identifies the MPT to exchange into at this step.
-   * MUST NOT be provided if this {@link PathStep} specifies the {@link PathStep#account()},
-   * {@link PathStep#currency()} fields.
+   * May optionally be combined with {@link PathStep#issuer()} to identify the MPT issuer.
+   * MUST NOT be provided if this {@link PathStep} specifies the {@link PathStep#account()}
+   * or {@link PathStep#currency()} fields.
    *
    * @return An {@link Optional} of type {@link MpTokenIssuanceId}.
    */
@@ -91,15 +93,15 @@ public interface PathStep {
   Optional<MpTokenIssuanceId> mptIssuanceId();
 
   /**
-   * Validates that {@code mpt_issuance_id} is not combined with {@code account}, {@code currency}, or
-   * {@code issuer} in the same path step, as these fields are mutually exclusive per the XLS-82d spec.
+   * Validates that {@code mpt_issuance_id} is not combined with {@code account} or {@code currency}
+   * in the same path step. {@code issuer} is allowed alongside {@code mpt_issuance_id} per the XLS-82d spec.
    */
   @Value.Check
   default void validateMptMutualExclusion() {
     if (mptIssuanceId().isPresent()) {
       Preconditions.checkArgument(
-        !account().isPresent() && !currency().isPresent() && !issuer().isPresent(),
-        "mpt_issuance_id is mutually exclusive with account, currency, and issuer in a PathStep."
+        !account().isPresent() && !currency().isPresent(),
+        "mpt_issuance_id is mutually exclusive with account and currency in a PathStep."
       );
     }
   }

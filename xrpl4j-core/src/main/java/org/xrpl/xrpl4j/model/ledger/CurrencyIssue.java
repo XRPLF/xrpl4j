@@ -40,9 +40,9 @@ import java.util.Optional;
  * @deprecated Use {@link XrpIssue} for XRP or {@link IouIssue} for issued currencies instead. This class will be
  *   removed in a future version. Migration guide:
  *   <ul>
- *     <li>For XRP: Replace {@code CurrencyIssue.XRP} with {@code XrpIssue.XRP}</li>
+ *     <li>For XRP: Replace {@code CurrencyIssue.XRP} with {@code Issue.XRP}</li>
  *     <li>For XRP: Replace {@code CurrencyIssue.builder().currency("XRP").build()} with
- *       {@code XrpIssue.builder().build()}</li>
+ *       {@code XrpIssue.of()}</li>
  *     <li>For IOUs: Replace {@code CurrencyIssue.builder().currency(c).issuer(i).build()} with
  *       {@code IouIssue.builder().currency(c).issuer(i).build()}</li>
  *   </ul>

@@ -27,7 +27,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
-import org.xrpl.xrpl4j.model.ledger.XrpIssue;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -47,7 +47,7 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
         .build())
       .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .addSourceCurrencies(
-        PathCurrency.of(XrpIssue.XRP),
+        PathCurrency.of(Issue.XRP),
         PathCurrency.of(CurrencyIssue.builder().currency("USD").build())
       )
       .domain(Hash256.of("96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797"))

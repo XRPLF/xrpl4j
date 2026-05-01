@@ -39,16 +39,16 @@ class XrpIssueTest {
 
   @Test
   void testEquals() {
-    XrpIssue xrp1 = ImmutableXrpIssue.builder().build();
-    XrpIssue xrp2 = ImmutableXrpIssue.builder().build();
+    XrpIssue xrp1 = XrpIssue.of();
+    XrpIssue xrp2 = XrpIssue.of();
 
     assertThat(xrp1).isEqualTo(xrp2);
-    assertThat(xrp1).isEqualTo(XrpIssue.XRP);
+    assertThat(xrp1).isEqualTo(Issue.XRP);
   }
 
   @Test
   void testJsonSerialization() throws JsonProcessingException, JSONException {
-    XrpIssue xrp = XrpIssue.XRP;
+    XrpIssue xrp = XrpIssue.of();
 
     String expectedJson = "{\"currency\":\"XRP\"}";
     String serialized = objectMapper.writeValueAsString(xrp);

@@ -87,27 +87,23 @@ public class HopType extends SerializedType<HopType> {
 
     Hop hop = objectMapper.treeToValue(node, Hop.class);
 
-    // Validate that currency and mptIssuanceId are mutually exclusive
-    if (hop.currency().isPresent() && hop.mptIssuanceId().isPresent()) {
-      throw new IllegalArgumentException(
-        "Currency and mpt_issuance_id are mutually exclusive in a path hop"
-      );
-    }
+    // When both currency and mpt_issuance_id are present, prefer currency to maintain
+    // backward compatibility with unexpected ledger data (mirrors fromParser behaviour).
+    boolean hasCurrency = hop.currency().isPresent();
+    boolean hasMpt = hop.mptIssuanceId().isPresent() && !hasCurrency;
 
     hop.account().ifPresent(account -> {
       byteArray.append(new AccountIdType().fromJson(account).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_ACCOUNT)));
     });
 
-    hop.currency().ifPresent(currency -> {
-      byteArray.append(new CurrencyType().fromJson(currency).value());
+    if (hasCurrency) {
+      byteArray.append(new CurrencyType().fromJson(hop.currency().get()).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_CURRENCY)));
-    });
-
-    hop.mptIssuanceId().ifPresent(mptIssuanceId -> {
-      byteArray.append(new UInt192Type().fromJson(mptIssuanceId).value());
+    } else if (hasMpt) {
+      byteArray.append(new UInt192Type().fromJson(hop.mptIssuanceId().get()).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_MPT)));
-    });
+    }
 
     hop.issuer().ifPresent(issuer -> {
       byteArray.append(new AccountIdType().fromJson(issuer).value());

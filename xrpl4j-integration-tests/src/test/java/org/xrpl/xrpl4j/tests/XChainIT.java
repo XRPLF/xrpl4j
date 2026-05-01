@@ -666,9 +666,9 @@ public class XChainIT extends AbstractIT {
       .xChainBridge(
         XChainBridge.builder()
           .lockingChainDoor(source.publicKey().deriveAddress())
-          .lockingChainIssue(XrpIssue.XRP)
+          .lockingChainIssue(Issue.XRP)
           .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
-          .issuingChainIssue(XrpIssue.XRP)
+          .issuingChainIssue(Issue.XRP)
           .build()
       )
       .signatureReward(XrpCurrencyAmount.ofDrops(200))
@@ -1013,9 +1013,9 @@ public class XChainIT extends AbstractIT {
       doorKeyPair,
       XChainBridge.builder()
         .lockingChainDoor(doorKeyPair.publicKey().deriveAddress())
-        .lockingChainIssue(XrpIssue.XRP)
+        .lockingChainIssue(Issue.XRP)
         .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
-        .issuingChainIssue(XrpIssue.XRP)
+        .issuingChainIssue(Issue.XRP)
         .build(),
       Optional.of(XrpCurrencyAmount.ofDrops(10000000))
     );

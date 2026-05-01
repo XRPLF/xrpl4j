@@ -38,11 +38,14 @@ import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
+import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
  * Integration tests for ripple_path_find and path_find RPC methods with MPT (Multi-Purpose Token) support.
@@ -181,5 +184,109 @@ public class PathFindIT extends AbstractIT {
     );
 
     logger.info("Successfully called ripple_path_find with MPT destination and delivered MPT payment");
+  }
+
+  /**
+   * Tests ripple_path_find returns non-empty alternatives when DEX liquidity exists.
+   * Creates an MPT/XRP offer on the DEX so that a 3rd-party source (XRP) can reach a
+   * holder's MPT destination via an indirect path, then asserts alternatives is non-empty.
+   */
+  @Test
+  @DisabledIf(value = "shouldNotRun", disabledReason = "PathFindIT only runs on local rippled node or devnet.")
+  void ripplePathFindAlternativesNonEmptyWithDexLiquidity()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair holderKeyPair = createRandomAccountEd25519();
+    KeyPair buyerKeyPair = createRandomAccountEd25519();
+    FeeResult feeResult = xrplClient.fee();
+
+    AccountInfoResult issuerAccountInfo = scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    AccountInfoResult holderAccountInfo = scanForResult(
+      () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .flags(MpTokenIssuanceCreateFlags.builder().tfMptCanTrade(true).tfMptCanTransfer(true).build())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedCreate = signatureService.sign(
+      issuerKeyPair.privateKey(), issuanceCreate
+    );
+    assertThat(xrplClient.submit(signedCreate).engineResult()).isEqualTo(SUCCESS_STATUS);
+    scanForFinality(signedCreate.hash(), xrplClient.submit(signedCreate).validatedLedgerIndex(),
+      issuanceCreate.lastLedgerSequence().get(), issuanceCreate.sequence(),
+      issuerKeyPair.publicKey().deriveAddress());
+
+    MpTokenIssuanceId mptIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedCreate.hash()), MpTokenIssuanceCreate.class)
+      .metadata().orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("Missing issuance ID in metadata"));
+
+    // Authorize holder to hold MPT
+    AccountInfoResult holderInfo = scanForResult(
+      () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenAuthorize authorize = MpTokenAuthorize.builder()
+      .account(holderKeyPair.publicKey().deriveAddress())
+      .sequence(holderAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .signingPublicKey(holderKeyPair.publicKey())
+      .lastLedgerSequence(holderInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .mpTokenIssuanceId(mptIssuanceId)
+      .build();
+    SingleSignedTransaction<MpTokenAuthorize> signedAuth = signatureService.sign(
+      holderKeyPair.privateKey(), authorize
+    );
+    assertThat(xrplClient.submit(signedAuth).engineResult()).isEqualTo(SUCCESS_STATUS);
+    scanForFinality(signedAuth.hash(), xrplClient.submit(signedAuth).validatedLedgerIndex(),
+      authorize.lastLedgerSequence().get(), authorize.sequence(),
+      holderKeyPair.publicKey().deriveAddress());
+
+    // Issuer places a DEX offer: sells MPT, buys XRP — creates liquidity for path finding
+    AccountInfoResult issuerInfoForOffer = scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MptCurrencyAmount mptAmount = MptCurrencyAmount.builder().mptIssuanceId(mptIssuanceId).value("1000").build();
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoForOffer.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerInfoForOffer.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .takerGets(mptAmount)
+      .takerPays(XrpCurrencyAmount.ofDrops(1000000))
+      .flags(OfferCreateFlags.builder().tfPassive(true).build())
+      .build();
+    SingleSignedTransaction<OfferCreate> signedOffer = signatureService.sign(
+      issuerKeyPair.privateKey(), offerCreate
+    );
+    assertThat(xrplClient.submit(signedOffer).engineResult()).isEqualTo(SUCCESS_STATUS);
+    scanForFinality(signedOffer.hash(), xrplClient.submit(signedOffer).validatedLedgerIndex(),
+      offerCreate.lastLedgerSequence().get(), offerCreate.sequence(),
+      issuerKeyPair.publicKey().deriveAddress());
+
+    // Buyer calls ripple_path_find: source XRP, destination MPT held by holder
+    RipplePathFindRequestParams pathFindParams = RipplePathFindRequestParams.builder()
+      .sourceAccount(buyerKeyPair.publicKey().deriveAddress())
+      .destinationAccount(holderKeyPair.publicKey().deriveAddress())
+      .destinationAmount(MptCurrencyAmount.builder().mptIssuanceId(mptIssuanceId).value("100").build())
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+      .build();
+
+    RipplePathFindResult pathFindResult = xrplClient.ripplePathFind(pathFindParams);
+    assertThat(pathFindResult).isNotNull();
+    assertThat(pathFindResult.alternatives()).isNotEmpty();
+    assertThat(pathFindResult.destinationAccount()).isEqualTo(holderKeyPair.publicKey().deriveAddress());
+
+    logger.info("ripple_path_find returned {} alternative(s) with DEX liquidity",
+      pathFindResult.alternatives().size());
   }
 }

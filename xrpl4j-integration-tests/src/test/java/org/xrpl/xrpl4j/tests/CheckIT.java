@@ -353,6 +353,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(issuerKeyPair.publicKey())
       .flags(MpTokenIssuanceCreateFlags.builder()
         .tfMptCanTransfer(true)
+        .tfMptCanEscrow(true)
         .build())
       .build();
 
@@ -540,6 +541,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(issuerKeyPair.publicKey())
       .flags(MpTokenIssuanceCreateFlags.builder()
         .tfMptCanTransfer(true)
+        .tfMptCanEscrow(true)
         .build())
       .build();
 

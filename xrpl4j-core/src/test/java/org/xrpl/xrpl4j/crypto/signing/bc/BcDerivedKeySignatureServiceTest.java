@@ -51,7 +51,7 @@ import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
 import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -1340,7 +1340,7 @@ class BcDerivedKeySignatureServiceTest {
       .fee(XrpCurrencyAmount.ofDrops(30))
       .sequence(UnsignedInteger.ONE)
       .loanBrokerId(Hash256.of(com.google.common.base.Strings.padStart("ABC123", 64, '0')))
-      .principalRequested(AssetAmount.of("50000"))
+      .principalRequested(Amount.of("50000"))
       .signingPublicKey(publicKey)
       .build();
   }

@@ -6,7 +6,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.LoanBrokerData;
 
@@ -27,9 +27,9 @@ class MetaLoanBrokerObjectTest extends AbstractJsonTest {
       .owner(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .data(LoanBrokerData.of("010203"))
       .managementFeeRate(UnsignedInteger.valueOf(10000))
-      .debtTotal(AssetAmount.of("500000"))
-      .debtMaximum(AssetAmount.of("5000000"))
-      .coverAvailable(AssetAmount.of("100000"))
+      .debtTotal(Amount.of("500000"))
+      .debtMaximum(Amount.of("5000000"))
+      .coverAvailable(Amount.of("100000"))
       .coverRateMinimum(UnsignedInteger.valueOf(50000))
       .coverRateLiquidation(UnsignedInteger.valueOf(25000))
       .build();
@@ -61,8 +61,8 @@ class MetaLoanBrokerObjectTest extends AbstractJsonTest {
   @Test
   void testMetaLoanBrokerObjectWithMinimalFields() throws JsonProcessingException, JSONException {
     MetaLoanBrokerObject metaLoanBrokerObject = ImmutableMetaLoanBrokerObject.builder()
-      .debtTotal(AssetAmount.of("250000"))
-      .coverAvailable(AssetAmount.of("50000"))
+      .debtTotal(Amount.of("250000"))
+      .coverAvailable(Amount.of("50000"))
       .build();
 
     String json = "{" +

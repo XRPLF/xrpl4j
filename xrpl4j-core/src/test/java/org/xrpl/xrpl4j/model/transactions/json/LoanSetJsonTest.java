@@ -8,7 +8,7 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.LoanSetFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.CounterpartySignature;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.LoanData;
@@ -49,16 +49,16 @@ public class LoanSetJsonTest extends AbstractJsonTest {
           .build()
       )
       .data(LoanData.of("AABBCC"))
-      .loanOriginationFee(AssetAmount.of("100"))
-      .loanServiceFee(AssetAmount.of("50"))
-      .latePaymentFee(AssetAmount.of("25"))
-      .closePaymentFee(AssetAmount.of("75"))
+      .loanOriginationFee(Amount.of("100"))
+      .loanServiceFee(Amount.of("50"))
+      .latePaymentFee(Amount.of("25"))
+      .closePaymentFee(Amount.of("75"))
       .overpaymentFee(UnsignedInteger.valueOf(500))
       .interestRate(UnsignedInteger.valueOf(5000))
       .lateInterestRate(UnsignedInteger.valueOf(7500))
       .closeInterestRate(UnsignedInteger.valueOf(3000))
       .overpaymentInterestRate(UnsignedInteger.valueOf(2000))
-      .principalRequested(AssetAmount.of("50000"))
+      .principalRequested(Amount.of("50000"))
       .paymentTotal(UnsignedInteger.valueOf(3))
       .paymentInterval(UnsignedInteger.valueOf(2592000))
       .gracePeriod(UnsignedInteger.valueOf(86400))
@@ -116,7 +116,7 @@ public class LoanSetJsonTest extends AbstractJsonTest {
       .loanBrokerId(Hash256.of(
         "79E25403E9FC010A277D80410EED5494FDD033A09FD4C1432335A1734A1D099D"
       ))
-      .principalRequested(AssetAmount.of("50000"))
+      .principalRequested(Amount.of("50000"))
       .build();
 
     String json = "{" +
@@ -162,7 +162,7 @@ public class LoanSetJsonTest extends AbstractJsonTest {
           )
           .build()
       )
-      .principalRequested(AssetAmount.of("50000"))
+      .principalRequested(Amount.of("50000"))
       .paymentTotal(UnsignedInteger.valueOf(3))
       .build();
 
@@ -209,7 +209,7 @@ public class LoanSetJsonTest extends AbstractJsonTest {
       .loanBrokerId(Hash256.of(
         "79E25403E9FC010A277D80410EED5494FDD033A09FD4C1432335A1734A1D099D"
       ))
-      .principalRequested(AssetAmount.of("50000"))
+      .principalRequested(Amount.of("50000"))
       .build();
 
     String json = "{" +

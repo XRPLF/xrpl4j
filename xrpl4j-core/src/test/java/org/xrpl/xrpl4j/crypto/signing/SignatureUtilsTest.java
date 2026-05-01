@@ -74,7 +74,7 @@ import org.xrpl.xrpl4j.model.transactions.AmmDelete;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
 import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.BatchSigner;
 import org.xrpl.xrpl4j.model.transactions.BatchSignerWrapper;
@@ -1993,7 +1993,7 @@ public class SignatureUtilsTest {
       .fee(XrpCurrencyAmount.ofDrops(30))
       .sequence(UnsignedInteger.ONE)
       .loanBrokerId(Hash256.of(Strings.padStart("ABC123", 64, '0')))
-      .principalRequested(AssetAmount.of("50000"))
+      .principalRequested(Amount.of("50000"))
       .signingPublicKey(sourcePublicKey)
       .transactionSignature(Signature.fromBase16("00112233"))
       .build();

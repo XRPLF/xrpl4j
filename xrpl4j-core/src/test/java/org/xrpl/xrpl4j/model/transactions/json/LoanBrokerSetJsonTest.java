@@ -8,7 +8,7 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.LoanBrokerData;
 import org.xrpl.xrpl4j.model.transactions.LoanBrokerSet;
@@ -33,7 +33,7 @@ public class LoanBrokerSetJsonTest extends AbstractJsonTest {
       .vaultId(Hash256.of("F07A0E3933CB0E1402E52F312CBBB3CE301932F5E8B8340344B79A48574529F0"))
       .data(LoanBrokerData.of("010203"))
       .managementFeeRate(UnsignedInteger.valueOf(10000))
-      .debtMaximum(AssetAmount.of("250000"))
+      .debtMaximum(Amount.of("250000"))
       .coverRateMinimum(UnsignedInteger.valueOf(15000))
       .coverRateLiquidation(UnsignedInteger.valueOf(12000))
       .build();
@@ -69,7 +69,7 @@ public class LoanBrokerSetJsonTest extends AbstractJsonTest {
       .vaultId(Hash256.of("F07A0E3933CB0E1402E52F312CBBB3CE301932F5E8B8340344B79A48574529F0"))
       .loanBrokerId(Hash256.of("A07A0E3933CB0E1402E52F312CBBB3CE301932F5E8B8340344B79A48574529F0"))
       .data(LoanBrokerData.of("010203"))
-      .debtMaximum(AssetAmount.of("250000"))
+      .debtMaximum(Amount.of("250000"))
       .build();
 
     String json = "{" +

@@ -36,8 +36,6 @@ import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.AssetAmountDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.AssetAmountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
@@ -862,57 +860,6 @@ public class Wrappers {
     @Override
     public String toString() {
       return this.value().toString();
-    }
-
-  }
-
-  @Value.Immutable
-  @Wrapped
-  @JsonSerialize(as = AssetAmount.class, using = AssetAmountSerializer.class)
-  @JsonDeserialize(as = AssetAmount.class, using = AssetAmountDeserializer.class)
-  @Beta
-  abstract static class _AssetAmount extends Wrapper<String> implements Serializable {
-
-    /**
-     * Validates that the value is a valid decimal string.
-     */
-    @Value.Check
-    public void check() {
-      Preconditions.checkArgument(
-        !this.value().isEmpty(),
-        "AssetAmount must not be empty."
-      );
-      try {
-        new BigDecimal(this.value());
-      } catch (NumberFormatException e) {
-        throw new IllegalArgumentException(
-          String.format("AssetAmount value '%s' is not a valid decimal number.", this.value()), e
-        );
-      }
-    }
-
-    /**
-     * Indicates whether this amount is negative.
-     *
-     * @return {@code true} if this amount is negative; {@code false} otherwise (i.e., if the value is 0 or positive).
-     */
-    public boolean isNegative() {
-      return this.value().startsWith("-");
-    }
-
-    /**
-     * Indicates whether this amount is zero. Handles all string representations of zero (e.g., "0", "0.0", "0.000",
-     * "0e0", "-0").
-     *
-     * @return {@code true} if this amount is zero; {@code false} otherwise.
-     */
-    public boolean isZero() {
-      return new BigDecimal(this.value()).signum() == 0;
-    }
-
-    @Override
-    public String toString() {
-      return this.value();
     }
 
   }

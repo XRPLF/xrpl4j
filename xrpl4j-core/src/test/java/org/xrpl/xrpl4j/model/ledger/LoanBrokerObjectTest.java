@@ -6,7 +6,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.LoanBrokerData;
 
@@ -30,7 +30,7 @@ class LoanBrokerObjectTest extends AbstractJsonTest {
       .owner(Address.of("rU1Cm8GymH5U1WuTcmMTUZ5XjwJbanQoA8"))
       .data(LoanBrokerData.of("010203"))
       .managementFeeRate(UnsignedInteger.valueOf(10000))
-      .debtMaximum(AssetAmount.of("250000"))
+      .debtMaximum(Amount.of("250000"))
       .index(
         Hash256.of("79E25403E9FC010A277D80410EED5494FDD033A09FD4C1432335A1734A1D099D")
       )

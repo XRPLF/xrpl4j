@@ -8,7 +8,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.LoanBrokerData;
 
@@ -158,27 +158,27 @@ public interface LoanBrokerObject extends LedgerObject {
   /**
    * The total asset amount the protocol owes the Vault, including interest.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("DebtTotal")
-  Optional<AssetAmount> debtTotal();
+  Optional<Amount> debtTotal();
 
   /**
    * The maximum amount the protocol can owe the Vault. The default value of 0 means there is no limit to the
    * debt.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("DebtMaximum")
-  Optional<AssetAmount> debtMaximum();
+  Optional<Amount> debtMaximum();
 
   /**
    * The total amount of first-loss capital deposited into the Lending Protocol.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("CoverAvailable")
-  Optional<AssetAmount> coverAvailable();
+  Optional<Amount> coverAvailable();
 
   /**
    * The 1/10th basis point of the {@code DebtTotal} that the first-loss capital must cover. Valid values are

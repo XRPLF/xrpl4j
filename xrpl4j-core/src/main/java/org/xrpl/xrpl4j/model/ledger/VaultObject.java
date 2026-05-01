@@ -8,7 +8,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.VaultFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
@@ -127,45 +127,45 @@ public interface VaultObject extends LedgerObject {
   /**
    * The total value of the vault.
    *
-   * @return An {@link AssetAmount}, defaulting to "0".
+   * @return An {@link Amount}, defaulting to "0".
    */
   @JsonProperty("AssetsTotal")
   @Value.Default
-  default AssetAmount assetsTotal() {
-    return AssetAmount.of("0");
+  default Amount assetsTotal() {
+    return Amount.ZERO;
   }
 
   /**
    * The available assets in the vault.
    *
-   * @return An {@link AssetAmount}, defaulting to "0".
+   * @return An {@link Amount}, defaulting to "0".
    */
   @JsonProperty("AssetsAvailable")
   @Value.Default
-  default AssetAmount assetsAvailable() {
-    return AssetAmount.of("0");
+  default Amount assetsAvailable() {
+    return Amount.ZERO;
   }
 
   /**
    * The maximum amount of assets the vault can hold. 0 means no cap.
    *
-   * @return An {@link AssetAmount}, defaulting to "0".
+   * @return An {@link Amount}, defaulting to "0".
    */
   @JsonProperty("AssetsMaximum")
   @Value.Default
-  default AssetAmount assetsMaximum() {
-    return AssetAmount.of("0");
+  default Amount assetsMaximum() {
+    return Amount.ZERO;
   }
 
   /**
    * The potential unrealized loss.
    *
-   * @return An {@link AssetAmount}, defaulting to "0".
+   * @return An {@link Amount}, defaulting to "0".
    */
   @JsonProperty("LossUnrealized")
   @Value.Default
-  default AssetAmount lossUnrealized() {
-    return AssetAmount.of("0");
+  default Amount lossUnrealized() {
+    return Amount.ZERO;
   }
 
   /**

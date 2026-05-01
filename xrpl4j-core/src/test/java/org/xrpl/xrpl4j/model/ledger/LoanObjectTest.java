@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.LoanFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 class LoanObjectTest extends AbstractJsonTest {
@@ -38,9 +38,9 @@ class LoanObjectTest extends AbstractJsonTest {
       .gracePeriod(UnsignedInteger.valueOf(60))
       .nextPaymentDueDate(UnsignedInteger.valueOf(827248810))
       .paymentRemaining(UnsignedInteger.valueOf(3))
-      .totalValueOutstanding(AssetAmount.of("50000"))
-      .principalOutstanding(AssetAmount.of("50000"))
-      .periodicPayment(AssetAmount.of("16666.66666666666667"))
+      .totalValueOutstanding(Amount.of("50000"))
+      .principalOutstanding(Amount.of("50000"))
+      .periodicPayment(Amount.of("16666.66666666666667"))
       .loanScale(-10)
       .index(
         Hash256.of(
@@ -105,9 +105,9 @@ class LoanObjectTest extends AbstractJsonTest {
       .previousPaymentDueDate(UnsignedInteger.valueOf(827248810))
       .nextPaymentDueDate(UnsignedInteger.valueOf(827248806))
       .paymentRemaining(UnsignedInteger.valueOf(2))
-      .totalValueOutstanding(AssetAmount.of("33333.3333333333"))
-      .principalOutstanding(AssetAmount.of("33333.3333333333"))
-      .periodicPayment(AssetAmount.of("16666.66666666666667"))
+      .totalValueOutstanding(Amount.of("33333.3333333333"))
+      .principalOutstanding(Amount.of("33333.3333333333"))
+      .periodicPayment(Amount.of("16666.66666666666667"))
       .loanScale(-10)
       .index(
         Hash256.of(
@@ -168,7 +168,7 @@ class LoanObjectTest extends AbstractJsonTest {
       )
       .startDate(UnsignedInteger.valueOf(827248750))
       .paymentInterval(UnsignedInteger.valueOf(60))
-      .periodicPayment(AssetAmount.of("16666.66666666666667"))
+      .periodicPayment(Amount.of("16666.66666666666667"))
       .index(
         Hash256.of(
           "569EE4B52FF7F903C835E8470400900DC493C97B3BE1D41C7EA4FF3407953D73"

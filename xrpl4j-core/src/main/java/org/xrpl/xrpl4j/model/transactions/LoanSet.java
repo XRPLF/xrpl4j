@@ -79,34 +79,34 @@ public interface LoanSet extends Transaction {
   /**
    * A nominal funds amount paid to the {@code LoanBroker.Owner} when the Loan is created.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("LoanOriginationFee")
-  Optional<AssetAmount> loanOriginationFee();
+  Optional<Amount> loanOriginationFee();
 
   /**
    * A nominal amount paid to the {@code LoanBroker.Owner} with every Loan payment.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("LoanServiceFee")
-  Optional<AssetAmount> loanServiceFee();
+  Optional<Amount> loanServiceFee();
 
   /**
    * A nominal funds amount paid to the {@code LoanBroker.Owner} when a payment is late.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("LatePaymentFee")
-  Optional<AssetAmount> latePaymentFee();
+  Optional<Amount> latePaymentFee();
 
   /**
    * A nominal funds amount paid to the {@code LoanBroker.Owner} when an early full repayment is made.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("ClosePaymentFee")
-  Optional<AssetAmount> closePaymentFee();
+  Optional<Amount> closePaymentFee();
 
   /**
    * A fee charged on overpayments in 1/10th basis points. Valid values are between 0 and 100000 inclusive
@@ -156,10 +156,10 @@ public interface LoanSet extends Transaction {
   /**
    * The principal amount requested by the Borrower.
    *
-   * @return An {@link AssetAmount}.
+   * @return An {@link Amount}.
    */
   @JsonProperty("PrincipalRequested")
-  AssetAmount principalRequested();
+  Amount principalRequested();
 
   /**
    * The total number of payments to be made against the Loan.

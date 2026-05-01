@@ -80,10 +80,10 @@ public interface LoanBrokerSet extends Transaction {
    * The maximum amount the protocol can owe the Vault. The default value of 0 means there is no limit to the
    * debt. Must not be negative.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("DebtMaximum")
-  Optional<AssetAmount> debtMaximum();
+  Optional<Amount> debtMaximum();
 
   /**
    * The 1/10th basis point {@code DebtTotal} that the first-loss capital must cover. Valid values are between 0

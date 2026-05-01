@@ -10,7 +10,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.VaultFlags;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
@@ -35,10 +35,10 @@ class VaultObjectTest extends AbstractJsonTest {
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
       )
-      .assetsTotal(AssetAmount.of("500000"))
-      .assetsAvailable(AssetAmount.of("400000"))
-      .assetsMaximum(AssetAmount.of("1000000"))
-      .lossUnrealized(AssetAmount.of("100"))
+      .assetsTotal(Amount.of("500000"))
+      .assetsAvailable(Amount.of("400000"))
+      .assetsMaximum(Amount.of("1000000"))
+      .lossUnrealized(Amount.of("100"))
       .shareMptId(MpTokenIssuanceId.of("00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
       .scale(AssetScale.of(UnsignedInteger.valueOf(8)))

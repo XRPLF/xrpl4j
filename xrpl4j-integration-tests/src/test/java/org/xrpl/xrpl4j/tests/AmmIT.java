@@ -8,7 +8,6 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
@@ -68,13 +67,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.stream.Collectors;
 
-@DisabledIf(value = "shouldNotRun", disabledReason = "AmmIT only runs on local rippled node or devnet.")
 public class AmmIT extends AbstractIT {
-
-  static boolean shouldNotRun() {
-    return System.getProperty("useTestnet") != null ||
-      System.getProperty("useClioTestnet") != null;
-  }
 
   String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
   String usd = "USD";

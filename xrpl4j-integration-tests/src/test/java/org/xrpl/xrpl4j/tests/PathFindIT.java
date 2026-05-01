@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -192,7 +191,6 @@ public class PathFindIT extends AbstractIT {
    * holder's MPT destination via an indirect path, then asserts alternatives is non-empty.
    */
   @Test
-  @DisabledIf(value = "shouldNotRun", disabledReason = "PathFindIT only runs on local rippled node or devnet.")
   void ripplePathFindAlternativesNonEmptyWithDexLiquidity()
     throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();

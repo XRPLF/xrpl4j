@@ -138,6 +138,18 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
      */
     ESCROW("escrow"),
     /**
+     * MPToken Issuance object type.
+     */
+    MPT_ISSUANCE("mpt_issuance"),
+    /**
+     * MPToken object type.
+     */
+    MP_TOKEN("mptoken"),
+    /**
+     * NFT offer object type.
+     */
+    NFT_OFFER("nft_offer"),
+    /**
      * Offer account object type.
      */
     OFFER("offer"),
@@ -164,15 +176,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
     /**
      * Vault account object type.
      */
-    VAULT("vault"),
-    /**
-     * MPToken Issuance object type.
-     */
-    MPT_ISSUANCE("mpt_issuance"),
-    /**
-     * MPToken object type.
-     */
-    MP_TOKEN("mptoken");
+    VAULT("vault");
 
     private final String value;
 

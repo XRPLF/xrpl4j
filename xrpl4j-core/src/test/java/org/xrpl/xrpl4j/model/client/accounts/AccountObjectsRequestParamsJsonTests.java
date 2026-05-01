@@ -24,11 +24,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.AccountObjectType;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.Marker;
 
 public class AccountObjectsRequestParamsJsonTests extends AbstractJsonTest {
   
@@ -94,6 +98,81 @@ public class AccountObjectsRequestParamsJsonTests extends AbstractJsonTest {
       "            \"type\": \"state\",\n" +
       "            \"deletion_blockers_only\": false,\n" +
       "            \"limit\": 10\n" +
+      "        }";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @ParameterizedTest
+  @EnumSource(AccountObjectType.class)
+  public void testAllAccountObjectTypes(AccountObjectType type) throws JsonProcessingException, JSONException {
+    AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+      .type(type)
+      .deletionBlockersOnly(false)
+      .limit(UnsignedInteger.valueOf(10))
+      .build();
+
+    String json = "{\n" +
+      "            \"account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
+      "            \"ledger_index\": \"validated\",\n" +
+      "            \"type\": \"" + type.value() + "\",\n" +
+      "            \"deletion_blockers_only\": false,\n" +
+      "            \"limit\": 10\n" +
+      "        }";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  public void testWithDeletionBlockersOnly() throws JsonProcessingException, JSONException {
+    AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+      .deletionBlockersOnly(true)
+      .build();
+
+    String json = "{\n" +
+      "            \"account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
+      "            \"ledger_index\": \"validated\",\n" +
+      "            \"deletion_blockers_only\": true\n" +
+      "        }";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  public void testWithStringMarker() throws JsonProcessingException, JSONException {
+    AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+      .marker(Marker.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59,1234"))
+      .build();
+
+    String json = "{\n" +
+      "            \"account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
+      "            \"ledger_index\": \"validated\",\n" +
+      "            \"deletion_blockers_only\": false,\n" +
+      "            \"marker\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59,1234\"\n" +
+      "        }";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  public void testWithJsonObjectMarker() throws JsonProcessingException, JSONException {
+    AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+      .marker(Marker.of("{\"ledger\":38766212,\"seq\":0}"))
+      .build();
+
+    String json = "{\n" +
+      "            \"account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
+      "            \"ledger_index\": \"validated\",\n" +
+      "            \"deletion_blockers_only\": false,\n" +
+      "            \"marker\": {\"ledger\":38766212,\"seq\":0}\n" +
       "        }";
 
     assertCanSerializeAndDeserialize(params, json);

@@ -76,6 +76,7 @@ public interface MptCurrencyAmount extends CurrencyAmount {
   @Derived
   @JsonIgnore
   @Auxiliary
+  @Override
   default boolean isZero() {
     return unsignedLongValue().equals(UnsignedLong.ZERO);
   }

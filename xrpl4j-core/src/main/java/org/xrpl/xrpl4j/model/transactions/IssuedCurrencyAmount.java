@@ -118,6 +118,7 @@ public interface IssuedCurrencyAmount extends CurrencyAmount {
   @Derived
   @JsonIgnore
   @Auxiliary
+  @Override
   default boolean isZero() {
     return new BigDecimal(value()).signum() == 0;
   }

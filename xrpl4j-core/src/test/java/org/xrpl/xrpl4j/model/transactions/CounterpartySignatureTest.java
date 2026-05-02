@@ -78,8 +78,8 @@ class CounterpartySignatureTest {
   void testOfSingleSign() {
     CounterpartySignature cs = CounterpartySignature.of(PUBLIC_KEY1, SIGNATURE1);
 
-    assertThat(cs.signingPubKey()).isPresent().contains(PUBLIC_KEY1.base16Value());
-    assertThat(cs.txnSignature()).isPresent().contains(SIGNATURE1.base16Value());
+    assertThat(cs.signingPublicKey()).isPresent().contains(PUBLIC_KEY1);
+    assertThat(cs.transactionSignature()).isPresent().contains(SIGNATURE1);
     assertThat(cs.signers()).isEmpty();
     assertThat(cs.sortedSigners()).isFalse();
   }
@@ -102,8 +102,8 @@ class CounterpartySignatureTest {
 
     CounterpartySignature cs = CounterpartySignature.of(Sets.newHashSet(signer1, signer2));
 
-    assertThat(cs.signingPubKey()).isEmpty();
-    assertThat(cs.txnSignature()).isEmpty();
+    assertThat(cs.signingPublicKey()).isEmpty();
+    assertThat(cs.transactionSignature()).isEmpty();
     assertThat(cs.signers()).hasSize(2);
     assertThat(cs.sortedSigners()).isTrue();
   }
@@ -115,12 +115,12 @@ class CounterpartySignatureTest {
   @Test
   void testBuilderWithDirectSigning() {
     CounterpartySignature cs = CounterpartySignature.builder()
-      .signingPubKey(PUBLIC_KEY1.base16Value())
-      .txnSignature(SIGNATURE1.base16Value())
+      .signingPublicKey(PUBLIC_KEY1)
+      .transactionSignature(SIGNATURE1)
       .build();
 
-    assertThat(cs.signingPubKey()).isPresent().contains(PUBLIC_KEY1.base16Value());
-    assertThat(cs.txnSignature()).isPresent().contains(SIGNATURE1.base16Value());
+    assertThat(cs.signingPublicKey()).isPresent().contains(PUBLIC_KEY1);
+    assertThat(cs.transactionSignature()).isPresent().contains(SIGNATURE1);
     assertThat(cs.signers()).isEmpty();
     assertThat(cs.sortedSigners()).isFalse();
   }
@@ -148,8 +148,8 @@ class CounterpartySignatureTest {
       ))
       .build();
 
-    assertThat(cs.signingPubKey()).isEmpty();
-    assertThat(cs.txnSignature()).isEmpty();
+    assertThat(cs.signingPublicKey()).isEmpty();
+    assertThat(cs.transactionSignature()).isEmpty();
     assertThat(cs.signers()).hasSize(2);
     assertThat(cs.sortedSigners()).isTrue();
   }
@@ -177,8 +177,8 @@ class CounterpartySignatureTest {
 
     IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
       CounterpartySignature.builder()
-        .signingPubKey(PUBLIC_KEY1.base16Value())
-        .txnSignature(SIGNATURE1.base16Value())
+        .signingPublicKey(PUBLIC_KEY1)
+        .transactionSignature(SIGNATURE1)
         .addSigners(SignerWrapper.of(signer))
         .build()
     );
@@ -191,7 +191,7 @@ class CounterpartySignatureTest {
   void testValidationFailsWithOnlySigningPubKey() {
     IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
       CounterpartySignature.builder()
-        .signingPubKey(PUBLIC_KEY1.base16Value())
+        .signingPublicKey(PUBLIC_KEY1)
         .build()
     );
 
@@ -203,7 +203,7 @@ class CounterpartySignatureTest {
   void testValidationFailsWithOnlyTxnSignature() {
     IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
       CounterpartySignature.builder()
-        .txnSignature(SIGNATURE1.base16Value())
+        .transactionSignature(SIGNATURE1)
         .build()
     );
 
@@ -220,7 +220,7 @@ class CounterpartySignatureTest {
 
     IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
       CounterpartySignature.builder()
-        .signingPubKey(PUBLIC_KEY1.base16Value())
+        .signingPublicKey(PUBLIC_KEY1)
         .addSigners(SignerWrapper.of(signer))
         .build()
     );
@@ -328,8 +328,8 @@ class CounterpartySignatureTest {
   @Test
   void testJsonSerializationWithDirectSigning() throws JsonProcessingException, JSONException {
     CounterpartySignature cs = CounterpartySignature.builder()
-      .signingPubKey(PUBLIC_KEY1.base16Value())
-      .txnSignature(SIGNATURE1.base16Value())
+      .signingPublicKey(PUBLIC_KEY1)
+      .transactionSignature(SIGNATURE1)
       .build();
 
     String expectedJson = String.format(
@@ -392,8 +392,8 @@ class CounterpartySignatureTest {
 
     CounterpartySignature deserialized = objectMapper.readValue(json, CounterpartySignature.class);
 
-    assertThat(deserialized.signingPubKey()).isPresent().contains(PUBLIC_KEY1.base16Value());
-    assertThat(deserialized.txnSignature()).isPresent().contains(SIGNATURE1.base16Value());
+    assertThat(deserialized.signingPublicKey()).isPresent().contains(PUBLIC_KEY1);
+    assertThat(deserialized.transactionSignature()).isPresent().contains(SIGNATURE1);
     assertThat(deserialized.signers()).isEmpty();
 
     String serialized = objectMapper.writeValueAsString(deserialized);

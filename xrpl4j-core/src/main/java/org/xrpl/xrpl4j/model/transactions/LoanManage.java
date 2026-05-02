@@ -64,7 +64,7 @@ public interface LoanManage extends Transaction {
       (flags().tfLoanUnimpair() ? 1 : 0);
     Preconditions.checkArgument(
       flagCount <= 1,
-      "Only one of tfLoanDefault, tfLoanImpair, or tfLoanUnimpair may be set."
+      "At most one of tfLoanDefault, tfLoanImpair, or tfLoanUnimpair may be set."
     );
   }
 }

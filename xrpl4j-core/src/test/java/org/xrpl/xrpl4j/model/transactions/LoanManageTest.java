@@ -92,7 +92,7 @@ class LoanManageTest {
       ))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Only one of tfLoanDefault, tfLoanImpair, or tfLoanUnimpair may be set.");
+      .hasMessage("At most one of tfLoanDefault, tfLoanImpair, or tfLoanUnimpair may be set.");
   }
 
   @Test
@@ -103,7 +103,7 @@ class LoanManageTest {
       ))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Only one of tfLoanDefault, tfLoanImpair, or tfLoanUnimpair may be set.");
+      .hasMessage("At most one of tfLoanDefault, tfLoanImpair, or tfLoanUnimpair may be set.");
   }
 
   @Test
@@ -114,7 +114,7 @@ class LoanManageTest {
       ))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Only one of tfLoanDefault, tfLoanImpair, or tfLoanUnimpair may be set.");
+      .hasMessage("At most one of tfLoanDefault, tfLoanImpair, or tfLoanUnimpair may be set.");
   }
 
   @Test
@@ -127,7 +127,7 @@ class LoanManageTest {
       ))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Only one of tfLoanDefault, tfLoanImpair, or tfLoanUnimpair may be set.");
+      .hasMessage("At most one of tfLoanDefault, tfLoanImpair, or tfLoanUnimpair may be set.");
   }
 
   // //////////////////////

@@ -33,6 +33,15 @@ class LoanObjectTest extends AbstractJsonTest {
       .borrower(
         Address.of("rEePKs9pVMf91vYj1QVRPmJvCBEum9P2kE")
       )
+      .loanOriginationFee(Amount.of("100"))
+      .loanServiceFee(Amount.of("50"))
+      .latePaymentFee(Amount.of("25"))
+      .closePaymentFee(Amount.of("75"))
+      .overpaymentFee(UnsignedInteger.valueOf(500))
+      .interestRate(UnsignedInteger.valueOf(5000))
+      .lateInterestRate(UnsignedInteger.valueOf(2000))
+      .closeInterestRate(UnsignedInteger.valueOf(1000))
+      .overpaymentInterestRate(UnsignedInteger.valueOf(1500))
       .startDate(UnsignedInteger.valueOf(827248750))
       .paymentInterval(UnsignedInteger.valueOf(60))
       .gracePeriod(UnsignedInteger.valueOf(60))
@@ -40,6 +49,7 @@ class LoanObjectTest extends AbstractJsonTest {
       .paymentRemaining(UnsignedInteger.valueOf(3))
       .totalValueOutstanding(Amount.of("50000"))
       .principalOutstanding(Amount.of("50000"))
+      .managementFeeOutstanding(Amount.of("200"))
       .periodicPayment(Amount.of("16666.66666666666667"))
       .loanScale(-10)
       .index(
@@ -61,6 +71,15 @@ class LoanObjectTest extends AbstractJsonTest {
       "    \"LoanBrokerID\" : " +
       "\"79E25403E9FC010A277D80410EED5494FDD033A09FD4C1432335A1734A1D099D\",\n" +
       "    \"Borrower\" : \"rEePKs9pVMf91vYj1QVRPmJvCBEum9P2kE\",\n" +
+      "    \"LoanOriginationFee\" : \"100\",\n" +
+      "    \"LoanServiceFee\" : \"50\",\n" +
+      "    \"LatePaymentFee\" : \"25\",\n" +
+      "    \"ClosePaymentFee\" : \"75\",\n" +
+      "    \"OverpaymentFee\" : 500,\n" +
+      "    \"InterestRate\" : 5000,\n" +
+      "    \"LateInterestRate\" : 2000,\n" +
+      "    \"CloseInterestRate\" : 1000,\n" +
+      "    \"OverpaymentInterestRate\" : 1500,\n" +
       "    \"StartDate\" : 827248750,\n" +
       "    \"PaymentInterval\" : 60,\n" +
       "    \"GracePeriod\" : 60,\n" +
@@ -68,6 +87,7 @@ class LoanObjectTest extends AbstractJsonTest {
       "    \"PaymentRemaining\" : 3,\n" +
       "    \"TotalValueOutstanding\" : \"50000\",\n" +
       "    \"PrincipalOutstanding\" : \"50000\",\n" +
+      "    \"ManagementFeeOutstanding\" : \"200\",\n" +
       "    \"PeriodicPayment\" : \"16666.66666666666667\",\n" +
       "    \"LoanScale\" : -10,\n" +
       "    \"index\" : " +
@@ -128,6 +148,15 @@ class LoanObjectTest extends AbstractJsonTest {
       "    \"LoanBrokerID\" : " +
       "\"79E25403E9FC010A277D80410EED5494FDD033A09FD4C1432335A1734A1D099D\",\n" +
       "    \"Borrower\" : \"rEePKs9pVMf91vYj1QVRPmJvCBEum9P2kE\",\n" +
+      "    \"LoanOriginationFee\" : \"0\",\n" +
+      "    \"LoanServiceFee\" : \"0\",\n" +
+      "    \"LatePaymentFee\" : \"0\",\n" +
+      "    \"ClosePaymentFee\" : \"0\",\n" +
+      "    \"OverpaymentFee\" : 0,\n" +
+      "    \"InterestRate\" : 0,\n" +
+      "    \"LateInterestRate\" : 0,\n" +
+      "    \"CloseInterestRate\" : 0,\n" +
+      "    \"OverpaymentInterestRate\" : 0,\n" +
       "    \"StartDate\" : 827248750,\n" +
       "    \"PaymentInterval\" : 60,\n" +
       "    \"GracePeriod\" : 60,\n" +
@@ -136,6 +165,7 @@ class LoanObjectTest extends AbstractJsonTest {
       "    \"PaymentRemaining\" : 2,\n" +
       "    \"TotalValueOutstanding\" : \"33333.3333333333\",\n" +
       "    \"PrincipalOutstanding\" : \"33333.3333333333\",\n" +
+      "    \"ManagementFeeOutstanding\" : \"0\",\n" +
       "    \"PeriodicPayment\" : \"16666.66666666666667\",\n" +
       "    \"LoanScale\" : -10,\n" +
       "    \"index\" : " +
@@ -188,9 +218,24 @@ class LoanObjectTest extends AbstractJsonTest {
       "    \"LoanBrokerID\" : " +
       "\"79E25403E9FC010A277D80410EED5494FDD033A09FD4C1432335A1734A1D099D\",\n" +
       "    \"Borrower\" : \"rEePKs9pVMf91vYj1QVRPmJvCBEum9P2kE\",\n" +
+      "    \"LoanOriginationFee\" : \"0\",\n" +
+      "    \"LoanServiceFee\" : \"0\",\n" +
+      "    \"LatePaymentFee\" : \"0\",\n" +
+      "    \"ClosePaymentFee\" : \"0\",\n" +
+      "    \"OverpaymentFee\" : 0,\n" +
+      "    \"InterestRate\" : 0,\n" +
+      "    \"LateInterestRate\" : 0,\n" +
+      "    \"CloseInterestRate\" : 0,\n" +
+      "    \"OverpaymentInterestRate\" : 0,\n" +
       "    \"StartDate\" : 827248750,\n" +
       "    \"PaymentInterval\" : 60,\n" +
+      "    \"GracePeriod\" : 0,\n" +
+      "    \"PaymentRemaining\" : 0,\n" +
+      "    \"TotalValueOutstanding\" : \"0\",\n" +
+      "    \"PrincipalOutstanding\" : \"0\",\n" +
+      "    \"ManagementFeeOutstanding\" : \"0\",\n" +
       "    \"PeriodicPayment\" : \"16666.66666666666667\",\n" +
+      "    \"LoanScale\" : 0,\n" +
       "    \"index\" : " +
       "\"569EE4B52FF7F903C835E8470400900DC493C97B3BE1D41C7EA4FF3407953D73\"\n" +
       "}";

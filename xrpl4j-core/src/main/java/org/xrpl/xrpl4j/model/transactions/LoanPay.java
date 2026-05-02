@@ -77,7 +77,7 @@ public interface LoanPay extends Transaction {
       (flags().tfLoanOverpayment() ? 1 : 0);
     Preconditions.checkArgument(
       flagCount <= 1,
-      "Only one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set."
+      "At most one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set."
     );
   }
 }

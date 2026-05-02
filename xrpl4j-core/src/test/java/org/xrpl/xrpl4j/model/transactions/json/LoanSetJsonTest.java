@@ -5,6 +5,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.LoanSetFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -39,13 +40,13 @@ public class LoanSetJsonTest extends AbstractJsonTest {
       .counterparty(Address.of("rEePKs9pVMf91vYj1QVRPmJvCBEum9P2kE"))
       .counterpartySignature(
         CounterpartySignature.builder()
-          .signingPubKey(
+          .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
             "ED94BE884DB13EA26792F7DE6E8DAAEE9151BD90E0362C7D5C1898D272A7E56A00"
-          )
-          .txnSignature(
+          ))
+          .transactionSignature(Signature.fromBase16(
             "E0B7599656AF32847D4695F836FF1767F036F6E1232115E9295264C8A614FB3C" +
             "1BA3DF45D92304038032EC7BD5D6A901B041A4C74CF28838D205B7E51E08B602"
-          )
+          ))
           .build()
       )
       .data(LoanData.of("AABBCC"))
@@ -153,13 +154,13 @@ public class LoanSetJsonTest extends AbstractJsonTest {
       .counterparty(Address.of("rEePKs9pVMf91vYj1QVRPmJvCBEum9P2kE"))
       .counterpartySignature(
         CounterpartySignature.builder()
-          .signingPubKey(
+          .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
             "ED94BE884DB13EA26792F7DE6E8DAAEE9151BD90E0362C7D5C1898D272A7E56A00"
-          )
-          .txnSignature(
+          ))
+          .transactionSignature(Signature.fromBase16(
             "E0B7599656AF32847D4695F836FF1767F036F6E1232115E9295264C8A614FB3C" +
             "1BA3DF45D92304038032EC7BD5D6A901B041A4C74CF28838D205B7E51E08B602"
-          )
+          ))
           .build()
       )
       .principalRequested(Amount.of("50000"))

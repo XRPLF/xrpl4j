@@ -530,8 +530,7 @@ public class LendingProtocolIT extends AbstractIT {
     assertThat(loanBrokerObject.owner()).isEqualTo(loanBrokerKeyPair.publicKey().deriveAddress());
     assertThat(loanBrokerObject.vaultId()).isEqualTo(vaultId);
     assertThat(loanBrokerObject.debtMaximum()).isNotEmpty().get().isEqualTo(Amount.of("250000"));
-    assertThat(loanBrokerObject.managementFeeRate()).isNotEmpty()
-      .get().isEqualTo(UnsignedInteger.valueOf(10000));
+    assertThat(loanBrokerObject.managementFeeRate()).isEqualTo(UnsignedInteger.valueOf(10000));
     assertThat(loanBrokerObject.data()).isNotEmpty().get().isEqualTo(LoanBrokerData.of("010203"));
 
     // Verify via helper
@@ -571,8 +570,7 @@ public class LendingProtocolIT extends AbstractIT {
     assertThat(loanBrokerEntry.node().debtMaximum()).isNotEmpty().get().isEqualTo(Amount.of("500000"));
     assertThat(loanBrokerEntry.node().data()).isNotEmpty().get().isEqualTo(LoanBrokerData.of("AABB"));
     // Fixed fields should remain unchanged
-    assertThat(loanBrokerEntry.node().managementFeeRate()).isNotEmpty()
-      .get().isEqualTo(UnsignedInteger.valueOf(10000));
+    assertThat(loanBrokerEntry.node().managementFeeRate()).isEqualTo(UnsignedInteger.valueOf(10000));
 
     // ========== LOAN BROKER COVER DEPOSIT ==========
     loanBrokerAccountInfo = this.scanForResult(
@@ -603,7 +601,7 @@ public class LendingProtocolIT extends AbstractIT {
     loanBrokerEntry = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.index(loanBrokerId, LoanBrokerObject.class, LedgerSpecifier.VALIDATED)
     );
-    assertThat(loanBrokerEntry.node().coverAvailable()).isNotEmpty().get().isEqualTo(Amount.of("50000"));
+    assertThat(loanBrokerEntry.node().coverAvailable()).isEqualTo(Amount.of("50000"));
 
     // ========== LOAN SET (Dual-Signed) ==========
     loanBrokerAccountInfo = this.scanForResult(
@@ -667,8 +665,8 @@ public class LendingProtocolIT extends AbstractIT {
     // Verify Loan fields
     assertThat(loanObject.borrower()).isEqualTo(borrowerKeyPair.publicKey().deriveAddress());
     assertThat(loanObject.loanBrokerId()).isEqualTo(loanBrokerId);
-    assertThat(loanObject.principalOutstanding()).isNotEmpty();
-    assertThat(loanObject.paymentRemaining()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(3));
+    assertThat(loanObject.principalOutstanding()).isNotEqualTo(Amount.ZERO);
+    assertThat(loanObject.paymentRemaining()).isEqualTo(UnsignedInteger.valueOf(3));
 
     // Verify via helper
     assertLoanEntryEqualsObjectFromAccountObjects(borrowerKeyPair.publicKey().deriveAddress(), loanBrokerId,
@@ -704,8 +702,7 @@ public class LendingProtocolIT extends AbstractIT {
       LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
     );
     LoanObject paidLoan = loanEntry.node();
-    assertThat(paidLoan.paymentRemaining()).isNotEmpty()
-      .get().isEqualTo(UnsignedInteger.valueOf(2));
+    assertThat(paidLoan.paymentRemaining()).isEqualTo(UnsignedInteger.valueOf(2));
 
     // ========== LOAN MANAGE - Impair ==========
     loanBrokerAccountInfo = this.scanForResult(
@@ -772,9 +769,7 @@ public class LendingProtocolIT extends AbstractIT {
     );
 
     // Get remaining outstanding to pay in full
-    String remainingOutstanding = loanEntry.node().totalValueOutstanding()
-      .map(Amount::value)
-      .orElse("50000");
+    String remainingOutstanding = loanEntry.node().totalValueOutstanding().value();
 
     LoanPay fullPayment = LoanPay.builder()
       .account(borrowerKeyPair.publicKey().deriveAddress())

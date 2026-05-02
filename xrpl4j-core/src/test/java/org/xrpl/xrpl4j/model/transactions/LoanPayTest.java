@@ -158,7 +158,7 @@ class LoanPayTest {
       ))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Only one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set.");
+      .hasMessage("At most one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set.");
   }
 
   @Test
@@ -169,7 +169,7 @@ class LoanPayTest {
       ))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Only one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set.");
+      .hasMessage("At most one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set.");
   }
 
   @Test
@@ -180,7 +180,7 @@ class LoanPayTest {
       ))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Only one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set.");
+      .hasMessage("At most one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set.");
   }
 
   @Test
@@ -193,7 +193,7 @@ class LoanPayTest {
       ))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Only one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set.");
+      .hasMessage("At most one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set.");
   }
 
   // //////////////////////

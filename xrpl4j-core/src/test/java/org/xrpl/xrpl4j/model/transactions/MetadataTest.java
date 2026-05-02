@@ -32,6 +32,7 @@ import org.xrpl.xrpl4j.model.immutables.Wrapped;
 /**
  * Unit tests for the {@link Wrappers.Metadata} base class, using a test-only Immutables-generated wrapper.
  */
+@SuppressWarnings("TypeName")
 class MetadataTest {
 
   @Value.Immutable

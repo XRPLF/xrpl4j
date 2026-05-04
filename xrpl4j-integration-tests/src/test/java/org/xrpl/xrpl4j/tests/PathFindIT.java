@@ -195,7 +195,7 @@ public class PathFindIT extends AbstractIT {
     throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     KeyPair holderKeyPair = createRandomAccountEd25519();
-    KeyPair buyerKeyPair = createRandomAccountEd25519();
+    final KeyPair buyerKeyPair = createRandomAccountEd25519();
     FeeResult feeResult = xrplClient.fee();
 
     AccountInfoResult issuerAccountInfo = scanForResult(

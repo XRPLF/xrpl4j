@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -323,12 +324,10 @@ public class CheckIT extends AbstractIT {
    * using {@link CheckCash} with an MPT {@code Amount}. Verifies the check is on ledger and that MPT balances
    * change correctly after cashing.
    *
-   * <p><strong>Note:</strong> This test requires rippled built from the MPT DEX feature branch with XLS-82d support.
-   * MPT support in Checks is part of the MPT-DEX amendment. This test currently fails with {@code tecNO_PERMISSION},
-   * which may indicate that MPT Checks are not yet fully implemented in the mpt-v2e branch.</p>
-   *
    * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
    */
+  @DisabledIf(value = "shouldNotRunMptChecks",
+    disabledReason = "MPT Checks require MPTokensV2 which is only available on the develop rippled image.")
   @Test
   public void createMptCheckAndCashWithAmount() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
@@ -354,6 +353,7 @@ public class CheckIT extends AbstractIT {
       .flags(MpTokenIssuanceCreateFlags.builder()
         .tfMptCanTransfer(true)
         .tfMptCanEscrow(true)
+        .tfMptCanTrade(true)
         .build())
       .build();
 
@@ -511,12 +511,10 @@ public class CheckIT extends AbstractIT {
    * using {@link CheckCash} with an MPT {@code DeliverMin}. Verifies the check is on ledger and that the check
    * can be cashed for at least the minimum amount.
    *
-   * <p><strong>Note:</strong> This test requires rippled built from the MPT DEX feature branch with XLS-82d support.
-   * MPT support in Checks is part of the MPT-DEX amendment. This test currently fails with {@code tecNO_PERMISSION},
-   * which may indicate that MPT Checks are not yet fully implemented in the mpt-v2e branch.</p>
-   *
    * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
    */
+  @DisabledIf(value = "shouldNotRunMptChecks",
+    disabledReason = "MPT Checks require MPTokensV2 which is only available on the develop rippled image.")
   @Test
   public void createMptCheckAndCashWithDeliverMin() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
@@ -542,6 +540,7 @@ public class CheckIT extends AbstractIT {
       .flags(MpTokenIssuanceCreateFlags.builder()
         .tfMptCanTransfer(true)
         .tfMptCanEscrow(true)
+        .tfMptCanTrade(true)
         .build())
       .build();
 
@@ -696,6 +695,13 @@ public class CheckIT extends AbstractIT {
     );
 
     logger.info("MPT Check create and cash with DeliverMin test completed successfully");
+  }
+
+
+  static boolean shouldNotRunMptChecks() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null ||
+      System.getProperty("useDevnet") != null;
   }
 
   private Predicate<LedgerObject> findCheck(KeyPair sourceKeyPair, KeyPair destinationKeyPair, Hash256 invoiceId) {

@@ -81,7 +81,7 @@ public class RippledContainer {
    * No-args constructor.
    */
   public RippledContainer() {
-    try (GenericContainer<?> container = new GenericContainer<>("rippleci/xrpld:develop")) {
+    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:develop")) {
       this.rippledContainer = container
         .withCommand("--standalone")
         .withExposedPorts(5005)

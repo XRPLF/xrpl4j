@@ -21,7 +21,7 @@ Also note: Dependabot sometimes opens duplicate PRs for the same dependency acro
 
 ## Step 2: Apply
 
-1. If a target branch already exists (e.g. `Q1-dependency-upgrades`), work on that branch. Otherwise create a new branch from main: `deps/batch-deps-upgrade-YYYY-QN` (use current year and quarter).
+1. If a target branch already exists for this quarter's upgrades, work on that branch. Otherwise create a new branch from main: `deps/batch-deps-upgrade-YYYY-QN` (use current year and quarter).
 2. Inspect the root `pom.xml` to determine where each dependency's version is controlled:
    - **Version property**: a `<properties>` entry like `<jackson.version>2.14.0</jackson.version>` — update the property value
    - **Direct version in `<dependencyManagement>`**: a `<version>` element — update it directly
@@ -43,7 +43,7 @@ Run the build and test suite in order:
 
 1. `mvn clean install -DskipITs`
    - This compiles all modules, runs checkstyle, and runs unit tests
-   - Integration tests (`*IT.java`) are excluded — they require live XRPL Testnet access
+   - Integration tests (`*IT.java`) are excluded — they require a local rippled Docker container
 2. If step 1 fails, **attempt to fix the breaking change with code modifications before rolling back**. Common patterns for Java/Maven:
    - **Removed or renamed API** (e.g., a method removed in a major version): update call sites to use the new API
    - **Changed constructor or builder pattern**: adapt usage to the new API

@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -61,6 +62,8 @@ public class PermissionedDomainIT extends AbstractIT {
   private static final CredentialType[] GOOD_CREDENTIALS_TYPES =
     {CredentialType.ofPlainText("driver licence"), CredentialType.ofPlainText("voting card")};
 
+  @DisabledIf(value = "shouldNotRunPermissionedDomain",
+    disabledReason = "PermissionedDomain requires a feature only available on the develop rippled image.")
   @Test
   public void testPermissionedDomainCreateUpdateAndDelete()
     throws JsonRpcClientErrorException, JsonProcessingException {
@@ -348,5 +351,11 @@ public class PermissionedDomainIT extends AbstractIT {
       )
     )).isInstanceOf(JsonRpcClientErrorException.class)
       .hasMessage("entryNotFound (Entry not found.)");
+  }
+
+  static boolean shouldNotRunPermissionedDomain() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null ||
+      System.getProperty("useDevnet") != null;
   }
 }

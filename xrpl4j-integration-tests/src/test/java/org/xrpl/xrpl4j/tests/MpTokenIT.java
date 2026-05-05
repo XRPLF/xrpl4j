@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -381,6 +382,8 @@ public class MpTokenIT extends AbstractIT {
       .hasMessageContaining("entryNotFound");
   }
 
+  @DisabledIf(value = "shouldNotRunPermissionedDomain",
+    disabledReason = "PermissionedDomain requires a feature only available on the develop rippled image.")
   @Test
   void mptIssuanceWithPermissionedDomainSuccessAndFailure()
     throws JsonRpcClientErrorException, JsonProcessingException {
@@ -598,6 +601,12 @@ public class MpTokenIT extends AbstractIT {
     );
     SubmitResult<Payment> mintToUnauthorizedHolderSubmitResult = xrplClient.submit(signedMintToUnauthorizedHolder);
     assertThat(mintToUnauthorizedHolderSubmitResult.engineResult()).isEqualTo("tecNO_AUTH");
+  }
+
+  static boolean shouldNotRunPermissionedDomain() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null ||
+      System.getProperty("useDevnet") != null;
   }
 }
 

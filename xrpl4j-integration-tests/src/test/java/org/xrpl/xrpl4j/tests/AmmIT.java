@@ -8,6 +8,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
@@ -1054,6 +1055,8 @@ public class AmmIT extends AbstractIT {
    * Creates an MPT issuance, authorizes a holder, mints tokens to the holder, then creates an AMM with
    * MPT/XRP as the asset pair. Verifies the AMM via {@code ammInfo} RPC and {@link AmmLedgerEntryParams}.
    */
+  @DisabledIf(value = "shouldNotRunMptAmm",
+    disabledReason = "MPT AMM requires MPTokensV2 which is only available on the develop rippled image.")
   @Test
   void mptAmmCreateAndVerifyWithAmmInfoAndLedgerEntry() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
@@ -1189,6 +1192,8 @@ public class AmmIT extends AbstractIT {
    * {@link AmmDeposit} with MPT amounts, and withdraw XRP from the pool using {@link AmmWithdraw}.
    * Verifies the AMM state after deposit and withdrawal via {@code ammInfo}.
    */
+  @DisabledIf(value = "shouldNotRunMptAmm",
+    disabledReason = "MPT AMM requires MPTokensV2 which is only available on the develop rippled image.")
   @Test
   void mptAmmDepositAndWithdraw() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
@@ -1439,6 +1444,8 @@ public class AmmIT extends AbstractIT {
    * Tests AMM clawback with MPT/XRP pool.
    * Creates an MPT/XRP AMM, trader deposits MPT, then issuer claws back MPT from the AMM.
    */
+  @DisabledIf(value = "shouldNotRunMptAmm",
+    disabledReason = "MPT AMM requires MPTokensV2 which is only available on the develop rippled image.")
   @Test
   void mptAmmClawback() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
@@ -1701,6 +1708,8 @@ public class AmmIT extends AbstractIT {
    * Tests AMM ledger entry and ammInfo with MPT/MPT asset pair (two different MPTs).
    * Creates two MPT issuances, creates an AMM with MPT1/MPT2, then verifies via ledgerEntry and ammInfo.
    */
+  @DisabledIf(value = "shouldNotRunMptAmm",
+    disabledReason = "MPT AMM requires MPTokensV2 which is only available on the develop rippled image.")
   @Test
   void mptAmmLedgerEntryWithTwoMpts() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuer1KeyPair = createRandomAccountEd25519();
@@ -1965,6 +1974,8 @@ public class AmmIT extends AbstractIT {
    * Creates an MPT issuance and an IOU trust line, creates an AMM with MPT/IOU,
    * then verifies via ammInfo and ledgerEntry.
    */
+  @DisabledIf(value = "shouldNotRunMptAmm",
+    disabledReason = "MPT AMM requires MPTokensV2 which is only available on the develop rippled image.")
   @Test
   void mptAmmInfoAndLedgerEntryWithMptAndIou() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair mptIssuerKeyPair = createRandomAccountEd25519();
@@ -2217,5 +2228,11 @@ public class AmmIT extends AbstractIT {
       () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
       info -> info.accountData().flags().lsfDefaultRipple()
     );
+  }
+
+  static boolean shouldNotRunMptAmm() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null ||
+      System.getProperty("useDevnet") != null;
   }
 }

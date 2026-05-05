@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -59,6 +60,8 @@ public class PathFindIT extends AbstractIT {
    * Since MPT pathfinding may return empty alternatives when no liquidity exists, the test focuses on
    * verifying that the RPC call succeeds and then validates MPT payment functionality directly.</p>
    */
+  @DisabledIf(value = "shouldNotRunMptDex",
+    disabledReason = "MPT DEX requires MPTokensV2 which is only available on the develop rippled image.")
   @Test
   void ripplePathFindWithMptDestination() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
@@ -190,6 +193,8 @@ public class PathFindIT extends AbstractIT {
    * Creates an MPT/XRP offer on the DEX so that a 3rd-party source (XRP) can reach a
    * holder's MPT destination via an indirect path, then asserts alternatives is non-empty.
    */
+  @DisabledIf(value = "shouldNotRunMptDex",
+    disabledReason = "MPT DEX requires MPTokensV2 which is only available on the develop rippled image.")
   @Test
   void ripplePathFindAlternativesNonEmptyWithDexLiquidity()
     throws JsonRpcClientErrorException, JsonProcessingException {
@@ -286,5 +291,11 @@ public class PathFindIT extends AbstractIT {
 
     logger.info("ripple_path_find returned {} alternative(s) with DEX liquidity",
       pathFindResult.alternatives().size());
+  }
+
+  static boolean shouldNotRunMptDex() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null ||
+      System.getProperty("useDevnet") != null;
   }
 }

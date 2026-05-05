@@ -65,7 +65,7 @@ public interface XrplEnvironment {
       logger.info("System property 'useDevnet' detected; Using Devnet for integration testing.");
       return new DevnetEnvironment();
     } else if (isDevelopEnabled) {
-      logger.info("System property 'useDevelop' detected; Using local rippleci/xrpld:develop " +
+      logger.info("System property 'useDevelop' detected; Using local rippleci/rippled:develop " +
         "Docker for integration testing.");
       return new LocalRippledEnvironment();
     } else {

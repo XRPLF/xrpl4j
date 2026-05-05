@@ -29,6 +29,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -867,6 +868,8 @@ public class OfferIT extends AbstractIT {
    *
    * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
    */
+  @DisabledIf(value = "shouldNotRunMptDex",
+    disabledReason = "MPT DEX requires MPTokensV2 which is only available on the develop rippled image.")
   @Test
   public void mptOfferCreateAndVerifyWithBookOffers() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
@@ -987,6 +990,8 @@ public class OfferIT extends AbstractIT {
    *
    * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
    */
+  @DisabledIf(value = "shouldNotRunMptDex",
+    disabledReason = "MPT DEX requires MPTokensV2 which is only available on the develop rippled image.")
   @Test
   public void mptOfferCrossing() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
@@ -1180,6 +1185,8 @@ public class OfferIT extends AbstractIT {
    *
    * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
    */
+  @DisabledIf(value = "shouldNotRunMptDex",
+    disabledReason = "MPT DEX requires MPTokensV2 which is only available on the develop rippled image.")
   @Test
   public void mptOfferCreateWithIouAndVerifyWithBookOffers()
     throws JsonRpcClientErrorException, JsonProcessingException {
@@ -1441,5 +1448,11 @@ public class OfferIT extends AbstractIT {
     assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), OfferObject.class));
     assertEmptyResults(
       () -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), RippleStateObject.class));
+  }
+
+  static boolean shouldNotRunMptDex() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null ||
+      System.getProperty("useDevnet") != null;
   }
 }

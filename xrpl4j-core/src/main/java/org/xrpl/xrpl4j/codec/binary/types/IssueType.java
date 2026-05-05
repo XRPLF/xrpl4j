@@ -23,7 +23,7 @@ package org.xrpl.xrpl4j.codec.binary.types;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
@@ -60,12 +60,10 @@ public class IssueType extends SerializedType<IssueType> {
       throw new IllegalArgumentException("node is not an object");
     }
 
-    Issue issue = objectMapper.treeToValue(node, Issue.class);
-
-    if (issue.mptIssuanceId().isPresent()) {
+    if (node.has("mpt_issuance_id")) {
       // mpt_issuance_id (192-bit integer): sequence (4 bytes big-endian) || issuer (20 bytes) = 24 bytes
       // Binary encoded representation: issuer (20 bytes) || ACCOUNT_ONE (20 bytes) || sequence (4 bytes) = 44 bytes
-      String mptIssuanceId = issue.mptIssuanceId().get().asText();
+      String mptIssuanceId = node.get("mpt_issuance_id").asText();
 
       if (!MPT_ISSUANCE_ID_HEX_PATTERN.matcher(mptIssuanceId).matches()) {
         throw new IllegalArgumentException(
@@ -85,10 +83,10 @@ public class IssueType extends SerializedType<IssueType> {
       return new IssueType(byteArray);
     }
 
-    UnsignedByteArray byteArray = new CurrencyType().fromJson(issue.currency().get()).value();
-    issue.issuer().ifPresent(
-      issuer -> byteArray.append(new AccountIdType().fromJson(issuer).value())
-    );
+    UnsignedByteArray byteArray = new CurrencyType().fromJson(node.get("currency")).value();
+    if (node.has("issuer")) {
+      byteArray.append(new AccountIdType().fromJson(node.get("issuer")).value());
+    }
 
     return new IssueType(byteArray);
   }
@@ -144,9 +142,9 @@ public class IssueType extends SerializedType<IssueType> {
       UnsignedByteArray mptIssuanceId = UnsignedByteArray.of(sequenceForJson)
         .append(UnsignedByteArray.of(issuerAccount));
 
-      ImmutableIssue.Builder builder = Issue.builder();
-      builder.mptIssuanceId(objectMapper.valueToTree(mptIssuanceId.hexValue()));
-      return objectMapper.valueToTree(builder.build());
+      ObjectNode result = objectMapper.createObjectNode();
+      result.put("mpt_issuance_id", mptIssuanceId.hexValue());
+      return result;
     }
 
     // Handle XRP or IOU issue
@@ -156,9 +154,9 @@ public class IssueType extends SerializedType<IssueType> {
 
     // XRP
     if (currencyJson.asText().equals("XRP")) {
-      return objectMapper.valueToTree(
-        Issue.builder().currency(currencyJson).build()
-      );
+      ObjectNode result = objectMapper.createObjectNode();
+      result.set("currency", currencyJson);
+      return result;
     }
 
     AccountIdType accountId = new AccountIdType().fromParser(parser);
@@ -171,14 +169,15 @@ public class IssueType extends SerializedType<IssueType> {
 
       // Currency bytes hold the issuer when it's an MPT
       String mptIssuanceIdHex = sequenceBE.append(currency.value()).hexValue();
-      return objectMapper.valueToTree(
-        Issue.builder().mptIssuanceId(new TextNode(mptIssuanceIdHex)).build()
-      );
+      ObjectNode result = objectMapper.createObjectNode();
+      result.put("mpt_issuance_id", mptIssuanceIdHex);
+      return result;
     }
 
     // IOU
-    return objectMapper.valueToTree(
-      Issue.builder().currency(currencyJson).issuer(accountId.toJson()).build()
-    );
+    ObjectNode result = objectMapper.createObjectNode();
+    result.set("currency", currencyJson);
+    result.set("issuer", accountId.toJson());
+    return result;
   }
 }

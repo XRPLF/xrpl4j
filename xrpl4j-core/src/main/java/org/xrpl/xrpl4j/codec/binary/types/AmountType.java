@@ -32,6 +32,8 @@ import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.math.MathUtils;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
+import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 
@@ -185,8 +187,7 @@ class AmountType extends SerializedType<AmountType> {
       return new AmountType(UnsignedByteArray.of(rawBytes));
     } else if (!value.has("mpt_issuance_id")) {
       // IOU Amount
-      Amount amount = objectMapper.treeToValue(value, Amount.class);
-      BigDecimal number = new BigDecimal(amount.value());
+      BigDecimal number = new BigDecimal(value.get("value").asText());
 
       UnsignedByteArray result = number.unscaledValue().equals(BigInteger.ZERO) ?
         UnsignedByteArray.fromHex(ZERO_CURRENCY_AMOUNT_HEX) :
@@ -294,9 +295,9 @@ class AmountType extends SerializedType<AmountType> {
 
       assertIouIsValid(value);
 
-      Amount amount = Amount.builder()
+      IssuedCurrencyAmount amount = IssuedCurrencyAmount.builder()
         .currency(currency.toJson().asText())
-        .issuer(issuer.toJson().asText())
+        .issuer(Address.of(issuer.toJson().asText()))
         .value(value.toPlainString())
         .build();
 

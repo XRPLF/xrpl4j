@@ -76,12 +76,16 @@ public abstract class SerializedType<T extends SerializedType<T>> {
    *
    * @return A {@link SerializedType} for the supplied {@code name}.
    */
-  public static SerializedType<?> getTypeByName(String name) {
-    try {
-      return typeMap.get(name).get();
-    } catch (NullPointerException e) {
-      throw e;
+  public static SerializedType<?> getTypeByName(final String name) {
+    Objects.requireNonNull(name);
+
+    if (!typeMap.containsKey(name)) {
+      throw new IllegalArgumentException(
+        String.format("Unknown serialized type '%s'. This likely means xrpl4j is out of date and does not yet " +
+          "support a new field type introduced by a rippled amendment.", name)
+      );
     }
+    return typeMap.get(name).get();
   }
 
   /**

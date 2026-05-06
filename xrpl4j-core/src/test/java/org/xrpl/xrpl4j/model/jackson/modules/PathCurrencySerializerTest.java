@@ -33,7 +33,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.client.path.PathCurrency;
+import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
+import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
@@ -127,6 +129,63 @@ class PathCurrencySerializerTest {
     assertThat(exception.getMessage()).isEqualTo("Error serializing MptIssue");
     assertThat(exception.getCause()).isInstanceOf(IOException.class);
     assertThat(exception.getCause().getMessage()).isEqualTo("Test MPT IOException");
+  }
+
+  @Test
+  void testSerializeCurrencyIssueWithIssuer() throws IOException {
+    JsonGenerator jsonGeneratorMock = mock(JsonGenerator.class);
+    Address issuer = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
+    CurrencyIssue currencyIssue = CurrencyIssue.builder()
+      .currency("USD")
+      .issuer(issuer)
+      .build();
+    PathCurrency pathCurrency = PathCurrency.builder().issue(currencyIssue).build();
+
+    serializer.serialize(pathCurrency, jsonGeneratorMock, mock(SerializerProvider.class));
+
+    verify(jsonGeneratorMock).writeStartObject();
+    verify(jsonGeneratorMock).writeStringField("currency", "USD");
+    verify(jsonGeneratorMock).writeStringField("issuer", issuer.value());
+    verify(jsonGeneratorMock).writeEndObject();
+  }
+
+  @Test
+  void testSerializeCurrencyIssueIssuerThrowsIoException() throws IOException {
+    JsonGenerator jsonGeneratorMock = mock(JsonGenerator.class);
+    Address issuer = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
+    CurrencyIssue currencyIssue = CurrencyIssue.builder()
+      .currency("USD")
+      .issuer(issuer)
+      .build();
+    PathCurrency pathCurrency = PathCurrency.builder().issue(currencyIssue).build();
+
+    doThrow(new IOException("Test IOException")).when(jsonGeneratorMock)
+      .writeStringField("issuer", issuer.value());
+
+    RuntimeException exception = assertThrows(
+      RuntimeException.class,
+      () -> serializer.serialize(pathCurrency, jsonGeneratorMock, mock(SerializerProvider.class))
+    );
+
+    assertThat(exception.getMessage()).isEqualTo("Error serializing CurrencyIssue");
+    assertThat(exception.getCause()).isInstanceOf(IOException.class);
+  }
+
+  @Test
+  void testSerializeXrpIssueThrowsIoException() throws IOException {
+    JsonGenerator jsonGeneratorMock = mock(JsonGenerator.class);
+    PathCurrency pathCurrency = PathCurrency.of(XrpIssue.of());
+
+    doThrow(new IOException("Test IOException")).when(jsonGeneratorMock)
+      .writeStringField("currency", "XRP");
+
+    RuntimeException exception = assertThrows(
+      RuntimeException.class,
+      () -> serializer.serialize(pathCurrency, jsonGeneratorMock, mock(SerializerProvider.class))
+    );
+
+    assertThat(exception.getMessage()).isEqualTo("Error serializing XrpIssue");
+    assertThat(exception.getCause()).isInstanceOf(IOException.class);
   }
 }
 

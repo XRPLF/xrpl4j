@@ -264,5 +264,21 @@ class HopTypeTest {
     assertThatThrownBy(() -> new HopType().fromParser(parser))
       .isInstanceOf(StringIndexOutOfBoundsException.class);
   }
+
+  @Test
+  void testToJsonWithAccount() throws JsonProcessingException {
+    String account = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh";
+    ObjectNode json = objectMapper.createObjectNode();
+    json.put("account", account);
+
+    HopType hopType = new HopType().fromJson(json);
+    Hop hop = objectMapper.treeToValue(hopType.toJson(), Hop.class);
+
+    assertThat(hop.account()).isPresent();
+    assertThat(hop.account().get().asText()).isEqualTo(account);
+    assertThat(hop.currency()).isEmpty();
+    assertThat(hop.mptIssuanceId()).isEmpty();
+    assertThat(hop.issuer()).isEmpty();
+  }
 }
 

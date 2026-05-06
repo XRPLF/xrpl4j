@@ -21,12 +21,14 @@ package org.xrpl.xrpl4j.model.client.path;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -44,6 +46,19 @@ public class PathCurrencyTest extends AbstractJsonTest {
     assertThat(pathCurrency.issue()).isInstanceOf(XrpIssue.class);
     XrpIssue xrpIssue = (XrpIssue) pathCurrency.issue();
     assertThat(xrpIssue.currency()).isEqualTo("XRP");
+  }
+
+  @Test
+  public void ofCurrencyOnlyNonXrpThrows() {
+    assertThatThrownBy(() -> PathCurrency.of("USD"))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("only supports 'XRP'");
+  }
+
+  @Test
+  public void ofIssueNullThrows() {
+    assertThatThrownBy(() -> PathCurrency.of((Issue) null))
+      .isInstanceOf(NullPointerException.class);
   }
 
   @Test

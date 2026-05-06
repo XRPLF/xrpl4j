@@ -41,6 +41,15 @@ public interface MetaMpTokenIssuanceObject extends MetaLedgerObject {
   Optional<String> mpTokenMetadata();
 
   /**
+   * The {@link Hash256} of a
+   * {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} that restricts who can hold this MPT.
+   *
+   * @return An optionally present {@link Hash256} representing the domain ID.
+   */
+  @JsonProperty("DomainID")
+  Optional<Hash256> domainId();
+
+  /**
    * The identifying hash of the transaction that most recently modified this object.
    *
    * @return A {@link Hash256} containing the previous transaction hash.

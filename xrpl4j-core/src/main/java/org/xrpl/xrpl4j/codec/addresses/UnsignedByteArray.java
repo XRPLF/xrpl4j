@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.codec.addresses;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.annotations.Beta;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -214,6 +216,19 @@ public class UnsignedByteArray implements Destroyable {
    */
   public UnsignedByteArray slice(int startIndex, int endIndex) {
     return new UnsignedByteArray(unsignedBytes.subList(startIndex, endIndex));
+  }
+
+  /**
+   * Returns a new {@link UnsignedByteArray} with the bytes in reversed order.
+   * This is useful for converting between big-endian and little-endian byte order.
+   *
+   * @return A new {@link UnsignedByteArray} with bytes in reversed order.
+   */
+  @Beta
+  public UnsignedByteArray reverse() {
+    List<UnsignedByte> reversed = new ArrayList<>(unsignedBytes);
+    Collections.reverse(reversed);
+    return new UnsignedByteArray(reversed);
   }
 
   @Override

@@ -162,6 +162,10 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
      */
     STATE("state"),
     /**
+     * Vault account object type.
+     */
+    VAULT("vault"),
+    /**
      * MPToken Issuance object type.
      */
     MPT_ISSUANCE("mpt_issuance"),

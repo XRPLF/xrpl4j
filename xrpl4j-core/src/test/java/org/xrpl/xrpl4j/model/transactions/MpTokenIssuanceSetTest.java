@@ -22,6 +22,7 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
       )
+      .domainId(Hash256.of("FEDCBA0987654321FEDCBA0987654321FEDCBA0987654321FEDCBA0987654321"))
       .build();
 
     String json =
@@ -31,7 +32,8 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
       "  \"Fee\" : \"15\",\n" +
       "  \"Sequence\" : 335,\n" +
       "  \"SigningPubKey\" : \"ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148\",\n" +
-      "  \"MPTokenIssuanceID\" : \"0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4\"\n" +
+      "  \"MPTokenIssuanceID\" : \"0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4\",\n" +
+      "  \"DomainID\" : \"FEDCBA0987654321FEDCBA0987654321FEDCBA0987654321FEDCBA0987654321\"\n" +
       "}";
 
     assertCanSerializeAndDeserialize(issuanceSet, json);

@@ -33,6 +33,7 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       .transferFee(TransferFee.of(UnsignedInteger.valueOf(10)))
       .maximumAmount(MpTokenNumericAmount.of(Long.MAX_VALUE))
       .mpTokenMetadata(MpTokenMetadata.of("ABCD"))
+      .domainId(Hash256.of("1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF"))
       .build();
     String json =
       "{\n" +
@@ -45,7 +46,8 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       "  \"AssetScale\" : 2,\n" +
       "  \"TransferFee\" : 10,\n" +
       "  \"MaximumAmount\" : \"9223372036854775807\",\n" +
-      "  \"MPTokenMetadata\" : \"ABCD\"\n" +
+      "  \"MPTokenMetadata\" : \"ABCD\",\n" +
+      "  \"DomainID\" : \"1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF\"\n" +
       "}";
 
     assertCanSerializeAndDeserialize(issuanceCreate, json);

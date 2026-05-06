@@ -310,6 +310,134 @@ class CurrencyAmountTest extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(currencyAmountWrapper, json, CurrencyAmountWrapper.class);
   }
 
+  // -------------------------
+  // toAmount()
+  // -------------------------
+
+  @Test
+  void toAmountFromPositiveXrp() {
+    XrpCurrencyAmount xrp = XrpCurrencyAmount.ofDrops(1_000_000L);
+    Amount amount = xrp.toAmount();
+    assertThat(amount.value()).isEqualTo("1000000");
+    assertThat(amount.isNegative()).isFalse();
+  }
+
+  @Test
+  void toAmountFromZeroXrp() {
+    XrpCurrencyAmount xrp = XrpCurrencyAmount.ofDrops(0L);
+    Amount amount = xrp.toAmount();
+    assertThat(amount.value()).isEqualTo("0");
+    assertThat(amount.isNegative()).isFalse();
+  }
+
+  @Test
+  void toAmountFromNegativeXrp() {
+    XrpCurrencyAmount xrp = XrpCurrencyAmount.ofDrops(-1_000_000L);
+    Amount amount = xrp.toAmount();
+    assertThat(amount.value()).isEqualTo("-1000000");
+    assertThat(amount.isNegative()).isTrue();
+  }
+
+  @Test
+  void toAmountFromPositiveIssuedCurrency() {
+    IssuedCurrencyAmount iou = IssuedCurrencyAmount.builder()
+      .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .currency("USD")
+      .value("100")
+      .build();
+    Amount amount = iou.toAmount();
+    assertThat(amount.value()).isEqualTo("100");
+    assertThat(amount.isNegative()).isFalse();
+  }
+
+  @Test
+  void toAmountFromNegativeIssuedCurrency() {
+    IssuedCurrencyAmount iou = IssuedCurrencyAmount.builder()
+      .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .currency("USD")
+      .value("-100")
+      .build();
+    Amount amount = iou.toAmount();
+    assertThat(amount.value()).isEqualTo("-100");
+    assertThat(amount.isNegative()).isTrue();
+  }
+
+  @Test
+  void toAmountFromIssuedCurrencyWithScientificNotation() {
+    IssuedCurrencyAmount iou = IssuedCurrencyAmount.builder()
+      .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .currency("USD")
+      .value("1.23e11")
+      .build();
+    Amount amount = iou.toAmount();
+    assertThat(amount.value()).isEqualTo("1.23e11");
+    assertThat(amount.isNegative()).isFalse();
+  }
+
+  @Test
+  void toAmountFromPositiveMptCurrencyAmount() {
+    MptCurrencyAmount mpt = MptCurrencyAmount.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
+      .value("500")
+      .build();
+    Amount amount = mpt.toAmount();
+    assertThat(amount.value()).isEqualTo("500");
+    assertThat(amount.isNegative()).isFalse();
+  }
+
+  @Test
+  void toAmountFromNegativeMptCurrencyAmount() {
+    MptCurrencyAmount mpt = MptCurrencyAmount.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
+      .value("-500")
+      .build();
+    Amount amount = mpt.toAmount();
+    assertThat(amount.value()).isEqualTo("-500");
+    assertThat(amount.isNegative()).isTrue();
+  }
+
+  @Test
+  void toAmountRoundtripsBackToXrp() {
+    XrpCurrencyAmount original = XrpCurrencyAmount.ofDrops(1_000_000L);
+    Amount amount = original.toAmount();
+    CurrencyAmount roundtripped = amount.toCurrencyAmount(
+      org.xrpl.xrpl4j.model.ledger.Issue.XRP
+    );
+    assertThat(roundtripped).isEqualTo(original);
+  }
+
+  @Test
+  void toAmountRoundtripsBackToIssuedCurrency() {
+    IssuedCurrencyAmount original = IssuedCurrencyAmount.builder()
+      .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .currency("USD")
+      .value("42")
+      .build();
+    Amount amount = original.toAmount();
+    org.xrpl.xrpl4j.model.ledger.IouIssue iouIssue =
+      org.xrpl.xrpl4j.model.ledger.IouIssue.builder()
+        .currency("USD")
+        .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+        .build();
+    CurrencyAmount roundtripped = amount.toCurrencyAmount(iouIssue);
+    assertThat(roundtripped).isEqualTo(original);
+  }
+
+  @Test
+  void toAmountRoundtripsBackToMptCurrencyAmount() {
+    MptCurrencyAmount original = MptCurrencyAmount.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
+      .value("999")
+      .build();
+    Amount amount = original.toAmount();
+    org.xrpl.xrpl4j.model.ledger.MptIssue mptIssue =
+      org.xrpl.xrpl4j.model.ledger.MptIssue.builder()
+        .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
+        .build();
+    CurrencyAmount roundtripped = amount.toCurrencyAmount(mptIssue);
+    assertThat(roundtripped).isEqualTo(original);
+  }
+
   // write a wrapper interface that wraps a CurrencyAmount using Value.Immutable
   // write a wrapper class that implements CurrencyAmount using Value.Immutable
   @Value.Immutable

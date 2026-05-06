@@ -26,6 +26,8 @@ import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.LoanBrokerObject;
+import org.xrpl.xrpl4j.model.ledger.LoanObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
@@ -871,6 +873,62 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
 
     String json = "{" +
       "  \"vault\" : " + objectMapper.writeValueAsString(vaultParams) + "," +
+      "  \"binary\": false," +
+      "  \"ledger_index\": \"validated\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  void testLoanBrokerParams() throws JSONException, JsonProcessingException {
+    LoanBrokerLedgerEntryParams loanBrokerParams = LoanBrokerLedgerEntryParams.builder()
+      .owner(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMgk5j"))
+      .seq(UnsignedInteger.valueOf(5))
+      .build();
+    LedgerEntryRequestParams<LoanBrokerObject> params = LedgerEntryRequestParams.loanBroker(
+      loanBrokerParams,
+      LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.ledgerObjectClass()).isEqualTo(LoanBrokerObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.vault()).isEmpty();
+    assertThat(params.loan()).isEmpty();
+    assertThat(params.loanBroker()).isNotEmpty().get().isEqualTo(loanBrokerParams);
+
+    String json = "{" +
+      "  \"loan_broker\" : " + objectMapper.writeValueAsString(loanBrokerParams) + "," +
+      "  \"binary\": false," +
+      "  \"ledger_index\": \"validated\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  void testLoanParams() throws JSONException, JsonProcessingException {
+    LoanLedgerEntryParams loanParams = LoanLedgerEntryParams.builder()
+      .loanBrokerId(HASH_256)
+      .loanSeq(UnsignedInteger.valueOf(3))
+      .build();
+    LedgerEntryRequestParams<LoanObject> params = LedgerEntryRequestParams.loan(
+      loanParams,
+      LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.ledgerObjectClass()).isEqualTo(LoanObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.vault()).isEmpty();
+    assertThat(params.loanBroker()).isEmpty();
+    assertThat(params.loan()).isNotEmpty().get().isEqualTo(loanParams);
+
+    String json = "{" +
+      "  \"loan\" : " + objectMapper.writeValueAsString(loanParams) + "," +
       "  \"binary\": false," +
       "  \"ledger_index\": \"validated\"" +
       "}";

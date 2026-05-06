@@ -30,6 +30,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
@@ -164,6 +165,34 @@ public class SignatureUtils {
     Objects.requireNonNull(batch);
     try {
       return binaryCodec.encodeForBatchInnerSigning(batch);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Helper method to convert a {@link LoanSet} transaction into bytes that can be multi-signed by a counterparty
+   * signer.
+   *
+   * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   *
+   * @param transaction   A {@link LoanSet} to be counterparty multi-signed.
+   * @param signerAddress The {@link Address} of the counterparty signer.
+   *
+   * @return An {@link UnsignedByteArray}.
+   */
+  @Beta
+  public UnsignedByteArray toCounterpartyMultiSignableBytes(final LoanSet transaction, final Address signerAddress) {
+    Objects.requireNonNull(transaction);
+    Objects.requireNonNull(signerAddress);
+
+    try {
+      final String unsignedJson = objectMapper.writeValueAsString(transaction);
+      final String unsignedBinaryHex = binaryCodec.encodeForMultiSigningWithSigningPubKey(
+        unsignedJson, signerAddress.value()
+      );
+      return UnsignedByteArray.fromHex(unsignedBinaryHex);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e.getMessage(), e);
     }

@@ -18,6 +18,8 @@ import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.DidObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.LoanBrokerObject;
+import org.xrpl.xrpl4j.model.ledger.LoanObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
@@ -471,6 +473,43 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   }
 
   /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link LoanBrokerObject} ledger entry.
+   *
+   * @param params          The {@link LoanBrokerLedgerEntryParams} that uniquely identify the
+   *                        {@link LoanBrokerObject} on ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link LoanBrokerObject}.
+   */
+  static LedgerEntryRequestParams<LoanBrokerObject> loanBroker(
+    LoanBrokerLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<LoanBrokerObject>builder()
+      .loanBroker(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link LoanObject} ledger entry.
+   *
+   * @param params          The {@link LoanLedgerEntryParams} that uniquely identify the {@link LoanObject} on ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link LoanObject}.
+   */
+  static LedgerEntryRequestParams<LoanObject> loan(
+    LoanLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<LoanObject>builder()
+      .loan(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
    * or a shortcut value.
    *
@@ -643,6 +682,21 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<VaultLedgerEntryParams> vault();
 
   /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.LoanBrokerObject} by {@link LoanBrokerLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link LoanBrokerLedgerEntryParams}.
+   */
+  @JsonProperty("loan_broker")
+  Optional<LoanBrokerLedgerEntryParams> loanBroker();
+
+  /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.LoanObject} by {@link LoanLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link LoanLedgerEntryParams}.
+   */
+  Optional<LoanLedgerEntryParams> loan();
+
+  /**
    * The {@link Class} of {@link T}. This field is helpful when telling Jackson how to deserialize rippled's response to
    * a {@link T}.
    *
@@ -721,6 +775,14 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (vault().isPresent()) {
       return (Class<T>) VaultObject.class;
+    }
+
+    if (loanBroker().isPresent()) {
+      return (Class<T>) LoanBrokerObject.class;
+    }
+
+    if (loan().isPresent()) {
+      return (Class<T>) LoanObject.class;
     }
 
     return (Class<T>) LedgerObject.class;

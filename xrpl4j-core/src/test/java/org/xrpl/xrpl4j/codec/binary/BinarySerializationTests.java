@@ -51,6 +51,7 @@ import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
@@ -78,20 +79,9 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.ImmutableAmmBid;
-import org.xrpl.xrpl4j.model.transactions.ImmutableAmmCreate;
-import org.xrpl.xrpl4j.model.transactions.ImmutableAmmDelete;
-import org.xrpl.xrpl4j.model.transactions.ImmutableAmmDeposit;
-import org.xrpl.xrpl4j.model.transactions.ImmutableDidDelete;
-import org.xrpl.xrpl4j.model.transactions.ImmutableDidSet;
-import org.xrpl.xrpl4j.model.transactions.ImmutableOracleDelete;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAccountCreateCommit;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateBridge;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateClaimId;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainModifyBridge;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
@@ -2534,6 +2524,71 @@ public class BinarySerializationTests {
       "0000000000000F78AD4FDA66653106AE45EE5FE683C457E6BA9C5";
 
     assertSerializesAndDeserializes(ammVote, expectedBinary);
+  }
+
+  @Test
+  void serializeAmmCreateWithMptAsset() throws JsonProcessingException {
+    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+
+    AmmCreate ammCreate = AmmCreate.builder()
+      .account(Address.of("rpgAg9CgNV9MYUECHTx26h1PEARhreuap7"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
+      )
+      .amount(XrpCurrencyAmount.ofDrops(1000000))
+      .amount2(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptId)
+          .value("200")
+          .build()
+      )
+      .tradingFee(TradingFee.of(UnsignedInteger.ONE))
+      .build();
+
+    // Verify it serializes and deserializes correctly
+    String transactionJson = objectMapper.writeValueAsString(ammCreate);
+    String transactionBinary = binaryCodec.encode(transactionJson);
+    assertThat(transactionBinary).isNotEmpty();
+
+    // Verify deserialization
+    String decodedJson = binaryCodec.decode(transactionBinary);
+    AmmCreate decoded = objectMapper.readValue(decodedJson, AmmCreate.class);
+    assertThat(decoded).isEqualTo(ammCreate);
+  }
+
+  @Test
+  void serializeAmmDepositWithMptAsset() throws JsonProcessingException {
+    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+
+    AmmDeposit ammDeposit = AmmDeposit.builder()
+      .account(Address.of("rpgAg9CgNV9MYUECHTx26h1PEARhreuap7"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
+      )
+      .flags(AmmDepositFlags.SINGLE_ASSET)
+      .asset(MptIssue.of(mptId))
+      .asset2(Issue.XRP)
+      .amount(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptId)
+          .value("200")
+          .build()
+      )
+      .build();
+
+    // Verify it serializes and deserializes correctly
+    String transactionJson = objectMapper.writeValueAsString(ammDeposit);
+    String transactionBinary = binaryCodec.encode(transactionJson);
+    assertThat(transactionBinary).isNotEmpty();
+
+    // Verify deserialization
+    String decodedJson = binaryCodec.decode(transactionBinary);
+    AmmDeposit decoded = objectMapper.readValue(decodedJson, AmmDeposit.class);
+    assertThat(decoded).isEqualTo(ammDeposit);
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

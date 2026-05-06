@@ -31,6 +31,8 @@ public interface MptCurrencyAmount extends CurrencyAmount {
    * Construct a {@code MptCurrencyAmount} builder, setting {@link #value()} to the string representation of the
    * supplied {@link UnsignedLong}.
    *
+   * @param value The {@link UnsignedLong} value to set.
+   *
    * @return An {@link ImmutableMptCurrencyAmount.Builder}.
    */
   static ImmutableMptCurrencyAmount.Builder builder(UnsignedLong value) {

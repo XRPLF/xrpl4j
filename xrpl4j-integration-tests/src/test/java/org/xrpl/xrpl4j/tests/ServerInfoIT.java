@@ -25,6 +25,7 @@ import static org.assertj.core.api.Fail.fail;
 import com.google.common.primitives.UnsignedInteger;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
@@ -43,6 +44,10 @@ public class ServerInfoIT {
    * @throws InterruptedException        If {@link Thread} is interrupted.
    * @see "https://xrpl.org/docs/tutorials/public-servers/#mainnet"
    */
+  @DisabledIf(
+    value = "shouldSkipPublicServerTests",
+    disabledReason = "Skipped when using local rippled develop container"
+  )
   @Test
   public void testServerInfoAcrossAllTypes() throws JsonRpcClientErrorException, InterruptedException {
 
@@ -103,6 +108,10 @@ public class ServerInfoIT {
 
   private XrplClient getXrplClient(HttpUrl serverUrl) {
     return new XrplClient(serverUrl);
+  }
+
+  static boolean shouldSkipPublicServerTests() {
+    return System.getProperty("useDevelop") != null;
   }
 
   private void assertValidNetworkId(ServerInfo serverInfo) {

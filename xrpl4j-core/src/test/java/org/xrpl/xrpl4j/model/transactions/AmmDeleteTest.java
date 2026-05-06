@@ -11,6 +11,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.MptIssue;
 
 class AmmDeleteTest extends AbstractJsonTest {
 
@@ -133,5 +134,37 @@ class AmmDeleteTest extends AbstractJsonTest {
 
     assertThat(copied.flags()).isEqualTo(original.flags());
     assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
+
+  @Test
+  void testJsonWithMptAssets() throws JSONException, JsonProcessingException {
+    MpTokenIssuanceId mptIssuanceId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+
+    AmmDelete ammDelete = AmmDelete.builder()
+      .asset(MptIssue.of(mptIssuanceId))
+      .asset2(Issue.XRP)
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(9))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
+        "EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156"
+      ))
+      .build();
+
+    String json = "{\n" +
+      "    \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
+      "    \"Asset\" : {\n" +
+      "        \"mpt_issuance_id\" : \"00000002430427B80BD2D09D36B70B969E12801065F22308\"\n" +
+      "    },\n" +
+      "    \"Asset2\" : {\n" +
+      "        \"currency\" : \"XRP\"\n" +
+      "    },\n" +
+      "    \"Fee\" : \"10\",\n" +
+      "    \"Sequence\" : 9,\n" +
+      "    \"SigningPubKey\" : \"EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156\",\n" +
+      "    \"TransactionType\" : \"AMMDelete\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(ammDelete, json);
   }
 }

@@ -64,6 +64,7 @@ import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -104,6 +105,7 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
 import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
@@ -924,6 +926,37 @@ public class SignatureUtilsTest {
           .value("25").build()).amount2(XrpCurrencyAmount.ofDrops(250000000)).fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(6)).tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
       .signingPublicKey(sourcePublicKey).build();
+
+    addSignatureToTransactionHelper(ammCreate);
+  }
+
+  @Test
+  void addSignatureToAmmBidWithMptAsset() {
+    MptIssue mptIssue = MptIssue.of(MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308"));
+    AmmBid bid = AmmBid.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .asset(mptIssue)
+      .asset2(Issue.XRP)
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(9))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(bid);
+  }
+
+  @Test
+  void addSignatureToAmmCreateWithMptAmount() {
+    MptIssue mptIssue = MptIssue.of(MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308"));
+    AmmCreate ammCreate = AmmCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .amount(MptCurrencyAmount.builder().mptIssuanceId(mptIssue.mptIssuanceId()).value("500").build())
+      .amount2(XrpCurrencyAmount.ofDrops(250000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
+      .signingPublicKey(sourcePublicKey)
+      .build();
 
     addSignatureToTransactionHelper(ammCreate);
   }

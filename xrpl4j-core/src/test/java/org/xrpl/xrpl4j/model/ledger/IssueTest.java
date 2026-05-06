@@ -199,4 +199,88 @@ class IssueTest extends AbstractJsonTest {
       xrp.map($ -> "xrp", $ -> "iou", null)
     );
   }
+
+  @Test
+  void testMapWithIouIssue() {
+    IouIssue iouIssue = IouIssue.builder()
+      .currency("USD")
+      .issuer(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"))
+      .build();
+
+    String result = iouIssue.map(
+      xi -> "XrpIssue",
+      ii -> "IouIssue: " + ii.currency(),
+      mi -> "MptIssue: " + mi.mptIssuanceId()
+    );
+
+    assertThat(result).isEqualTo("IouIssue: USD");
+  }
+
+  @Test
+  void testMapWithMptIssue() {
+    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+    MptIssue mptIssue = MptIssue.of(mptId);
+
+    String result = mptIssue.map(
+      xi -> "XrpIssue",
+      ii -> "IouIssue: " + ii.currency(),
+      mi -> "MptIssue: " + mi.mptIssuanceId()
+    );
+
+    assertThat(result).isEqualTo("MptIssue: 00000002430427B80BD2D09D36B70B969E12801065F22308");
+  }
+
+  @Test
+  void testHandleWithIouIssue() {
+    IouIssue iouIssue = IouIssue.builder()
+      .currency("EUR")
+      .issuer(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"))
+      .build();
+
+    final StringBuilder result = new StringBuilder();
+    iouIssue.handle(
+      xi -> result.append("XRP"),
+      ii -> result.append("IOU: ").append(ii.currency()),
+      mi -> result.append("MPT: ").append(mi.mptIssuanceId())
+    );
+
+    assertThat(result.toString()).isEqualTo("IOU: EUR");
+  }
+
+  @Test
+  void testHandleWithMptIssue() {
+    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+    MptIssue mptIssue = MptIssue.of(mptId);
+
+    final StringBuilder result = new StringBuilder();
+    mptIssue.handle(
+      xi -> result.append("XRP"),
+      ii -> result.append("IOU: ").append(ii.currency()),
+      mi -> result.append("MPT: ").append(mi.mptIssuanceId())
+    );
+
+    assertThat(result.toString()).isEqualTo("MPT: 00000002430427B80BD2D09D36B70B969E12801065F22308");
+  }
+
+  @Test
+  void testDeserializeInvalidIssueThrowsException() {
+    String invalidJson = "{" +
+      "    \"invalid_field\": \"some_value\"" +
+      "}";
+
+    assertThrows(
+      Exception.class,
+      () -> objectMapper.readValue(invalidJson, Issue.class)
+    );
+  }
+
+  @Test
+  void testDeserializeEmptyJsonThrowsException() {
+    String emptyJson = "{}";
+
+    assertThrows(
+      Exception.class,
+      () -> objectMapper.readValue(emptyJson, Issue.class)
+    );
+  }
 }

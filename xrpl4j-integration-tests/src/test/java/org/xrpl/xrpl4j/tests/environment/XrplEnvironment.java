@@ -53,6 +53,7 @@ public interface XrplEnvironment {
     boolean isTestnetEnabled = System.getProperty("useTestnet") != null;
     boolean isDevnetEnabled = System.getProperty("useDevnet") != null;
     boolean isClioTestnetEnabled = System.getProperty("useClioTestnet") != null;
+    boolean isDevelopEnabled = System.getProperty("useDevelop") != null;
     if (isTestnetEnabled) {
       logger.info(
         "System property 'useTestnet' detected; Using Reporting mode only Testnet node for integration testing.");
@@ -63,8 +64,12 @@ public interface XrplEnvironment {
     } else if (isDevnetEnabled) {
       logger.info("System property 'useDevnet' detected; Using Devnet for integration testing.");
       return new DevnetEnvironment();
+    } else if (isDevelopEnabled) {
+      logger.info("System property 'useDevelop' detected; Using local rippleci/rippled:develop " +
+        "Docker for integration testing.");
+      return new LocalRippledEnvironment();
     } else {
-      logger.info("Neither 'useTestNet', 'useClioTestNet', nor 'useDevnet' System properties detected." +
+      logger.info("Neither 'useTestNet', 'useClioTestNet', 'useDevnet', nor 'useDevelop' System properties detected." +
         " Using local rippled for integration testing.");
       return new LocalRippledEnvironment();
     }

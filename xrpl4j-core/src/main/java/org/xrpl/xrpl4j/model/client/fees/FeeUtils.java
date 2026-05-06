@@ -124,9 +124,7 @@ public class FeeUtils {
    * Calculate a suggested fee to be used for submitting a transaction to the XRPL. The calculated value depends on the
    * current size of the job queue as compared to its total capacity.
    *
-   * @param feeResult        {@link FeeResult} object obtained by querying the ledger (e.g., via an
-   *                         `XrplClient#fee()` call).
-   * @param numBatchSigners  The number of signers in the batch transaction.
+   * @param feeResult {@link FeeResult} object obtained by querying the ledger (e.g., via an `XrplClient#fee()` call).
    *
    * @return {@link ComputedNetworkFees} with low, medium and high fee levels to choose from for the transaction.
    *

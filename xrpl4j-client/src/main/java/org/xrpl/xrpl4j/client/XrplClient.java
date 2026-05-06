@@ -727,7 +727,6 @@ public class XrplClient {
    * @param <T>    The type of {@link LedgerObject} that should be returned in rippled's response.
    *
    * @return A {@link LedgerEntryResult} of type {@link T}.
-   * @throws JsonRpcClientErrorException If the {@code ledger_entry} request fails.
    */
   public <T extends LedgerObject> LedgerEntryResult<T> ledgerEntry(
     LedgerEntryRequestParams<T> params

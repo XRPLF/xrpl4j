@@ -45,7 +45,13 @@ import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
 import java.math.BigDecimal;
 
+@DisabledIf(value = "shouldNotRun", disabledReason = "MpTokenIT only runs on local rippled node or devnet.")
 public class MpTokenIT extends AbstractIT {
+
+  static boolean shouldNotRun() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null;
+  }
 
   @Test
   void createIssuanceThenPayThenLockThenClawbackThenDestroy()

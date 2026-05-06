@@ -111,11 +111,7 @@ public class ServerInfoIT {
   }
 
   static boolean shouldSkipPublicServerTests() {
-    return System.getenv("CI") != null ||
-      System.getProperty("useDevelop") != null ||
-      System.getProperty("useTestnet") != null ||
-      System.getProperty("useClioTestnet") != null ||
-      System.getProperty("useDevnet") != null;
+    return System.getProperty("useDevelop") != null;
   }
 
   private void assertValidNetworkId(ServerInfo serverInfo) {

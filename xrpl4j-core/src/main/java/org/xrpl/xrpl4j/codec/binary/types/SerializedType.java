@@ -60,6 +60,7 @@ public abstract class SerializedType<T extends SerializedType<T>> {
       .put("UInt64", () -> new UInt64Type())
       .put("Vector256", () -> new Vector256Type())
       .put("Issue", () -> new IssueType())
+      .put("Number", () -> new NumberType())
       .put("XChainBridge", () -> new XChainBridgeType())
       .build();
   private final UnsignedByteArray bytes;

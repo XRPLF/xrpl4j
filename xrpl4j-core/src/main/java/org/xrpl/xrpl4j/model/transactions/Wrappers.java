@@ -73,6 +73,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.VaultDataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.VaultDataSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XChainClaimIdDeserializer;
@@ -885,6 +887,74 @@ public class Wrappers {
     @Override
     public String toString() {
       return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing vault metadata in hex format, limited to 256 bytes.
+   *
+   * <p>This class will be marked Beta until the SingleAssetVault amendment is enabled on mainnet. Its API is
+   * subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = VaultData.class, using = VaultDataSerializer.class)
+  @JsonDeserialize(as = VaultData.class, using = VaultDataDeserializer.class)
+  @Beta
+  abstract static class _VaultData extends Wrapper<String> implements Serializable {
+
+    /**
+     * Constructs a {@link VaultData} from a plaintext string by hex-encoding it.
+     *
+     * @param plaintext A string value representing the vault data in plaintext.
+     *
+     * @return A {@link VaultData} of hex-encoded plaintext.
+     */
+    public static VaultData ofPlainText(String plaintext) {
+      return VaultData.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * Validates that a {@link VaultData}'s value is not empty and does not exceed 256 bytes (512 hex characters).
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(!this.value().isEmpty(), "VaultData must not be empty.");
+      Preconditions.checkArgument(
+        this.value().length() <= 512,
+        "VaultData must be <= 256 bytes or <= 512 hex characters.");
+    }
+
+    /**
+     * Validates that a {@link VaultData}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("VaultData must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof VaultData) {
+        String otherValue = ((VaultData) obj).value();
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
     }
 
   }

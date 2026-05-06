@@ -108,10 +108,11 @@ public interface MpTokenIssuanceCreate extends Transaction {
   Optional<MpTokenIssuanceCreateMutableFlags> mutableFlags();
 
   /**
-   * The ID of a {@code PermissionedDomain} that governs admissibility for this issuance. May only be set when the
-   * {@code tfMPTRequireAuth} flag is also set. Requires the {@code DynamicMPT} amendment.
+   * The {@link Hash256} of a {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} that restricts
+   * who can hold this MPT. If present, the {@code tfMPTRequireAuth} flag must be set, making the issuance
+   * non-public.
    *
-   * @return An optionally present {@link Hash256} representing the DomainID.
+   * @return An optionally present {@link Hash256} representing the domain ID.
    */
   @JsonProperty("DomainID")
   Optional<Hash256> domainId();

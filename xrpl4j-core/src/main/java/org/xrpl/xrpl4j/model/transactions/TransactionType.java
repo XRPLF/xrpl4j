@@ -373,6 +373,60 @@ public enum TransactionType {
   MPT_AUTHORIZE("MPTokenAuthorize"),
 
   /**
+   * The {@link TransactionType} for the {@link VaultCreate} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  VAULT_CREATE("VaultCreate"),
+
+  /**
+   * The {@link TransactionType} for the {@link VaultSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  VAULT_SET("VaultSet"),
+
+  /**
+   * The {@link TransactionType} for the {@link VaultDelete} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  VAULT_DELETE("VaultDelete"),
+
+  /**
+   * The {@link TransactionType} for the {@link VaultDeposit} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  VAULT_DEPOSIT("VaultDeposit"),
+
+  /**
+   * The {@link TransactionType} for the {@link VaultWithdraw} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  VAULT_WITHDRAW("VaultWithdraw"),
+
+  /**
+   * The {@link TransactionType} for the {@link VaultClawback} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  VAULT_CLAWBACK("VaultClawback"),
+
+  /**
    * The {@link TransactionType} for the {@link Batch} transaction.
    *
    * <p>This constant will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet. Its API

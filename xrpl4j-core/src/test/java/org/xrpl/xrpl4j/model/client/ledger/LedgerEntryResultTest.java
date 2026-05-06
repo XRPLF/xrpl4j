@@ -16,6 +16,7 @@ import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.flags.CredentialFlags;
 import org.xrpl.xrpl4j.model.flags.OfferFlags;
 import org.xrpl.xrpl4j.model.flags.RippleStateFlags;
+import org.xrpl.xrpl4j.model.flags.VaultFlags;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.AuctionSlot;
@@ -34,18 +35,24 @@ import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
+import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.ledger.VoteEntry;
 import org.xrpl.xrpl4j.model.ledger.VoteEntryWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Amount;
+import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Credential;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
 import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
+import org.xrpl.xrpl4j.model.transactions.VaultData;
 import org.xrpl.xrpl4j.model.transactions.VoteWeight;
+import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Collections;
@@ -797,6 +804,76 @@ class LedgerEntryResultTest extends AbstractJsonTest {
       "    \"PreviousTxnLgrSeq\": 3581884," +
       "    \"Sequence\": 3581881," +
       "    \"index\": \"D4ACD9C1EBE3EEF9B3B1052CDFF40F87CA5AF37FEB1E35F842E6A72CB5911C74\"" +
+      "  }," +
+      "  \"status\": \"success\"," +
+      "  \"validated\": true" +
+      "}";
+
+    assertCanSerializeAndDeserialize(result, json);
+  }
+
+  @Test
+  void testVaultResult() throws JSONException, JsonProcessingException {
+    LedgerEntryResult<VaultObject> result = LedgerEntryResult.<VaultObject>builder()
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(607272)))
+      .ledgerHash(Hash256.of("EEB650A0FD3CF0A5CE68B3DBD67C902FEC85E6AFAE1D0A7A7AF4BAD2F38557C7"))
+      .validated(true)
+      .index(Hash256.of("6BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08692"))
+      .node(
+        VaultObject.builder()
+          .previousTransactionId(Hash256.of("7E5F3FB60E1177F8AF8A9EAC7982F27FA5494FDEA871B23B4B149939A5A7A7BB"))
+          .previousTransactionLedgerSequence(UnsignedInteger.valueOf(82357607))
+          .sequence(UnsignedInteger.valueOf(5))
+          .ownerNode("0")
+          .owner(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+          .account(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
+          .data(VaultData.of("48656C6C6F"))
+          .asset(
+            IouIssue.builder()
+              .currency("USD")
+              .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+              .build()
+          )
+          .assetsTotal(Amount.of("500000"))
+          .assetsAvailable(Amount.of("400000"))
+          .assetsMaximum(Amount.of("1000000"))
+          .lossUnrealized(Amount.of("100"))
+          .shareMptId(MpTokenIssuanceId.of("00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836"))
+          .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
+          .scale(AssetScale.of(UnsignedInteger.valueOf(8)))
+          .flags(VaultFlags.VAULT_PRIVATE)
+          .index(Hash256.of("6BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08692"))
+          .build()
+      )
+      .status("success")
+      .build();
+
+    String json = "{" +
+      "  \"index\": \"6BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08692\"," +
+      "  \"ledger_hash\": \"EEB650A0FD3CF0A5CE68B3DBD67C902FEC85E6AFAE1D0A7A7AF4BAD2F38557C7\"," +
+      "  \"ledger_index\": 607272," +
+      "  \"node\": {" +
+      "    \"LedgerEntryType\": \"Vault\"," +
+      "    \"Flags\": 65536," +
+      "    \"PreviousTxnID\": \"7E5F3FB60E1177F8AF8A9EAC7982F27FA5494FDEA871B23B4B149939A5A7A7BB\"," +
+      "    \"PreviousTxnLgrSeq\": 82357607," +
+      "    \"Sequence\": 5," +
+      "    \"OwnerNode\": \"0\"," +
+      "    \"Owner\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "    \"Account\": \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\"," +
+      "    \"Data\": \"48656C6C6F\"," +
+      "    \"Asset\": {" +
+      "      \"currency\": \"USD\"," +
+      "      \"issuer\": \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"" +
+      "    }," +
+      "    \"AssetsTotal\": \"500000\"," +
+      "    \"AssetsAvailable\": \"400000\"," +
+      "    \"AssetsMaximum\": \"1000000\"," +
+      "    \"LossUnrealized\": \"100\"," +
+      "    \"ShareMPTID\": \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\"," +
+      "    \"WithdrawalPolicy\": 1," +
+      "    \"Scale\": 8," +
+      "    \"index\": \"6BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08692\"" +
       "  }," +
       "  \"status\": \"success\"," +
       "  \"validated\": true" +

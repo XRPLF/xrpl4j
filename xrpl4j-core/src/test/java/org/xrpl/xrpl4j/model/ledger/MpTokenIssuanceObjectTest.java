@@ -34,6 +34,7 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
       .transferFee(TransferFee.of(UnsignedInteger.valueOf(10)))
       .index(Hash256.of("9295A1CC8C9E8C7CA77C823F2D10B9C599E63707C7A222B306F603D4CF511301"))
       .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179C3493FFEB0869853DDEC0705800595424710FA7A"))
+      .domainId(Hash256.of("ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890"))
       .build();
 
     String json = "{\n" +
@@ -50,7 +51,8 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
                   "  \"Sequence\" : 377,\n" +
                   "  \"TransferFee\" : 10,\n" +
                   "  \"index\" : \"9295A1CC8C9E8C7CA77C823F2D10B9C599E63707C7A222B306F603D4CF511301\",\n" +
-                  "  \"mpt_issuance_id\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\"\n" +
+                  "  \"mpt_issuance_id\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\",\n" +
+                  "  \"DomainID\" : \"ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890\"\n" +
                   "}";
 
     assertCanSerializeAndDeserialize(object, json);

@@ -25,6 +25,7 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       )
       .flags(MpTokenIssuanceCreateFlags.builder()
         .tfMptCanLock(true)
+        .tfMptRequireAuth(true)
         .tfMptCanEscrow(true)
         .tfMptCanTrade(true)
         .tfMptCanTransfer(true)
@@ -35,6 +36,7 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       .transferFee(TransferFee.of(UnsignedInteger.valueOf(10)))
       .maximumAmount(MpTokenNumericAmount.of(Long.MAX_VALUE))
       .mpTokenMetadata(MpTokenMetadata.of("ABCD"))
+      .domainId(Hash256.of("1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF"))
       .build();
     String json =
       "{\n" +
@@ -43,11 +45,12 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       "  \"Fee\" : \"15\",\n" +
       "  \"Sequence\" : 321,\n" +
       "  \"SigningPubKey\" : \"EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710\",\n" +
-      "  \"Flags\" : 2147483770,\n" +
+      "  \"Flags\" : 2147483774,\n" +
       "  \"AssetScale\" : 2,\n" +
       "  \"TransferFee\" : 10,\n" +
       "  \"MaximumAmount\" : \"9223372036854775807\",\n" +
-      "  \"MPTokenMetadata\" : \"ABCD\"\n" +
+      "  \"MPTokenMetadata\" : \"ABCD\",\n" +
+      "  \"DomainID\" : \"1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF\"\n" +
       "}";
 
     assertCanSerializeAndDeserialize(issuanceCreate, json);

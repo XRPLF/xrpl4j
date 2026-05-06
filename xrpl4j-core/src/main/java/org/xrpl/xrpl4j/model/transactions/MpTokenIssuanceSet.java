@@ -108,10 +108,10 @@ public interface MpTokenIssuanceSet extends Transaction {
   Optional<TransferFee> transferFee();
 
   /**
-   * The ID of a {@code PermissionedDomain} that governs admissibility for this issuance. Mutually exclusive with
-   * {@link #holder()}. Requires the {@code DynamicMPT} amendment.
+   * The {@link Hash256} of a {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} that restricts
+   * who can hold this MPT. Mutually exclusive with {@link #holder()}.
    *
-   * @return An optionally present {@link Hash256} representing the DomainID.
+   * @return An optionally present {@link Hash256} representing the domain ID.
    */
   @JsonProperty("DomainID")
   Optional<Hash256> domainId();

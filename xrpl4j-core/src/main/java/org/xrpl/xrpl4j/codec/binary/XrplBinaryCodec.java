@@ -224,7 +224,6 @@ public class XrplBinaryCodec {
    * @return hex encoded representation
    *
    * @throws JsonProcessingException if JSON is not valid.
-   * @throws IllegalArgumentException if the JSON is not an object or if {@code SigningPubKey} is absent or empty.
    */
   public String encodeForMultiSigningWithSigningPubKey(
     String json, String xrpAccountId
@@ -232,12 +231,6 @@ public class XrplBinaryCodec {
     JsonNode node = BINARY_CODEC_OBJECT_MAPPER.readTree(json);
     if (!node.isObject()) {
       throw new IllegalArgumentException("JSON object required for signing");
-    }
-    JsonNode signingPubKeyNode = node.get("SigningPubKey");
-    if (signingPubKeyNode == null || signingPubKeyNode.asText().isEmpty()) {
-      throw new IllegalArgumentException(
-        "SigningPubKey must be present and non-empty for counterparty multi-signing."
-      );
     }
     // NOTE: Unlike encodeForMultiSigning, we do NOT clear SigningPubKey here.
     String suffix = new AccountIdType().fromJson(new TextNode(xrpAccountId)).toHex();

@@ -794,32 +794,6 @@ class XrplBinaryCodecTest {
       .isNotEqualTo(result2.substring(result2.length() - 40));
   }
 
-  @Test
-  void encodeForMultiSigningWithSigningPubKeyRejectsEmptySigningPubKey() throws JsonProcessingException {
-    String signerAccountId = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
-    LoanSet loanSet = createLoanSet();
-    // Rebuild with empty SigningPubKey (the multi-sign default)
-    LoanSet withEmptyKey = LoanSet.builder().from(loanSet)
-      .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
-      .build();
-    String json = objectMapper.writeValueAsString(withEmptyKey);
-
-    Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigningWithSigningPubKey(json, signerAccountId))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("SigningPubKey must be present and non-empty for counterparty multi-signing.");
-  }
-
-  @Test
-  void encodeForMultiSigningWithSigningPubKeyRejectsMissingSigningPubKey() {
-    String signerAccountId = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
-    // JSON with no SigningPubKey field at all
-    String json = "{\"TransactionType\":\"LoanSet\",\"Account\":\"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"}";
-
-    Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigningWithSigningPubKey(json, signerAccountId))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("SigningPubKey must be present and non-empty for counterparty multi-signing.");
-  }
-
   // /////////////////
   // encodeForSigningClaim
   // /////////////////

@@ -160,6 +160,10 @@ public interface JsonRpcClient {
     JsonNode response = postRpcRequest(request);
     JsonNode result = response.get(RESULT);
     checkForError(response);
+    if (result == null) {
+      throw new JsonRpcClientErrorException(
+        "Response did not contain a 'result' field: " + response);
+    }
     try {
       return objectMapper.readValue(result.toString(), resultType);
     } catch (JsonProcessingException e) {

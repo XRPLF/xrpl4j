@@ -46,6 +46,7 @@ class SerializedTypeTest {
   @Test
   void getTypeByNameThrowsOnNull() {
     assertThatThrownBy(() -> SerializedType.getTypeByName(null))
-      .isInstanceOf(NullPointerException.class);
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Unknown serialized type 'null'");
   }
 }

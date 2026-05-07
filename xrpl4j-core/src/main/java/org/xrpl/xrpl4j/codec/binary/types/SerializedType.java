@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -77,15 +78,12 @@ public abstract class SerializedType<T extends SerializedType<T>> {
    * @return A {@link SerializedType} for the supplied {@code name}.
    */
   public static SerializedType<?> getTypeByName(final String name) {
-    Objects.requireNonNull(name);
-
-    if (!typeMap.containsKey(name)) {
-      throw new IllegalArgumentException(
+    return Optional.ofNullable(typeMap.get(name))
+      .map(Supplier::get)
+      .orElseThrow(() -> new IllegalArgumentException(
         String.format("Unknown serialized type '%s'. This likely means xrpl4j is out of date and does not yet " +
           "support a new field type introduced by a rippled amendment.", name)
-      );
-    }
-    return typeMap.get(name).get();
+      ));
   }
 
   /**

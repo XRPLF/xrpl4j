@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -152,7 +153,8 @@ class JsonRpcClientTest {
 
   @Test
   void testSendWithJavaTypeThrowsWhenResponseHasNoResultField() {
-    // Same as above, but exercising the JavaType overload of send() directly.
+    // Same as above, invoked through the JavaType overload of send() for explicit coverage.
+    // (The Class<T> overload also delegates here, so this is redundant but cheap.)
     when(jsonResponseNodeMock.has("result")).thenReturn(false);
     when(jsonResponseNodeMock.get("result")).thenReturn(null);
 
@@ -162,6 +164,23 @@ class JsonRpcClientTest {
     JsonRpcClientErrorException error = assertThrows(
       JsonRpcClientErrorException.class,
       () -> jsonRpcClient.send(request, javaType)
+    );
+    assertThat(error.getMessage()).contains("Response did not contain a 'result' field");
+  }
+
+  @Test
+  void testSendThrowsWhenResultFieldIsJsonNull() {
+    // The "result" field is present but its value is JSON `null` (a Jackson NullNode,
+    // not Java null). The guard must catch this too — otherwise result.toString()
+    // would produce the string "null" and fail with a confusing deserialization error.
+    when(jsonResponseNodeMock.has("result")).thenReturn(true);
+    when(jsonResponseNodeMock.get("result")).thenReturn(JsonNodeFactory.instance.nullNode());
+
+    JsonRpcRequest request = mock(JsonRpcRequest.class);
+
+    JsonRpcClientErrorException error = assertThrows(
+      JsonRpcClientErrorException.class,
+      () -> jsonRpcClient.send(request, XrplResult.class)
     );
     assertThat(error.getMessage()).contains("Response did not contain a 'result' field");
   }

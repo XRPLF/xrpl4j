@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -436,6 +437,56 @@ class CurrencyAmountTest extends AbstractJsonTest {
         .build();
     CurrencyAmount roundtripped = amount.toCurrencyAmount(mptIssue);
     assertThat(roundtripped).isEqualTo(original);
+  }
+
+  @Test
+  void deserializeIssuedCurrencyAmountWithMissingIssuerDoesNotThrowNpe() {
+    // Prior to fix, node.get("issuer") returned Java null, causing NPE on .asText().
+    // After fix, node.path("issuer") returns MissingNode, which Address validates and rejects
+    // with a meaningful IllegalArgumentException rather than a NullPointerException.
+    String json = "{\"amount\": {\"currency\": \"USD\", \"value\": \"100\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class)
+      .rootCause()
+      .isNotInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  void deserializeIssuedCurrencyAmountWithMissingCurrencyDoesNotThrowNpe() throws JsonProcessingException {
+    // Prior to fix, node.get("currency") returned Java null, causing NPE on .asText().
+    // After fix, node.path("currency").asText() returns "" so deserialization succeeds.
+    String json = "{\"amount\": {\"issuer\": \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\", \"value\": \"100\"}}";
+    CurrencyAmountWrapper result = objectMapper.readValue(json, CurrencyAmountWrapper.class);
+    assertThat(result.amount()).isInstanceOf(IssuedCurrencyAmount.class);
+    IssuedCurrencyAmount ica = (IssuedCurrencyAmount) result.amount();
+    assertThat(ica.currency()).isEmpty();
+    assertThat(ica.value()).isEqualTo("100");
+    assertThat(ica.issuer()).isEqualTo(Address.of("rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV"));
+  }
+
+  @Test
+  void deserializeIssuedCurrencyAmountWithMissingValueDoesNotThrowNpe() throws JsonProcessingException {
+    // Prior to fix, node.get("value") returned Java null, causing NPE on .asText().
+    // After fix, node.path("value").asText() returns "" so deserialization succeeds.
+    String json = "{\"amount\": {\"currency\": \"USD\", \"issuer\": \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\"}}";
+    CurrencyAmountWrapper result = objectMapper.readValue(json, CurrencyAmountWrapper.class);
+    assertThat(result.amount()).isInstanceOf(IssuedCurrencyAmount.class);
+    IssuedCurrencyAmount ica = (IssuedCurrencyAmount) result.amount();
+    assertThat(ica.currency()).isEqualTo("USD");
+    assertThat(ica.value()).isEmpty();
+    assertThat(ica.issuer()).isEqualTo(Address.of("rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV"));
+  }
+
+  @Test
+  void deserializeMptCurrencyAmountWithMissingValueDoesNotThrowNpe() throws JsonProcessingException {
+    // Prior to fix, node.get("value") returned Java null, causing NPE on .asText().
+    // After fix, node.path("value").asText() returns "" so deserialization succeeds.
+    String json = "{\"amount\": {\"mpt_issuance_id\": \"00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41\"}}";
+    CurrencyAmountWrapper result = objectMapper.readValue(json, CurrencyAmountWrapper.class);
+    assertThat(result.amount()).isInstanceOf(MptCurrencyAmount.class);
+    MptCurrencyAmount mpt = (MptCurrencyAmount) result.amount();
+    assertThat(mpt.mptIssuanceId()).isEqualTo(MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41"));
+    assertThat(mpt.value()).isEmpty();
   }
 
   // write a wrapper interface that wraps a CurrencyAmount using Value.Immutable

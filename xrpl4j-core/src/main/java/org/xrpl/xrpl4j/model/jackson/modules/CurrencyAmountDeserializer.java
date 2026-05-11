@@ -54,16 +54,16 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
 
     if (node.isContainerNode()) {
       if (node.has("mpt_issuance_id")) {
-        String mptIssuanceId = node.get("mpt_issuance_id").asText();
-        String value = node.get("value").asText();
+        String mptIssuanceId = node.path("mpt_issuance_id").asText();
+        String value = node.path("value").asText();
         return MptCurrencyAmount.builder()
           .mptIssuanceId(MpTokenIssuanceId.of(mptIssuanceId))
           .value(value)
           .build();
       } else {
-        String currency = node.get("currency").asText();
-        String value = node.get("value").asText();
-        String issuer = node.get("issuer").asText();
+        String currency = node.path("currency").asText();
+        String value = node.path("value").asText();
+        String issuer = node.path("issuer").asText();
 
         return IssuedCurrencyAmount.builder()
           .value(value)

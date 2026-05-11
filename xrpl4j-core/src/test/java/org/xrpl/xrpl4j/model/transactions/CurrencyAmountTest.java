@@ -489,6 +489,36 @@ class CurrencyAmountTest extends AbstractJsonTest {
     assertThat(mpt.value()).isEmpty();
   }
 
+  @Test
+  void deserializeCurrencyAmountWithEmptyObjectDoesNotThrowNpe() {
+    // Empty object falls into the IssuedCurrencyAmount branch (no "mpt_issuance_id" key).
+    // After fix, every node.path(...) call returns MissingNode and .asText() returns "",
+    // so we end up calling Address.of("") — which throws IllegalArgumentException, not NPE.
+    String json = "{\"amount\": {}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class)
+      .rootCause()
+      .isNotInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  void deserializeMptCurrencyAmountWithExplicitNullMptIssuanceIdDoesNotThrowNpe() throws JsonProcessingException {
+    // "mpt_issuance_id" is present-but-null. node.has(...) returns true for explicit
+    // nulls, so this enters the MPT branch (distinct from the missing-field case, which
+    // falls into the IssuedCurrencyAmount branch). Prior to fix, node.get(...).asText()
+    // would NPE. After fix, node.path(...) returns a NullNode whose .asText() yields the
+    // literal string "null" — degenerate, but no exception.
+    //
+    // Note: this exposes an asymmetry between absent and present-null — absent yields "",
+    // present-null yields "null" — which the current fix does not normalize.
+    String json = "{\"amount\": {\"mpt_issuance_id\": null, \"value\": \"100\"}}";
+    CurrencyAmountWrapper result = objectMapper.readValue(json, CurrencyAmountWrapper.class);
+    assertThat(result.amount()).isInstanceOf(MptCurrencyAmount.class);
+    MptCurrencyAmount mpt = (MptCurrencyAmount) result.amount();
+    assertThat(mpt.mptIssuanceId().value()).isEqualTo("null");
+    assertThat(mpt.value()).isEqualTo("100");
+  }
+
   // write a wrapper interface that wraps a CurrencyAmount using Value.Immutable
   // write a wrapper class that implements CurrencyAmount using Value.Immutable
   @Value.Immutable

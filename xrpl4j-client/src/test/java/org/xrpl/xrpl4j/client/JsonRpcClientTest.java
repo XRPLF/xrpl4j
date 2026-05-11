@@ -5,11 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.xrpl.xrpl4j.model.client.XrplResult;
 
 /**
  * Unit test for {@link JsonRpcClient}.
@@ -126,6 +128,42 @@ class JsonRpcClientTest {
       () -> jsonRpcClient.checkForError(jsonResponseNodeMock)
     );
     assertThat(error.getMessage()).isEqualTo("error_foo (error_message_foo)");
+  }
+
+  //////////////////
+  // send()
+  //////////////////
+
+  @Test
+  void testSendThrowsWhenResponseHasNoResultField() {
+    // No "result" field on the response — checkForError() returns silently,
+    // and send() should throw a descriptive exception instead of NPE.
+    when(jsonResponseNodeMock.has("result")).thenReturn(false);
+    when(jsonResponseNodeMock.get("result")).thenReturn(null);
+
+    JsonRpcRequest request = mock(JsonRpcRequest.class);
+
+    JsonRpcClientErrorException error = assertThrows(
+      JsonRpcClientErrorException.class,
+      () -> jsonRpcClient.send(request, XrplResult.class)
+    );
+    assertThat(error.getMessage()).contains("Response did not contain a 'result' field");
+  }
+
+  @Test
+  void testSendWithJavaTypeThrowsWhenResponseHasNoResultField() {
+    // Same as above, but exercising the JavaType overload of send() directly.
+    when(jsonResponseNodeMock.has("result")).thenReturn(false);
+    when(jsonResponseNodeMock.get("result")).thenReturn(null);
+
+    JsonRpcRequest request = mock(JsonRpcRequest.class);
+    JavaType javaType = JsonRpcClient.objectMapper.constructType(XrplResult.class);
+
+    JsonRpcClientErrorException error = assertThrows(
+      JsonRpcClientErrorException.class,
+      () -> jsonRpcClient.send(request, javaType)
+    );
+    assertThat(error.getMessage()).contains("Response did not contain a 'result' field");
   }
 
   //////////////////

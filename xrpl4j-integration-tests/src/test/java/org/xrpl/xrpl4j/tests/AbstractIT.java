@@ -802,10 +802,14 @@ public abstract class AbstractIT {
 
       assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
-      // Then wait until the transaction gets committed to a validated ledger
+      // Wait for the account sequence to advance, which confirms the tx was applied on this Clio node.
+      // A plain scanForResult on getValidatedTransaction is not sufficient because Clio nodes in a cluster
+      // may return stale account_info with the old sequence even after reporting the tx as validated.
+      final UnsignedInteger expectedIssuerSequence = issuerAccountInfo.accountData().sequence()
+        .plus(UnsignedInteger.ONE);
       this.scanForResult(
-        () ->
-          this.getValidatedTransaction(createTxIntermediateResult.transactionResult().hash(), CredentialCreate.class)
+        () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+        info -> info.accountData().sequence().equals(expectedIssuerSequence)
       );
     }
   }
@@ -880,10 +884,12 @@ public abstract class AbstractIT {
 
       assertThat(acceptTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
-      // Then wait until the transaction gets committed to a validated ledger
+      // Wait for the account sequence to advance, which confirms the tx was applied on this Clio node.
+      final UnsignedInteger expectedSubjectSequence = subjectAccountInfo.accountData().sequence()
+        .plus(UnsignedInteger.ONE);
       this.scanForResult(
-        () ->
-          this.getValidatedTransaction(acceptTxIntermediateResult.transactionResult().hash(), CredentialAccept.class)
+        () -> this.getValidatedAccountInfo(subjectKeyPair.publicKey().deriveAddress()),
+        info -> info.accountData().sequence().equals(expectedSubjectSequence)
       );
     }
   }
@@ -969,22 +975,27 @@ public abstract class AbstractIT {
   protected List<Hash256> getCredentialObjectIds(KeyPair issuerKeyPair, KeyPair subjectKeyPair,
     CredentialType[] credentialTypes) {
 
-    return Arrays.stream(credentialTypes).map(credentialType -> {
-        try {
-          return xrplClient.ledgerEntry(
-            LedgerEntryRequestParams.credential(
-              CredentialLedgerEntryParams.builder()
-                .issuer(issuerKeyPair.publicKey().deriveAddress())
-                .subject(subjectKeyPair.publicKey().deriveAddress())
-                .credentialType(credentialType)
-                .build(),
-              LedgerSpecifier.VALIDATED
-            )
-          );
-        } catch (JsonRpcClientErrorException e) {
-          throw new RuntimeException(e);
+    // Poll for each credential entry rather than querying once: a Clio node may lag slightly
+    // behind the validated ledger even after a transaction confirms, causing a spurious entryNotFound.
+    return Arrays.stream(credentialTypes).map(credentialType ->
+      this.scanForResult(
+        () -> {
+          try {
+            return xrplClient.ledgerEntry(
+              LedgerEntryRequestParams.credential(
+                CredentialLedgerEntryParams.builder()
+                  .issuer(issuerKeyPair.publicKey().deriveAddress())
+                  .subject(subjectKeyPair.publicKey().deriveAddress())
+                  .credentialType(credentialType)
+                  .build(),
+                LedgerSpecifier.VALIDATED
+              )
+            );
+          } catch (JsonRpcClientErrorException e) {
+            throw new RuntimeException(e);
+          }
         }
-      }
+      )
     ).map(LedgerEntryResult::index).collect(Collectors.toList());
   }
 

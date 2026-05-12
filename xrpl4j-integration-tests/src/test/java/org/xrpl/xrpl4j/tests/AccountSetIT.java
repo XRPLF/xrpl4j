@@ -429,8 +429,11 @@ public class AccountSetIT extends AbstractIT {
     this.scanForResult(() ->
       this.getValidatedTransaction(signedSetDomain.hash(), AccountSet.class)
     );
+    // Poll until account_info reflects the domain field. A plain scan may return stale data from a
+    // lagging Clio node even after the transaction is marked validated.
     accountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()),
+      info -> info.accountData().domain().isPresent()
     );
     assertThat(accountInfo.accountData().domain()).isNotEmpty().isEqualTo(setDomain.domain());
     assertThat(accountInfo.accountData().messageKey()).isNotEmpty().isEqualTo(setDomain.messageKey());
@@ -463,8 +466,10 @@ public class AccountSetIT extends AbstractIT {
     this.scanForResult(() ->
       this.getValidatedTransaction(signedClearDomain.hash(), AccountSet.class)
     );
+    // Poll until account_info reflects the cleared domain field.
     accountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()),
+      info -> !info.accountData().domain().isPresent()
     );
     assertThat(accountInfo.accountData().domain()).isEmpty();
     assertThat(accountInfo.accountData().messageKey()).isEmpty();

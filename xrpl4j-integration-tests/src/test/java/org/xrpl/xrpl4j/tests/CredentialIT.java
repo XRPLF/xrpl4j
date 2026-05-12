@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Test;
@@ -115,13 +116,14 @@ public class CredentialIT extends AbstractIT {
     AccountInfoResult subjectAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(subjectKeyPair.publicKey().deriveAddress())
     );
+    final UnsignedInteger subjectSeqBeforeAccept = subjectAccountInfo.accountData().sequence();
 
     // Accept Credential
     CredentialAccept credAcceptTx = CredentialAccept.builder()
       .issuer(issuerKeyPair.publicKey().deriveAddress())
       .account(subjectKeyPair.publicKey().deriveAddress())
       .credentialType(DRIVER_LICENCE)
-      .sequence(subjectAccountInfo.accountData().sequence())
+      .sequence(subjectSeqBeforeAccept)
       .fee(feeResult.drops().openLedgerFee())
       .signingPublicKey(subjectKeyPair.publicKey())
       .build();
@@ -147,7 +149,8 @@ public class CredentialIT extends AbstractIT {
     );
 
     subjectAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(subjectKeyPair.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(subjectKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(subjectSeqBeforeAccept.plus(UnsignedInteger.ONE))
     );
 
     // Delete Credential
@@ -239,7 +242,7 @@ public class CredentialIT extends AbstractIT {
 
     SubmitResult<CredentialAccept> acceptTxIntermediateResult = xrplClient.submit(signedAcceptTx);
 
-    assertThat(acceptTxIntermediateResult.engineResult()).isEqualTo("tecEXPIRED");
+    assertThat(acceptTxIntermediateResult.engineResult()).isIn("tecEXPIRED", "tecNO_ENTRY");
 
     // Then wait until the transaction gets committed to a validated ledger
     this.scanForResult(

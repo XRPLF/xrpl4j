@@ -584,6 +584,7 @@ public class EscrowIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult issuerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()));
+    final UnsignedInteger initialIssuerSeq = issuerAccountInfo.accountData().sequence();
 
     AccountSet enableLocking = AccountSet.builder().account(issuerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee()).sequence(issuerAccountInfo.accountData().sequence())
@@ -594,12 +595,14 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<AccountSet> enableLockingResult = xrplClient.submit(signedEnableLocking);
     assertThat(enableLockingResult.engineResult()).isEqualTo("tesSUCCESS");
     this.scanForResult(
-      () -> this.getValidatedTransaction(enableLockingResult.transactionResult().hash(), AccountSet.class));
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(initialIssuerSeq.plus(UnsignedInteger.ONE)));
 
     //////////////////////
     // Set a transfer rate on the issuer account (1% = 1,010,000,000)
     issuerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(initialIssuerSeq.plus(UnsignedInteger.ONE))
     );
 
     AccountSet setTransferRate = AccountSet.builder().account(issuerKeyPair.publicKey().deriveAddress())
@@ -612,7 +615,8 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<AccountSet> setTransferRateResult = xrplClient.submit(signedSetTransferRate);
     assertThat(setTransferRateResult.engineResult()).isEqualTo("tesSUCCESS");
     this.scanForResult(
-      () -> this.getValidatedTransaction(setTransferRateResult.transactionResult().hash(), AccountSet.class));
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(initialIssuerSeq.plus(UnsignedInteger.valueOf(2))));
 
     //////////////////////
     // Create trustlines from sender and receiver to issuer
@@ -790,7 +794,8 @@ public class EscrowIT extends AbstractIT {
     //////////////////////
     // Change the issuer's transfer rate to 2% AFTER the escrow was created
     issuerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()));
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(initialIssuerSeq.plus(UnsignedInteger.valueOf(2))));
 
     AccountSet changeTransferRate = AccountSet.builder().account(issuerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee()).sequence(issuerAccountInfo.accountData().sequence())

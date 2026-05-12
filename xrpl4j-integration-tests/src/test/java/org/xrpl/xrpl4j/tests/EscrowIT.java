@@ -722,6 +722,7 @@ public class EscrowIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult issuerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()));
+    final UnsignedInteger initialIssuerSeq = issuerAccountInfo.accountData().sequence();
 
     // Enable locking and set 1% transfer rate in one transaction
     AccountSet enableLockingAndSetRate = AccountSet.builder().account(issuerKeyPair.publicKey().deriveAddress())
@@ -735,7 +736,8 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<AccountSet> enableLockingAndSetRateResult = xrplClient.submit(signedEnableLockingAndSetRate);
     assertThat(enableLockingAndSetRateResult.engineResult()).isEqualTo("tesSUCCESS");
     this.scanForResult(
-      () -> this.getValidatedTransaction(enableLockingAndSetRateResult.transactionResult().hash(), AccountSet.class));
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(initialIssuerSeq.plus(UnsignedInteger.ONE)));
 
     //////////////////////
     // Create trustlines from sender and receiver to issuer

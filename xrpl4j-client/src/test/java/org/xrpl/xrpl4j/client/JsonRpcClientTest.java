@@ -185,6 +185,27 @@ class JsonRpcClientTest {
     assertThat(error.getMessage()).contains("Response did not contain a 'result' field");
   }
 
+  @Test
+  void testSendBypassesGuardWhenResultFieldIsPresentAndNonNull() {
+    // Cover the FALSE branch of `if (result == null || result.isNull())`:
+    // result is a real, non-null, non-NullNode JsonNode. The guard is bypassed and
+    // execution proceeds to deserialization. XrplResult is a marker interface with
+    // no default impl, so readValue throws a JsonProcessingException that send()
+    // wraps as JsonRpcClientErrorException. The point of the test is to exercise
+    // the guard's false-branch — not the deserialization outcome.
+    when(jsonResponseNodeMock.has("result")).thenReturn(false); // checkForError stays silent
+    when(jsonResponseNodeMock.get("result")).thenReturn(JsonNodeFactory.instance.objectNode());
+
+    JsonRpcRequest request = mock(JsonRpcRequest.class);
+
+    JsonRpcClientErrorException error = assertThrows(
+      JsonRpcClientErrorException.class,
+      () -> jsonRpcClient.send(request, XrplResult.class)
+    );
+    // It must NOT be the "missing result" exception — the guard should have been bypassed.
+    assertThat(error.getMessage()).doesNotContain("Response did not contain a 'result' field");
+  }
+
   //////////////////
   // Private Helpers
   //////////////////

@@ -491,20 +491,26 @@ class CurrencyAmountTest extends AbstractJsonTest {
 
   @Test
   void deserializeMptCurrencyAmountWithExplicitNullMptIssuanceIdDoesNotThrowNpe() throws JsonProcessingException {
-    // "mpt_issuance_id" is present-but-null. node.has(...) returns true for explicit
-    // nulls, so this enters the MPT branch (distinct from the missing-field case, which
-    // falls into the IssuedCurrencyAmount branch). Prior to fix, node.get(...).asText()
-    // would NPE. After fix, node.path(...) returns a NullNode whose .asText() yields the
-    // literal string "null" — degenerate, but no exception.
-    //
-    // Note: this exposes an asymmetry between absent and present-null — absent yields "",
-    // present-null yields "null" — which the current fix does not normalize.
+    // "mpt_issuance_id" is present-but-null. node.has(...) returns true for explicit nulls,
+    // so this enters the MPT branch. path().asText() yields the literal string "null", which
+    // is non-empty and passes the isEmpty() guard, creating a degenerate MptCurrencyAmount.
+    // This asymmetry (absent → "", present-null → "null") is not yet normalised.
     String json = "{\"amount\": {\"mpt_issuance_id\": null, \"value\": \"100\"}}";
     CurrencyAmountWrapper result = objectMapper.readValue(json, CurrencyAmountWrapper.class);
     assertThat(result.amount()).isInstanceOf(MptCurrencyAmount.class);
     MptCurrencyAmount mpt = (MptCurrencyAmount) result.amount();
     assertThat(mpt.mptIssuanceId().value()).isEqualTo("null");
     assertThat(mpt.value()).isEqualTo("100");
+  }
+
+  @Test
+  void deserializeMptCurrencyAmountWithEmptyMptIssuanceIdThrows() {
+    // Explicit empty-string mpt_issuance_id triggers the isEmpty() guard on the first
+    // operand of the || condition, ensuring that branch of the validation is exercised.
+    String json = "{\"amount\": {\"mpt_issuance_id\": \"\", \"value\": \"100\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class)
+      .isNotInstanceOf(NullPointerException.class);
   }
 
   // write a wrapper interface that wraps a CurrencyAmount using Value.Immutable

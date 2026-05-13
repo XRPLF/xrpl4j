@@ -150,4 +150,9 @@ jobs:
           java-version: '26'
           cache: 'maven'
       - name: Build
+        # -DuseClioTestnet routes the main IT suite (via AbstractIT) to the Clio testnet node.
+        # -DuseClioMainnet is independent: it routes mainnet-specific tests (AccountTransactionsIT,
+        # LedgerResultIT) to the Clio mainnet node. The two flags are evaluated by separate factory
+        # methods and do not conflict. See https://github.com/XRPLF/xrpl4j/issues/789 for a ticket
+        # that detangles this.
         run: mvn clean install -Dmaven.javadoc.skip=true -DuseClioTestnet -DuseClioMainnet

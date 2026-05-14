@@ -370,4 +370,152 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
     ).isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("invalid bits");
   }
+
+  @Test
+  void setAndClearRequireAuthRejected() {
+    assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
+      .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .sequence(UnsignedInteger.valueOf(335))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+      )
+      .mutableFlags(MpTokenIssuanceSetMutableFlags.of(
+        MpTokenIssuanceSetMutableFlags.SET_REQUIRE_AUTH.getValue() |
+          MpTokenIssuanceSetMutableFlags.CLEAR_REQUIRE_AUTH.getValue()
+      ))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Cannot set and clear lsfMPTRequireAuth");
+  }
+
+  @Test
+  void setAndClearCanEscrowRejected() {
+    assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
+      .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .sequence(UnsignedInteger.valueOf(335))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+      )
+      .mutableFlags(MpTokenIssuanceSetMutableFlags.of(
+        MpTokenIssuanceSetMutableFlags.SET_CAN_ESCROW.getValue() |
+          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_ESCROW.getValue()
+      ))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Cannot set and clear lsfMPTCanEscrow");
+  }
+
+  @Test
+  void setAndClearCanTradeRejected() {
+    assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
+      .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .sequence(UnsignedInteger.valueOf(335))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+      )
+      .mutableFlags(MpTokenIssuanceSetMutableFlags.of(
+        MpTokenIssuanceSetMutableFlags.SET_CAN_TRADE.getValue() |
+          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_TRADE.getValue()
+      ))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Cannot set and clear lsfMPTCanTrade");
+  }
+
+  @Test
+  void setAndClearCanTransferRejected() {
+    assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
+      .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .sequence(UnsignedInteger.valueOf(335))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+      )
+      .mutableFlags(MpTokenIssuanceSetMutableFlags.of(
+        MpTokenIssuanceSetMutableFlags.SET_CAN_TRANSFER.getValue() |
+          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_TRANSFER.getValue()
+      ))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Cannot set and clear lsfMPTCanTransfer");
+  }
+
+  @Test
+  void setAndClearCanClawbackRejected() {
+    assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
+      .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .sequence(UnsignedInteger.valueOf(335))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+      )
+      .mutableFlags(MpTokenIssuanceSetMutableFlags.of(
+        MpTokenIssuanceSetMutableFlags.SET_CAN_CLAWBACK.getValue() |
+          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_CLAWBACK.getValue()
+      ))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Cannot set and clear lsfMPTCanClawback");
+  }
+
+  @Test
+  void mutableFlagsAndUnlockFlagsMutuallyExclusive() {
+    assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
+      .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .sequence(UnsignedInteger.valueOf(335))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+      )
+      .flags(MpTokenIssuanceSetFlags.UNLOCK)
+      .mutableFlags(MpTokenIssuanceSetMutableFlags.builder().tmfMptSetCanLock(true).build())
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("tfMPTLock and tfMPTUnlock must not be set");
+  }
+
+  @Test
+  void zeroTransferFeeDoesNotConflictWithClearCanTransfer() {
+    MpTokenIssuanceSet issuanceSet = MpTokenIssuanceSet.builder()
+      .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .sequence(UnsignedInteger.valueOf(335))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+      )
+      .transferFee(TransferFee.of(UnsignedInteger.ZERO))
+      .mutableFlags(MpTokenIssuanceSetMutableFlags.builder().tmfMptClearCanTransfer(true).build())
+      .build();
+
+    assertThat(issuanceSet.transferFee()).isPresent();
+    assertThat(issuanceSet.mutableFlags()).isPresent();
+  }
+
+  @Test
+  void nonZeroTransferFeeWithoutClearCanTransferAllowed() {
+    MpTokenIssuanceSet issuanceSet = MpTokenIssuanceSet.builder()
+      .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .sequence(UnsignedInteger.valueOf(335))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+      )
+      .transferFee(TransferFee.of(UnsignedInteger.valueOf(500)))
+      .mutableFlags(MpTokenIssuanceSetMutableFlags.builder().tmfMptSetCanTransfer(true).build())
+      .build();
+
+    assertThat(issuanceSet.transferFee()).isPresent();
+    assertThat(issuanceSet.mutableFlags()).isPresent();
+  }
 }

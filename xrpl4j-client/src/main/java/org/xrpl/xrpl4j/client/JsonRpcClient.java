@@ -158,17 +158,32 @@ public interface JsonRpcClient {
     JavaType resultType
   ) throws JsonRpcClientErrorException {
     JsonNode response = postRpcRequest(request);
-    JsonNode result = response.get(RESULT);
-    checkForError(response);
-    if (result == null || result.isNull()) {
-      throw new JsonRpcClientErrorException(
-        "Response did not contain a 'result' field: " + response);
-    }
+    JsonNode result = getResultSafe(response);
     try {
       return objectMapper.readValue(result.toString(), resultType);
     } catch (JsonProcessingException e) {
       throw new JsonRpcClientErrorException(e);
     }
+  }
+
+  /**
+   * Returns the {@code result} field from the response, throwing if it is absent or if the response contains an error.
+   *
+   * @param response The {@link JsonNode} containing the JSON response from rippled.
+   *
+   * @return A non-null {@link JsonNode} representing the {@code result} field.
+   *
+   * @throws JsonRpcClientErrorException If rippled returns an error message or if the response does not contain a
+   *                                     {@code result} field.
+   */
+  default JsonNode getResultSafe(JsonNode response) throws JsonRpcClientErrorException {
+    checkForError(response);
+    JsonNode result = response.get(RESULT);
+    if (result == null || result.isNull()) {
+      throw new JsonRpcClientErrorException(
+        "Response did not contain a 'result' field: " + response);
+    }
+    return result;
   }
 
   /**

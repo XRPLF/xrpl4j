@@ -802,14 +802,14 @@ public abstract class AbstractIT {
 
       assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
-      // Wait for the account sequence to advance, which confirms the tx was applied on this Clio node.
-      // A plain scanForResult on getValidatedTransaction is not sufficient because Clio nodes in a cluster
-      // may return stale account_info with the old sequence even after reporting the tx as validated.
-      final UnsignedInteger expectedIssuerSequence = issuerAccountInfo.accountData().sequence()
-        .plus(UnsignedInteger.ONE);
+      // Wait for the tx to be applied. A plain scanForResult on getValidatedTransaction is not sufficient
+      // here because when this code executes against a Clio endpoint operating in a cluster, each endpoint
+      // may return stale data even after reporting the tx as validated. The predicate retries the Clio call
+      // for up to 30s until at least one node returns the tx with tesSUCCESS in its metadata.
       this.scanForResult(
-        () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
-        info -> info.accountData().sequence().equals(expectedIssuerSequence)
+        () -> this.getValidatedTransaction(
+          createTxIntermediateResult.transactionResult().hash(), CredentialCreate.class),
+        result -> result.metadata().map(meta -> meta.transactionResult().equals("tesSUCCESS")).orElse(false)
       );
     }
   }
@@ -884,12 +884,10 @@ public abstract class AbstractIT {
 
       assertThat(acceptTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
-      // Wait for the account sequence to advance, which confirms the tx was applied on this Clio node.
-      final UnsignedInteger expectedSubjectSequence = subjectAccountInfo.accountData().sequence()
-        .plus(UnsignedInteger.ONE);
       this.scanForResult(
-        () -> this.getValidatedAccountInfo(subjectKeyPair.publicKey().deriveAddress()),
-        info -> info.accountData().sequence().equals(expectedSubjectSequence)
+        () -> this.getValidatedTransaction(
+          acceptTxIntermediateResult.transactionResult().hash(), CredentialAccept.class),
+        result -> result.metadata().map(meta -> meta.transactionResult().equals("tesSUCCESS")).orElse(false)
       );
     }
   }

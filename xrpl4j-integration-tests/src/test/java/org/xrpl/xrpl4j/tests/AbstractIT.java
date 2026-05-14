@@ -802,10 +802,12 @@ public abstract class AbstractIT {
 
       assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
-      // Wait for the tx to be applied. A plain scanForResult on getValidatedTransaction is not sufficient
-      // here because when this code executes against a Clio endpoint operating in a cluster, each endpoint
-      // may return stale data even after reporting the tx as validated. The predicate retries the Clio call
-      // for up to 30s until at least one node returns the tx with tesSUCCESS in its metadata.
+      // Wait for the account sequence to advance, which confirms the tx was applied. A plain `scanForResult` on
+      // `getValidatedTransaction` is not sufficient here because when this code executes against a Clio endpoint
+      //  operating in a cluster, each endpoint may return stale `account_info` with the old sequence even after
+      // reporting the `tx` as validated. This solution works because the predicate supplied to
+      // `getValidatedAccountInfo` means that function will keep retrying the Clio call for 30s until it
+      // encounters at least one node with the update value.
       this.scanForResult(
         () -> this.getValidatedTransaction(
           createTxIntermediateResult.transactionResult().hash(), CredentialCreate.class),

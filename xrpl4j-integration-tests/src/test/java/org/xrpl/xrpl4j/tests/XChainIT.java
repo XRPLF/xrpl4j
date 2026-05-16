@@ -40,6 +40,7 @@ import org.xrpl.xrpl4j.model.ledger.XChainCreateAccountAttestation;
 import org.xrpl.xrpl4j.model.ledger.XChainCreateAccountProofSig;
 import org.xrpl.xrpl4j.model.ledger.XChainOwnedClaimIdObject;
 import org.xrpl.xrpl4j.model.ledger.XChainOwnedCreateAccountClaimIdObject;
+import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -452,9 +453,19 @@ public class XChainIT extends AbstractIT {
       )
     );
 
+    Address issuer = iouBridge.bridge().issuingChainIssue().map(
+      xrpIssue -> {
+        throw new IllegalStateException("Expected IouIssue but got XrpIssue");
+      },
+      iouIssue -> iouIssue.issuer(),
+      mptIssue -> {
+        throw new IllegalStateException("Expected IouIssue but got MptIssue");
+      }
+    );
+
     BigDecimal initialBalance = new BigDecimal(this.getValidatedAccountLines(
       destination.publicKey().deriveAddress(),
-      ((IouIssue) iouBridge.bridge().issuingChainIssue()).issuer()
+      issuer
     ).lines().get(0).balance());
 
     addClaimAttestation(
@@ -469,7 +480,7 @@ public class XChainIT extends AbstractIT {
 
     BigDecimal finalBalance = new BigDecimal(this.getValidatedAccountLines(
       destination.publicKey().deriveAddress(),
-      ((IouIssue) iouBridge.bridge().issuingChainIssue()).issuer()
+      issuer
     ).lines().get(0).balance());
 
     assertThat(finalBalance).isEqualTo(

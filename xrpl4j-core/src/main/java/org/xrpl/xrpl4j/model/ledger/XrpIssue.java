@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.model.ledger;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
@@ -33,15 +34,20 @@ import org.immutables.value.Value;
 public interface XrpIssue extends Issue {
 
   /**
-   * The singleton XrpIssue instance.
+   * Construct a {@code XrpIssue} instance.
+   *
+   * @return A {@link XrpIssue}.
    */
-  XrpIssue XRP = ImmutableXrpIssue.builder().build();
+  static XrpIssue of() {
+    return ImmutableXrpIssue.builder().build();
+  }
 
   /**
    * The currency code, which is always "XRP".
    *
    * @return The {@link String} "XRP".
    */
+  @JsonProperty("currency")
   @Value.Derived
   default String currency() {
     return "XRP";

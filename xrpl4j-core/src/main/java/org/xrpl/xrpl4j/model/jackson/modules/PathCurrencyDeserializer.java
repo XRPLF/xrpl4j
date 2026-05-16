@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  * ========================LICENSE_START=================================
  * xrpl4j :: model
  * %%
- * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,9 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import org.xrpl.xrpl4j.model.client.path.PathCurrency;
+import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
-import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -34,49 +35,63 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import java.io.IOException;
 
 /**
- * Custom Jackson deserializer for {@link Issue} that dispatches to the correct subtype
- * ({@link XrpIssue}, {@link IouIssue}, or {@link MptIssue}) based on the JSON fields present.
+ * Custom Jackson deserializer for {@link PathCurrency}.
+ *
+ * <p>This deserializer handles the polymorphic nature of PathCurrency, which can wrap
+ * {@link XrpIssue} (for XRP), {@link IouIssue} (for IOUs), or {@link MptIssue} (for MPTokens).</p>
  */
-public class IssueDeserializer extends StdDeserializer<Issue> {
+public class PathCurrencyDeserializer extends StdDeserializer<PathCurrency> {
 
   /**
    * No-args constructor.
    */
-  public IssueDeserializer() {
-    super(Issue.class);
+  public PathCurrencyDeserializer() {
+    super(PathCurrency.class);
   }
 
   @Override
-  public Issue deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
+  public PathCurrency deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
     JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
-    // Check if it's an MPT issue (has mpt_issuance_id field)
+    // Check if it's an MPT (has mpt_issuance_id field)
     if (node.has("mpt_issuance_id")) {
-      return MptIssue.of(MpTokenIssuanceId.of(node.get("mpt_issuance_id").asText()));
+      return PathCurrency.of(
+        MptIssue.of(MpTokenIssuanceId.of(node.get("mpt_issuance_id").asText()))
+      );
     }
 
     // Otherwise, it's a currency-based issue (has currency field)
     if (node.has("currency")) {
       String currency = node.get("currency").asText();
 
-      // Check if it's XRP (case-insensitive)
-      if ("XRP".equalsIgnoreCase(currency)) {
-        return Issue.XRP;
+      // Check if it's XRP
+      if ("XRP".equals(currency)) {
+        return PathCurrency.of(XrpIssue.of());
       }
 
-      // Otherwise, it's an IOU (must have issuer)
+      // Otherwise, it's an IOU
       if (node.has("issuer")) {
-        return IouIssue.builder()
-          .currency(currency)
-          .issuer(Address.of(node.get("issuer").asText()))
-          .build();
+        // IOU with specific issuer
+        return PathCurrency.of(
+          IouIssue.builder()
+            .currency(currency)
+            .issuer(Address.of(node.get("issuer").asText()))
+            .build()
+        );
       }
 
-      throw new IllegalArgumentException(
-        "Invalid Issue JSON: IOU currency '" + currency + "' must have an 'issuer' field"
+      // IOU without issuer (used in source_currencies to mean "any issuer")
+      // Use deprecated CurrencyIssue to support this case
+      return PathCurrency.of(
+        CurrencyIssue.builder()
+          .currency(currency)
+          .build()
       );
     }
 
-    throw new IOException("Cannot deserialize Issue: must contain 'currency' or 'mpt_issuance_id' field");
+    throw new IllegalArgumentException(
+      "PathCurrency JSON must have either 'mpt_issuance_id' or 'currency' field"
+    );
   }
 }
+

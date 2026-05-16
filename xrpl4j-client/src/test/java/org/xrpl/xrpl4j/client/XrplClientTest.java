@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -115,8 +116,10 @@ import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
@@ -964,6 +967,45 @@ public class XrplClientTest {
           .build()
       )
       .limit(UnsignedInteger.valueOf(10))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
+      .build();
+
+    BookOffersResult resultMock = mock(BookOffersResult.class);
+    when(jsonRpcClientMock.send(
+      JsonRpcRequest.builder()
+        .method(XrplMethods.BOOK_OFFERS)
+        .addParams(params)
+        .build(),
+      BookOffersResult.class
+    )).thenReturn(resultMock);
+    BookOffersResult result = xrplClient.bookOffers(params);
+    assertThat(result).isEqualTo(resultMock);
+  }
+
+  @Test
+  public void ripplePathFindWithMptSourceCurrency() throws JsonRpcClientErrorException {
+    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+    RipplePathFindRequestParams params = RipplePathFindRequestParams.builder()
+      .sourceAccount(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .destinationAccount(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destinationAmount(XrpCurrencyAmount.ofDrops(1))
+      .addSourceCurrencies(PathCurrency.of(MptIssue.of(mptId)))
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+      .build();
+    xrplClient.ripplePathFind(params);
+
+    ArgumentCaptor<JsonRpcRequest> captor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    verify(jsonRpcClientMock, atLeastOnce()).send(captor.capture(), eq(RipplePathFindResult.class));
+    assertThat(captor.getValue().method()).isEqualTo(XrplMethods.RIPPLE_PATH_FIND);
+    assertThat(captor.getValue().params().get(0)).isEqualTo(params);
+  }
+
+  @Test
+  void bookOffersWithMptAssets() throws JsonRpcClientErrorException {
+    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+    BookOffersRequestParams params = BookOffersRequestParams.builder()
+      .takerGets(MptIssue.of(mptId))
+      .takerPays(Issue.XRP)
       .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
 

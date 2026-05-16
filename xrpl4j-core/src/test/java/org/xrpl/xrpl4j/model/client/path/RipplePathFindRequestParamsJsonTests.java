@@ -25,9 +25,14 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.ledger.CurrencyIssue;
+import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 
 public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
 
@@ -42,8 +47,8 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
         .build())
       .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .addSourceCurrencies(
-        PathCurrency.of("XRP"),
-        PathCurrency.of("USD")
+        PathCurrency.of(Issue.XRP),
+        PathCurrency.of(CurrencyIssue.builder().currency("USD").build())
       )
       .domain(Hash256.of("96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797"))
       .ledgerSpecifier(LedgerSpecifier.CURRENT)
@@ -65,6 +70,46 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
       "    }," +
       "    {" +
       "      \"currency\": \"USD\"" +
+      "    }" +
+      "  ]" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  public void testJsonWithMpt() throws JsonProcessingException, JSONException {
+    MpTokenIssuanceId mptId1 = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+    MpTokenIssuanceId mptId2 = MpTokenIssuanceId.of("00000003430427B80BD2D09D36B70B969E12801065F22308");
+
+    RipplePathFindRequestParams params = RipplePathFindRequestParams.builder()
+      .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .destinationAmount(MptCurrencyAmount.builder()
+        .mptIssuanceId(mptId1)
+        .value("100")
+        .build())
+      .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .addSourceCurrencies(
+        PathCurrency.of(MptIssue.of(mptId1)),
+        PathCurrency.of(MptIssue.of(mptId2))
+      )
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
+      .build();
+
+    String json = "{" +
+      "  \"ledger_index\": \"current\"," +
+      "  \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
+      "  \"destination_amount\": {" +
+      "    \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\"," +
+      "    \"value\": \"100\"" +
+      "  }," +
+      "  \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
+      "  \"source_currencies\": [" +
+      "    {" +
+      "      \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\"" +
+      "    }," +
+      "    {" +
+      "      \"mpt_issuance_id\": \"00000003430427B80BD2D09D36B70B969E12801065F22308\"" +
       "    }" +
       "  ]" +
       "}";

@@ -107,7 +107,7 @@ jobs:
       - name: Build
         run: mvn clean install -Dmaven.javadoc.skip=true -Pandroid
 
-  build_devnet_its:
+  build_develop_its:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
@@ -120,7 +120,7 @@ jobs:
           java-version: '8'
           cache: 'maven'
       - name: Build
-        run: mvn clean install -Dmaven.javadoc.skip=true -DuseDevnet
+        run: mvn clean install -Dmaven.javadoc.skip=true -DuseDevelop
 
   build_testnet_reporting_its:
     runs-on: ubuntu-latest

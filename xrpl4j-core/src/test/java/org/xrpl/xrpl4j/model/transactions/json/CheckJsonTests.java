@@ -32,6 +32,8 @@ import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -433,5 +435,113 @@ public class CheckJsonTests extends AbstractJsonTest {
       "}";
 
     assertCanSerializeAndDeserialize(checkCreate, json);
+  }
+
+  @Test
+  public void testCheckCreateJsonWithMptSendMax() throws JsonProcessingException, JSONException {
+    MpTokenIssuanceId mptIssuanceId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+
+    CheckCreate checkCreate = CheckCreate.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sendMax(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptIssuanceId)
+          .value("100000000")
+          .build()
+      )
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    String json = "{\n" +
+      "  \"TransactionType\": \"CheckCreate\",\n" +
+      "  \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
+      "  \"Destination\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
+      "  \"SendMax\": {\n" +
+      "    \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\",\n" +
+      "    \"value\": \"100000000\"\n" +
+      "  },\n" +
+      "  \"Sequence\": 1,\n" +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "  \"Fee\": \"12\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(checkCreate, json);
+  }
+
+  @Test
+  public void testCheckCashJsonWithMptAmount() throws JsonProcessingException, JSONException {
+    MpTokenIssuanceId mptIssuanceId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+
+    CheckCash checkCash = CheckCash.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .amount(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptIssuanceId)
+          .value("100")
+          .build()
+      )
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    String json = "{\n" +
+      "    \"Account\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
+      "    \"TransactionType\": \"CheckCash\",\n" +
+      "    \"Amount\": {\n" +
+      "      \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\",\n" +
+      "      \"value\": \"100\"\n" +
+      "    },\n" +
+      "    \"CheckID\": \"838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334\",\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"Fee\": \"12\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(checkCash, json);
+  }
+
+  @Test
+  public void testCheckCashJsonWithMptDeliverMin() throws JsonProcessingException, JSONException {
+    MpTokenIssuanceId mptIssuanceId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+
+    CheckCash checkCash = CheckCash.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .deliverMin(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptIssuanceId)
+          .value("50")
+          .build()
+      )
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    String json = "{\n" +
+      "    \"Account\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
+      "    \"TransactionType\": \"CheckCash\",\n" +
+      "    \"DeliverMin\": {\n" +
+      "      \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\",\n" +
+      "      \"value\": \"50\"\n" +
+      "    },\n" +
+      "    \"CheckID\": \"838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334\",\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"Fee\": \"12\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(checkCash, json);
   }
 }

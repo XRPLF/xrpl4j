@@ -81,6 +81,8 @@ public interface CurrencyAmount {
    *                                   {@link XrpCurrencyAmount}.
    * @param issuedCurrencyAmountMapper A {@link Function} that is called if this instance is  of type
    *                                   {@link IssuedCurrencyAmount}.
+   * @param mptCurrencyAmountMapper    A {@link Function} that is called if this instance is of type
+   *                                   {@link MptCurrencyAmount}.
    * @param <R>                        The type of object to return after mapping.
    *
    * @return A {@link R} that is constructed by the appropriate mapper function.

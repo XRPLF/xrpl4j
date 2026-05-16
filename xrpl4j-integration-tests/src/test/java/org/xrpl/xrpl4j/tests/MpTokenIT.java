@@ -388,6 +388,8 @@ public class MpTokenIT extends AbstractIT {
       .hasMessageContaining("entryNotFound");
   }
 
+  @DisabledIf(value = "shouldNotRunPermissionedDomain",
+    disabledReason = "PermissionedDomain requires a feature only available on the develop rippled image.")
   @Test
   void mptIssuanceWithPermissionedDomainSuccessAndFailure()
     throws JsonRpcClientErrorException, JsonProcessingException {
@@ -605,6 +607,12 @@ public class MpTokenIT extends AbstractIT {
     );
     SubmitResult<Payment> mintToUnauthorizedHolderSubmitResult = xrplClient.submit(signedMintToUnauthorizedHolder);
     assertThat(mintToUnauthorizedHolderSubmitResult.engineResult()).isEqualTo("tecNO_AUTH");
+  }
+
+  static boolean shouldNotRunPermissionedDomain() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null ||
+      System.getProperty("useDevnet") != null;
   }
 }
 

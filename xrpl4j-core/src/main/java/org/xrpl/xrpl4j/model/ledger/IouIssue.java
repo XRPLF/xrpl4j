@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.model.ledger;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
@@ -44,9 +45,11 @@ public interface IouIssue extends Issue {
 
   /**
    * Either a 3 character currency code, or a 40 character hexadecimal encoded currency code value.
+   * Cannot be "XRP".
    *
    * @return A {@link String} containing the currency code.
    */
+  @JsonProperty("currency")
   String currency();
 
   /**
@@ -54,6 +57,16 @@ public interface IouIssue extends Issue {
    *
    * @return The {@link Address} of the issuer account.
    */
+  @JsonProperty("issuer")
   Address issuer();
 
+  /**
+   * Validate that the currency is not "XRP" (case-insensitive).
+   */
+  @Value.Check
+  default void checkCurrencyNotXrp() {
+    if ("XRP".equalsIgnoreCase(currency())) {
+      throw new IllegalStateException("IouIssue currency cannot be 'XRP'. Use XrpIssue instead.");
+    }
+  }
 }

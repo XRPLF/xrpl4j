@@ -189,5 +189,4 @@ public class SignatureUtils {
       throw new RuntimeException(e.getMessage(), e);
     }
   }
-
 }

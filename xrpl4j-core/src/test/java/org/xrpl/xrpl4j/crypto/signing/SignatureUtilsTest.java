@@ -88,6 +88,7 @@ import org.xrpl.xrpl4j.model.transactions.CredentialDelete;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
 import org.xrpl.xrpl4j.model.transactions.CredentialUri;
 import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
+import org.xrpl.xrpl4j.model.transactions.DelegateSet;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.DidDelete;
 import org.xrpl.xrpl4j.model.transactions.DidSet;
@@ -1140,6 +1141,19 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addSignatureToDelegateSet() {
+    DelegateSet transaction = DelegateSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .authorize(signer1KeyPair.publicKey().deriveAddress())
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
   void addSignatureToOracleSet() {
     OracleSet transaction = OracleSet.builder().account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(10)).sequence(UnsignedInteger.valueOf(391)).signingPublicKey(sourcePublicKey)
@@ -1696,6 +1710,18 @@ public class SignatureUtilsTest {
   void addMultiSignatureToDidDelete() {
     DidDelete transaction = DidDelete.builder().account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(10)).sequence(UnsignedInteger.valueOf(391)).build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToDelegateSet() {
+    DelegateSet transaction = DelegateSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .authorize(signer1KeyPair.publicKey().deriveAddress())
+      .build();
 
     addMultiSignatureToTransactionHelper(transaction);
   }

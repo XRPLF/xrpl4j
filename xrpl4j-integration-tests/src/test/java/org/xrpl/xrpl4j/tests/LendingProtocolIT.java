@@ -38,6 +38,7 @@ import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
 import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
+import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.CounterpartySignature;
@@ -124,6 +125,94 @@ public class LendingProtocolIT extends AbstractIT {
     );
     final CounterpartySignature counterpartySignature = CounterpartySignature.of(
       borrowerKeyPair.publicKey(), counterpartySig
+    );
+
+    // Assemble the final transaction with both signatures
+    final LoanSet signedLoanSet = LoanSet.builder().from(unsignedLoanSet)
+      .counterpartySignature(counterpartySignature)
+      .transactionSignature(brokerSigned.signature())
+      .build();
+
+    final LoanSet unsignedWithCounterparty = LoanSet.builder().from(unsignedLoanSet)
+      .counterpartySignature(counterpartySignature)
+      .build();
+
+    final SingleSignedTransaction<LoanSet> finalTx = SingleSignedTransaction.<LoanSet>builder()
+      .unsignedTransaction(unsignedWithCounterparty)
+      .signature(brokerSigned.signature())
+      .signedTransaction(signedLoanSet)
+      .build();
+
+    submitSingleSignedLoanSet(finalTx);
+  }
+
+  // //////////////////////
+  // Test 1a: Broker single-signs, Borrower (counterparty) single-signs using regular key
+  // //////////////////////
+
+  @Test
+  void loanSetWithSingleSignBrokerAndRegularKeyCounterparty()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+
+    final KeyPair brokerKeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerKeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerRegularKeyPair = createRandomAccountEd25519();
+
+    final FeeResult feeResult = xrplClient.fee();
+    final XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
+
+    // Set the regular key on the borrower's account
+    final AccountInfoResult borrowerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(borrowerKeyPair.publicKey().deriveAddress())
+    );
+    final SetRegularKey setRegularKey = SetRegularKey.builder()
+      .account(borrowerKeyPair.publicKey().deriveAddress())
+      .fee(fee)
+      .sequence(borrowerAccountInfo.accountData().sequence())
+      .regularKey(borrowerRegularKeyPair.publicKey().deriveAddress())
+      .signingPublicKey(borrowerKeyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
+      borrowerKeyPair.privateKey(), setRegularKey
+    );
+    final SubmitResult<SetRegularKey> setRegularKeyResult = xrplClient.submit(signedSetRegularKey);
+    assertThat(setRegularKeyResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(borrowerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().regularKey()
+        .filter(borrowerRegularKeyPair.publicKey().deriveAddress()::equals)
+        .isPresent()
+    );
+
+    final Hash256 loanBrokerId = setupLoanBrokerAndXrpVault(brokerKeyPair, fee);
+
+    // Build the unsigned base LoanSet transaction
+    final AccountInfoResult brokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
+    );
+    final LoanSet unsignedLoanSet = LoanSet.builder()
+      .account(brokerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO).recommendedFee())
+      .sequence(brokerAccountInfo.accountData().sequence())
+      .loanBrokerId(loanBrokerId)
+      .principalRequested(Amount.of("1000000"))
+      .counterparty(borrowerKeyPair.publicKey().deriveAddress())
+      .paymentTotal(UnsignedInteger.valueOf(3))
+      .signingPublicKey(brokerKeyPair.publicKey())
+      .build();
+
+    // Broker (first-party) single-signs the unsigned transaction
+    final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
+      brokerKeyPair.privateKey(), unsignedLoanSet
+    );
+
+    // Borrower (counterparty) signs using their regular key
+    final Signature counterpartySig = signatureService.counterpartySign(
+      borrowerRegularKeyPair.privateKey(), unsignedLoanSet
+    );
+    final CounterpartySignature counterpartySignature = CounterpartySignature.of(
+      borrowerRegularKeyPair.publicKey(), counterpartySig
     );
 
     // Assemble the final transaction with both signatures

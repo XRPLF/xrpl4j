@@ -109,6 +109,7 @@ class LoanBrokerObjectTest extends AbstractJsonTest {
       "    \"OwnerCount\" : 0,\n" +
       "    \"ManagementFeeRate\" : 0,\n" +
       "    \"DebtTotal\" : \"0\",\n" +
+      "    \"DebtMaximum\" : \"0\",\n" +
       "    \"CoverAvailable\" : \"0\",\n" +
       "    \"CoverRateMinimum\" : 0,\n" +
       "    \"CoverRateLiquidation\" : 0,\n" +

@@ -63,10 +63,10 @@ public interface LoanSet extends Transaction {
   /**
    * The signature of the counterparty over the transaction.
    *
-   * @return A {@link CounterpartySignature}.
+   * @return An optionally-present {@link CounterpartySignature}.
    */
   @JsonProperty("CounterpartySignature")
-  CounterpartySignature counterpartySignature();
+  Optional<CounterpartySignature> counterpartySignature();
 
   /**
    * Arbitrary metadata in hex format. The field is limited to 256 bytes.

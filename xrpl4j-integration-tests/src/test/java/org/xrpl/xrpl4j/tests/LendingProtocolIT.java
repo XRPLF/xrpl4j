@@ -567,7 +567,7 @@ public class LendingProtocolIT extends AbstractIT {
     loanBrokerEntry = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.index(loanBrokerId, LoanBrokerObject.class, LedgerSpecifier.VALIDATED)
     );
-    assertThat(loanBrokerEntry.node()).isEqualTo(Amount.of("500000"));
+    assertThat(loanBrokerEntry.node().debtMaximum()).isEqualTo(Amount.of("500000"));
     assertThat(loanBrokerEntry.node().data()).isNotEmpty().get().isEqualTo(LoanBrokerData.of("AABB"));
     // Fixed fields should remain unchanged
     assertThat(loanBrokerEntry.node().managementFeeRate()).isEqualTo(UnsignedInteger.valueOf(10000));

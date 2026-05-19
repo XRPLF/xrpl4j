@@ -488,16 +488,13 @@ class CurrencyAmountTest extends AbstractJsonTest {
   }
 
   @Test
-  void deserializeMptCurrencyAmountWithExplicitNullIssuanceIdAcceptsNullLiteral() throws JsonProcessingException {
-    // node.path("mpt_issuance_id").asText() yields "null" (4 chars) for an explicit JSON null.
-    // The isEmpty() guard passes "null" through; this test documents that known limitation.
-    // A stricter length check on _MpTokenIssuanceId would reject this case in the future.
+  void deserializeMptCurrencyAmountWithExplicitNullIssuanceIdThrows() {
+    // node.path("mpt_issuance_id") returns a NullNode for "mpt_issuance_id": null.
+    // textOrEmpty() normalises NullNode to "", which fails the @Value.Check on _MpTokenIssuanceId.
     String json = "{\"amount\": {\"mpt_issuance_id\": null, \"value\": \"100\"}}";
-    CurrencyAmountWrapper result = objectMapper.readValue(json, CurrencyAmountWrapper.class);
-    assertThat(result.amount()).isInstanceOf(MptCurrencyAmount.class);
-    MptCurrencyAmount mpt = (MptCurrencyAmount) result.amount();
-    assertThat(mpt.mptIssuanceId().value()).isEqualTo("null");
-    assertThat(mpt.value()).isEqualTo("100");
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class)
+      .cause().isInstanceOf(IllegalArgumentException.class);
   }
 
   // write a wrapper interface that wraps a CurrencyAmount using Value.Immutable

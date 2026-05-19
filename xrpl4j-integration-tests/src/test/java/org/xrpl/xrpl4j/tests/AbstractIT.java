@@ -802,16 +802,14 @@ public abstract class AbstractIT {
 
       assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
-      // Wait for the account sequence to advance, which confirms the tx was applied. A plain `scanForResult` on
-      // `getValidatedTransaction` is not sufficient here because when this code executes against a Clio endpoint
-      //  operating in a cluster, each endpoint may return stale `account_info` with the old sequence even after
-      // reporting the `tx` as validated. This solution works because the predicate supplied to
-      // `getValidatedAccountInfo` means that function will keep retrying the Clio call for 30s until it
-      // encounters at least one node with the update value.
+      // Wait for the account sequence to advance, which confirms the tx was applied on this Clio node.
+      // A plain `scanForResult` on `getValidatedTransaction` is not sufficient because Clio nodes in a
+      // cluster may return `txnNotFound` for recently-validated transactions until their index catches up.
+      final UnsignedInteger expectedIssuerSequence = issuerAccountInfo.accountData().sequence()
+        .plus(UnsignedInteger.ONE);
       this.scanForResult(
-        () -> this.getValidatedTransaction(
-          createTxIntermediateResult.transactionResult().hash(), CredentialCreate.class),
-        result -> result.metadata().map(meta -> meta.transactionResult().equals("tesSUCCESS")).orElse(false)
+        () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+        info -> info.accountData().sequence().equals(expectedIssuerSequence)
       );
     }
   }
@@ -886,10 +884,14 @@ public abstract class AbstractIT {
 
       assertThat(acceptTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
+      // Wait for the account sequence to advance, which confirms the tx was applied on this Clio node.
+      // A plain `scanForResult` on `getValidatedTransaction` is not sufficient because Clio nodes in a
+      // cluster may return `txnNotFound` for recently-validated transactions until their index catches up.
+      final UnsignedInteger expectedSubjectSequence = subjectAccountInfo.accountData().sequence()
+        .plus(UnsignedInteger.ONE);
       this.scanForResult(
-        () -> this.getValidatedTransaction(
-          acceptTxIntermediateResult.transactionResult().hash(), CredentialAccept.class),
-        result -> result.metadata().map(meta -> meta.transactionResult().equals("tesSUCCESS")).orElse(false)
+        () -> this.getValidatedAccountInfo(subjectKeyPair.publicKey().deriveAddress()),
+        info -> info.accountData().sequence().equals(expectedSubjectSequence)
       );
     }
   }

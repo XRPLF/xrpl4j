@@ -529,7 +529,7 @@ public class LendingProtocolIT extends AbstractIT {
     // Verify LoanBroker fields
     assertThat(loanBrokerObject.owner()).isEqualTo(loanBrokerKeyPair.publicKey().deriveAddress());
     assertThat(loanBrokerObject.vaultId()).isEqualTo(vaultId);
-    assertThat(loanBrokerObject.debtMaximum()).isNotEmpty().get().isEqualTo(Amount.of("250000"));
+    assertThat(loanBrokerObject.debtMaximum()).isEqualTo(Amount.of("250000"));
     assertThat(loanBrokerObject.managementFeeRate()).isEqualTo(UnsignedInteger.valueOf(10000));
     assertThat(loanBrokerObject.data()).isNotEmpty().get().isEqualTo(LoanBrokerData.of("010203"));
 
@@ -567,7 +567,7 @@ public class LendingProtocolIT extends AbstractIT {
     loanBrokerEntry = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.index(loanBrokerId, LoanBrokerObject.class, LedgerSpecifier.VALIDATED)
     );
-    assertThat(loanBrokerEntry.node().debtMaximum()).isNotEmpty().get().isEqualTo(Amount.of("500000"));
+    assertThat(loanBrokerEntry.node()).isEqualTo(Amount.of("500000"));
     assertThat(loanBrokerEntry.node().data()).isNotEmpty().get().isEqualTo(LoanBrokerData.of("AABB"));
     // Fixed fields should remain unchanged
     assertThat(loanBrokerEntry.node().managementFeeRate()).isEqualTo(UnsignedInteger.valueOf(10000));

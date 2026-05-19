@@ -53,7 +53,7 @@ public interface LoanSet extends Transaction {
   Hash256 loanBrokerId();
 
   /**
-   * The address of the counterparty of the Loan.
+   * The address of the counterparty of the Loan. This field may be absent when LoanBroker is the counterparty.
    *
    * @return An optionally-present {@link Address}.
    */
@@ -63,10 +63,10 @@ public interface LoanSet extends Transaction {
   /**
    * The signature of the counterparty over the transaction.
    *
-   * @return An optionally-present {@link CounterpartySignature}.
+   * @return A {@link CounterpartySignature}.
    */
   @JsonProperty("CounterpartySignature")
-  Optional<CounterpartySignature> counterpartySignature();
+  CounterpartySignature counterpartySignature();
 
   /**
    * Arbitrary metadata in hex format. The field is limited to 256 bytes.

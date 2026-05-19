@@ -116,6 +116,15 @@ public interface LoanObject extends LedgerObject {
   /**
    * A nominal funds amount paid to the {@code LoanBroker.Owner} when the Loan is created.
    *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
    * @return An {@link Amount}.
    */
   @JsonProperty("LoanOriginationFee")
@@ -126,6 +135,15 @@ public interface LoanObject extends LedgerObject {
 
   /**
    * A nominal funds amount paid to the {@code LoanBroker.Owner} with every Loan payment.
+   *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
    *
    * @return An {@link Amount}.
    */
@@ -138,6 +156,15 @@ public interface LoanObject extends LedgerObject {
   /**
    * A nominal funds amount paid to the {@code LoanBroker.Owner} when a payment is late.
    *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
    * @return An {@link Amount}.
    */
   @JsonProperty("LatePaymentFee")
@@ -148,6 +175,15 @@ public interface LoanObject extends LedgerObject {
 
   /**
    * A nominal funds amount paid to the {@code LoanBroker.Owner} when a full payment is made.
+   *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
    *
    * @return An {@link Amount}.
    */
@@ -161,6 +197,15 @@ public interface LoanObject extends LedgerObject {
    * A fee charged on overpayments in 1/10th basis points. Valid values are between 0 and 100000 inclusive
    * (0 - 100%).
    *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
    * @return An {@link UnsignedInteger}.
    */
   @JsonProperty("OverpaymentFee")
@@ -171,6 +216,15 @@ public interface LoanObject extends LedgerObject {
 
   /**
    * Annualized interest rate of the Loan in 1/10th basis points.
+   *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
    *
    * @return An {@link UnsignedInteger}.
    */
@@ -184,6 +238,15 @@ public interface LoanObject extends LedgerObject {
    * A premium is added to the interest rate for late payments in 1/10th basis points. Valid values are
    * between 0 and 100000 inclusive (0 - 100%).
    *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
    * @return An {@link UnsignedInteger}.
    */
   @JsonProperty("LateInterestRate")
@@ -196,6 +259,15 @@ public interface LoanObject extends LedgerObject {
    * An interest rate charged for repaying the Loan early in 1/10th basis points. Valid values are between 0
    * and 100000 inclusive (0 - 100%).
    *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
    * @return An {@link UnsignedInteger}.
    */
   @JsonProperty("CloseInterestRate")
@@ -207,6 +279,15 @@ public interface LoanObject extends LedgerObject {
   /**
    * An interest rate charged on overpayments in 1/10th basis points. Valid values are between 0 and 100000
    * inclusive (0 - 100%).
+   *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
    *
    * @return An {@link UnsignedInteger}.
    */
@@ -235,6 +316,15 @@ public interface LoanObject extends LedgerObject {
   /**
    * The number of seconds after the Loan's Payment Due Date that the Loan can be Defaulted.
    *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
    * @return An {@link UnsignedInteger}.
    */
   @JsonProperty("GracePeriod")
@@ -262,6 +352,15 @@ public interface LoanObject extends LedgerObject {
   /**
    * The number of payments remaining on the Loan.
    *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
    * @return An {@link UnsignedInteger}.
    */
   @JsonProperty("PaymentRemaining")
@@ -272,6 +371,15 @@ public interface LoanObject extends LedgerObject {
 
   /**
    * The total outstanding value of the Loan, including all fees and interest.
+   *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
    *
    * @return An {@link Amount}.
    */
@@ -284,6 +392,15 @@ public interface LoanObject extends LedgerObject {
   /**
    * The principal amount that the Borrower still owes.
    *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
    * @return An {@link Amount}.
    */
   @JsonProperty("PrincipalOutstanding")
@@ -294,6 +411,15 @@ public interface LoanObject extends LedgerObject {
 
   /**
    * The remaining Management Fee owed to the LoanBroker.
+   *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
    *
    * @return An {@link Amount}.
    */
@@ -314,6 +440,15 @@ public interface LoanObject extends LedgerObject {
   /**
    * The scale factor that ensures all computed amounts are rounded to the same number of decimal places. It
    * is determined based on the total loan value at creation time.
+   *
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
    *
    * @return An {@link Integer}.
    */

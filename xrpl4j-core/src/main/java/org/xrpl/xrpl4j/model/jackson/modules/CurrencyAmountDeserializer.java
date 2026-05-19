@@ -56,9 +56,6 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
       if (node.has("mpt_issuance_id")) {
         String mptIssuanceId = node.path("mpt_issuance_id").asText();
         String value = node.path("value").asText();
-        if (mptIssuanceId.isEmpty() || value.isEmpty()) {
-          throw new IOException("MptCurrencyAmount missing required field(s): mpt_issuance_id, value");
-        }
         return MptCurrencyAmount.builder()
           .mptIssuanceId(MpTokenIssuanceId.of(mptIssuanceId))
           .value(value)
@@ -67,9 +64,6 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
         String currency = node.path("currency").asText();
         String value = node.path("value").asText();
         String issuer = node.path("issuer").asText();
-        if (currency.isEmpty() || value.isEmpty() || issuer.isEmpty()) {
-          throw new IOException("IssuedCurrencyAmount missing required field(s): currency, value, issuer");
-        }
 
         return IssuedCurrencyAmount.builder()
           .value(value)

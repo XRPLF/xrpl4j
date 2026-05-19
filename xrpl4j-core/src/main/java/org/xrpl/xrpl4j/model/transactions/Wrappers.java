@@ -853,6 +853,11 @@ public class Wrappers {
     // TODO: Do clients ever need to construct an issuance id given a sequence and issuer AccountID?
     // See https://github.com/XRPLF/xrpl4j/issues/657
 
+    @Value.Check
+    void check() {
+      Preconditions.checkArgument(!this.value().isEmpty(), "MpTokenIssuanceId must not be empty.");
+    }
+
     @Override
     public String toString() {
       return this.value();

@@ -63,6 +63,23 @@ public interface LoanSet extends Transaction {
   /**
    * The signature of the counterparty over the transaction.
    *
+   * <p>This field is {@link Optional} because both parties must sign the same serialized transaction bytes,
+   * and {@code CounterpartySignature} is excluded from those bytes by design. The dual-signing flow is:
+   * <ol>
+   *   <li>The broker constructs a {@link LoanSet} with this field absent and signs it — the absent field
+   *       produces the canonical bytes that both parties will sign.</li>
+   *   <li>The counterparty signs the same bytes (over the same absent-field transaction) and returns their
+   *       signature.</li>
+   *   <li>The broker/counterparty assembles the final transaction by adding the counterparty signature here and
+   *      submits it.</li>
+   * </ol>
+   *
+   * <p>If this field were required, it would be impossible to construct the intermediate unsigned object
+   * needed to obtain the signable bytes in step 1, breaking the entire dual-signing protocol.
+   *
+   * <p>When present, the value must be a valid signature from a key authorized for the counterparty account
+   * (master key, regular key, or a quorum of multi-signers).
+   *
    * @return An optionally-present {@link CounterpartySignature}.
    */
   @JsonProperty("CounterpartySignature")

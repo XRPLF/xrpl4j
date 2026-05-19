@@ -87,7 +87,7 @@ public class RippledContainer {
         .withExposedPorts(5005)
         .withImagePullPolicy(PullPolicy.alwaysPull())
         .withClasspathResourceMapping("xrpld",
-          "/etc/opt/xrpld/",
+          "/etc/xrpld/",
           BindMode.READ_ONLY)
         .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
     }

@@ -45,6 +45,7 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -72,6 +73,8 @@ public class AbstractSignatureServiceTest {
   Signer signerMock;
   @Mock
   Batch batchMock;
+  @Mock
+  LoanSet loanSetMock;
 
   private AtomicBoolean ed25519VerifyCalled;
   private AtomicBoolean secp256k1VerifyCalled;
@@ -91,6 +94,7 @@ public class AbstractSignatureServiceTest {
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toSignableInnerBytes(any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableInnerBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toCounterpartyMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
     // Mock signatures need to return valid values for serialization
     UnsignedByteArray ed25519SigBytes = UnsignedByteArray.of(new byte[64]);
@@ -540,6 +544,72 @@ public class AbstractSignatureServiceTest {
 
     verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS);
     verify(signatureUtilsMock, times(0)).toSignableInnerBytes(any());
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  // /////////////////
+  // counterpartySign
+  // /////////////////
+
+  @Test
+  public void counterpartySignWithNullPrivateKey() {
+    assertThrows(NullPointerException.class, () -> signatureService.counterpartySign(null, loanSetMock));
+  }
+
+  @Test
+  public void counterpartySignWithNullTransaction() {
+    assertThrows(NullPointerException.class,
+      () -> signatureService.counterpartySign(TestConstants.getEdPrivateKey(), null));
+  }
+
+  @Test
+  public void counterpartySignEd25519() {
+    Signature actualSignature = signatureService.counterpartySign(TestConstants.getEdPrivateKey(), loanSetMock);
+    assertThat(actualSignature).isEqualTo(ed25519SignatureMock);
+
+    verify(signatureUtilsMock).toSignableBytes(loanSetMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  @Test
+  public void counterpartySignSecp256k1() {
+    Signature actualSignature = signatureService.counterpartySign(TestConstants.getEcPrivateKey(), loanSetMock);
+    assertThat(actualSignature).isEqualTo(secp256k1SignatureMock);
+
+    verify(signatureUtilsMock).toSignableBytes(loanSetMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  // /////////////////
+  // counterpartyMultiSign
+  // /////////////////
+
+  @Test
+  public void counterpartyMultiSignWithNullPrivateKey() {
+    assertThrows(NullPointerException.class, () -> signatureService.counterpartyMultiSign(null, loanSetMock));
+  }
+
+  @Test
+  public void counterpartyMultiSignWithNullTransaction() {
+    assertThrows(NullPointerException.class,
+      () -> signatureService.counterpartyMultiSign(TestConstants.getEdPrivateKey(), null));
+  }
+
+  @Test
+  public void counterpartyMultiSignEd25519() {
+    Signature actualSignature = signatureService.counterpartyMultiSign(TestConstants.getEdPrivateKey(), loanSetMock);
+    assertThat(actualSignature).isEqualTo(ed25519SignatureMock);
+
+    verify(signatureUtilsMock).toCounterpartyMultiSignableBytes(loanSetMock, TestConstants.ED_ADDRESS);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  @Test
+  public void counterpartyMultiSignSecp256k1() {
+    Signature actualSignature = signatureService.counterpartyMultiSign(TestConstants.getEcPrivateKey(), loanSetMock);
+    assertThat(actualSignature).isEqualTo(secp256k1SignatureMock);
+
+    verify(signatureUtilsMock).toCounterpartyMultiSignableBytes(loanSetMock, TestConstants.EC_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 }

@@ -75,4 +75,47 @@ class IssuedCurrencyAmountTest {
       assertThat(issuedCurrency.isNegative()).isFalse();
     }
   }
+
+  @Test
+  void isZero() {
+    // Zero
+    assertThat(IssuedCurrencyAmount.builder()
+      .currency("USD")
+      .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
+      .value("0")
+      .build().isZero()
+    ).isTrue();
+
+    // Decimal zero
+    assertThat(IssuedCurrencyAmount.builder()
+      .currency("USD")
+      .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
+      .value("0.0")
+      .build().isZero()
+    ).isTrue();
+
+    // Negative zero
+    assertThat(IssuedCurrencyAmount.builder()
+      .currency("USD")
+      .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
+      .value("-0")
+      .build().isZero()
+    ).isTrue();
+
+    // Positive value
+    assertThat(IssuedCurrencyAmount.builder()
+      .currency("USD")
+      .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
+      .value("500")
+      .build().isZero()
+    ).isFalse();
+
+    // Negative value
+    assertThat(IssuedCurrencyAmount.builder()
+      .currency("USD")
+      .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
+      .value("-500")
+      .build().isZero()
+    ).isFalse();
+  }
 }

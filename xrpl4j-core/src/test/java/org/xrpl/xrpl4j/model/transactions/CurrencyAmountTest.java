@@ -512,6 +512,33 @@ class CurrencyAmountTest extends AbstractJsonTest {
       .cause().isInstanceOf(IllegalArgumentException.class);
   }
 
+  @Test
+  void deserializeMptCurrencyAmountWithEmptyValueThrows() {
+    String json = "{\"amount\": {\"mpt_issuance_id\": \"00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41\"," +
+      " \"value\": \"\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class)
+      .cause().isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void deserializeIssuedCurrencyAmountWithEmptyCurrencyThrows() {
+    String json = "{\"amount\": {\"currency\": \"\", \"issuer\": \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\"," +
+      " \"value\": \"100\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class)
+      .cause().isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void deserializeIssuedCurrencyAmountWithEmptyValueThrows() {
+    String json = "{\"amount\": {\"currency\": \"USD\", \"issuer\": \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\"," +
+      " \"value\": \"\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class)
+      .cause().isInstanceOf(IllegalArgumentException.class);
+  }
+
   // write a wrapper interface that wraps a CurrencyAmount using Value.Immutable
   // write a wrapper class that implements CurrencyAmount using Value.Immutable
   @Value.Immutable

@@ -19,7 +19,7 @@ From the xrpl4j repo root, start a new Claude Code session and run:
 
 1. Discovers all open Dependabot PRs via `gh pr list`
 2. Applies version upgrades to `pom.xml` (properties, dependency versions, plugin versions)
-3. Validates with `mvn clean install -DskipITs` (unit tests only — integration tests require live Testnet access)
+3. Validates with `mvn clean install` (unit tests and integration tests — requires a local rippled Docker container)
 4. Generates output files and a commit message for the human to use
 
 ## After it finishes

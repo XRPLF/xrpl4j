@@ -91,6 +91,30 @@ class MptCurrencyAmountTest {
   }
 
   @Test
+  void isZero() {
+    // Zero
+    assertThat(MptCurrencyAmount.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
+      .value("0")
+      .build().isZero()
+    ).isTrue();
+
+    // Positive value
+    assertThat(MptCurrencyAmount.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
+      .value("500")
+      .build().isZero()
+    ).isFalse();
+
+    // Negative value
+    assertThat(MptCurrencyAmount.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
+      .value("-500")
+      .build().isZero()
+    ).isFalse();
+  }
+
+  @Test
   void builderWithUnsignedLong() {
     assertThat(
       MptCurrencyAmount.builder(UnsignedLong.ONE)

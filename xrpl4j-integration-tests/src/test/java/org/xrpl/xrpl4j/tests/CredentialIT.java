@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Test;
@@ -93,9 +94,14 @@ public class CredentialIT extends AbstractIT {
 
     assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
-    // Then wait until the transaction gets committed to a validated ledger
+    // Wait for the issuer's sequence to advance, confirming the CredentialCreate tx was applied on this Clio node.
+    // A plain getValidatedTransaction poll is insufficient because Clio nodes in a cluster may return txnNotFound
+    // for recently-validated transactions until their index catches up.
+    final UnsignedInteger expectedIssuerSeqAfterCreate = issuerAccountInfo.accountData().sequence()
+      .plus(UnsignedInteger.ONE);
     this.scanForResult(
-      () -> this.getValidatedTransaction(createTxIntermediateResult.transactionResult().hash(), CredentialCreate.class)
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedIssuerSeqAfterCreate)
     );
 
     assertEntryEqualsObjectFromAccountObjects(
@@ -134,10 +140,12 @@ public class CredentialIT extends AbstractIT {
 
     assertThat(acceptTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
-    // Then wait until the transaction gets committed to a validated ledger
+    // Wait for the subject's sequence to advance, confirming the CredentialAccept tx was applied on this Clio node.
+    final UnsignedInteger expectedSubjectSeqAfterAccept = subjectAccountInfo.accountData().sequence()
+      .plus(UnsignedInteger.ONE);
     this.scanForResult(
-      () -> this.getValidatedTransaction(acceptTxIntermediateResult.transactionResult().hash(), CredentialAccept.class),
-      result -> result.metadata().map(meta -> meta.transactionResult().equals("tesSUCCESS")).orElse(false)
+      () -> this.getValidatedAccountInfo(subjectKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedSubjectSeqAfterAccept)
     );
 
     assertCredentialObjectAcceptedStatus(
@@ -169,9 +177,12 @@ public class CredentialIT extends AbstractIT {
 
     assertThat(deleteTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
-    // Then wait until the transaction gets committed to a validated ledger
+    // Wait for the subject's sequence to advance, confirming the CredentialDelete tx was applied on this Clio node.
+    final UnsignedInteger expectedSubjectSeqAfterDelete = subjectAccountInfo.accountData().sequence()
+      .plus(UnsignedInteger.ONE);
     this.scanForResult(
-      () -> this.getValidatedTransaction(deleteTxIntermediateResult.transactionResult().hash(), CredentialDelete.class)
+      () -> this.getValidatedAccountInfo(subjectKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedSubjectSeqAfterDelete)
     );
 
     assertCredentialDeleted(
@@ -214,9 +225,12 @@ public class CredentialIT extends AbstractIT {
 
     assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
-    // Then wait until the transaction gets committed to a validated ledger
+    // Wait for the issuer's sequence to advance, confirming the CredentialCreate tx was applied on this Clio node.
+    final UnsignedInteger expectedIssuerSeqAfterCreate = issuerAccountInfo.accountData().sequence()
+      .plus(UnsignedInteger.ONE);
     this.scanForResult(
-      () -> this.getValidatedTransaction(createTxIntermediateResult.transactionResult().hash(), CredentialCreate.class)
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedIssuerSeqAfterCreate)
     );
 
     waitForCredentialToExpire(expirationTime);
@@ -242,9 +256,13 @@ public class CredentialIT extends AbstractIT {
 
     assertThat(acceptTxIntermediateResult.engineResult()).isIn("tecEXPIRED", "tecNO_ENTRY");
 
-    // Then wait until the transaction gets committed to a validated ledger
+    // Wait for the subject's sequence to advance, confirming the expired CredentialAccept tx was applied on this
+    // Clio node. tec-class results still consume the sequence number and are applied to the validated ledger.
+    final UnsignedInteger expectedSubjectSeqAfterExpiredAccept = subjectAccountInfo.accountData().sequence()
+      .plus(UnsignedInteger.ONE);
     this.scanForResult(
-      () -> this.getValidatedTransaction(acceptTxIntermediateResult.transactionResult().hash(), CredentialAccept.class)
+      () -> this.getValidatedAccountInfo(subjectKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedSubjectSeqAfterExpiredAccept)
     );
 
     // Accepting Credential after expiry automatically deletes the object.

@@ -48,6 +48,7 @@ import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -155,6 +156,20 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(batchTransaction);
     return getTransactionSigner(privateKeyable).multiSignInner(batchTransaction);
+  }
+
+  @Override
+  public Signature counterpartySign(final PrivateKeyReference privateKeyReference, final LoanSet transaction) {
+    Objects.requireNonNull(privateKeyReference);
+    Objects.requireNonNull(transaction);
+    return getTransactionSigner(privateKeyReference).counterpartySign(transaction);
+  }
+
+  @Override
+  public Signature counterpartyMultiSign(final PrivateKeyReference privateKeyReference, final LoanSet transaction) {
+    Objects.requireNonNull(privateKeyReference);
+    Objects.requireNonNull(transaction);
+    return getTransactionSigner(privateKeyReference).counterpartyMultiSign(transaction);
   }
 
   @Override
@@ -341,6 +356,14 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
 
     public final Signature multiSignInner(final Batch transaction) {
       return bcSignatureService.multiSignInner(this.privateKey, transaction);
+    }
+
+    public final Signature counterpartySign(final LoanSet transaction) {
+      return bcSignatureService.counterpartySign(this.privateKey, transaction);
+    }
+
+    public final Signature counterpartyMultiSign(final LoanSet transaction) {
+      return bcSignatureService.counterpartyMultiSign(this.privateKey, transaction);
     }
 
     public PublicKey getPublicKey() {

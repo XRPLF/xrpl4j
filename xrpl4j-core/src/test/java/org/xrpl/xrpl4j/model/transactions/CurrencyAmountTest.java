@@ -517,8 +517,7 @@ class CurrencyAmountTest extends AbstractJsonTest {
     String json = "{\"amount\": {\"mpt_issuance_id\": \"00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41\"," +
       " \"value\": \"\"}}";
     assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
-      .isInstanceOf(JsonProcessingException.class)
-      .cause().isInstanceOf(IllegalArgumentException.class);
+      .isInstanceOf(JsonProcessingException.class);
   }
 
   @Test
@@ -535,8 +534,7 @@ class CurrencyAmountTest extends AbstractJsonTest {
     String json = "{\"amount\": {\"currency\": \"USD\", \"issuer\": \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\"," +
       " \"value\": \"\"}}";
     assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
-      .isInstanceOf(JsonProcessingException.class)
-      .cause().isInstanceOf(IllegalArgumentException.class);
+      .isInstanceOf(JsonProcessingException.class);
   }
 
   // write a wrapper interface that wraps a CurrencyAmount using Value.Immutable

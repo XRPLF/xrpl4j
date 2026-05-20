@@ -127,4 +127,5 @@ class MptCurrencyAmountTest {
         .build()
     );
   }
+
 }

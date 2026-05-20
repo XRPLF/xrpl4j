@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Auxiliary;
@@ -43,11 +42,6 @@ public interface MptCurrencyAmount extends CurrencyAmount {
   MpTokenIssuanceId mptIssuanceId();
 
   String value();
-
-  @Value.Check
-  default void check() {
-    Preconditions.checkArgument(!value().isEmpty(), "MptCurrencyAmount value must not be empty.");
-  }
 
   /**
    * The amount value, as an {@link UnsignedLong}.

@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -117,5 +118,16 @@ class IssuedCurrencyAmountTest {
       .value("-500")
       .build().isZero()
     ).isFalse();
+  }
+
+  @Test
+  void buildWithEmptyCurrencyThrows() {
+    assertThatThrownBy(() -> IssuedCurrencyAmount.builder()
+      .currency("")
+      .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
+      .value("100")
+      .build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("currency must not be empty");
   }
 }

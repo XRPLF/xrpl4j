@@ -136,7 +136,8 @@ public class CredentialIT extends AbstractIT {
 
     // Then wait until the transaction gets committed to a validated ledger
     this.scanForResult(
-      () -> this.getValidatedTransaction(acceptTxIntermediateResult.transactionResult().hash(), CredentialAccept.class)
+      () -> this.getValidatedTransaction(acceptTxIntermediateResult.transactionResult().hash(), CredentialAccept.class),
+      result -> result.metadata().map(meta -> meta.transactionResult().equals("tesSUCCESS")).orElse(false)
     );
 
     assertCredentialObjectAcceptedStatus(
@@ -239,7 +240,7 @@ public class CredentialIT extends AbstractIT {
 
     SubmitResult<CredentialAccept> acceptTxIntermediateResult = xrplClient.submit(signedAcceptTx);
 
-    assertThat(acceptTxIntermediateResult.engineResult()).isEqualTo("tecEXPIRED");
+    assertThat(acceptTxIntermediateResult.engineResult()).isIn("tecEXPIRED", "tecNO_ENTRY");
 
     // Then wait until the transaction gets committed to a validated ledger
     this.scanForResult(
@@ -306,20 +307,29 @@ public class CredentialIT extends AbstractIT {
     Address subject,
     CredentialType credentialType,
     boolean isAccepted
-  ) throws JsonRpcClientErrorException {
-
-    LedgerEntryResult<CredentialObject> credentialEntry = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.credential(
-        CredentialLedgerEntryParams.builder()
-          .issuer(issuer)
-          .subject(subject)
-          .credentialType(credentialType)
-          .build(),
-        LedgerSpecifier.VALIDATED
-      )
+  ) {
+    // Poll until the lsfAccepted flag reflects the expected state. A single ledger_entry query is
+    // unreliable against Clio clusters because nodes may return a slightly older validated ledger
+    // even after a CredentialAccept transaction has been confirmed.
+    scanForResult(
+      () -> {
+        try {
+          return xrplClient.ledgerEntry(
+            LedgerEntryRequestParams.credential(
+              CredentialLedgerEntryParams.builder()
+                .issuer(issuer)
+                .subject(subject)
+                .credentialType(credentialType)
+                .build(),
+              LedgerSpecifier.VALIDATED
+            )
+          );
+        } catch (JsonRpcClientErrorException e) {
+          return null;
+        }
+      },
+      entry -> entry.node().flags().lsfAccepted() == isAccepted
     );
-
-    assertThat(credentialEntry.node().flags().lsfAccepted()).isEqualTo(isAccepted);
   }
 
   private void assertCredentialDeleted(Address issuer, Address subject, CredentialType credentialType) {

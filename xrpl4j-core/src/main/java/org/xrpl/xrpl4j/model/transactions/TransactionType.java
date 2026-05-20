@@ -436,6 +436,87 @@ public enum TransactionType {
   BATCH("Batch"),
 
   /**
+   * The {@link TransactionType} for the {@link LoanBrokerSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_BROKER_SET("LoanBrokerSet"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanBrokerDelete} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_BROKER_DELETE("LoanBrokerDelete"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanBrokerCoverDeposit} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_BROKER_COVER_DEPOSIT("LoanBrokerCoverDeposit"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanBrokerCoverWithdraw} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_BROKER_COVER_WITHDRAW("LoanBrokerCoverWithdraw"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanBrokerCoverClawback} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_BROKER_COVER_CLAWBACK("LoanBrokerCoverClawback"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_SET("LoanSet"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanDelete} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_DELETE("LoanDelete"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanManage} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_MANAGE("LoanManage"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanPay} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_PAY("LoanPay"),
+
+  /**
    * The {@link TransactionType} for any transaction that is unrecognized/unsupported by xrpl4j.
    */
   UNKNOWN("Unknown");

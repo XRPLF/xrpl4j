@@ -166,6 +166,14 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
      */
     VAULT("vault"),
     /**
+     * LoanBroker account object type.
+     */
+    LOAN_BROKER("loan_broker"),
+    /**
+     * Loan account object type.
+     */
+    LOAN("loan"),
+    /**
      * MPToken Issuance object type.
      */
     MPT_ISSUANCE("mpt_issuance"),

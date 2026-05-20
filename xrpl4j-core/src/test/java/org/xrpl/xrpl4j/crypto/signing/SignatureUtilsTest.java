@@ -74,6 +74,7 @@ import org.xrpl.xrpl4j.model.transactions.AmmDelete;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
 import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.BatchSigner;
 import org.xrpl.xrpl4j.model.transactions.BatchSignerWrapper;
@@ -99,6 +100,7 @@ import org.xrpl.xrpl4j.model.transactions.ImmutableBatch.Builder;
 import org.xrpl.xrpl4j.model.transactions.ImmutablePayment;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainBridge;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
@@ -543,6 +545,64 @@ public class SignatureUtilsTest {
       .toMultiSignableInnerBytes(batch, sourcePublicKey.deriveAddress());
     assertThat(bytes).isNotNull();
     assertThat(bytes.hexValue()).isNotEmpty();
+  }
+
+  // ////////////////
+  // toCounterpartyMultiSignableBytes (LoanSet)
+  // ////////////////
+
+  @Test
+  void toCounterpartyMultiSignableBytesWithNullTransaction() {
+    assertThrows(NullPointerException.class,
+      () -> signatureUtils.toCounterpartyMultiSignableBytes(null, sourcePublicKey.deriveAddress()));
+  }
+
+  @Test
+  void toCounterpartyMultiSignableBytesWithNullAddress() {
+    LoanSet loanSet = createLoanSet();
+    assertThrows(NullPointerException.class, () -> signatureUtils.toCounterpartyMultiSignableBytes(loanSet, null));
+  }
+
+  @Test
+  void toCounterpartyMultiSignableBytes() throws JsonProcessingException {
+    LoanSet loanSet = createLoanSet();
+
+    when(xrplBinaryCodecMock.encodeForMultiSigningWithSigningPubKey(anyString(), anyString())).thenReturn("CAFE1234");
+
+    UnsignedByteArray actual = signatureUtils.toCounterpartyMultiSignableBytes(
+      loanSet, sourcePublicKey.deriveAddress()
+    );
+    assertThat(actual.hexValue()).isEqualTo("CAFE1234");
+
+    verify(objectMapperMock).writeValueAsString(loanSet);
+    verifyNoMoreInteractions(objectMapperMock);
+    verify(xrplBinaryCodecMock).encodeForMultiSigningWithSigningPubKey(anyString(), anyString());
+    verifyNoMoreInteractions(xrplBinaryCodecMock);
+  }
+
+  @Test
+  void toCounterpartyMultiSignableBytesWithJsonException() throws JsonProcessingException {
+    LoanSet loanSet = createLoanSet();
+    doThrow(new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)))
+      .when(objectMapperMock).writeValueAsString(loanSet);
+    assertThrows(RuntimeException.class,
+      () -> signatureUtils.toCounterpartyMultiSignableBytes(loanSet, sourcePublicKey.deriveAddress()));
+  }
+
+  @Test
+  void toCounterpartyMultiSignableBytesActual() {
+    LoanSet loanSet = createLoanSet();
+    Address signerAddress = sourcePublicKey.deriveAddress();
+
+    UnsignedByteArray counterpartyBytes = SignatureUtils.getInstance()
+      .toCounterpartyMultiSignableBytes(loanSet, signerAddress);
+    assertThat(counterpartyBytes).isNotNull();
+    assertThat(counterpartyBytes.hexValue()).isNotEmpty();
+
+    // Should differ from normal multiSignableBytes because SigningPubKey is preserved
+    UnsignedByteArray normalMultiSignBytes = SignatureUtils.getInstance()
+      .toMultiSignableBytes(loanSet, signerAddress);
+    assertThat(counterpartyBytes.hexValue()).isNotEqualTo(normalMultiSignBytes.hexValue());
   }
 
   // ////////////////
@@ -1924,6 +1984,18 @@ public class SignatureUtilsTest {
       .amount(XrpCurrencyAmount.ofDrops(1000)).fee(XrpCurrencyAmount.ofDrops(0)) // <-- Must be set to 0
       .sequence(UnsignedInteger.valueOf(1)).flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
       // .signingPublicKey(...) // <-- Must be unset for an inner batch
+      .build();
+  }
+
+  private LoanSet createLoanSet() {
+    return LoanSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(30))
+      .sequence(UnsignedInteger.ONE)
+      .loanBrokerId(Hash256.of(Strings.padStart("ABC123", 64, '0')))
+      .principalRequested(Amount.of("50000"))
+      .signingPublicKey(sourcePublicKey)
+      .transactionSignature(Signature.fromBase16("00112233"))
       .build();
   }
 

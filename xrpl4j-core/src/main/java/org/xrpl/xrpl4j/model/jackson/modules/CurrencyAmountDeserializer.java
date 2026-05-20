@@ -54,16 +54,16 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
 
     if (node.isContainerNode()) {
       if (node.has("mpt_issuance_id")) {
-        String mptIssuanceId = textOrEmpty(node.path("mpt_issuance_id"));
-        String value = textOrEmpty(node.path("value"));
+        String mptIssuanceId = node.get("mpt_issuance_id").asText();
+        String value = node.get("value").asText();
         return MptCurrencyAmount.builder()
           .mptIssuanceId(MpTokenIssuanceId.of(mptIssuanceId))
           .value(value)
           .build();
       } else {
-        String currency = textOrEmpty(node.path("currency"));
-        String value = textOrEmpty(node.path("value"));
-        String issuer = textOrEmpty(node.path("issuer"));
+        String currency = node.get("currency").asText();
+        String value = node.get("value").asText();
+        String issuer = node.get("issuer").asText();
 
         return IssuedCurrencyAmount.builder()
           .value(value)
@@ -74,9 +74,5 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
     } else {
       return XrpCurrencyAmount.ofDrops(node.asLong());
     }
-  }
-
-  private static String textOrEmpty(JsonNode node) {
-    return node.isNull() ? "" : node.asText();
   }
 }

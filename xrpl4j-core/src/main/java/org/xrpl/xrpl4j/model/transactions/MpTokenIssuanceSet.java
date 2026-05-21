@@ -20,22 +20,6 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableMpTokenIssuanceSet.class)
 public interface MpTokenIssuanceSet extends Transaction {
 
-  /**
-   * Valid bits for {@code MutableFlags} on {@code MPTokenIssuanceSet} (bits {@code 0x001}–{@code 0x800}).
-   */
-  long MUTABLE_FLAGS_VALID_MASK =
-    MpTokenIssuanceSetMutableFlags.SET_CAN_LOCK.getValue() |
-    MpTokenIssuanceSetMutableFlags.CLEAR_CAN_LOCK.getValue() |
-    MpTokenIssuanceSetMutableFlags.SET_REQUIRE_AUTH.getValue() |
-    MpTokenIssuanceSetMutableFlags.CLEAR_REQUIRE_AUTH.getValue() |
-    MpTokenIssuanceSetMutableFlags.SET_CAN_ESCROW.getValue() |
-    MpTokenIssuanceSetMutableFlags.CLEAR_CAN_ESCROW.getValue() |
-    MpTokenIssuanceSetMutableFlags.SET_CAN_TRADE.getValue() |
-    MpTokenIssuanceSetMutableFlags.CLEAR_CAN_TRADE.getValue() |
-    MpTokenIssuanceSetMutableFlags.SET_CAN_TRANSFER.getValue() |
-    MpTokenIssuanceSetMutableFlags.CLEAR_CAN_TRANSFER.getValue() |
-    MpTokenIssuanceSetMutableFlags.SET_CAN_CLAWBACK.getValue() |
-    MpTokenIssuanceSetMutableFlags.CLEAR_CAN_CLAWBACK.getValue();
 
   /**
    * Construct a {@code MpTokenIssuanceSet} builder.
@@ -140,7 +124,7 @@ public interface MpTokenIssuanceSet extends Transaction {
       Preconditions.checkState(val != 0,
         "MutableFlags must not be 0.");
 
-      Preconditions.checkState((val & ~MUTABLE_FLAGS_VALID_MASK) == 0,
+      Preconditions.checkState((val & ~MpTokenIssuanceSetMutableFlags.VALID_MASK) == 0,
         "MutableFlags contains invalid bits. Only bits 0x001–0x800 are valid.");
 
       // Set/clear conflict checks for each flag pair

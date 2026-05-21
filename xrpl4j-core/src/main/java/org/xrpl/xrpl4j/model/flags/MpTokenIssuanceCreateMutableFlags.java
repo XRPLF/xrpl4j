@@ -60,6 +60,20 @@ public class MpTokenIssuanceCreateMutableFlags extends Flags {
   public static final MpTokenIssuanceCreateMutableFlags CAN_MUTATE_TRANSFER_FEE =
     new MpTokenIssuanceCreateMutableFlags(0x00020000);
 
+  /**
+   * All valid bits for the {@code MutableFlags} field on {@code MPTokenIssuanceCreate}.
+   * Bit {@code 0x00000001} is reserved (mirrors {@code lsfMPTLocked}) and is excluded.
+   */
+  public static final long VALID_MASK =
+    CAN_MUTATE_CAN_LOCK.getValue() |
+    CAN_MUTATE_REQUIRE_AUTH.getValue() |
+    CAN_MUTATE_CAN_ESCROW.getValue() |
+    CAN_MUTATE_CAN_TRADE.getValue() |
+    CAN_MUTATE_CAN_TRANSFER.getValue() |
+    CAN_MUTATE_CAN_CLAWBACK.getValue() |
+    CAN_MUTATE_METADATA.getValue() |
+    CAN_MUTATE_TRANSFER_FEE.getValue();
+
   private MpTokenIssuanceCreateMutableFlags(long value) {
     super(value);
   }

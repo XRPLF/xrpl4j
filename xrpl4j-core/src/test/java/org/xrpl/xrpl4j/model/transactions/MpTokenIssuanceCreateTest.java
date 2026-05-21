@@ -195,22 +195,6 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
   }
 
   @Test
-  void domainIdRequiresRequireAuthFlag() {
-    assertThatThrownBy(() -> MpTokenIssuanceCreate.builder()
-      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
-      .fee(XrpCurrencyAmount.ofDrops(15))
-      .sequence(UnsignedInteger.valueOf(321))
-      .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
-      )
-      // tfMPTRequireAuth is NOT set
-      .domainId(Hash256.of("A4C9D0EB468ED7F02A63EB8F5A2D5CAEE7EDE4D8E8F202C93B0FF5D78B72E921"))
-      .build()
-    ).isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("DomainID may only be set when the tfMPTRequireAuth flag is also set.");
-  }
-
-  @Test
   void mutableFlagsRejectsReservedBitOne() {
     // bit 0x1 is reserved for lsfMPTLocked and must not appear in MutableFlags
     assertThatThrownBy(() -> MpTokenIssuanceCreate.builder()

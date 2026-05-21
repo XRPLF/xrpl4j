@@ -96,6 +96,24 @@ public class MpTokenIssuanceSetMutableFlags extends Flags {
   public static final MpTokenIssuanceSetMutableFlags CLEAR_CAN_CLAWBACK =
     new MpTokenIssuanceSetMutableFlags(0x00000800);
 
+  /**
+   * All valid bits for the {@code MutableFlags} field on {@code MPTokenIssuanceSet}
+   * (bits {@code 0x001}–{@code 0x800}).
+   */
+  public static final long VALID_MASK =
+    SET_CAN_LOCK.getValue() |
+    CLEAR_CAN_LOCK.getValue() |
+    SET_REQUIRE_AUTH.getValue() |
+    CLEAR_REQUIRE_AUTH.getValue() |
+    SET_CAN_ESCROW.getValue() |
+    CLEAR_CAN_ESCROW.getValue() |
+    SET_CAN_TRADE.getValue() |
+    CLEAR_CAN_TRADE.getValue() |
+    SET_CAN_TRANSFER.getValue() |
+    CLEAR_CAN_TRANSFER.getValue() |
+    SET_CAN_CLAWBACK.getValue() |
+    CLEAR_CAN_CLAWBACK.getValue();
+
   private MpTokenIssuanceSetMutableFlags(long value) {
     super(value);
   }

@@ -12,8 +12,9 @@ import java.util.stream.Stream;
 class MpTokenIssuanceSetMutableFlagsTest extends AbstractFlagsTest {
 
   /**
-   * 6 set/clear flag pairs — exhaustively cover the (set, clear) combinations for each pair (4 each = 64 cases),
-   * which exercises every individual builder bit, the empty case, and the simultaneous-set-and-clear case.
+   * Shared data source for {@code testCanLockSetAndClear} and {@code testTradeTransferClawbackSetAndClear}.
+   * Each test method covers 3 of the 6 set/clear flag pairs (6 booleans = 2^6 = 64 combinations),
+   * exhaustively exercising every builder bit, the empty case, and the simultaneous-set-and-clear case.
    */
   public static Stream<Arguments> data() {
     return getBooleanCombinations(6);

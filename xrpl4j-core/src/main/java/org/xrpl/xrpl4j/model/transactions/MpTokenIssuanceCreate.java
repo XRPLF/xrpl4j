@@ -20,21 +20,6 @@ import java.util.Optional;
 public interface MpTokenIssuanceCreate extends Transaction {
 
   /**
-   * Valid bits for {@code MutableFlags} on {@code MPTokenIssuanceCreate}.
-   *
-   * <p>Bit {@code 0x00000001} is reserved (it mirrors {@code lsfMPTLocked}) and must never be set.
-   */
-  long MUTABLE_FLAGS_VALID_MASK =
-    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_CAN_LOCK.getValue() |
-    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_REQUIRE_AUTH.getValue() |
-    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_CAN_ESCROW.getValue() |
-    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_CAN_TRADE.getValue() |
-    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_CAN_TRANSFER.getValue() |
-    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_CAN_CLAWBACK.getValue() |
-    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_METADATA.getValue() |
-    MpTokenIssuanceCreateMutableFlags.CAN_MUTATE_TRANSFER_FEE.getValue();
-
-  /**
    * Construct a {@code MpTokenIssuanceCreate} builder.
    *
    * @return An {@link ImmutableMpTokenIssuanceCreate.Builder}.
@@ -109,8 +94,7 @@ public interface MpTokenIssuanceCreate extends Transaction {
 
   /**
    * The {@link Hash256} of a {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} that restricts
-   * who can hold this MPT. If present, the {@code tfMPTRequireAuth} flag must be set, making the issuance
-   * non-public.
+   * who can hold this MPT.
    *
    * @return An optionally present {@link Hash256} representing the domain ID.
    */
@@ -122,20 +106,14 @@ public interface MpTokenIssuanceCreate extends Transaction {
    * <ul>
    *   <li>{@code MutableFlags}, when present, must only contain bits from the allowed set — bit {@code 0x1} is
    *       reserved for {@code lsfMPTLocked} and may not appear here.</li>
-   *   <li>{@code DomainID}, when present, requires the {@code tfMPTRequireAuth} flag to be set.</li>
    * </ul>
    */
   @Value.Check
   default void check() {
     mutableFlags().ifPresent(mf -> Preconditions.checkState(
-      (mf.getValue() & ~MUTABLE_FLAGS_VALID_MASK) == 0,
+      (mf.getValue() & ~MpTokenIssuanceCreateMutableFlags.VALID_MASK) == 0,
       "MutableFlags contains invalid or reserved bits. " +
         "Bit 0x1 is reserved (lsfMPTLocked) and must not be set in MutableFlags."
-    ));
-
-    domainId().ifPresent($ -> Preconditions.checkState(
-      flags().tfMptRequireAuth(),
-      "DomainID may only be set when the tfMPTRequireAuth flag is also set."
     ));
   }
 }

@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 
+import java.util.Collections;
+
 /**
  * Unit test for {@link JsonRpcClient}.
  */
@@ -54,6 +56,9 @@ class JsonRpcClientTest {
     // By default, there's a result.
     when(jsonResponseNodeMock.has("result")).thenReturn(true);
     when(jsonResponseNodeMock.get("result")).thenReturn(jsonResultNodeMock);
+
+    // Default to an empty fieldNames() iterator so the missing-result branch can format its message.
+    when(jsonResponseNodeMock.fieldNames()).thenReturn(Collections.emptyIterator());
 
     // By default, there's an error.
     when(jsonResultNodeMock.has("status")).thenReturn(true);

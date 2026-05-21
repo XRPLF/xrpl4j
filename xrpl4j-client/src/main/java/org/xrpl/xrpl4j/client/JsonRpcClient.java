@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.Beta;
+import com.google.common.collect.Iterators;
 import feign.Feign;
 import feign.Headers;
 import feign.Request.Options;
@@ -181,7 +182,8 @@ public interface JsonRpcClient {
     JsonNode result = response.get(RESULT);
     if (result == null || result.isNull()) {
       throw new JsonRpcClientErrorException(
-        "Response did not contain a 'result' field: " + response);
+        "Response did not contain a 'result' field. Response fields: " +
+          Iterators.toString(response.fieldNames()));
     }
     return result;
   }

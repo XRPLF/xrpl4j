@@ -87,7 +87,7 @@ public class RippledContainer {
         .withExposedPorts(5005)
         .withImagePullPolicy(PullPolicy.alwaysPull())
         .withClasspathResourceMapping("xrpld",
-          "/etc/opt/xrpld/",
+          "/etc/xrpld/",
           BindMode.READ_ONLY)
         .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
     }
@@ -237,7 +237,7 @@ public class RippledContainer {
   /**
    * Stops the automated Ledger Acceptor, for example to control an integration test more finely.
    */
-  @SuppressWarnings({"all"})
+  @SuppressWarnings( {"all"})
   public void stopLedgerAcceptor() {
     try {
       ledgerAcceptor.shutdown();

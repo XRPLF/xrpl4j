@@ -178,6 +178,23 @@ for every transaction subclass:
 - `Transaction withSigners(Iterable<? extends SignerWrapper> signers)` — returns a copy of the transaction with the
   specified signers applied.
 
+### 3. `MetaMpTokenIssuanceObject.mpTokenMetadata()` type change
+
+The return type of `MetaMpTokenIssuanceObject.mpTokenMetadata()` changed from `Optional<String>` to
+`Optional<MpTokenMetadata>`. This aligns the meta object with `MpTokenIssuanceObject`.
+
+**Migration:**
+
+```java
+// Before (v6.x.x)
+Optional<String> metadata = metaMpTokenIssuanceObject.mpTokenMetadata();
+
+// After (v7.0.0)
+Optional<MpTokenMetadata> metadata = metaMpTokenIssuanceObject.mpTokenMetadata();
+// To get the raw hex string:
+Optional<String> hexString = metadata.map(MpTokenMetadata::value);
+```
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.

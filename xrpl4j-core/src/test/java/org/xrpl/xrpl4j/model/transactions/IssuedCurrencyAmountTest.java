@@ -130,4 +130,16 @@ class IssuedCurrencyAmountTest {
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("currency must not be empty");
   }
+
+  @Test
+  void buildWithEmptyValueThrows() {
+    // An empty value string causes the @Derived isZero() field to throw NumberFormatException
+    // (via new BigDecimal("")) before any @Value.Check can run. Construction still fails fast.
+    assertThatThrownBy(() -> IssuedCurrencyAmount.builder()
+      .currency("USD")
+      .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
+      .value("")
+      .build())
+      .isInstanceOf(NumberFormatException.class);
+  }
 }

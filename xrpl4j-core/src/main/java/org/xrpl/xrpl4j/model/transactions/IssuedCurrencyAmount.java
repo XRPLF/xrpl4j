@@ -101,6 +101,7 @@ public interface IssuedCurrencyAmount extends CurrencyAmount {
   @Value.Check
   default void check() {
     Preconditions.checkArgument(!currency().isEmpty(), "IssuedCurrencyAmount currency must not be empty.");
+    Preconditions.checkArgument(!value().isEmpty(), "IssuedCurrencyAmount value must not be empty.");
   }
 
   /**

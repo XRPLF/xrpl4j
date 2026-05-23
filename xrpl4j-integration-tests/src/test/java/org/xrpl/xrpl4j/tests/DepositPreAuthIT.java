@@ -514,7 +514,7 @@ public class DepositPreAuthIT extends AbstractIT {
             .owner(depositPreAuth.account())
             .authorized(depositPreAuth.authorize().get())
             .build(),
-          LedgerSpecifier.CURRENT
+          LedgerSpecifier.VALIDATED
         )
       );
     } else {
@@ -532,7 +532,7 @@ public class DepositPreAuthIT extends AbstractIT {
             .owner(depositPreAuth.account())
             .authorizedCredentials(authorizedCredentials)
             .build(),
-          LedgerSpecifier.CURRENT
+          LedgerSpecifier.VALIDATED
         )
       );
     }

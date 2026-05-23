@@ -70,4 +70,17 @@ public interface MptCurrencyAmount extends CurrencyAmount {
     return value().startsWith("-");
   }
 
+  /**
+   * Indicates whether this amount is zero.
+   *
+   * @return {@code true} if this amount is zero; {@code false} otherwise.
+   */
+  @Derived
+  @JsonIgnore
+  @Auxiliary
+  @Override
+  default boolean isZero() {
+    return unsignedLongValue().equals(UnsignedLong.ZERO);
+  }
+
 }

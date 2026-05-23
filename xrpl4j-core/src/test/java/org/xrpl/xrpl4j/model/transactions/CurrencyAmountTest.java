@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -53,6 +54,11 @@ class CurrencyAmountTest extends AbstractJsonTest {
       public boolean isNegative() {
         return false;
       }
+
+      @Override
+      public boolean isZero() {
+        return false;
+      }
     };
     assertThat(currencyAmount.isNegative()).isFalse();
     // Negative
@@ -61,13 +67,28 @@ class CurrencyAmountTest extends AbstractJsonTest {
       public boolean isNegative() {
         return true;
       }
+
+      @Override
+      public boolean isZero() {
+        return false;
+      }
     };
     assertThat(currencyAmount.isNegative()).isTrue();
   }
 
   @Test
   void handleWithNulls() {
-    CurrencyAmount amount = () -> false;
+    CurrencyAmount amount = new CurrencyAmount() {
+      @Override
+      public boolean isNegative() {
+        return false;
+      }
+
+      @Override
+      public boolean isZero() {
+        return false;
+      }
+    };
     // null xrpCurrencyAmountHandler
     assertThrows(NullPointerException.class, () ->
       amount.handle(null, $ -> new Object(), $ -> new Object())
@@ -87,7 +108,17 @@ class CurrencyAmountTest extends AbstractJsonTest {
   @Test
   void handleUnhandled() {
     // Unhandled...
-    CurrencyAmount currencyAmount = () -> false;
+    CurrencyAmount currencyAmount = new CurrencyAmount() {
+      @Override
+      public boolean isNegative() {
+        return false;
+      }
+
+      @Override
+      public boolean isZero() {
+        return false;
+      }
+    };
     assertThrows(IllegalStateException.class, () ->
       currencyAmount.handle(
         $ -> new Object(),
@@ -436,6 +467,74 @@ class CurrencyAmountTest extends AbstractJsonTest {
         .build();
     CurrencyAmount roundtripped = amount.toCurrencyAmount(mptIssue);
     assertThat(roundtripped).isEqualTo(original);
+  }
+
+  @Test
+  void deserializeIssuedCurrencyAmountWithMissingIssuerThrows() {
+    String json = "{\"amount\": {\"currency\": \"USD\", \"value\": \"100\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class);
+  }
+
+  @Test
+  void deserializeIssuedCurrencyAmountWithMissingCurrencyThrows() {
+    String json = "{\"amount\": {\"issuer\": \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\", \"value\": \"100\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class);
+  }
+
+  @Test
+  void deserializeIssuedCurrencyAmountWithMissingValueThrows() {
+    String json = "{\"amount\": {\"currency\": \"USD\", \"issuer\": \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class);
+  }
+
+  @Test
+  void deserializeMptCurrencyAmountWithMissingValueThrows() {
+    String json = "{\"amount\": {\"mpt_issuance_id\": \"00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class);
+  }
+
+  @Test
+  void deserializeCurrencyAmountWithEmptyObjectThrows() {
+    String json = "{\"amount\": {}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class);
+  }
+
+  @Test
+  void deserializeMptCurrencyAmountWithEmptyIssuanceIdThrows() {
+    String json = "{\"amount\": {\"mpt_issuance_id\": \"\", \"value\": \"100\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class)
+      .cause().isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void deserializeMptCurrencyAmountWithEmptyValueThrows() {
+    String json = "{\"amount\": {\"mpt_issuance_id\": \"00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41\"," +
+      " \"value\": \"\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class);
+  }
+
+  @Test
+  void deserializeIssuedCurrencyAmountWithEmptyCurrencyThrows() {
+    String json = "{\"amount\": {\"currency\": \"\", \"issuer\": \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\"," +
+      " \"value\": \"100\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class)
+      .cause().isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void deserializeIssuedCurrencyAmountWithEmptyValueThrows() {
+    String json = "{\"amount\": {\"currency\": \"USD\", \"issuer\": \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\"," +
+      " \"value\": \"\"}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, CurrencyAmountWrapper.class))
+      .isInstanceOf(JsonProcessingException.class);
   }
 
   // write a wrapper interface that wraps a CurrencyAmount using Value.Immutable

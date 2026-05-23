@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # Set up Java 8
       - name: Set up JDK 8
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '8'
@@ -29,10 +29,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # Set up Java 8
       - name: Set up JDK 8
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'semeru'
           java-version: '8'
@@ -44,10 +44,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # Set up Java 8
       - name: Set up JDK 8
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '8'
@@ -60,13 +60,13 @@ jobs:
     strategy:
       matrix:
         # test against each major Java version (Java 8 built separately above for codecov upload)
-        java: [ 11, 16, 17, 21 ]
+        java: [ 11, 17, 21 ]
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # Set up Java version
       - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
@@ -77,10 +77,10 @@ jobs:
   build_jdk_temurin_non_us:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # Set up Temurin 21
       - name: Set up Temurin v21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: 21
@@ -93,17 +93,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # Set up Java 17
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
           cache: 'maven'
       # Set up Android
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
       - name: Build
         run: mvn clean install -Dmaven.javadoc.skip=true -Pandroid
 
@@ -111,10 +111,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # Set up Java 8
       - name: Set up JDK 8
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '8'
@@ -126,10 +126,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # Set up Java 8
       - name: Set up JDK 8
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '8'
@@ -141,13 +141,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v5
-      # Set up Java 8
-      - name: Set up JDK 8
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v6
+      # Set up Java 26; required for Clio's TLS certificates to be honored by ITs
+      - name: Set up JDK 26
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '26'
           cache: 'maven'
       - name: Build
+        # -DuseClioTestnet routes the main IT suite (via AbstractIT) to the Clio testnet node.
+        # -DuseClioMainnet is independent: it routes mainnet-specific tests (AccountTransactionsIT,
+        # LedgerResultIT) to the Clio mainnet node. The two flags are evaluated by separate factory
+        # methods and do not conflict. See https://github.com/XRPLF/xrpl4j/issues/789 for a ticket
+        # that detangles this.
         run: mvn clean install -Dmaven.javadoc.skip=true -DuseClioTestnet -DuseClioMainnet

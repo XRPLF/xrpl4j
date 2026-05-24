@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.codec.binary.types;
  * ========================LICENSE_START=================================
  * xrpl4j :: binary-codec
  * %%
- * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

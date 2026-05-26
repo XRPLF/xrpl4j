@@ -33,6 +33,7 @@ class MetaMpTokenIssuanceObjectTest extends AbstractJsonTest {
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(420))
       .sequence(UnsignedInteger.valueOf(7))
       .ownerNode("0")
+      .referenceHolding(Hash256.of("BCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890A"))
       .build();
 
     String json = "{\n" +
@@ -47,7 +48,8 @@ class MetaMpTokenIssuanceObjectTest extends AbstractJsonTest {
       "  \"PreviousTxnID\": \"8C20A85CE9EA44CEF32C8B06209890154D8810A8409D8582884566CD24DE694F\",\n" +
       "  \"PreviousTxnLgrSeq\": 420,\n" +
       "  \"Sequence\": 7,\n" +
-      "  \"OwnerNode\": \"0\"\n" +
+      "  \"OwnerNode\": \"0\",\n" +
+      "  \"ReferenceHolding\": \"BCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890A\"\n" +
       "}";
 
     assertCanSerializeAndDeserialize(object, json, MetaMpTokenIssuanceObject.class);

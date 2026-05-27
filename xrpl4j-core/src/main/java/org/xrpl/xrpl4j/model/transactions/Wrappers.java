@@ -393,7 +393,7 @@ public class Wrappers {
     @Override
     public boolean equals(Object obj) {
       if (obj instanceof XrpCurrencyAmount) {
-        XrpCurrencyAmount other = (XrpCurrencyAmount) obj;
+        XrpCurrencyAmount other = (XrpCurrencyAmount) obj; // <-- Can't be null due to Immutables
         return this.value().equals(other.value()) && this.isNegative() == other.isNegative();
       }
       return false;

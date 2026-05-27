@@ -126,9 +126,7 @@ public class HopType extends SerializedType<HopType> {
 
     if ((type & TYPE_CURRENCY) > 0) {
       builder.currency(new CurrencyType().fromParser(parser).toJson());
-    }
-
-    if ((type & TYPE_MPT) > 0) {
+    } else if ((type & TYPE_MPT) > 0) {
       builder.mptIssuanceId(new UInt192Type().fromParser(parser).toJson());
     }
 

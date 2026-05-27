@@ -73,6 +73,36 @@ class PathCurrencyDeserializerTest {
   }
 
   @Test
+  void testDeserializeXrpCaseInsensitive() throws IOException {
+    // PathCurrencyDeserializer must match IssueDeserializer: lowercase "xrp" → XrpIssue
+    ObjectNode node = JsonNodeFactory.instance.objectNode();
+    node.put("currency", "xrp");
+
+    JsonParser parser = objectMapper.treeAsTokens(node);
+    parser.nextToken();
+
+    PathCurrency result = deserializer.deserialize(parser, mock(DeserializationContext.class));
+
+    assertThat(result.issue()).isInstanceOf(XrpIssue.class);
+    assertThat(((XrpIssue) result.issue()).currency()).isEqualTo("XRP");
+  }
+
+  @Test
+  void testDeserializeXrpMixedCase() throws IOException {
+    // PathCurrencyDeserializer must match IssueDeserializer: mixed-case "xRp" → XrpIssue
+    ObjectNode node = JsonNodeFactory.instance.objectNode();
+    node.put("currency", "xRp");
+
+    JsonParser parser = objectMapper.treeAsTokens(node);
+    parser.nextToken();
+
+    PathCurrency result = deserializer.deserialize(parser, mock(DeserializationContext.class));
+
+    assertThat(result.issue()).isInstanceOf(XrpIssue.class);
+    assertThat(((XrpIssue) result.issue()).currency()).isEqualTo("XRP");
+  }
+
+  @Test
   void testDeserializeIouWithIssuer() throws IOException {
     ObjectNode node = JsonNodeFactory.instance.objectNode();
     node.put("currency", "USD");

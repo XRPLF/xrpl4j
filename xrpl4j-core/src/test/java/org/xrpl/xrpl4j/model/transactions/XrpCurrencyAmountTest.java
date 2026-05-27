@@ -86,6 +86,15 @@ public class XrpCurrencyAmountTest {
   }
 
   @Test
+  public void ofDropsLongMinValueThrowsIllegalArgumentException() {
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class,
+      () -> XrpCurrencyAmount.ofDrops(Long.MIN_VALUE)
+    );
+    assertThat(exception.getMessage()).contains("Long.MIN_VALUE");
+  }
+
+  @Test
   public void ofDropsLongNegative() {
     XrpCurrencyAmount xrpCurrencyAmount = XrpCurrencyAmount.ofDrops(-1L);
     assertThat(xrpCurrencyAmount.value()).isEqualTo(UnsignedLong.ONE);

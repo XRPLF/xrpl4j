@@ -46,4 +46,12 @@ class AffectedNodeDeserializerTest {
       .isInstanceOf(MismatchedInputException.class)
       .hasMessageContaining("LedgerEntryType");
   }
+
+  @Test
+  void affectedNodeDeserializerThrowsOnNullLedgerEntryType() {
+    String json = "{\"CreatedNode\":{\"LedgerEntryType\":null}}";
+    assertThatThrownBy(() -> objectMapper.readValue(json, AffectedNode.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("LedgerEntryType");
+  }
 }

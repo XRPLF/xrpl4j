@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.path;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,17 +23,25 @@ package org.xrpl.xrpl4j.model.client.path;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.jackson.modules.PathCurrencyDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.PathCurrencySerializer;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
+import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
-import java.util.Optional;
+import java.util.Objects;
 
 /**
  * Represents a currency that an account holds on the XRPL, which can be used to specify the source currencies in
  * {@link RipplePathFindRequestParams}.
+ *
+ * <p>This class wraps an {@link Issue} to support XRP, IOUs, and MPTokens. For XRP, use {@link XrpIssue}.
+ * For IOUs, use {@link IouIssue}. For MPTokens, use {@link org.xrpl.xrpl4j.model.ledger.MptIssue}.</p>
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutablePathCurrency.class)
-@JsonDeserialize(as = ImmutablePathCurrency.class)
+@JsonSerialize(as = ImmutablePathCurrency.class, using = PathCurrencySerializer.class)
+@JsonDeserialize(as = ImmutablePathCurrency.class, using = PathCurrencyDeserializer.class)
 public interface PathCurrency {
 
   /**
@@ -48,29 +56,82 @@ public interface PathCurrency {
   /**
    * Construct a {@link PathCurrency} with the specified currency code and no issuer.
    *
-   * @param currency A {@link String} of either a 3 character currency code, or a 40 character hexadecimal encoded
-   *                 currency code value.
+   * <p>This is a convenience method for creating a {@link PathCurrency} for XRP only.
+   * For IOUs with an issuer, use {@link #of(String, Address)}. For MPTokens, use {@link #of(Issue)} instead.</p>
+   *
+   * @param currency A {@link String} currency code. Must be "XRP".
+   *
+   * @return A new {@link PathCurrency} for XRP.
+   * @throws IllegalArgumentException if currency is not "XRP"
+   * @deprecated Use {@link #of(Issue)} with {@link XrpIssue} for XRP,
+   *             or {@link #of(String, Address)} for IOUs with an issuer.
+   */
+  @Deprecated
+  static PathCurrency of(String currency) {
+    if ("XRP".equals(currency)) {
+      return of(XrpIssue.of());
+    }
+    throw new IllegalArgumentException(
+      "PathCurrency.of(String) only supports 'XRP'. " +
+      "For IOUs, use PathCurrency.of(String, Address) or PathCurrency.of(IouIssue). " +
+      "Received: " + currency
+    );
+  }
+
+  /**
+   * Construct a {@link PathCurrency} from an {@link Issue}.
+   *
+   * <p>This method supports {@link XrpIssue} (for XRP), {@link IouIssue} (for IOUs), and
+   * {@link org.xrpl.xrpl4j.model.ledger.MptIssue} (for MPTokens).</p>
+   *
+   * @param issue An {@link Issue} representing the currency.
    *
    * @return A new {@link PathCurrency}.
    */
-  static PathCurrency of(String currency) {
+  static PathCurrency of(final Issue issue) {
+    Objects.requireNonNull(issue);
     return builder()
-      .currency(currency)
+      .issue(issue)
       .build();
   }
 
   /**
-   * Either a 3 character currency code, or a 40 character hexadecimal encoded currency code value.
+   * Construct a {@link PathCurrency} with the specified currency code and issuer.
    *
-   * @return A {@link String} containing the currency code.
+   * <p>This is a convenience method for creating a {@link PathCurrency} for an IOU with an issuer.
+   * For MPTokens, use {@link #of(Issue)} with an {@link org.xrpl.xrpl4j.model.ledger.MptIssue} instead.</p>
+   *
+   * @param currency A {@link String} of either a 3 character currency code, or a 40 character hexadecimal encoded
+   *                 currency code value.
+   * @param issuer The {@link Address} of the issuer of the currency.
+   *
+   * @return A new {@link PathCurrency}.
    */
-  String currency();
+  static PathCurrency of(final String currency, final Address issuer) {
+    return builder()
+      .issue(IouIssue.builder().currency(currency).issuer(issuer).build())
+      .build();
+  }
 
   /**
-   * The {@link Address} of the issuer of the currency.
+   * The asset that this path currency represents. This can be a
+   * {@link org.xrpl.xrpl4j.model.ledger.XrpIssue} (for XRP),
+   * {@link org.xrpl.xrpl4j.model.ledger.IouIssue} (for IOUs), or an
+   * {@link org.xrpl.xrpl4j.model.ledger.MptIssue} (for MPTokens).
    *
-   * @return The optionally-present {@link Address} of the issuer account.
+   * <p>The {@link Issue} fields will be unwrapped and serialized directly into the PathCurrency JSON object
+   * by the custom {@link org.xrpl.xrpl4j.model.jackson.modules.PathCurrencySerializer}:
+   * <ul>
+   *   <li>For {@link org.xrpl.xrpl4j.model.ledger.XrpIssue}:
+   *       {@code {"currency": "XRP"}}</li>
+   *   <li>For {@link org.xrpl.xrpl4j.model.ledger.IouIssue}:
+   *       {@code {"currency": "...", "issuer": "..."}}</li>
+   *   <li>For {@link org.xrpl.xrpl4j.model.ledger.MptIssue}:
+   *       {@code {"mpt_issuance_id": "..."}}</li>
+   * </ul>
+   *
+   * @return An {@link Issue}.
    */
-  Optional<Address> issuer();
+  Issue issue();
 
 }

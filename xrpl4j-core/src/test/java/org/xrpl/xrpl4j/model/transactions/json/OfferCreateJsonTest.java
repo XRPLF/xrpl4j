@@ -29,6 +29,8 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -134,6 +136,123 @@ public class OfferCreateJsonTest extends AbstractJsonTest {
       "  \"NetworkID\": 1024," +
       "  \"DomainID\": \"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
       "  \"Expiration\": 16" +
+      "}";
+
+    assertCanSerializeAndDeserialize(offerCreate, json);
+  }
+
+  @Test
+  public void testOfferCreateJsonWithMptTakerPays() throws JsonProcessingException, JSONException {
+    MpTokenIssuanceId mptIssuanceId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .takerPays(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptIssuanceId)
+          .value("14")
+          .build()
+      )
+      .takerGets(XrpCurrencyAmount.ofDrops(15))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    String json = "{" +
+      "  \"Account\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\"," +
+      "  \"TransactionType\": \"OfferCreate\"," +
+      "  \"Sequence\": 1," +
+      "  \"TakerPays\": {" +
+      "    \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\"," +
+      "    \"value\": \"14\"" +
+      "  }," +
+      "  \"TakerGets\": \"15\"," +
+      "  \"Fee\": \"12\"," +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(offerCreate, json);
+  }
+
+  @Test
+  public void testOfferCreateJsonWithMptTakerGets() throws JsonProcessingException, JSONException {
+    MpTokenIssuanceId mptIssuanceId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .takerPays(XrpCurrencyAmount.ofDrops(14))
+      .takerGets(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptIssuanceId)
+          .value("15")
+          .build()
+      )
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    String json = "{" +
+      "  \"Account\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\"," +
+      "  \"TransactionType\": \"OfferCreate\"," +
+      "  \"Sequence\": 1," +
+      "  \"TakerPays\": \"14\"," +
+      "  \"TakerGets\": {" +
+      "    \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\"," +
+      "    \"value\": \"15\"" +
+      "  }," +
+      "  \"Fee\": \"12\"," +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(offerCreate, json);
+  }
+
+  @Test
+  public void testOfferCreateJsonWithBothMptAmounts() throws JsonProcessingException, JSONException {
+    MpTokenIssuanceId mptIssuanceId1 = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
+    MpTokenIssuanceId mptIssuanceId2 = MpTokenIssuanceId.of("00000003430427B80BD2D09D36B70B969E12801065F22309");
+
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .takerPays(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptIssuanceId1)
+          .value("14")
+          .build()
+      )
+      .takerGets(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mptIssuanceId2)
+          .value("15")
+          .build()
+      )
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    String json = "{" +
+      "  \"Account\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\"," +
+      "  \"TransactionType\": \"OfferCreate\"," +
+      "  \"Sequence\": 1," +
+      "  \"TakerPays\": {" +
+      "    \"mpt_issuance_id\": \"00000002430427B80BD2D09D36B70B969E12801065F22308\"," +
+      "    \"value\": \"14\"" +
+      "  }," +
+      "  \"TakerGets\": {" +
+      "    \"mpt_issuance_id\": \"00000003430427B80BD2D09D36B70B969E12801065F22309\"," +
+      "    \"value\": \"15\"" +
+      "  }," +
+      "  \"Fee\": \"12\"," +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
 
     assertCanSerializeAndDeserialize(offerCreate, json);

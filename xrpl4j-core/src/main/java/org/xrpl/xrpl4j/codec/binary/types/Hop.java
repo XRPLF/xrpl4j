@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.codec.binary.types;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -44,5 +45,8 @@ public interface Hop {
   Optional<JsonNode> account();
 
   Optional<JsonNode> currency();
+
+  @JsonProperty("mpt_issuance_id")
+  Optional<JsonNode> mptIssuanceId();
 
 }

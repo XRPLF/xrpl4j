@@ -1,5 +1,25 @@
 package org.xrpl.xrpl4j.codec.binary.types;
 
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: binary-codec
+ * %%
+ * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,11 +30,16 @@ import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 import org.xrpl.xrpl4j.model.AddressConstants;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.regex.Pattern;
 
 public class IssueType extends SerializedType<IssueType> {
 
   private static final ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
+  private static final int MPT_WIDTH = 44; // 20 (issuer account) + 20 (no account marker) + 4 (sequence)
+  private static final AccountIdType NO_ACCOUNT =
+    new AccountIdType(UnsignedByteArray.fromHex("0000000000000000000000000000000000000001"));
 
   private static final UnsignedByteArray ACCOUNT_ONE = AddressCodec.getInstance().decodeAccountId(
     AddressConstants.ACCOUNT_ONE);
@@ -89,6 +114,42 @@ public class IssueType extends SerializedType<IssueType> {
 
   @Override
   public JsonNode toJson() {
+    // Check if this is an MPT issue (44 bytes)
+    if (this.value().length() == MPT_WIDTH) {
+      byte[] bytes = this.value().toByteArray();
+      byte[] issuerAccount = new byte[20];
+      byte[] sequenceFromBinary = new byte[4];
+
+      System.arraycopy(bytes, 0, issuerAccount, 0, 20);
+      System.arraycopy(bytes, 40, sequenceFromBinary, 0, 4);
+
+      // Verify no-account marker
+      byte[] noAccount = new byte[20];
+      System.arraycopy(bytes, 20, noAccount, 0, 20);
+      if (!NO_ACCOUNT.toHex().equals(UnsignedByteArray.of(noAccount).hexValue())) {
+        throw new IllegalStateException("Invalid MPT Issue encoding: no-account marker mismatch.");
+      }
+
+      // Convert sequence from binary byte order to JSON byte order
+      ByteBuffer binaryBuffer = ByteBuffer.wrap(sequenceFromBinary);
+      binaryBuffer.order(ByteOrder.LITTLE_ENDIAN);
+      int sequence = binaryBuffer.getInt();
+
+      byte[] sequenceForJson = new byte[4];
+      ByteBuffer jsonBuffer = ByteBuffer.wrap(sequenceForJson);
+      jsonBuffer.order(ByteOrder.BIG_ENDIAN);
+      jsonBuffer.putInt(sequence);
+
+      // Construct mpt_issuance_id for JSON: sequence + issuer account
+      UnsignedByteArray mptIssuanceId = UnsignedByteArray.of(sequenceForJson)
+        .append(UnsignedByteArray.of(issuerAccount));
+
+      ImmutableIssue.Builder builder = Issue.builder();
+      builder.mptIssuanceId(objectMapper.valueToTree(mptIssuanceId.hexValue()));
+      return objectMapper.valueToTree(builder.build());
+    }
+
+    // Handle XRP or IOU issue
     BinaryParser parser = new BinaryParser(this.toHex());
     CurrencyType currency = new CurrencyType().fromParser(parser);
     JsonNode currencyJson = currency.toJson();

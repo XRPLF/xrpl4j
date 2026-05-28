@@ -99,5 +99,4 @@ public interface Issue {
       throw new IllegalStateException(String.format("Unsupported Issue Type: %s", this.getClass()));
     }
   }
-
 }

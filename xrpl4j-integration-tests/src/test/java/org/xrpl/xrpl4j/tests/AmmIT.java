@@ -927,8 +927,8 @@ public class AmmIT extends AbstractIT {
       info -> info.accountData().sequence().equals(expectedTraderSeqAfterDeposit)
     );
 
-    AccountInfoResult traderAccountAfterDeposit = this.getValidatedAccountInfo(
-      traderAccount.accountData().account()
+    AccountInfoResult traderAccountAfterDeposit = xrplClient.accountInfo(
+      AccountInfoRequestParams.of(traderAccount.accountData().account())
     );
 
     assertThat(traderAccountAfterDeposit.accountData().balance())

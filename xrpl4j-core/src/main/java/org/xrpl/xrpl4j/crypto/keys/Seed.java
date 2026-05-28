@@ -475,8 +475,8 @@ public interface Seed extends javax.security.auth.Destroyable {
         Objects.requireNonNull(discriminator);
 
         BigInteger key = null;
-        UnsignedByteArray seedCopy = UnsignedByteArray.of(seed.toByteArray());
         for (long i = 0; i <= 0xFFFFFFFFL; i++) {
+          UnsignedByteArray seedCopy = UnsignedByteArray.of(seed.toByteArray());
           discriminator.map(d -> HashingUtils.addUInt32(seedCopy, d));
           HashingUtils.addUInt32(seedCopy, (int) i);
           UnsignedByteArray hash = HashingUtils.sha512Half(seedCopy);

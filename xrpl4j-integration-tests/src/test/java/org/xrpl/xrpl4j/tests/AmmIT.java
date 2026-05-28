@@ -123,11 +123,19 @@ public class AmmIT extends AbstractIT {
       traderKeyPair.publicKey().deriveAddress()
     );
 
+    // Wait for this Clio node to index the vote before reading LP token balances and AMM state.
+    final UnsignedInteger expectedTraderSeqAfterVote = traderAccountAfterDeposit.accountData().sequence()
+      .plus(UnsignedInteger.ONE);
+    scanForResult(
+      () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedTraderSeqAfterVote)
+    );
+
     BigDecimal issuerLpTokenBalance = new BigDecimal(xrplClient.accountLines(
         AccountLinesRequestParams.builder()
           .account(issuerKeyPair.publicKey().deriveAddress())
           .peer(amm.amm().account())
-          .ledgerSpecifier(LedgerSpecifier.CURRENT)
+          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
           .build()
       ).lines().stream()
       .filter(trustLine -> trustLine.currency().equals(amm.amm().lpToken().currency()))
@@ -139,7 +147,7 @@ public class AmmIT extends AbstractIT {
         AccountLinesRequestParams.builder()
           .account(traderKeyPair.publicKey().deriveAddress())
           .peer(amm.amm().account())
-          .ledgerSpecifier(LedgerSpecifier.CURRENT)
+          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
           .build()
       ).lines().stream()
       .filter(trustLine -> trustLine.currency().equals(amm.amm().lpToken().currency()))
@@ -218,6 +226,14 @@ public class AmmIT extends AbstractIT {
       traderKeyPair.publicKey().deriveAddress()
     );
 
+    // Wait for this Clio node to index the bid before reading AMM state.
+    final UnsignedInteger expectedTraderSeqAfterBid = traderAccountAfterDeposit.accountData().sequence()
+      .plus(UnsignedInteger.ONE);
+    scanForResult(
+      () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedTraderSeqAfterBid)
+    );
+
     AmmInfoResult ammAfterBid = getAmmInfo(issuerKeyPair);
 
     assertThat(ammAfterBid.amm().auctionSlot()).isNotEmpty();
@@ -247,7 +263,7 @@ public class AmmIT extends AbstractIT {
       feeResult
     );
 
-    AmmInfoResult ammInfoAfterDeposit = getAmmInfo(issuerKeyPair);
+    final AmmInfoResult ammInfoAfterDeposit = getAmmInfo(issuerKeyPair);
     AmmWithdraw withdraw = AmmWithdraw.builder()
       .account(traderKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -280,6 +296,14 @@ public class AmmIT extends AbstractIT {
       withdraw.lastLedgerSequence().get(),
       withdraw.sequence(),
       traderKeyPair.publicKey().deriveAddress()
+    );
+
+    // Wait for this Clio node to index the withdraw before reading AMM state.
+    final UnsignedInteger expectedTraderSeqAfterWithdraw = traderAccountAfterDeposit.accountData().sequence()
+      .plus(UnsignedInteger.ONE);
+    scanForResult(
+      () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedTraderSeqAfterWithdraw)
     );
 
     AmmInfoResult ammAfterWithdraw = getAmmInfo(issuerKeyPair);
@@ -895,8 +919,16 @@ public class AmmIT extends AbstractIT {
       traderKeyPair.publicKey().deriveAddress()
     );
 
-    AccountInfoResult traderAccountAfterDeposit = xrplClient.accountInfo(
-      AccountInfoRequestParams.of(traderAccount.accountData().account())
+    // Wait for this Clio node to index the deposit before reading account state.
+    final UnsignedInteger expectedTraderSeqAfterDeposit = traderAccount.accountData().sequence()
+      .plus(UnsignedInteger.ONE);
+    scanForResult(
+      () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedTraderSeqAfterDeposit)
+    );
+
+    AccountInfoResult traderAccountAfterDeposit = this.getValidatedAccountInfo(
+      traderAccount.accountData().account()
     );
 
     assertThat(traderAccountAfterDeposit.accountData().balance())
@@ -906,7 +938,7 @@ public class AmmIT extends AbstractIT {
       AccountLinesRequestParams.builder()
         .account(traderAccount.accountData().account())
         .peer(amm.amm().account())
-        .ledgerSpecifier(LedgerSpecifier.CURRENT)
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build()
     );
 
@@ -961,6 +993,16 @@ public class AmmIT extends AbstractIT {
       ammCreate.lastLedgerSequence().get(),
       ammCreate.sequence(),
       issuerKeyPair.publicKey().deriveAddress()
+    );
+
+    // Wait for this Clio node to index both the enableFlag (seq N) and AmmCreate (seq N+1)
+    // transactions before querying ammInfo.  Without this guard the node may return
+    // actNotFound because it has not yet replicated the new AMM account object.
+    final UnsignedInteger expectedIssuerSeqAfterCreate = issuerAccount.accountData().sequence()
+      .plus(UnsignedInteger.valueOf(2));
+    scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedIssuerSeqAfterCreate)
     );
 
     return getAmmInfo(issuerKeyPair);

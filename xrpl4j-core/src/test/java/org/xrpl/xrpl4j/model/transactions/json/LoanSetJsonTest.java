@@ -5,10 +5,11 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.LoanSetFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.CounterpartySignature;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.LoanData;
@@ -39,26 +40,26 @@ public class LoanSetJsonTest extends AbstractJsonTest {
       .counterparty(Address.of("rEePKs9pVMf91vYj1QVRPmJvCBEum9P2kE"))
       .counterpartySignature(
         CounterpartySignature.builder()
-          .signingPubKey(
+          .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
             "ED94BE884DB13EA26792F7DE6E8DAAEE9151BD90E0362C7D5C1898D272A7E56A00"
-          )
-          .txnSignature(
+          ))
+          .transactionSignature(Signature.fromBase16(
             "E0B7599656AF32847D4695F836FF1767F036F6E1232115E9295264C8A614FB3C" +
             "1BA3DF45D92304038032EC7BD5D6A901B041A4C74CF28838D205B7E51E08B602"
-          )
+          ))
           .build()
       )
       .data(LoanData.of("AABBCC"))
-      .loanOriginationFee(AssetAmount.of("100"))
-      .loanServiceFee(AssetAmount.of("50"))
-      .latePaymentFee(AssetAmount.of("25"))
-      .closePaymentFee(AssetAmount.of("75"))
+      .loanOriginationFee(Amount.of("100"))
+      .loanServiceFee(Amount.of("50"))
+      .latePaymentFee(Amount.of("25"))
+      .closePaymentFee(Amount.of("75"))
       .overpaymentFee(UnsignedInteger.valueOf(500))
       .interestRate(UnsignedInteger.valueOf(5000))
       .lateInterestRate(UnsignedInteger.valueOf(7500))
       .closeInterestRate(UnsignedInteger.valueOf(3000))
       .overpaymentInterestRate(UnsignedInteger.valueOf(2000))
-      .principalRequested(AssetAmount.of("50000"))
+      .principalRequested(Amount.of("50000"))
       .paymentTotal(UnsignedInteger.valueOf(3))
       .paymentInterval(UnsignedInteger.valueOf(2592000))
       .gracePeriod(UnsignedInteger.valueOf(86400))
@@ -116,7 +117,7 @@ public class LoanSetJsonTest extends AbstractJsonTest {
       .loanBrokerId(Hash256.of(
         "79E25403E9FC010A277D80410EED5494FDD033A09FD4C1432335A1734A1D099D"
       ))
-      .principalRequested(AssetAmount.of("50000"))
+      .principalRequested(Amount.of("50000"))
       .build();
 
     String json = "{" +
@@ -153,16 +154,16 @@ public class LoanSetJsonTest extends AbstractJsonTest {
       .counterparty(Address.of("rEePKs9pVMf91vYj1QVRPmJvCBEum9P2kE"))
       .counterpartySignature(
         CounterpartySignature.builder()
-          .signingPubKey(
+          .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
             "ED94BE884DB13EA26792F7DE6E8DAAEE9151BD90E0362C7D5C1898D272A7E56A00"
-          )
-          .txnSignature(
+          ))
+          .transactionSignature(Signature.fromBase16(
             "E0B7599656AF32847D4695F836FF1767F036F6E1232115E9295264C8A614FB3C" +
             "1BA3DF45D92304038032EC7BD5D6A901B041A4C74CF28838D205B7E51E08B602"
-          )
+          ))
           .build()
       )
-      .principalRequested(AssetAmount.of("50000"))
+      .principalRequested(Amount.of("50000"))
       .paymentTotal(UnsignedInteger.valueOf(3))
       .build();
 
@@ -209,7 +210,7 @@ public class LoanSetJsonTest extends AbstractJsonTest {
       .loanBrokerId(Hash256.of(
         "79E25403E9FC010A277D80410EED5494FDD033A09FD4C1432335A1734A1D099D"
       ))
-      .principalRequested(AssetAmount.of("50000"))
+      .principalRequested(Amount.of("50000"))
       .build();
 
     String json = "{" +

@@ -11,7 +11,7 @@ import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
@@ -38,7 +38,7 @@ public class VaultCreateJsonTest extends AbstractJsonTest {
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
       )
-      .assetsMaximum(AssetAmount.of("1000000"))
+      .assetsMaximum(Amount.of("1000000"))
       .mpTokenMetadata(MpTokenMetadata.of("AABB"))
       .domainId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000001"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)

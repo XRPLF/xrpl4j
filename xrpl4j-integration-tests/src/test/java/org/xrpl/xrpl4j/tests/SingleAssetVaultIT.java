@@ -33,7 +33,7 @@ import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -148,7 +148,7 @@ public class SingleAssetVaultIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(vaultOwnerAccountInfo.accountData().sequence())
       .asset(usdIssue)
-      .assetsMaximum(AssetAmount.of("500000"))
+      .assetsMaximum(Amount.of("500000"))
       .mpTokenMetadata(MpTokenMetadata.of("AABB"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
       .scale(AssetScale.of(UnsignedInteger.valueOf(2)))
@@ -184,12 +184,12 @@ public class SingleAssetVaultIT extends AbstractIT {
     VaultObject vaultFromInfoById = vaultInfoByIdResult.vault();
     assertThat(vaultFromInfoById.owner()).isEqualTo(vaultOwnerKeyPair.publicKey().deriveAddress());
     assertThat(vaultFromInfoById.asset()).isEqualTo(usdIssue);
-    assertThat(vaultFromInfoById.assetsMaximum()).isEqualTo(AssetAmount.of("500000"));
+    assertThat(vaultFromInfoById.assetsMaximum()).isEqualTo(Amount.of("500000"));
     assertThat(vaultFromInfoById.scale()).isEqualTo(AssetScale.of(UnsignedInteger.valueOf(2)));
     assertThat(vaultFromInfoById.data()).isNotEmpty().get().isEqualTo(VaultData.ofPlainText("vault data"));
     assertThat(vaultFromInfoById.withdrawalPolicy()).isEqualTo(WithdrawalPolicy.FIRST_COME_FIRST_SERVE);
-    assertThat(vaultFromInfoById.assetsTotal()).isEqualTo(AssetAmount.of("0"));
-    assertThat(vaultFromInfoById.assetsAvailable()).isEqualTo(AssetAmount.of("0"));
+    assertThat(vaultFromInfoById.assetsTotal()).isEqualTo(Amount.of("0"));
+    assertThat(vaultFromInfoById.assetsAvailable()).isEqualTo(Amount.of("0"));
     assertThat(vaultFromInfoById.shares()).isNotEmpty();
 
     // Step 8: Verify vault_info (query by owner and seq)
@@ -238,8 +238,8 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Step 10: Verify vault state after deposit via vault_info
     VaultInfoResult vaultInfoAfterDeposit = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterDeposit.vault().assetsTotal()).isEqualTo(AssetAmount.of("10000"));
-    assertThat(vaultInfoAfterDeposit.vault().assetsAvailable()).isEqualTo(AssetAmount.of("10000"));
+    assertThat(vaultInfoAfterDeposit.vault().assetsTotal()).isEqualTo(Amount.of("10000"));
+    assertThat(vaultInfoAfterDeposit.vault().assetsAvailable()).isEqualTo(Amount.of("10000"));
     // scale of 2, so 10000 * 100 = 1000000
     assertThat(vaultInfoAfterDeposit.vault().shares().get().outstandingAmount())
       .isEqualTo(MpTokenNumericAmount.of(1000000));
@@ -279,8 +279,8 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Step 12: Verify vault state after withdrawal via vault_info
     VaultInfoResult vaultInfoAfterWithdraw = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterWithdraw.vault().assetsTotal()).isEqualTo(AssetAmount.of("6000"));
-    assertThat(vaultInfoAfterWithdraw.vault().assetsAvailable()).isEqualTo(AssetAmount.of("6000"));
+    assertThat(vaultInfoAfterWithdraw.vault().assetsTotal()).isEqualTo(Amount.of("6000"));
+    assertThat(vaultInfoAfterWithdraw.vault().assetsAvailable()).isEqualTo(Amount.of("6000"));
 
     // Step 13: Clawback from vault (issuer claws back the underlying IOU asset from depositor)
     AccountInfoResult issuerAccountInfoForClawback = this.scanForResult(
@@ -316,8 +316,8 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Verify vault state after clawback
     VaultInfoResult vaultInfoAfterClawback = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterClawback.vault().assetsTotal()).isEqualTo(AssetAmount.of("4000"));
-    assertThat(vaultInfoAfterClawback.vault().assetsAvailable()).isEqualTo(AssetAmount.of("4000"));
+    assertThat(vaultInfoAfterClawback.vault().assetsTotal()).isEqualTo(Amount.of("4000"));
+    assertThat(vaultInfoAfterClawback.vault().assetsAvailable()).isEqualTo(Amount.of("4000"));
 
     // Step 14: Update vault settings with VaultSet
     vaultOwnerAccountInfo = this.scanForResult(
@@ -329,7 +329,7 @@ public class SingleAssetVaultIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(vaultOwnerAccountInfo.accountData().sequence())
       .vaultId(vaultId)
-      .assetsMaximum(AssetAmount.of("1000000"))
+      .assetsMaximum(Amount.of("1000000"))
       .data(VaultData.of("576F726C64"))
       .signingPublicKey(vaultOwnerKeyPair.publicKey())
       .build();
@@ -348,9 +348,9 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Step 15: Verify vault state after set (assetsMaximum and data updated)
     VaultInfoResult vaultInfoAfterSet = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterSet.vault().assetsMaximum()).isEqualTo(AssetAmount.of("1000000"));
+    assertThat(vaultInfoAfterSet.vault().assetsMaximum()).isEqualTo(Amount.of("1000000"));
     assertThat(vaultInfoAfterSet.vault().data()).isNotEmpty().get().isEqualTo(VaultData.of("576F726C64"));
-    assertThat(vaultInfoAfterSet.vault().assetsTotal()).isEqualTo(AssetAmount.of("4000"));
+    assertThat(vaultInfoAfterSet.vault().assetsTotal()).isEqualTo(Amount.of("4000"));
 
     // Step 16: Withdraw remaining assets before delete
     depositorAccountInfo = this.scanForResult(
@@ -470,7 +470,7 @@ public class SingleAssetVaultIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(vaultOwnerAccountInfo.accountData().sequence())
       .asset(mptIssue)
-      .assetsMaximum(AssetAmount.of("50000000"))
+      .assetsMaximum(Amount.of("50000000"))
       .mpTokenMetadata(MpTokenMetadata.of("DEADBEEF"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
       .data(VaultData.of("4D5054"))
@@ -506,12 +506,12 @@ public class SingleAssetVaultIT extends AbstractIT {
     VaultObject vaultFromInfoById = vaultInfoByIdResult.vault();
     assertThat(vaultFromInfoById.owner()).isEqualTo(vaultOwnerKeyPair.publicKey().deriveAddress());
     assertThat(vaultFromInfoById.asset()).isEqualTo(mptIssue);
-    assertThat(vaultFromInfoById.assetsMaximum()).isEqualTo(AssetAmount.of("50000000"));
+    assertThat(vaultFromInfoById.assetsMaximum()).isEqualTo(Amount.of("50000000"));
     assertThat(vaultFromInfoById.scale()).isEqualTo(AssetScale.of(UnsignedInteger.ZERO));
     assertThat(vaultFromInfoById.data()).isNotEmpty().get().isEqualTo(VaultData.of("4D5054"));
     assertThat(vaultFromInfoById.withdrawalPolicy()).isEqualTo(WithdrawalPolicy.FIRST_COME_FIRST_SERVE);
-    assertThat(vaultFromInfoById.assetsTotal()).isEqualTo(AssetAmount.of("0"));
-    assertThat(vaultFromInfoById.assetsAvailable()).isEqualTo(AssetAmount.of("0"));
+    assertThat(vaultFromInfoById.assetsTotal()).isEqualTo(Amount.of("0"));
+    assertThat(vaultFromInfoById.assetsAvailable()).isEqualTo(Amount.of("0"));
     assertThat(vaultFromInfoById.shares()).isNotEmpty();
 
     // Verify vault_info (query by owner and seq)
@@ -616,8 +616,8 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Step 8: Verify vault state after deposit via vault_info
     VaultInfoResult vaultInfoAfterDeposit = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterDeposit.vault().assetsTotal()).isEqualTo(AssetAmount.of("10000"));
-    assertThat(vaultInfoAfterDeposit.vault().assetsAvailable()).isEqualTo(AssetAmount.of("10000"));
+    assertThat(vaultInfoAfterDeposit.vault().assetsTotal()).isEqualTo(Amount.of("10000"));
+    assertThat(vaultInfoAfterDeposit.vault().assetsAvailable()).isEqualTo(Amount.of("10000"));
     assertThat(vaultInfoAfterDeposit.vault().shares()).isNotEmpty();
 
     // Step 9: Clawback from vault
@@ -653,8 +653,8 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Verify vault state after clawback
     VaultInfoResult vaultInfoAfterClawback = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterClawback.vault().assetsTotal()).isEqualTo(AssetAmount.of("8000"));
-    assertThat(vaultInfoAfterClawback.vault().assetsAvailable()).isEqualTo(AssetAmount.of("8000"));
+    assertThat(vaultInfoAfterClawback.vault().assetsTotal()).isEqualTo(Amount.of("8000"));
+    assertThat(vaultInfoAfterClawback.vault().assetsAvailable()).isEqualTo(Amount.of("8000"));
 
     // Step 10: Withdraw from vault
     depositorAccountInfo = this.scanForResult(
@@ -689,8 +689,8 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Step 11: Verify vault state after withdrawal via vault_info
     VaultInfoResult vaultInfoAfterWithdraw = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterWithdraw.vault().assetsTotal()).isEqualTo(AssetAmount.of("4000"));
-    assertThat(vaultInfoAfterWithdraw.vault().assetsAvailable()).isEqualTo(AssetAmount.of("4000"));
+    assertThat(vaultInfoAfterWithdraw.vault().assetsTotal()).isEqualTo(Amount.of("4000"));
+    assertThat(vaultInfoAfterWithdraw.vault().assetsAvailable()).isEqualTo(Amount.of("4000"));
 
     // Step 12: Update vault settings with VaultSet
     vaultOwnerAccountInfo = this.scanForResult(
@@ -702,7 +702,7 @@ public class SingleAssetVaultIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(vaultOwnerAccountInfo.accountData().sequence())
       .vaultId(vaultId)
-      .assetsMaximum(AssetAmount.of("100000000"))
+      .assetsMaximum(Amount.of("100000000"))
       .data(VaultData.of("555044415445"))
       .signingPublicKey(vaultOwnerKeyPair.publicKey())
       .build();
@@ -721,9 +721,9 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Step 13: Verify vault state after set (assetsMaximum and data updated)
     VaultInfoResult vaultInfoAfterSet = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterSet.vault().assetsMaximum()).isEqualTo(AssetAmount.of("100000000"));
+    assertThat(vaultInfoAfterSet.vault().assetsMaximum()).isEqualTo(Amount.of("100000000"));
     assertThat(vaultInfoAfterSet.vault().data()).isNotEmpty().get().isEqualTo(VaultData.of("555044415445"));
-    assertThat(vaultInfoAfterSet.vault().assetsTotal()).isEqualTo(AssetAmount.of("4000"));
+    assertThat(vaultInfoAfterSet.vault().assetsTotal()).isEqualTo(Amount.of("4000"));
 
     // Step 14: Withdraw remaining assets before delete
     depositorAccountInfo = this.scanForResult(
@@ -803,7 +803,7 @@ public class SingleAssetVaultIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(vaultOwnerAccountInfo.accountData().sequence())
       .asset(Issue.XRP)
-      .assetsMaximum(AssetAmount.of("10000000000"))
+      .assetsMaximum(Amount.of("10000000000"))
       .mpTokenMetadata(MpTokenMetadata.of("AABBCCDD"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
       .data(VaultData.of("585250"))
@@ -839,12 +839,12 @@ public class SingleAssetVaultIT extends AbstractIT {
     VaultObject vaultFromInfoById = vaultInfoByIdResult.vault();
     assertThat(vaultFromInfoById.owner()).isEqualTo(vaultOwnerKeyPair.publicKey().deriveAddress());
     assertThat(vaultFromInfoById.asset()).isEqualTo(Issue.XRP);
-    assertThat(vaultFromInfoById.assetsMaximum()).isEqualTo(AssetAmount.of("10000000000"));
+    assertThat(vaultFromInfoById.assetsMaximum()).isEqualTo(Amount.of("10000000000"));
     assertThat(vaultFromInfoById.scale()).isEqualTo(AssetScale.of(UnsignedInteger.ZERO));
     assertThat(vaultFromInfoById.data()).isNotEmpty().get().isEqualTo(VaultData.of("585250"));
     assertThat(vaultFromInfoById.withdrawalPolicy()).isEqualTo(WithdrawalPolicy.FIRST_COME_FIRST_SERVE);
-    assertThat(vaultFromInfoById.assetsTotal()).isEqualTo(AssetAmount.of("0"));
-    assertThat(vaultFromInfoById.assetsAvailable()).isEqualTo(AssetAmount.of("0"));
+    assertThat(vaultFromInfoById.assetsTotal()).isEqualTo(Amount.of("0"));
+    assertThat(vaultFromInfoById.assetsAvailable()).isEqualTo(Amount.of("0"));
     assertThat(vaultFromInfoById.shares()).isNotEmpty();
 
     // Verify vault_info (query by owner and seq)
@@ -890,8 +890,8 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Step 5: Verify vault state after deposit via vault_info
     VaultInfoResult vaultInfoAfterDeposit = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterDeposit.vault().assetsTotal()).isEqualTo(AssetAmount.of("1000000"));
-    assertThat(vaultInfoAfterDeposit.vault().assetsAvailable()).isEqualTo(AssetAmount.of("1000000"));
+    assertThat(vaultInfoAfterDeposit.vault().assetsTotal()).isEqualTo(Amount.of("1000000"));
+    assertThat(vaultInfoAfterDeposit.vault().assetsAvailable()).isEqualTo(Amount.of("1000000"));
     assertThat(vaultInfoAfterDeposit.vault().shares()).isNotEmpty();
 
     // Step 6: Withdraw from vault with destination field
@@ -923,8 +923,8 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Step 7: Verify vault state after withdrawal via vault_info
     VaultInfoResult vaultInfoAfterWithdraw = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterWithdraw.vault().assetsTotal()).isEqualTo(AssetAmount.of("500000"));
-    assertThat(vaultInfoAfterWithdraw.vault().assetsAvailable()).isEqualTo(AssetAmount.of("500000"));
+    assertThat(vaultInfoAfterWithdraw.vault().assetsTotal()).isEqualTo(Amount.of("500000"));
+    assertThat(vaultInfoAfterWithdraw.vault().assetsAvailable()).isEqualTo(Amount.of("500000"));
 
     // Step 8: Update vault settings with VaultSet
     vaultOwnerAccountInfo = this.scanForResult(
@@ -936,7 +936,7 @@ public class SingleAssetVaultIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(vaultOwnerAccountInfo.accountData().sequence())
       .vaultId(vaultId)
-      .assetsMaximum(AssetAmount.of("20000000000"))
+      .assetsMaximum(Amount.of("20000000000"))
       .data(VaultData.of("4E4557"))
       .signingPublicKey(vaultOwnerKeyPair.publicKey())
       .build();
@@ -955,9 +955,9 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Step 9: Verify vault state after set (assetsMaximum and data updated)
     VaultInfoResult vaultInfoAfterSet = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterSet.vault().assetsMaximum()).isEqualTo(AssetAmount.of("20000000000"));
+    assertThat(vaultInfoAfterSet.vault().assetsMaximum()).isEqualTo(Amount.of("20000000000"));
     assertThat(vaultInfoAfterSet.vault().data()).isNotEmpty().get().isEqualTo(VaultData.of("4E4557"));
-    assertThat(vaultInfoAfterSet.vault().assetsTotal()).isEqualTo(AssetAmount.of("500000"));
+    assertThat(vaultInfoAfterSet.vault().assetsTotal()).isEqualTo(Amount.of("500000"));
 
     // Step 10: Withdraw remaining assets before delete
     depositorAccountInfo = this.scanForResult(
@@ -1104,7 +1104,7 @@ public class SingleAssetVaultIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(vaultOwnerAccountInfo.accountData().sequence())
       .asset(usdIssue)
-      .assetsMaximum(AssetAmount.of("500000"))
+      .assetsMaximum(Amount.of("500000"))
       .mpTokenMetadata(MpTokenMetadata.of("444F4D41494E"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
       .scale(AssetScale.of(UnsignedInteger.valueOf(2)))
@@ -1143,13 +1143,13 @@ public class SingleAssetVaultIT extends AbstractIT {
     VaultObject vaultFromInfoById = vaultInfoByIdResult.vault();
     assertThat(vaultFromInfoById.owner()).isEqualTo(vaultOwnerKeyPair.publicKey().deriveAddress());
     assertThat(vaultFromInfoById.asset()).isEqualTo(usdIssue);
-    assertThat(vaultFromInfoById.assetsMaximum()).isEqualTo(AssetAmount.of("500000"));
+    assertThat(vaultFromInfoById.assetsMaximum()).isEqualTo(Amount.of("500000"));
     assertThat(vaultFromInfoById.scale()).isEqualTo(AssetScale.of(UnsignedInteger.valueOf(2)));
     assertThat(vaultFromInfoById.data()).isNotEmpty().get().isEqualTo(VaultData.of("505249564154"));
     assertThat(vaultFromInfoById.withdrawalPolicy()).isEqualTo(WithdrawalPolicy.FIRST_COME_FIRST_SERVE);
     assertThat(vaultFromInfoById.flags()).isEqualTo(VaultFlags.VAULT_PRIVATE);
-    assertThat(vaultFromInfoById.assetsTotal()).isEqualTo(AssetAmount.of("0"));
-    assertThat(vaultFromInfoById.assetsAvailable()).isEqualTo(AssetAmount.of("0"));
+    assertThat(vaultFromInfoById.assetsTotal()).isEqualTo(Amount.of("0"));
+    assertThat(vaultFromInfoById.assetsAvailable()).isEqualTo(Amount.of("0"));
     assertThat(vaultFromInfoById.shares()).isNotEmpty();
     assertThat(vaultFromInfoById.shares().get().domainId()).isNotEmpty().get().isEqualTo(domainId);
 
@@ -1202,8 +1202,8 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Step 9: Verify vault state after deposit via vault_info
     VaultInfoResult vaultInfoAfterDeposit = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterDeposit.vault().assetsTotal()).isEqualTo(AssetAmount.of("10000"));
-    assertThat(vaultInfoAfterDeposit.vault().assetsAvailable()).isEqualTo(AssetAmount.of("10000"));
+    assertThat(vaultInfoAfterDeposit.vault().assetsTotal()).isEqualTo(Amount.of("10000"));
+    assertThat(vaultInfoAfterDeposit.vault().assetsAvailable()).isEqualTo(Amount.of("10000"));
     assertThat(vaultInfoAfterDeposit.vault().shares()).isNotEmpty();
 
     // Step 10: Withdraw from vault (withdraw first before clawback)
@@ -1241,8 +1241,8 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Step 11: Verify vault state after withdrawal via vault_info
     VaultInfoResult vaultInfoAfterWithdraw = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterWithdraw.vault().assetsTotal()).isEqualTo(AssetAmount.of("6000"));
-    assertThat(vaultInfoAfterWithdraw.vault().assetsAvailable()).isEqualTo(AssetAmount.of("6000"));
+    assertThat(vaultInfoAfterWithdraw.vault().assetsTotal()).isEqualTo(Amount.of("6000"));
+    assertThat(vaultInfoAfterWithdraw.vault().assetsAvailable()).isEqualTo(Amount.of("6000"));
 
     // Step 12: Clawback from vault (issuer claws back the underlying IOU asset from depositor)
     AccountInfoResult issuerAccountInfoForClawback = this.scanForResult(
@@ -1278,8 +1278,8 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Verify vault state after clawback
     VaultInfoResult vaultInfoAfterClawback = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterClawback.vault().assetsTotal()).isEqualTo(AssetAmount.of("4000"));
-    assertThat(vaultInfoAfterClawback.vault().assetsAvailable()).isEqualTo(AssetAmount.of("4000"));
+    assertThat(vaultInfoAfterClawback.vault().assetsTotal()).isEqualTo(Amount.of("4000"));
+    assertThat(vaultInfoAfterClawback.vault().assetsAvailable()).isEqualTo(Amount.of("4000"));
 
     // Step 13: Update vault settings with VaultSet
     vaultOwnerAccountInfo = this.scanForResult(
@@ -1291,7 +1291,7 @@ public class SingleAssetVaultIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(vaultOwnerAccountInfo.accountData().sequence())
       .vaultId(vaultId)
-      .assetsMaximum(AssetAmount.of("1000000"))
+      .assetsMaximum(Amount.of("1000000"))
       .data(VaultData.of("555044415445"))
       .signingPublicKey(vaultOwnerKeyPair.publicKey())
       .build();
@@ -1310,9 +1310,9 @@ public class SingleAssetVaultIT extends AbstractIT {
 
     // Step 14: Verify vault state after set (assetsMaximum and data updated)
     VaultInfoResult vaultInfoAfterSet = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
-    assertThat(vaultInfoAfterSet.vault().assetsMaximum()).isEqualTo(AssetAmount.of("1000000"));
+    assertThat(vaultInfoAfterSet.vault().assetsMaximum()).isEqualTo(Amount.of("1000000"));
     assertThat(vaultInfoAfterSet.vault().data()).isNotEmpty().get().isEqualTo(VaultData.of("555044415445"));
-    assertThat(vaultInfoAfterSet.vault().assetsTotal()).isEqualTo(AssetAmount.of("4000"));
+    assertThat(vaultInfoAfterSet.vault().assetsTotal()).isEqualTo(Amount.of("4000"));
 
     // Step 15: Withdraw remaining assets before delete
     authorizedDepositorAccountInfo = this.scanForResult(

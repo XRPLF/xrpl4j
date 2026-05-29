@@ -100,7 +100,7 @@ class LoanBrokerSetTest {
   @Test
   void debtMaximumMustNotBeNegative() {
     assertThatThrownBy(() -> baseBuilder()
-      .debtMaximum(AssetAmount.of("-1"))
+      .debtMaximum(Amount.of("-1"))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
       .hasMessage("DebtMaximum must not be negative.");
@@ -109,7 +109,7 @@ class LoanBrokerSetTest {
   @Test
   void debtMaximumAtZeroIsValid() {
     assertDoesNotThrow(() -> baseBuilder()
-      .debtMaximum(AssetAmount.of("0"))
+      .debtMaximum(Amount.of("0"))
       .build()
     );
   }
@@ -117,7 +117,7 @@ class LoanBrokerSetTest {
   @Test
   void debtMaximumPositiveIsValid() {
     assertDoesNotThrow(() -> baseBuilder()
-      .debtMaximum(AssetAmount.of("5000000000"))
+      .debtMaximum(Amount.of("5000000000"))
       .build()
     );
   }
@@ -263,7 +263,7 @@ class LoanBrokerSetTest {
     assertDoesNotThrow(() -> baseBuilder()
       .loanBrokerId(VALID_BROKER_ID)
       .data(LoanBrokerData.of("AABBCC"))
-      .debtMaximum(AssetAmount.of("1000000"))
+      .debtMaximum(Amount.of("1000000"))
       .build()
     );
   }
@@ -276,7 +276,7 @@ class LoanBrokerSetTest {
   void validCreateWithAllFields() {
     assertDoesNotThrow(() -> baseBuilder()
       .managementFeeRate(UnsignedInteger.valueOf(5000))
-      .debtMaximum(AssetAmount.of("1000000000"))
+      .debtMaximum(Amount.of("1000000000"))
       .coverRateMinimum(UnsignedInteger.valueOf(50000))
       .coverRateLiquidation(UnsignedInteger.valueOf(25000))
       .data(LoanBrokerData.of("AABBCC"))

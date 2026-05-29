@@ -53,7 +53,7 @@ public interface LoanSet extends Transaction {
   Hash256 loanBrokerId();
 
   /**
-   * The address of the counterparty of the Loan.
+   * The address of the counterparty of the Loan. This field may be absent when LoanBroker is the counterparty.
    *
    * @return An optionally-present {@link Address}.
    */
@@ -62,6 +62,23 @@ public interface LoanSet extends Transaction {
 
   /**
    * The signature of the counterparty over the transaction.
+   *
+   * <p>This field is {@link Optional} because both parties must sign the same serialized transaction bytes,
+   * and {@code CounterpartySignature} is excluded from those bytes by design. The dual-signing flow is:
+   * <ol>
+   *   <li>The broker constructs a {@link LoanSet} with this field absent and signs it — the absent field
+   *       produces the canonical bytes that both parties will sign.</li>
+   *   <li>The counterparty signs the same bytes (over the same absent-field transaction) and returns their
+   *       signature.</li>
+   *   <li>The broker/counterparty assembles the final transaction by adding the counterparty signature here and
+   *      submits it.</li>
+   * </ol>
+   *
+   * <p>If this field were required, it would be impossible to construct the intermediate unsigned object
+   * needed to obtain the signable bytes in step 1, breaking the entire dual-signing protocol.
+   *
+   * <p>When present, the value must be a valid signature from a key authorized for the counterparty account
+   * (master key, regular key, or a quorum of multi-signers).
    *
    * @return An optionally-present {@link CounterpartySignature}.
    */
@@ -79,34 +96,34 @@ public interface LoanSet extends Transaction {
   /**
    * A nominal funds amount paid to the {@code LoanBroker.Owner} when the Loan is created.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("LoanOriginationFee")
-  Optional<AssetAmount> loanOriginationFee();
+  Optional<Amount> loanOriginationFee();
 
   /**
    * A nominal amount paid to the {@code LoanBroker.Owner} with every Loan payment.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("LoanServiceFee")
-  Optional<AssetAmount> loanServiceFee();
+  Optional<Amount> loanServiceFee();
 
   /**
    * A nominal funds amount paid to the {@code LoanBroker.Owner} when a payment is late.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("LatePaymentFee")
-  Optional<AssetAmount> latePaymentFee();
+  Optional<Amount> latePaymentFee();
 
   /**
    * A nominal funds amount paid to the {@code LoanBroker.Owner} when an early full repayment is made.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("ClosePaymentFee")
-  Optional<AssetAmount> closePaymentFee();
+  Optional<Amount> closePaymentFee();
 
   /**
    * A fee charged on overpayments in 1/10th basis points. Valid values are between 0 and 100000 inclusive
@@ -156,10 +173,10 @@ public interface LoanSet extends Transaction {
   /**
    * The principal amount requested by the Borrower.
    *
-   * @return An {@link AssetAmount}.
+   * @return An {@link Amount}.
    */
   @JsonProperty("PrincipalRequested")
-  AssetAmount principalRequested();
+  Amount principalRequested();
 
   /**
    * The total number of payments to be made against the Loan.
@@ -192,9 +209,7 @@ public interface LoanSet extends Transaction {
   default void check() {
     // 1. LoanBrokerID must not be zero.
     Preconditions.checkArgument(
-      !loanBrokerId().value().equals(
-        "0000000000000000000000000000000000000000000000000000000000000000"
-      ),
+      !loanBrokerId().equals(Hash256.ZERO),
       "LoanBrokerID must not be zero."
     );
 

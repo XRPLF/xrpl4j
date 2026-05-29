@@ -47,7 +47,7 @@ import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -873,7 +873,7 @@ class XrplBinaryCodecTest {
       .fee(XrpCurrencyAmount.ofDrops(30))
       .sequence(UnsignedInteger.ONE)
       .loanBrokerId(Hash256.of(Strings.padStart("ABC123", 64, '0')))
-      .principalRequested(AssetAmount.of("50000"))
+      .principalRequested(Amount.of("50000"))
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey(
           "EDC41841B85D6E6CA8EF82B9E4A08F29CD0966334EAC7F8690DAD6546F2DFC00A6"

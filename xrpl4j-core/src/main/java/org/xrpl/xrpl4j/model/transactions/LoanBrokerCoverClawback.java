@@ -74,7 +74,7 @@ public interface LoanBrokerCoverClawback extends Transaction {
 
     // 2. LoanBrokerID, if present, must not be zero.
     loanBrokerId().ifPresent(id -> Preconditions.checkArgument(
-      !id.value().equals("0000000000000000000000000000000000000000000000000000000000000000"),
+      !id.equals(Hash256.ZERO),
       "LoanBrokerID must not be zero."
     ));
 
@@ -91,14 +91,14 @@ public interface LoanBrokerCoverClawback extends Transaction {
         "Amount must not be XRP."
       );
 
-      // 6. LoanBrokerID absent + MPT amount is invalid.
+      // 5. LoanBrokerID absent + MPT amount is invalid.
       if (!loanBrokerId().isPresent() && amt instanceof MptCurrencyAmount) {
         throw new IllegalArgumentException(
           "LoanBrokerID must be specified when Amount is an MPT."
         );
       }
 
-      // 7. LoanBrokerID absent + IOU with issuer == submitter or issuer == ACCOUNT_ZERO is invalid.
+      // 6. LoanBrokerID absent + IOU with issuer == submitter or issuer == ACCOUNT_ZERO is invalid.
       if (!loanBrokerId().isPresent() && amt instanceof IssuedCurrencyAmount) {
         IssuedCurrencyAmount iou = (IssuedCurrencyAmount) amt;
         Preconditions.checkArgument(

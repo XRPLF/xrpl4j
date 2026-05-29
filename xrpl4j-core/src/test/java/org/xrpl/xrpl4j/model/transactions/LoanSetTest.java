@@ -56,21 +56,21 @@ class LoanSetTest {
 
   @Test
   void principalRequestedZeroIsInvalid() {
-    assertThatThrownBy(() -> baseBuilder().principalRequested(AssetAmount.of("0")).build())
+    assertThatThrownBy(() -> baseBuilder().principalRequested(Amount.of("0")).build())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("PrincipalRequested must be greater than zero.");
   }
 
   @Test
   void principalRequestedNegativeIsInvalid() {
-    assertThatThrownBy(() -> baseBuilder().principalRequested(AssetAmount.of("-1000")).build())
+    assertThatThrownBy(() -> baseBuilder().principalRequested(Amount.of("-1000")).build())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("PrincipalRequested must be greater than zero.");
   }
 
   @Test
   void principalRequestedPositiveIsValid() {
-    assertDoesNotThrow(() -> baseBuilder().principalRequested(AssetAmount.of("1000000")).build());
+    assertDoesNotThrow(() -> baseBuilder().principalRequested(Amount.of("1000000")).build());
   }
 
   // //////////////////////
@@ -79,38 +79,38 @@ class LoanSetTest {
 
   @Test
   void loanServiceFeeNegativeIsInvalid() {
-    assertThatThrownBy(() -> baseBuilder().loanServiceFee(AssetAmount.of("-1")).build())
+    assertThatThrownBy(() -> baseBuilder().loanServiceFee(Amount.of("-1")).build())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("LoanServiceFee must not be negative.");
   }
 
   @Test
   void loanServiceFeeZeroIsValid() {
-    assertDoesNotThrow(() -> baseBuilder().loanServiceFee(AssetAmount.of("0")).build());
+    assertDoesNotThrow(() -> baseBuilder().loanServiceFee(Amount.of("0")).build());
   }
 
   @Test
   void latePaymentFeeNegativeIsInvalid() {
-    assertThatThrownBy(() -> baseBuilder().latePaymentFee(AssetAmount.of("-1")).build())
+    assertThatThrownBy(() -> baseBuilder().latePaymentFee(Amount.of("-1")).build())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("LatePaymentFee must not be negative.");
   }
 
   @Test
   void latePaymentFeeZeroIsValid() {
-    assertDoesNotThrow(() -> baseBuilder().latePaymentFee(AssetAmount.of("0")).build());
+    assertDoesNotThrow(() -> baseBuilder().latePaymentFee(Amount.of("0")).build());
   }
 
   @Test
   void closePaymentFeeNegativeIsInvalid() {
-    assertThatThrownBy(() -> baseBuilder().closePaymentFee(AssetAmount.of("-1")).build())
+    assertThatThrownBy(() -> baseBuilder().closePaymentFee(Amount.of("-1")).build())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("ClosePaymentFee must not be negative.");
   }
 
   @Test
   void closePaymentFeeZeroIsValid() {
-    assertDoesNotThrow(() -> baseBuilder().closePaymentFee(AssetAmount.of("0")).build());
+    assertDoesNotThrow(() -> baseBuilder().closePaymentFee(Amount.of("0")).build());
   }
 
   // //////////////////////
@@ -119,26 +119,26 @@ class LoanSetTest {
 
   @Test
   void loanOriginationFeeNegativeIsInvalid() {
-    assertThatThrownBy(() -> baseBuilder().loanOriginationFee(AssetAmount.of("-1")).build())
+    assertThatThrownBy(() -> baseBuilder().loanOriginationFee(Amount.of("-1")).build())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("LoanOriginationFee must not be negative.");
   }
 
   @Test
   void loanOriginationFeeZeroIsValid() {
-    assertDoesNotThrow(() -> baseBuilder().loanOriginationFee(AssetAmount.of("0")).build());
+    assertDoesNotThrow(() -> baseBuilder().loanOriginationFee(Amount.of("0")).build());
   }
 
   @Test
   void loanOriginationFeePositiveIsValid() {
-    assertDoesNotThrow(() -> baseBuilder().loanOriginationFee(AssetAmount.of("500")).build());
+    assertDoesNotThrow(() -> baseBuilder().loanOriginationFee(Amount.of("500")).build());
   }
 
   @Test
   void loanOriginationFeeExceedsPrincipalIsInvalid() {
     assertThatThrownBy(() -> baseBuilder()
-      .principalRequested(AssetAmount.of("1000"))
-      .loanOriginationFee(AssetAmount.of("1001"))
+      .principalRequested(Amount.of("1000"))
+      .loanOriginationFee(Amount.of("1001"))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
       .hasMessage("LoanOriginationFee must not exceed PrincipalRequested.");
@@ -147,8 +147,8 @@ class LoanSetTest {
   @Test
   void loanOriginationFeeEqualsPrincipalIsValid() {
     assertDoesNotThrow(() -> baseBuilder()
-      .principalRequested(AssetAmount.of("1000"))
-      .loanOriginationFee(AssetAmount.of("1000"))
+      .principalRequested(Amount.of("1000"))
+      .loanOriginationFee(Amount.of("1000"))
       .build()
     );
   }
@@ -296,10 +296,10 @@ class LoanSetTest {
     assertDoesNotThrow(() -> baseBuilder()
       .counterparty(Address.of("rEePKs9pVMf91vYj1QVRPmJvCBEum9P2kE"))
       .data(LoanData.of("AABBCC"))
-      .loanOriginationFee(AssetAmount.of("100"))
-      .loanServiceFee(AssetAmount.of("10"))
-      .latePaymentFee(AssetAmount.of("50"))
-      .closePaymentFee(AssetAmount.of("25"))
+      .loanOriginationFee(Amount.of("100"))
+      .loanServiceFee(Amount.of("10"))
+      .latePaymentFee(Amount.of("50"))
+      .closePaymentFee(Amount.of("25"))
       .overpaymentFee(UnsignedInteger.valueOf(5000))
       .interestRate(UnsignedInteger.valueOf(10000))
       .lateInterestRate(UnsignedInteger.valueOf(5000))
@@ -321,7 +321,7 @@ class LoanSetTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(1))
       .loanBrokerId(VALID_BROKER_ID)
-      .principalRequested(AssetAmount.of("1000000"))
+      .principalRequested(Amount.of("1000000"))
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey(
           "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC"

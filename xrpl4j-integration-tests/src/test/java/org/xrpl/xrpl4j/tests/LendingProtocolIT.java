@@ -39,7 +39,7 @@ import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.CounterpartySignature;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -54,6 +54,7 @@ import org.xrpl.xrpl4j.model.transactions.LoanDelete;
 import org.xrpl.xrpl4j.model.transactions.LoanManage;
 import org.xrpl.xrpl4j.model.transactions.LoanPay;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
+import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.VaultCreate;
@@ -107,7 +108,7 @@ public class LendingProtocolIT extends AbstractIT {
       .fee(FeeUtils.computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
-      .principalRequested(AssetAmount.of("1000000"))
+      .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
       .signingPublicKey(brokerKeyPair.publicKey())
@@ -124,6 +125,94 @@ public class LendingProtocolIT extends AbstractIT {
     );
     final CounterpartySignature counterpartySignature = CounterpartySignature.of(
       borrowerKeyPair.publicKey(), counterpartySig
+    );
+
+    // Assemble the final transaction with both signatures
+    final LoanSet signedLoanSet = LoanSet.builder().from(unsignedLoanSet)
+      .counterpartySignature(counterpartySignature)
+      .transactionSignature(brokerSigned.signature())
+      .build();
+
+    final LoanSet unsignedWithCounterparty = LoanSet.builder().from(unsignedLoanSet)
+      .counterpartySignature(counterpartySignature)
+      .build();
+
+    final SingleSignedTransaction<LoanSet> finalTx = SingleSignedTransaction.<LoanSet>builder()
+      .unsignedTransaction(unsignedWithCounterparty)
+      .signature(brokerSigned.signature())
+      .signedTransaction(signedLoanSet)
+      .build();
+
+    submitSingleSignedLoanSet(finalTx);
+  }
+
+  // //////////////////////
+  // Test 1a: Broker single-signs, Borrower (counterparty) single-signs using regular key
+  // //////////////////////
+
+  @Test
+  void loanSetWithSingleSignBrokerAndRegularKeyCounterparty()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+
+    final KeyPair brokerKeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerKeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerRegularKeyPair = createRandomAccountEd25519();
+
+    final FeeResult feeResult = xrplClient.fee();
+    final XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
+
+    // Set the regular key on the borrower's account
+    final AccountInfoResult borrowerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(borrowerKeyPair.publicKey().deriveAddress())
+    );
+    final SetRegularKey setRegularKey = SetRegularKey.builder()
+      .account(borrowerKeyPair.publicKey().deriveAddress())
+      .fee(fee)
+      .sequence(borrowerAccountInfo.accountData().sequence())
+      .regularKey(borrowerRegularKeyPair.publicKey().deriveAddress())
+      .signingPublicKey(borrowerKeyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
+      borrowerKeyPair.privateKey(), setRegularKey
+    );
+    final SubmitResult<SetRegularKey> setRegularKeyResult = xrplClient.submit(signedSetRegularKey);
+    assertThat(setRegularKeyResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(borrowerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().regularKey()
+        .filter(borrowerRegularKeyPair.publicKey().deriveAddress()::equals)
+        .isPresent()
+    );
+
+    final Hash256 loanBrokerId = setupLoanBrokerAndXrpVault(brokerKeyPair, fee);
+
+    // Build the unsigned base LoanSet transaction
+    final AccountInfoResult brokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
+    );
+    final LoanSet unsignedLoanSet = LoanSet.builder()
+      .account(brokerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO).recommendedFee())
+      .sequence(brokerAccountInfo.accountData().sequence())
+      .loanBrokerId(loanBrokerId)
+      .principalRequested(Amount.of("1000000"))
+      .counterparty(borrowerKeyPair.publicKey().deriveAddress())
+      .paymentTotal(UnsignedInteger.valueOf(3))
+      .signingPublicKey(brokerKeyPair.publicKey())
+      .build();
+
+    // Broker (first-party) single-signs the unsigned transaction
+    final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
+      brokerKeyPair.privateKey(), unsignedLoanSet
+    );
+
+    // Borrower (counterparty) signs using their regular key
+    final Signature counterpartySig = signatureService.counterpartySign(
+      borrowerRegularKeyPair.privateKey(), unsignedLoanSet
+    );
+    final CounterpartySignature counterpartySignature = CounterpartySignature.of(
+      borrowerRegularKeyPair.publicKey(), counterpartySig
     );
 
     // Assemble the final transaction with both signatures
@@ -175,7 +264,7 @@ public class LendingProtocolIT extends AbstractIT {
       ).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
-      .principalRequested(AssetAmount.of("1000000"))
+      .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
       .signingPublicKey(brokerKeyPair.publicKey())
@@ -245,7 +334,7 @@ public class LendingProtocolIT extends AbstractIT {
       ).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
-      .principalRequested(AssetAmount.of("1000000"))
+      .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
       .build();
@@ -313,7 +402,7 @@ public class LendingProtocolIT extends AbstractIT {
       ).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
-      .principalRequested(AssetAmount.of("1000000"))
+      .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
       .build();
@@ -436,7 +525,7 @@ public class LendingProtocolIT extends AbstractIT {
       .fee(fee)
       .sequence(loanBrokerAccountInfo.accountData().sequence())
       .asset(usdIssue)
-      .assetsMaximum(AssetAmount.of("500000"))
+      .assetsMaximum(Amount.of("500000"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
@@ -496,7 +585,7 @@ public class LendingProtocolIT extends AbstractIT {
       .fee(fee)
       .sequence(loanBrokerAccountInfo.accountData().sequence())
       .vaultId(vaultId)
-      .debtMaximum(AssetAmount.of("250000"))
+      .debtMaximum(Amount.of("250000"))
       .managementFeeRate(UnsignedInteger.valueOf(10000))
       .data(LoanBrokerData.of("010203"))
       .signingPublicKey(loanBrokerKeyPair.publicKey())
@@ -529,9 +618,8 @@ public class LendingProtocolIT extends AbstractIT {
     // Verify LoanBroker fields
     assertThat(loanBrokerObject.owner()).isEqualTo(loanBrokerKeyPair.publicKey().deriveAddress());
     assertThat(loanBrokerObject.vaultId()).isEqualTo(vaultId);
-    assertThat(loanBrokerObject.debtMaximum()).isNotEmpty().get().isEqualTo(AssetAmount.of("250000"));
-    assertThat(loanBrokerObject.managementFeeRate()).isNotEmpty()
-      .get().isEqualTo(UnsignedInteger.valueOf(10000));
+    assertThat(loanBrokerObject.debtMaximum()).isEqualTo(Amount.of("250000"));
+    assertThat(loanBrokerObject.managementFeeRate()).isEqualTo(UnsignedInteger.valueOf(10000));
     assertThat(loanBrokerObject.data()).isNotEmpty().get().isEqualTo(LoanBrokerData.of("010203"));
 
     // Verify via helper
@@ -550,7 +638,7 @@ public class LendingProtocolIT extends AbstractIT {
       .sequence(loanBrokerAccountInfo.accountData().sequence())
       .vaultId(vaultId)
       .loanBrokerId(loanBrokerId)
-      .debtMaximum(AssetAmount.of("500000"))
+      .debtMaximum(Amount.of("500000"))
       .data(LoanBrokerData.of("AABB"))
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
@@ -568,11 +656,10 @@ public class LendingProtocolIT extends AbstractIT {
     loanBrokerEntry = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.index(loanBrokerId, LoanBrokerObject.class, LedgerSpecifier.VALIDATED)
     );
-    assertThat(loanBrokerEntry.node().debtMaximum()).isNotEmpty().get().isEqualTo(AssetAmount.of("500000"));
+    assertThat(loanBrokerEntry.node().debtMaximum()).isEqualTo(Amount.of("500000"));
     assertThat(loanBrokerEntry.node().data()).isNotEmpty().get().isEqualTo(LoanBrokerData.of("AABB"));
     // Fixed fields should remain unchanged
-    assertThat(loanBrokerEntry.node().managementFeeRate()).isNotEmpty()
-      .get().isEqualTo(UnsignedInteger.valueOf(10000));
+    assertThat(loanBrokerEntry.node().managementFeeRate()).isEqualTo(UnsignedInteger.valueOf(10000));
 
     // ========== LOAN BROKER COVER DEPOSIT ==========
     loanBrokerAccountInfo = this.scanForResult(
@@ -603,7 +690,7 @@ public class LendingProtocolIT extends AbstractIT {
     loanBrokerEntry = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.index(loanBrokerId, LoanBrokerObject.class, LedgerSpecifier.VALIDATED)
     );
-    assertThat(loanBrokerEntry.node().coverAvailable()).isNotEmpty().get().isEqualTo(AssetAmount.of("50000"));
+    assertThat(loanBrokerEntry.node().coverAvailable()).isEqualTo(Amount.of("50000"));
 
     // ========== LOAN SET (Dual-Signed) ==========
     loanBrokerAccountInfo = this.scanForResult(
@@ -619,7 +706,7 @@ public class LendingProtocolIT extends AbstractIT {
       .fee(loanSetFee)
       .sequence(loanBrokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
-      .principalRequested(AssetAmount.of("50000"))
+      .principalRequested(Amount.of("50000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
       .data(LoanData.of("AABBCC"))
@@ -667,8 +754,8 @@ public class LendingProtocolIT extends AbstractIT {
     // Verify Loan fields
     assertThat(loanObject.borrower()).isEqualTo(borrowerKeyPair.publicKey().deriveAddress());
     assertThat(loanObject.loanBrokerId()).isEqualTo(loanBrokerId);
-    assertThat(loanObject.principalOutstanding()).isNotEmpty();
-    assertThat(loanObject.paymentRemaining()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(3));
+    assertThat(loanObject.principalOutstanding()).isNotEqualTo(Amount.ZERO);
+    assertThat(loanObject.paymentRemaining()).isEqualTo(UnsignedInteger.valueOf(3));
 
     // Verify via helper
     assertLoanEntryEqualsObjectFromAccountObjects(borrowerKeyPair.publicKey().deriveAddress(), loanBrokerId,
@@ -704,8 +791,7 @@ public class LendingProtocolIT extends AbstractIT {
       LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
     );
     LoanObject paidLoan = loanEntry.node();
-    assertThat(paidLoan.paymentRemaining()).isNotEmpty()
-      .get().isEqualTo(UnsignedInteger.valueOf(2));
+    assertThat(paidLoan.paymentRemaining()).isEqualTo(UnsignedInteger.valueOf(2));
 
     // ========== LOAN MANAGE - Impair ==========
     loanBrokerAccountInfo = this.scanForResult(
@@ -772,9 +858,7 @@ public class LendingProtocolIT extends AbstractIT {
     );
 
     // Get remaining outstanding to pay in full
-    String remainingOutstanding = loanEntry.node().totalValueOutstanding()
-      .map(AssetAmount::value)
-      .orElse("50000");
+    String remainingOutstanding = loanEntry.node().totalValueOutstanding().value();
 
     LoanPay fullPayment = LoanPay.builder()
       .account(borrowerKeyPair.publicKey().deriveAddress())
@@ -1088,7 +1172,7 @@ public class LendingProtocolIT extends AbstractIT {
       .fee(fee)
       .sequence(brokerAccountInfo.accountData().sequence())
       .asset(Issue.XRP)
-      .assetsMaximum(AssetAmount.of("10000000000"))
+      .assetsMaximum(Amount.of("10000000000"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
@@ -1140,7 +1224,7 @@ public class LendingProtocolIT extends AbstractIT {
       .fee(fee)
       .sequence(brokerAccountInfo.accountData().sequence())
       .vaultId(vaultId)
-      .debtMaximum(AssetAmount.of("5000000000"))
+      .debtMaximum(Amount.of("5000000000"))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
 

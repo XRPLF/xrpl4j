@@ -62,9 +62,7 @@ public interface LoanPay extends Transaction {
   @Value.Check
   default void check() {
     Preconditions.checkArgument(
-      !loanId().value().equals(
-        "0000000000000000000000000000000000000000000000000000000000000000"
-      ),
+      !loanId().equals(Hash256.ZERO),
       "LoanID must not be zero."
     );
 
@@ -79,7 +77,7 @@ public interface LoanPay extends Transaction {
       (flags().tfLoanOverpayment() ? 1 : 0);
     Preconditions.checkArgument(
       flagCount <= 1,
-      "Only one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set."
+      "At most one of tfLoanLatePayment, tfLoanFullPayment, or tfLoanOverpayment may be set."
     );
   }
 }

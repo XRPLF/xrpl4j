@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
@@ -115,6 +116,17 @@ class MptCurrencyAmountTest {
   }
 
   @Test
+  void buildWithEmptyValueThrows() {
+    // An empty value string causes the @Derived isZero() field to throw NumberFormatException
+    // (via UnsignedLong.valueOf("")) before any @Value.Check can run. Construction still fails fast.
+    assertThatThrownBy(() -> MptCurrencyAmount.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
+      .value("")
+      .build())
+      .isInstanceOf(NumberFormatException.class);
+  }
+
+  @Test
   void builderWithUnsignedLong() {
     assertThat(
       MptCurrencyAmount.builder(UnsignedLong.ONE)
@@ -127,4 +139,5 @@ class MptCurrencyAmountTest {
         .build()
     );
   }
+
 }

@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Auxiliary;
 import org.immutables.value.Value.Default;
@@ -97,6 +98,11 @@ public interface IssuedCurrencyAmount extends CurrencyAmount {
    */
   Address issuer();
 
+  @Value.Check
+  default void check() {
+    Preconditions.checkArgument(!currency().isEmpty(), "IssuedCurrencyAmount currency must not be empty.");
+  }
+
   /**
    * Indicates whether this amount is positive or negative.
    *
@@ -118,6 +124,7 @@ public interface IssuedCurrencyAmount extends CurrencyAmount {
   @Derived
   @JsonIgnore
   @Auxiliary
+  @Override
   default boolean isZero() {
     return new BigDecimal(value()).signum() == 0;
   }

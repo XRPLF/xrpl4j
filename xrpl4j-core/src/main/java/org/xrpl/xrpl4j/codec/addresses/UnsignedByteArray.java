@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.codec.addresses;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.annotations.Beta;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -222,6 +224,7 @@ public class UnsignedByteArray implements Destroyable {
    *
    * @return A new {@link UnsignedByteArray} with bytes in reversed order.
    */
+  @Beta
   public UnsignedByteArray reverse() {
     List<UnsignedByte> reversed = new ArrayList<>(unsignedBytes);
     Collections.reverse(reversed);

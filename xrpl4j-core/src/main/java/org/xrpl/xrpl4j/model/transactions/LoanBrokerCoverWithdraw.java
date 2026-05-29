@@ -82,9 +82,7 @@ public interface LoanBrokerCoverWithdraw extends Transaction {
   @Value.Check
   default void check() {
     Preconditions.checkArgument(
-      !loanBrokerId().value().equals(
-        "0000000000000000000000000000000000000000000000000000000000000000"
-      ),
+      !loanBrokerId().equals(Hash256.ZERO),
       "LoanBrokerID must not be zero."
     );
 

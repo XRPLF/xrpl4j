@@ -69,7 +69,7 @@ public interface LoanBrokerSet extends Transaction {
 
   /**
    * The 1/10th basis point fee charged by the Lending Protocol Owner. Valid values are between 0 and 10000
-   * inclusive (1% - 10%).
+   * inclusive (0% - 10%).
    *
    * @return An optionally-present {@link UnsignedInteger}.
    */
@@ -80,10 +80,10 @@ public interface LoanBrokerSet extends Transaction {
    * The maximum amount the protocol can owe the Vault. The default value of 0 means there is no limit to the
    * debt. Must not be negative.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * @return An optionally-present {@link Amount}.
    */
   @JsonProperty("DebtMaximum")
-  Optional<AssetAmount> debtMaximum();
+  Optional<Amount> debtMaximum();
 
   /**
    * The 1/10th basis point {@code DebtTotal} that the first-loss capital must cover. Valid values are between 0
@@ -110,13 +110,13 @@ public interface LoanBrokerSet extends Transaction {
   default void check() {
     // VaultID must not be all zeros
     Preconditions.checkArgument(
-      !vaultId().value().equals("0000000000000000000000000000000000000000000000000000000000000000"),
+      !vaultId().equals(Hash256.ZERO),
       "VaultID must not be zero."
     );
 
     // LoanBrokerID, if present, must not be all zeros
     loanBrokerId().ifPresent(id -> Preconditions.checkArgument(
-      !id.value().equals("0000000000000000000000000000000000000000000000000000000000000000"),
+      !id.equals(Hash256.ZERO),
       "LoanBrokerID must not be zero."
     ));
 

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.LoanFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.LoanData;
 
@@ -24,10 +24,10 @@ class MetaLoanObjectTest extends AbstractJsonTest {
       .loanBrokerNode("0000000000000000")
       .loanBrokerId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
       .borrower(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
-      .loanOriginationFee(AssetAmount.of("100"))
-      .loanServiceFee(AssetAmount.of("10"))
-      .latePaymentFee(AssetAmount.of("50"))
-      .closePaymentFee(AssetAmount.of("25"))
+      .loanOriginationFee(Amount.of("100"))
+      .loanServiceFee(Amount.of("10"))
+      .latePaymentFee(Amount.of("50"))
+      .closePaymentFee(Amount.of("25"))
       .overpaymentFee(UnsignedInteger.valueOf(5000))
       .interestRate(UnsignedInteger.valueOf(10000))
       .lateInterestRate(UnsignedInteger.valueOf(5000))
@@ -39,10 +39,10 @@ class MetaLoanObjectTest extends AbstractJsonTest {
       .previousPaymentDueDate(UnsignedInteger.valueOf(784111330))
       .nextPaymentDueDate(UnsignedInteger.valueOf(786703330))
       .paymentRemaining(UnsignedInteger.valueOf(11))
-      .totalValueOutstanding(AssetAmount.of("1100000"))
-      .principalOutstanding(AssetAmount.of("1000000"))
-      .managementFeeOutstanding(AssetAmount.of("10000"))
-      .periodicPayment(AssetAmount.of("100000"))
+      .totalValueOutstanding(Amount.of("1100000"))
+      .principalOutstanding(Amount.of("1000000"))
+      .managementFeeOutstanding(Amount.of("10000"))
+      .periodicPayment(Amount.of("100000"))
       .loanScale(6)
       .data(LoanData.of("AABBCC"))
       .build();
@@ -88,7 +88,7 @@ class MetaLoanObjectTest extends AbstractJsonTest {
       .flags(LoanFlags.LOAN_IMPAIRED)
       .loanBrokerId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
       .borrower(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
-      .principalOutstanding(AssetAmount.of("500000"))
+      .principalOutstanding(Amount.of("500000"))
       .build();
 
     String json = "{" +
@@ -104,8 +104,8 @@ class MetaLoanObjectTest extends AbstractJsonTest {
   @Test
   void testMetaLoanObjectWithMinimalFields() throws JsonProcessingException, JSONException {
     MetaLoanObject metaLoanObject = ImmutableMetaLoanObject.builder()
-      .totalValueOutstanding(AssetAmount.of("900000"))
-      .principalOutstanding(AssetAmount.of("800000"))
+      .totalValueOutstanding(Amount.of("900000"))
+      .principalOutstanding(Amount.of("800000"))
       .build();
 
     String json = "{" +

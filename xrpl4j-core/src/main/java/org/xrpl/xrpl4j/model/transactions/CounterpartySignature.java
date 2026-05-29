@@ -59,8 +59,8 @@ public interface CounterpartySignature {
    */
   static CounterpartySignature of(PublicKey signingPublicKey, Signature signature) {
     return builder()
-      .signingPubKey(signingPublicKey.base16Value())
-      .txnSignature(signature.base16Value())
+      .signingPublicKey(signingPublicKey)
+      .transactionSignature(signature)
       .build();
   }
 
@@ -81,18 +81,18 @@ public interface CounterpartySignature {
   /**
    * The public key used by the counterparty to sign the transaction.
    *
-   * @return An optionally-present {@link String}.
+   * @return An optionally-present {@link PublicKey}.
    */
   @JsonProperty("SigningPubKey")
-  Optional<String> signingPubKey();
+  Optional<PublicKey> signingPublicKey();
 
   /**
    * The counterparty's transaction signature.
    *
-   * @return An optionally-present {@link String}.
+   * @return An optionally-present {@link Signature}.
    */
   @JsonProperty("TxnSignature")
-  Optional<String> txnSignature();
+  Optional<Signature> transactionSignature();
 
   /**
    * Whether the signers list has already been sorted. This is an internal flag used to prevent re-sorting during
@@ -128,13 +128,12 @@ public interface CounterpartySignature {
    */
   @Value.Check
   default CounterpartySignature checkAndNormalize() {
-    // Reject half-filled direct-signing (e.g. signingPubKey without txnSignature or vice versa)
     Preconditions.checkState(
-      signingPubKey().isPresent() == txnSignature().isPresent(),
+      signingPublicKey().isPresent() == transactionSignature().isPresent(),
       "CounterpartySignature must have both SigningPubKey and TxnSignature, or neither"
     );
 
-    boolean hasDirectSigning = signingPubKey().isPresent() && txnSignature().isPresent();
+    boolean hasDirectSigning = signingPublicKey().isPresent() && transactionSignature().isPresent();
     boolean hasMultiSig = !signers().isEmpty();
 
     Preconditions.checkState(

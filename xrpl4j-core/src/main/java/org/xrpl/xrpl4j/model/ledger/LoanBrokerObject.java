@@ -8,7 +8,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetAmount;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.LoanBrokerData;
 
@@ -101,10 +101,22 @@ public interface LoanBrokerObject extends LedgerObject {
   /**
    * The number of objects this account owns in the ledger, which contributes to its owner reserve.
    *
-   * @return An optionally-present {@link UnsignedInteger} representing the number of objects.
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
+   * @return An {@link UnsignedInteger} representing the number of objects.
    */
   @JsonProperty("OwnerCount")
-  Optional<UnsignedInteger> ownerCount();
+  @Value.Default
+  default UnsignedInteger ownerCount() {
+    return UnsignedInteger.ZERO;
+  }
 
   /**
    * Identifies the page where this item is referenced in the Vault's pseudo-account owner's directory.
@@ -150,53 +162,125 @@ public interface LoanBrokerObject extends LedgerObject {
    * The 1/10th basis point fee charged by the Lending Protocol. Valid values are between 0 and 10000
    * inclusive. A value of 1 is equivalent to 1/10 bps or 0.001%.
    *
-   * @return An optionally-present {@link UnsignedInteger}.
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
+   * @return An {@link UnsignedInteger}.
    */
   @JsonProperty("ManagementFeeRate")
-  Optional<UnsignedInteger> managementFeeRate();
+  @Value.Default
+  default UnsignedInteger managementFeeRate() {
+    return UnsignedInteger.ZERO;
+  }
 
   /**
    * The total asset amount the protocol owes the Vault, including interest.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
+   * @return An {@link Amount}.
    */
   @JsonProperty("DebtTotal")
-  Optional<AssetAmount> debtTotal();
+  @Value.Default
+  default Amount debtTotal() {
+    return Amount.ZERO;
+  }
 
   /**
    * The maximum amount the protocol can owe the Vault. The default value of 0 means there is no limit to the
    * debt.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
+   * @return An {@link Amount}.
    */
   @JsonProperty("DebtMaximum")
-  Optional<AssetAmount> debtMaximum();
+  @Value.Default
+  default Amount debtMaximum() {
+    return Amount.ZERO;
+  }
 
   /**
    * The total amount of first-loss capital deposited into the Lending Protocol.
    *
-   * @return An optionally-present {@link AssetAmount}.
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
+   * @return An {@link Amount}.
    */
   @JsonProperty("CoverAvailable")
-  Optional<AssetAmount> coverAvailable();
+  @Value.Default
+  default Amount coverAvailable() {
+    return Amount.ZERO;
+  }
 
   /**
    * The 1/10th basis point of the {@code DebtTotal} that the first-loss capital must cover. Valid values are
    * between 0 and 100000 inclusive. A value of 1 is equivalent to 1/10 bps or 0.001%.
    *
-   * @return An optionally-present {@link UnsignedInteger}.
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
+   * @return An {@link UnsignedInteger}.
    */
   @JsonProperty("CoverRateMinimum")
-  Optional<UnsignedInteger> coverRateMinimum();
+  @Value.Default
+  default UnsignedInteger coverRateMinimum() {
+    return UnsignedInteger.ZERO;
+  }
 
   /**
    * The 1/10th basis point of minimum required first-loss capital that is liquidated to cover a Loan default.
    * Valid values are between 0 and 100000 inclusive. A value of 1 is equivalent to 1/10 bps or 0.001%.
    *
-   * @return An optionally-present {@link UnsignedInteger}.
+   * <p>On-ledger, this field is marked {@code soeDEFAULT} to save space, which means it
+   * is omitted from JSON responses when its value is {@code 0} (again, to save space),
+   * even though the spec defines it as a required field. To handle this, {@code @Default}
+   * is used so that Immutables populates the correct {@code 0} value when the field is
+   * absent from a response.
+   *
+   * <p>Note: this field must <em>not</em> be made {@link Optional}, since the spec
+   * defines it as required and a missing value semantically means {@code 0}, not "absent".
+   *
+   * @return An {@link UnsignedInteger}.
    */
   @JsonProperty("CoverRateLiquidation")
-  Optional<UnsignedInteger> coverRateLiquidation();
+  @Value.Default
+  default UnsignedInteger coverRateLiquidation() {
+    return UnsignedInteger.ZERO;
+  }
 
   /**
    * The unique ID of this {@link LoanBrokerObject}.

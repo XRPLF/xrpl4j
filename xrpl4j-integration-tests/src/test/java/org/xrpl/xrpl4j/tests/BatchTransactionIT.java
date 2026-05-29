@@ -70,7 +70,8 @@ import java.util.stream.Collectors;
 public class BatchTransactionIT extends AbstractIT {
 
   static boolean shouldNotRun() {
-    return System.getProperty("useTestnet") != null ||
+    return System.getProperty("useDevnet") != null ||
+      System.getProperty("useTestnet") != null ||
       System.getProperty("useClioTestnet") != null;
   }
 

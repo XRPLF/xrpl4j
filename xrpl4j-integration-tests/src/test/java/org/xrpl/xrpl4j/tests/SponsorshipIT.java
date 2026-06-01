@@ -27,6 +27,7 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -83,7 +84,15 @@ import java.util.stream.Collectors;
 // Requires a rippled build that registers the featureSponsorship amendment (PR #5887) and has it
 // enabled in xrpld.cfg. The xrpld:sponsor-local image referenced by RippledContainer satisfies
 // this requirement.
+@DisabledIf(value = "shouldNotRun", disabledReason = "SponsorshipIT only runs on local rippled node.")
 public class SponsorshipIT extends AbstractIT {
+
+  static boolean shouldNotRun() {
+    return System.getProperty("useDevnet") != null ||
+      System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null;
+  }
+
 
   // ==================== Fee Sponsorship Tests ====================
 

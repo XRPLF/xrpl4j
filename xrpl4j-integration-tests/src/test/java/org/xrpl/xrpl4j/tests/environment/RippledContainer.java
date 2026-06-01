@@ -22,7 +22,6 @@ package org.xrpl.xrpl4j.tests.environment;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.google.common.base.Preconditions;
 import okhttp3.HttpUrl;
 import org.awaitility.Awaitility;
@@ -85,7 +84,7 @@ public class RippledContainer {
    */
   public RippledContainer() {
     try (GenericContainer<?> container = new GenericContainer<>(RIPPLED_DOCKER_IMAGE)) {
-      this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
+      this.rippledContainer = container.withCreateContainerCmdModifier(cmd ->
           cmd.withEntrypoint("/opt/xrpld/bin/xrpld"))
         .withCommand("-a --start --conf /config/xrpld.cfg")
         .withExposedPorts(5005)

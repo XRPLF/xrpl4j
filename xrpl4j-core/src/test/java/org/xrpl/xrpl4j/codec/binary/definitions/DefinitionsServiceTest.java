@@ -325,6 +325,12 @@ class DefinitionsServiceTest {
           .transactionResults(java.util.Collections.emptyMap())
           .transactionTypes(java.util.Collections.emptyMap())
           .permissionValues(java.util.Collections.emptyMap())
+          .accountSetFlags(java.util.Collections.emptyMap())
+          .ledgerEntryFlags(java.util.Collections.emptyMap())
+          .transactionFlags(java.util.Collections.emptyMap())
+          .ledgerEntryFormats(java.util.Collections.emptyMap())
+          .transactionFormats(java.util.Collections.emptyMap())
+          .hash("")
           .build();
       }
     };

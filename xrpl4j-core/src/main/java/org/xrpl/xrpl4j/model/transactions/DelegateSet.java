@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
@@ -55,7 +55,7 @@ public interface DelegateSet extends Transaction {
   /**
    * Set of transaction types that cannot be delegated.
    */
-  Set<TransactionType> NON_DELEGABLE_TRANSACTIONS = Sets.newHashSet(
+  Set<TransactionType> NON_DELEGABLE_TRANSACTIONS = ImmutableSet.of(
     TransactionType.ACCOUNT_SET,
     TransactionType.SET_REGULAR_KEY,
     TransactionType.SIGNER_LIST_SET,

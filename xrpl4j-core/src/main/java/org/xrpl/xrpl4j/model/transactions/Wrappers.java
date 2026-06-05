@@ -386,7 +386,7 @@ public class Wrappers {
 
       return XrpCurrencyAmount.ofDrops(
         this.value().times(other.value()),
-        this.isNegative() || other.isNegative()
+        this.isNegative() ^ other.isNegative()
       );
     }
 

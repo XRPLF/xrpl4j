@@ -428,7 +428,7 @@ public class XrpCurrencyAmountTest {
       final XrpCurrencyAmount value = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(2L), true)
         .times(XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(3L), true));
       assertThat(value.value()).isEqualTo(UnsignedLong.valueOf(6L));
-      assertThat(value.isNegative()).isTrue();
+      assertThat(value.isNegative()).isFalse();
     }
   }
 

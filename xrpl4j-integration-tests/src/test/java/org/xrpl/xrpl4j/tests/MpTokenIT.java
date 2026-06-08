@@ -917,4 +917,82 @@ public class MpTokenIT extends AbstractIT {
     SubmitResult<Payment> mintToUnauthorizedHolderSubmitResult = xrplClient.submit(signedMintToUnauthorizedHolder);
     assertThat(mintToUnauthorizedHolderSubmitResult.engineResult()).isEqualTo("tecNO_AUTH");
   }
+
+  @Test
+  void paymentWithNegativeMptAmountFailsWithTemBadAmount()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair holderKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedIssuanceCreate = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> issuanceCreateSubmitResult = xrplClient.submit(signedIssuanceCreate);
+    assertThat(issuanceCreateSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedIssuanceCreate.hash(),
+        issuanceCreateSubmitResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedIssuanceCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("issuance create metadata did not contain issuance ID"));
+
+    AccountInfoResult updatedIssuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    Payment paymentWithNegativeAmount = Payment.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(updatedIssuerAccountInfo.accountData().sequence())
+      .destination(holderKeyPair.publicKey().deriveAddress())
+      .amount(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mpTokenIssuanceId)
+          .value("-100")
+          .build()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .lastLedgerSequence(
+        updatedIssuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .build();
+
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      paymentWithNegativeAmount
+    );
+    SubmitResult<Payment> submitResult = xrplClient.submit(signedPayment);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(submitResult.engineResult()),
+      "Skipping: fixCleanup3_2_0 not enabled on this node"
+    );
+    assertThat(submitResult.engineResult()).isEqualTo("temBAD_AMOUNT");
+  }
 }

@@ -319,7 +319,7 @@ public class XrpCurrencyAmountTest {
       .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("+0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
     // Decimals (first negative, second negative)
     assertThat(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001"))
-      .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(2L));
+      .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(-2L));
 
     // Overflow
     assertThrows(IllegalStateException.class, () -> {
@@ -469,6 +469,20 @@ public class XrpCurrencyAmountTest {
 
     // Different values should have different hashCodes
     assertThat(amount1.hashCode()).isNotEqualTo(amount3.hashCode());
+  }
+
+  @Test
+  public void bug02_equalsIgnoresNegativeFlag() {
+    final XrpCurrencyAmount positive = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(1_000_000L), false);
+    final XrpCurrencyAmount negative = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(1_000_000L), true);
+    assertThat(positive).isNotEqualTo(negative);
+  }
+
+  @Test
+  public void bug02_hashCodeIgnoresNegativeFlag() {
+    final XrpCurrencyAmount positive = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(1_000_000L), false);
+    final XrpCurrencyAmount negative = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(1_000_000L), true);
+    assertThat(positive.hashCode()).isNotEqualTo(negative.hashCode());
   }
 
   @Test

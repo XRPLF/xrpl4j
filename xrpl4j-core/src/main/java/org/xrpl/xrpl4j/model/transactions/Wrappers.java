@@ -211,6 +211,12 @@ public class Wrappers {
      */
     public static XrpCurrencyAmount ofDrops(final long drops) {
       if (drops < 0) {
+        if (drops == Long.MIN_VALUE) {
+          throw new IllegalArgumentException(
+            "drops value of Long.MIN_VALUE is not supported because Math.abs(Long.MIN_VALUE) overflows to " +
+              "Long.MIN_VALUE"
+          );
+        }
         // Normalize the drops value to be a positive number; indicate negativity via property.
         return ofDrops(UnsignedLong.valueOf(Math.abs(drops)), true);
       } else {

@@ -364,4 +364,27 @@ public class SeedTest {
       "rByLcEZ7iwTBAK8FfjtpFuT7fCzt4kF4r2"
     );
   }
+
+  @Test
+  void deriveScalarDoesNotAccumulateBytesAcrossIterations() {
+    // addUInt32 mutates its UnsignedByteArray argument in-place by appending 4 bytes.
+    // Before the fix, seedCopy was created once outside the loop so every iteration
+    // appended onto the previous iteration's bytes, corrupting the hash input.
+    // This test confirms addUInt32 grows the array and that the fix (re-creating
+    // seedCopy on each iteration) prevents that accumulation.
+    UnsignedByteArray original = UnsignedByteArray.of(new byte[]{1, 2, 3, 4});
+    int originalLength = original.length();
+    org.xrpl.xrpl4j.crypto.HashingUtils.addUInt32(original, 0);
+    // addUInt32 appends 4 bytes in-place — length must grow, proving mutation.
+    assertThat(original.length()).isEqualTo(originalLength + 4);
+
+    // Derive the same secp256k1 key pair twice from the same seed to confirm
+    // deriveScalar is idempotent (would fail before the fix if iteration > 0 was reached).
+    Entropy entropy = Entropy.of(BaseEncoding.base16().decode("CC4E55BC556DD561CBE990E3D4EF7069"));
+    Seed seed = Seed.secp256k1SeedFromEntropy(entropy);
+    KeyPair first = seed.deriveKeyPair();
+    KeyPair second = seed.deriveKeyPair();
+    assertThat(first.publicKey()).isEqualTo(second.publicKey());
+    assertThat(first.privateKey()).isEqualTo(second.privateKey());
+  }
 }

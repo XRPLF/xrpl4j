@@ -81,13 +81,13 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
       JsonNode nodeValue = nodeFieldAndValue.getValue();
       if (nodeValue == null || nodeValue.isNull()) {
         logger.warn("AffectedNode {} has no value; skipping. affectedNode={}", affectedNodeType, nodeFieldAndValue);
-        return null;
+        return null; // caller's stream filters this via AffectedNodeListDeserializer
       }
       JsonNode ledgerEntryTypeNode = nodeValue.get("LedgerEntryType");
       if (ledgerEntryTypeNode == null || ledgerEntryTypeNode.isNull()) {
         logger.warn("AffectedNode {} is missing LedgerEntryType; skipping. affectedNode={}", affectedNodeType,
           nodeValue);
-        return null;
+        return null; // caller's stream filters this via AffectedNodeListDeserializer
       }
       MetaLedgerEntryType ledgerEntryType = MetaLedgerEntryType.of(ledgerEntryTypeNode.asText());
       Class<? extends MetaLedgerObject> ledgerObjectClass = ledgerEntryType.ledgerObjectType();

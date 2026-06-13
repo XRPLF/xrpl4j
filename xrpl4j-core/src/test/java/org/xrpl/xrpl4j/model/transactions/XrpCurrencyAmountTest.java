@@ -527,4 +527,6 @@ public class XrpCurrencyAmountTest {
 
     XrpCurrencyAmount value();
   }
+
+
 }

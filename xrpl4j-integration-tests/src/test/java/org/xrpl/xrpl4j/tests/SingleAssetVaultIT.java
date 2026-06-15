@@ -27,6 +27,7 @@ import org.xrpl.xrpl4j.model.flags.VaultFlags;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.VaultObject;
@@ -191,6 +192,7 @@ public class SingleAssetVaultIT extends AbstractIT {
     assertThat(vaultFromInfoById.assetsTotal()).isEqualTo(Amount.of("0"));
     assertThat(vaultFromInfoById.assetsAvailable()).isEqualTo(Amount.of("0"));
     assertThat(vaultFromInfoById.shares()).isNotEmpty();
+    assertThat(vaultFromInfoById.shares().flatMap(MpTokenIssuanceObject::referenceHolding)).isNotEmpty();
 
     // Step 8: Verify vault_info (query by owner and seq)
     VaultInfoResult vaultInfoByOwnerSeqResult = xrplClient.vaultInfo(
@@ -513,6 +515,7 @@ public class SingleAssetVaultIT extends AbstractIT {
     assertThat(vaultFromInfoById.assetsTotal()).isEqualTo(Amount.of("0"));
     assertThat(vaultFromInfoById.assetsAvailable()).isEqualTo(Amount.of("0"));
     assertThat(vaultFromInfoById.shares()).isNotEmpty();
+    assertThat(vaultFromInfoById.shares().flatMap(MpTokenIssuanceObject::referenceHolding)).isNotEmpty();
 
     // Verify vault_info (query by owner and seq)
     VaultInfoResult vaultInfoByOwnerSeqResult = xrplClient.vaultInfo(
@@ -846,6 +849,7 @@ public class SingleAssetVaultIT extends AbstractIT {
     assertThat(vaultFromInfoById.assetsTotal()).isEqualTo(Amount.of("0"));
     assertThat(vaultFromInfoById.assetsAvailable()).isEqualTo(Amount.of("0"));
     assertThat(vaultFromInfoById.shares()).isNotEmpty();
+    assertThat(vaultFromInfoById.shares().flatMap(MpTokenIssuanceObject::referenceHolding)).isEmpty();
 
     // Verify vault_info (query by owner and seq)
     VaultInfoResult vaultInfoByOwnerSeqResult = xrplClient.vaultInfo(

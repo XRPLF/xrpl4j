@@ -399,15 +399,15 @@ public class Wrappers {
     @Override
     public boolean equals(Object obj) {
       if (obj instanceof XrpCurrencyAmount) {
-        UnsignedLong otherValue = ((XrpCurrencyAmount) obj).value(); // <-- Can't be null due to Immutables
-        return this.value().equals(otherValue);
+        XrpCurrencyAmount other = (XrpCurrencyAmount) obj; // <-- Can't be null due to Immutables
+        return this.value().equals(other.value()) && this.isNegative() == other.isNegative();
       }
       return false;
     }
 
     @Override
     public int hashCode() {
-      return this.value().hashCode();
+      return Objects.hash(this.value(), this.isNegative());
     }
 
     /**

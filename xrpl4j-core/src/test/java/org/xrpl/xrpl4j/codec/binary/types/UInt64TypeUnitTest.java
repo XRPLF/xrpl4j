@@ -77,6 +77,17 @@ public class UInt64TypeUnitTest {
   }
 
   @Test
+  void lockedAmountUsesBase10() {
+    FieldInstance fieldInstance = mock(FieldInstance.class);
+    when(fieldInstance.name()).thenReturn("LockedAmount");
+    // Decimal "1000" must encode to 0x00000000000003E8, not 0x0000000000001000 (base-16 misinterpretation)
+    assertThat(type.fromJson(new TextNode("1000"), fieldInstance).toHex())
+      .isEqualTo("00000000000003E8");
+    assertThat(type.fromJson(new TextNode("1000"), fieldInstance).toJson(fieldInstance))
+      .isEqualTo(new TextNode("1000"));
+  }
+
+  @Test
   void fromJsonThrowsWithoutFieldInstance() {
     assertThatThrownBy(() -> type.fromJson(new TextNode("0")))
       .isInstanceOf(UnsupportedOperationException.class);

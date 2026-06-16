@@ -224,6 +224,11 @@ public class BatchTest {
         }
 
         @Override
+        public Optional<Address> delegate() {
+          return Optional.empty();
+        }
+
+        @Override
         public Map<String, Object> unknownFields() {
           return batch.unknownFields();
         }

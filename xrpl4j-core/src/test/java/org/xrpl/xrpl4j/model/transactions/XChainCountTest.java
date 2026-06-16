@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.immutables.value.Value;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -15,15 +17,30 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
+/**
+ * Unit tests for {@link XChainCount}.
+ */
 public class XChainCountTest {
+
+  private static final XChainCount ZERO_XCHAIN_COUNT = XChainCount.of(UnsignedLong.ZERO);
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
-  void testToString() {
-    XChainCount count = XChainCount.of(UnsignedLong.ZERO);
-    assertThat(count.toString()).isEqualTo("0");
+  void testNull() {
+    assertThrows(NullPointerException.class, () -> XChainCount.of(null));
+  }
 
+  @Test
+  void testEquality() {
+    AssertionsForClassTypes.assertThat(ZERO_XCHAIN_COUNT).isEqualTo(ZERO_XCHAIN_COUNT);
+    AssertionsForClassTypes.assertThat(ZERO_XCHAIN_COUNT).isNotEqualTo(new Object());
+    AssertionsForClassTypes.assertThat(ZERO_XCHAIN_COUNT.equals(null)).isFalse();
+  }
+
+  @Test
+  void testToString() {
+    assertThat(ZERO_XCHAIN_COUNT.toString()).isEqualTo("0");
     XChainCount countMax = XChainCount.of(UnsignedLong.MAX_VALUE);
     assertThat(countMax.toString()).isEqualTo("18446744073709551615");
   }

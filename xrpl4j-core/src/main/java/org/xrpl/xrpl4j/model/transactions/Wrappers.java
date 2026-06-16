@@ -211,6 +211,12 @@ public class Wrappers {
      */
     public static XrpCurrencyAmount ofDrops(final long drops) {
       if (drops < 0) {
+        if (drops == Long.MIN_VALUE) {
+          throw new IllegalArgumentException(
+            "drops value of Long.MIN_VALUE is not supported because Math.abs(Long.MIN_VALUE) overflows to " +
+              "Long.MIN_VALUE"
+          );
+        }
         // Normalize the drops value to be a positive number; indicate negativity via property.
         return ofDrops(UnsignedLong.valueOf(Math.abs(drops)), true);
       } else {
@@ -393,15 +399,15 @@ public class Wrappers {
     @Override
     public boolean equals(Object obj) {
       if (obj instanceof XrpCurrencyAmount) {
-        UnsignedLong otherValue = ((XrpCurrencyAmount) obj).value(); // <-- Can't be null due to Immutables
-        return this.value().equals(otherValue);
+        XrpCurrencyAmount other = (XrpCurrencyAmount) obj; // <-- Can't be null due to Immutables
+        return this.value().equals(other.value()) && this.isNegative() == other.isNegative();
       }
       return false;
     }
 
     @Override
     public int hashCode() {
-      return this.value().hashCode();
+      return Objects.hash(this.value(), this.isNegative());
     }
 
     /**

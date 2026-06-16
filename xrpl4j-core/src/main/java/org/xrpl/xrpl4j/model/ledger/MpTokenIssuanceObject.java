@@ -185,4 +185,13 @@ public interface MpTokenIssuanceObject extends LedgerObject {
    */
   @JsonProperty("MutableFlags")
   Optional<MpTokenIssuanceMutableFlags> mutableFlags();
+
+  /**
+   * {@link Hash256} pointing to the vault pseudo-account's holding for the underlying asset. Present for IOU and
+   * MPT-backed vaults. Absent for XRP-backed vaults.
+   *
+   * @return An optionally-present {@link Hash256}.
+   */
+  @JsonProperty("ReferenceHolding")
+  Optional<Hash256> referenceHolding();
 }

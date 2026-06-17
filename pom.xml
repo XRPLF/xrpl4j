@@ -323,6 +323,8 @@
                   <!-- As part of SkyStreamer, but only for test scope-->
                   <ignoredDependency>com.vaadin.external.google:android-json</ignoredDependency>
                   <ignoredDependency>org.junit.jupiter:junit-jupiter-engine</ignoredDependency>
+                  <!-- mockito-inline works as a Java agent; no classes are directly imported -->
+                  <ignoredDependency>org.mockito:mockito-inline</ignoredDependency>
                 </ignoredDependencies>
               </configuration>
             </execution>

@@ -220,9 +220,9 @@ public class XrplBinaryCodec {
     signableBytes.append(UnsignedByteArray.fromHex(accountIdHex));
 
     // Add sequence value (4 bytes): TicketSequence if Sequence==0, else Sequence
-    final int sequenceValue = batch.sequence().longValue() == 0L
-      ? batch.ticketSequence().map(ts -> ts.intValue()).orElse(0)
-      : batch.sequence().intValue();
+    final int sequenceValue = batch.sequence().longValue() == 0L ?
+      batch.ticketSequence().map(ts -> ts.intValue()).orElse(0) :
+      batch.sequence().intValue();
     HashingUtils.addUInt32(signableBytes, sequenceValue);
 
     // Add flags (4 bytes, big-endian)

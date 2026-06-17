@@ -85,12 +85,25 @@ public interface Batch extends Transaction {
   /**
    * The list of inner transactions to be executed as part of this batch.
    *
-   * <p>Must contain between 2 and 8 transactions (inclusive). Inner transactions must also have, among other rules:
+   * <p>Must contain between 2 and 8 transactions (inclusive). The following rules apply to every inner transaction
+   * (enforced by xrpl4j where noted; otherwise enforced server-side):
+   *
    * <ul>
-   *   <li>Have the {@code tfInnerBatchTxn} flag set</li>
-   *   <li>Have a fee of "0" (fees are paid by the outer Batch transaction)</li>
-   *   <li>Have an empty SigningPubKey and no TxnSignature</li>
-   *   <li>Not be Batch transactions themselves (no nesting)</li>
+   *   <li><b>Flag:</b> {@code tfInnerBatchTxn} ({@code 0x40000000}) must be set. A standalone transaction that carries
+   *       this flag is rejected by rippled with {@code temINVALID_INNER_BATCH} to prevent submission of unsigned inner
+   *       transactions as normal transactions. <em>(xrpl4j does not currently enforce this at construction
+   *       time.)</em></li>
+   *   <li><b>Fee:</b> must be exactly {@code 0} XRP drops; the fee is paid by the outer {@link Batch} transaction.
+   *       A non-zero or non-XRP fee yields {@code temBAD_FEE}. <em>(Enforced by xrpl4j.)</em></li>
+   *   <li><b>TxnSignature:</b> must be absent. Presence yields {@code temBAD_SIGNATURE}.
+   *       <em>(Enforced by xrpl4j.)</em></li>
+   *   <li><b>SigningPubKey:</b> must be empty / zero-bytes. A non-empty value yields {@code temBAD_REGKEY}
+   *       (note: not {@code temBAD_SIGNATURE} as one might expect). <em>(Enforced by xrpl4j.)</em></li>
+   *   <li><b>Signers:</b> must be absent. Presence yields {@code temBAD_SIGNER}. <em>(Enforced by xrpl4j.)</em></li>
+   *   <li><b>Sequence / TicketSequence:</b> exactly one of the two must be set; having both or neither yields
+   *       {@code temSEQ_AND_TICKET}. <em>(Enforced server-side.)</em></li>
+   *   <li><b>No nesting:</b> an inner transaction must not itself be a {@link Batch}. <em>(Enforced by
+   *       xrpl4j.)</em></li>
    * </ul>
    *
    * @return A {@link List} of {@link RawTransactionWrapper} containing the inner transactions.
@@ -103,8 +116,22 @@ public interface Batch extends Transaction {
   /**
    * Optional list of batch signers for multi-account batch transactions.
    *
-   * <p>When inner transactions come from multiple accounts, each account must sign the batch
-   * and provide their signature in this array.
+   * <p>A {@link BatchSigner} entry is required for every account that has at least one inner transaction, <em>or</em>
+   * that would ordinarily have to sign at least one of the inner transactions (e.g., a co-signer or delegate). When
+   * multiple such accounts exist and no {@code BatchSigners} array is provided, rippled rejects the outer transaction
+   * with {@code tefBAD_AUTH}.
+   *
+   * <p>Pseudo-accounts (e.g., vault or MPT-issuance accounts) cannot sign batch entries. A {@link BatchSigner} entry
+   * that references a pseudo-account is rejected by rippled with {@code tefBAD_AUTH}. xrpl4j does not enforce this
+   * at construction time because pseudo-account status is ledger state that is unknowable from an address alone.
+   *
+   * <p>V1_1 changes from V1_0:
+   * <ul>
+   *   <li>Entries are auto-sorted ascending by {@code Account} address (required by the wire format).</li>
+   *   <li>Hard cap of 8 entries (was: ≤ number of inner transactions).</li>
+   *   <li>Extra signers are now allowed: an account may sign without having its own inner transaction (e.g.,
+   *       co-signer or delegate).</li>
+   * </ul>
    *
    * @return A {@link List} of {@link BatchSignerWrapper} containing the batch signers.
    */

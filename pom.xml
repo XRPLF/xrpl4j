@@ -134,6 +134,12 @@
         <scope>test</scope>
       </dependency>
       <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-inline</artifactId>
+        <version>3.7.7</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>org.immutables</groupId>
         <artifactId>value-annotations</artifactId>
         <version>${immutables.version}</version>
@@ -317,6 +323,8 @@
                   <!-- As part of SkyStreamer, but only for test scope-->
                   <ignoredDependency>com.vaadin.external.google:android-json</ignoredDependency>
                   <ignoredDependency>org.junit.jupiter:junit-jupiter-engine</ignoredDependency>
+                  <!-- mockito-inline works as a Java agent; no classes are directly imported -->
+                  <ignoredDependency>org.mockito:mockito-inline</ignoredDependency>
                 </ignoredDependencies>
               </configuration>
             </execution>

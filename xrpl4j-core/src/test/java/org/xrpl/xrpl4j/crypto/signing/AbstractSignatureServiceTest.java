@@ -44,6 +44,7 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -92,8 +93,8 @@ public class AbstractSignatureServiceTest {
     when(signedTransactionMock.unsignedTransaction()).thenReturn(transactionMock);
     when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
-    when(signatureUtilsMock.toSignableInnerBytes(any())).thenReturn(UnsignedByteArray.empty());
-    when(signatureUtilsMock.toMultiSignableInnerBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toSignableInnerBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toMultiSignableInnerBytes(any(), any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toCounterpartyMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
     // Mock signatures need to return valid values for serialization
@@ -497,8 +498,8 @@ public class AbstractSignatureServiceTest {
     Signature actualSignature = signatureService.signInner(TestConstants.getEdPrivateKey(), batchMock);
     assertThat(actualSignature).isEqualTo(ed25519SignatureMock);
 
-    verify(signatureUtilsMock).toSignableInnerBytes(batchMock);
-    verify(signatureUtilsMock, times(0)).toMultiSignableInnerBytes(any(), any());
+    verify(signatureUtilsMock).toSignableInnerBytes(batchMock, TestConstants.ED_ADDRESS);
+    verify(signatureUtilsMock, times(0)).toMultiSignableInnerBytes(any(), any(), any());
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -507,8 +508,8 @@ public class AbstractSignatureServiceTest {
     Signature actualSignature = signatureService.signInner(TestConstants.getEcPrivateKey(), batchMock);
     assertThat(actualSignature).isEqualTo(secp256k1SignatureMock);
 
-    verify(signatureUtilsMock).toSignableInnerBytes(batchMock);
-    verify(signatureUtilsMock, times(0)).toMultiSignableInnerBytes(any(), any());
+    verify(signatureUtilsMock).toSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS);
+    verify(signatureUtilsMock, times(0)).toMultiSignableInnerBytes(any(), any(), any());
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -518,32 +519,39 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void multiSignInnerWithNullPrivateKey() {
-    assertThrows(NullPointerException.class, () -> signatureService.multiSignInner(null, batchMock));
+    Address batchSignerAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
+    assertThrows(NullPointerException.class, () -> signatureService.multiSignInner(null, batchMock,
+      batchSignerAddress));
   }
 
   @Test
   public void multiSignInnerWithNullBatch() {
+    Address batchSignerAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
     assertThrows(NullPointerException.class,
-      () -> signatureService.multiSignInner(TestConstants.getEdPrivateKey(), null));
+      () -> signatureService.multiSignInner(TestConstants.getEdPrivateKey(), null, batchSignerAddress));
   }
 
   @Test
   public void multiSignInnerEd25519() {
-    Signature actualSignature = signatureService.multiSignInner(TestConstants.getEdPrivateKey(), batchMock);
+    Address batchSignerAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
+    Signature actualSignature = signatureService.multiSignInner(TestConstants.getEdPrivateKey(), batchMock,
+      batchSignerAddress);
     assertThat(actualSignature).isEqualTo(ed25519SignatureMock);
 
-    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.ED_ADDRESS);
-    verify(signatureUtilsMock, times(0)).toSignableInnerBytes(any());
+    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, batchSignerAddress, TestConstants.ED_ADDRESS);
+    verify(signatureUtilsMock, times(0)).toSignableInnerBytes(any(), any());
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   public void multiSignInnerSecp256k1() {
-    Signature actualSignature = signatureService.multiSignInner(TestConstants.getEcPrivateKey(), batchMock);
+    Address batchSignerAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
+    Signature actualSignature = signatureService.multiSignInner(TestConstants.getEcPrivateKey(), batchMock,
+      batchSignerAddress);
     assertThat(actualSignature).isEqualTo(secp256k1SignatureMock);
 
-    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS);
-    verify(signatureUtilsMock, times(0)).toSignableInnerBytes(any());
+    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, batchSignerAddress, TestConstants.EC_ADDRESS);
+    verify(signatureUtilsMock, times(0)).toSignableInnerBytes(any(), any());
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 

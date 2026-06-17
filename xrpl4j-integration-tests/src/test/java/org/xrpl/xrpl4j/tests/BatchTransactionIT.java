@@ -528,13 +528,15 @@ public class BatchTransactionIT extends AbstractIT {
     // Inner Multisign (account2Signer1 and account2Signer2 are the inner multi-signers)
     // ///////////////
 
+    final Address account2BatchSignerAddress = account2KeyPair.publicKey().deriveAddress();
     final List<SignerWrapper> innerSignerWrappers = Lists.newArrayList(account2Signer1KeyPair, account2Signer2KeyPair)
       .stream()
       .map(keyPair -> {
         final PublicKey signingPublicKey = signatureService.derivePublicKey(keyPair.privateKey());
         final Signer signer = Signer.builder()
           .signingPublicKey(signingPublicKey)
-          .transactionSignature(signatureService.multiSignInner(keyPair.privateKey(), unsignedBatch))
+          .transactionSignature(
+            signatureService.multiSignInner(keyPair.privateKey(), unsignedBatch, account2BatchSignerAddress))
           .build();
         return SignerWrapper.of(signer);
       })
@@ -1104,7 +1106,202 @@ public class BatchTransactionIT extends AbstractIT {
   }
 
   // //////////////////////
-  // 8. This section tests a Batch transaction with an inner signer whose regular key has changed.
+  // 8. This section tests a Batch transaction with two separate multi-sig BatchSigner groups — one for each of two
+  // different inner transaction accounts. This specifically exercises encodeForBatchInnerMultiSigning with distinct
+  // batchSignerAddress + nestedSignerAddress pairs across two groups.
+  // //////////////////////
+
+  /**
+   * Test a batch transaction where two different multi-sig accounts each contribute inner transactions, requiring two
+   * separate multi-sig BatchSigner groups.
+   */
+  @Test
+  void batchWithTwoMultiSigBatchSignerGroups() throws JsonRpcClientErrorException, JsonProcessingException {
+    final KeyPair outerSignerKeyPair = createRandomAccountEd25519();
+    final KeyPair account1KeyPair = createRandomAccountEd25519();
+    final KeyPair account1Signer1KeyPair = createRandomAccountEd25519();
+    final KeyPair account1Signer2KeyPair = createRandomAccountEd25519();
+    final KeyPair account2KeyPair = createRandomAccountEd25519();
+    final KeyPair account2Signer1KeyPair = createRandomAccountEd25519();
+    final KeyPair account2Signer2KeyPair = createRandomAccountEd25519();
+    final KeyPair destinationKeyPair = createRandomAccountEd25519();
+
+    batchWithTwoMultiSigBatchSignerGroupsHelper(
+      outerSignerKeyPair,
+      account1KeyPair, account1Signer1KeyPair, account1Signer2KeyPair,
+      account2KeyPair, account2Signer1KeyPair, account2Signer2KeyPair,
+      destinationKeyPair, BatchFlags.ofAllOrNothing()
+    );
+    batchWithTwoMultiSigBatchSignerGroupsHelper(
+      outerSignerKeyPair,
+      account1KeyPair, account1Signer1KeyPair, account1Signer2KeyPair,
+      account2KeyPair, account2Signer1KeyPair, account2Signer2KeyPair,
+      destinationKeyPair, BatchFlags.ofOnlyOne()
+    );
+    batchWithTwoMultiSigBatchSignerGroupsHelper(
+      outerSignerKeyPair,
+      account1KeyPair, account1Signer1KeyPair, account1Signer2KeyPair,
+      account2KeyPair, account2Signer1KeyPair, account2Signer2KeyPair,
+      destinationKeyPair, BatchFlags.ofUntilFailure()
+    );
+    batchWithTwoMultiSigBatchSignerGroupsHelper(
+      outerSignerKeyPair,
+      account1KeyPair, account1Signer1KeyPair, account1Signer2KeyPair,
+      account2KeyPair, account2Signer1KeyPair, account2Signer2KeyPair,
+      destinationKeyPair, BatchFlags.ofIndependent()
+    );
+  }
+
+  /**
+   * Helper for a batch transaction where two different multi-sig accounts each contribute inner transactions with two
+   * separate multi-sig BatchSigner groups.
+   */
+  private void batchWithTwoMultiSigBatchSignerGroupsHelper(
+    final KeyPair outerSignerKeyPair,
+    final KeyPair account1KeyPair,
+    final KeyPair account1Signer1KeyPair,
+    final KeyPair account1Signer2KeyPair,
+    final KeyPair account2KeyPair,
+    final KeyPair account2Signer1KeyPair,
+    final KeyPair account2Signer2KeyPair,
+    final KeyPair destinationKeyPair,
+    final BatchFlags batchFlags
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    Objects.requireNonNull(outerSignerKeyPair);
+    Objects.requireNonNull(account1KeyPair);
+    Objects.requireNonNull(account1Signer1KeyPair);
+    Objects.requireNonNull(account1Signer2KeyPair);
+    Objects.requireNonNull(account2KeyPair);
+    Objects.requireNonNull(account2Signer1KeyPair);
+    Objects.requireNonNull(account2Signer2KeyPair);
+    Objects.requireNonNull(destinationKeyPair);
+    Objects.requireNonNull(batchFlags);
+
+    final FeeResult feeResult = xrplClient.fee();
+
+    final AccountInfoResult account1Result = setupMultiSigAccount(
+      account1KeyPair, account1Signer1KeyPair, account1Signer2KeyPair
+    );
+    final AccountInfoResult account2Result = setupMultiSigAccount(
+      account2KeyPair, account2Signer1KeyPair, account2Signer2KeyPair
+    );
+    final AccountInfoResult outerSignerInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(outerSignerKeyPair.publicKey().deriveAddress())
+    );
+
+    // Create inner payment from account1
+    final Payment innerPayment1 = createInnerPayment(
+      account1KeyPair.publicKey().deriveAddress(),
+      account1Result.accountData().sequence(),
+      destinationKeyPair.publicKey().deriveAddress(),
+      10000
+    );
+    // Create inner payment from account2
+    final Payment innerPayment2 = createInnerPayment(
+      account2KeyPair.publicKey().deriveAddress(),
+      account2Result.accountData().sequence(),
+      destinationKeyPair.publicKey().deriveAddress(),
+      20000
+    );
+
+    // Build the Batch transaction - outerSigner is the batch submitter (no inner transactions)
+    final Batch unsignedBatch = Batch.builder()
+      .account(outerSignerKeyPair.publicKey().deriveAddress())
+      .signingPublicKey(outerSignerKeyPair.publicKey())
+      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .sequence(outerSignerInfo.accountData().sequence())
+      .flags(batchFlags)
+      .addRawTransactions(
+        RawTransactionWrapper.of(innerPayment1),
+        RawTransactionWrapper.of(innerPayment2)
+      )
+      .build();
+
+    // ///////////////
+    // Inner Multisign - BatchSigner Group 1 (account1Signer1 and account1Signer2 sign for account1)
+    // ///////////////
+
+    final Address account1BatchSignerAddress = account1KeyPair.publicKey().deriveAddress();
+    final List<SignerWrapper> account1InnerSignerWrappers = Lists.newArrayList(
+      account1Signer1KeyPair, account1Signer2KeyPair
+    ).stream()
+      .map(keyPair -> {
+        final PublicKey signingPublicKey = signatureService.derivePublicKey(keyPair.privateKey());
+        final Signer signer = Signer.builder()
+          .signingPublicKey(signingPublicKey)
+          .transactionSignature(
+            signatureService.multiSignInner(keyPair.privateKey(), unsignedBatch, account1BatchSignerAddress)
+          )
+          .build();
+        return SignerWrapper.of(signer);
+      })
+      .collect(Collectors.toList());
+
+    // ///////////////
+    // Inner Multisign - BatchSigner Group 2 (account2Signer1 and account2Signer2 sign for account2)
+    // ///////////////
+
+    final Address account2BatchSignerAddress = account2KeyPair.publicKey().deriveAddress();
+    final List<SignerWrapper> account2InnerSignerWrappers = Lists.newArrayList(
+      account2Signer1KeyPair, account2Signer2KeyPair
+    ).stream()
+      .map(keyPair -> {
+        final PublicKey signingPublicKey = signatureService.derivePublicKey(keyPair.privateKey());
+        final Signer signer = Signer.builder()
+          .signingPublicKey(signingPublicKey)
+          .transactionSignature(
+            signatureService.multiSignInner(keyPair.privateKey(), unsignedBatch, account2BatchSignerAddress)
+          )
+          .build();
+        return SignerWrapper.of(signer);
+      })
+      .collect(Collectors.toList());
+
+    // Build the final batch with both BatchSigner groups
+    final Batch batchWithBatchSigners = Batch.builder()
+      .from(unsignedBatch)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(account1BatchSignerAddress)
+          .signers(account1InnerSignerWrappers)
+          .build()
+        ),
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(account2BatchSignerAddress)
+          .signers(account2InnerSignerWrappers)
+          .build()
+        )
+      ))
+      .build();
+
+    // ///////////////
+    // Outer Sign (outerSigner single-signs the full batch with both BatchSigner groups)
+    // ///////////////
+
+    final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(
+      outerSignerKeyPair.privateKey(), batchWithBatchSigners
+    );
+
+    // Submit and wait for validation
+    final SubmitResult<Batch> result = xrplClient.submit(signedBatch);
+    assertTesSuccess(result);
+    final TransactionResult<Batch> validatedBatch = this.scanForResult(
+      () -> this.getValidatedTransaction(result.transactionResult().hash(), Batch.class)
+    );
+    assertTesSuccess(validatedBatch);
+
+    // Verify metadata
+    verifyBatchMetadata(validatedBatch);
+
+    // Verify the destination account received both payments
+    final AccountInfoResult destInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress())
+    );
+    assertThat(destInfo.accountData().balance()).isNotNull();
+  }
+
+  // //////////////////////
+  // 9. This section tests a Batch transaction with an inner signer whose regular key has changed.
   // //////////////////////
 
   @Test

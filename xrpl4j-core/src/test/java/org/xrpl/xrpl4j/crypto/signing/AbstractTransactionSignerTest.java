@@ -102,8 +102,8 @@ public class AbstractTransactionSignerTest {
 
     when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
-    when(signatureUtilsMock.toSignableInnerBytes(any())).thenReturn(UnsignedByteArray.empty());
-    when(signatureUtilsMock.toMultiSignableInnerBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toSignableInnerBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toMultiSignableInnerBytes(any(), any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toCounterpartyMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
     when(signerMock.signingPublicKey()).thenReturn(publicKeyMock);
@@ -372,7 +372,7 @@ public class AbstractTransactionSignerTest {
     Signature signature = transactionSigner.signInner(privateKeyableMock, batchMock);
     assertThat(signature).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toSignableInnerBytes(batchMock);
+    verify(signatureUtilsMock).toSignableInnerBytes(batchMock, TestConstants.ED_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -383,7 +383,7 @@ public class AbstractTransactionSignerTest {
     Signature signature = transactionSigner.signInner(privateKeyableMock, batchMock);
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toSignableInnerBytes(batchMock);
+    verify(signatureUtilsMock).toSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -393,33 +393,45 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void multiSignInnerWithNullMetadata() {
-    assertThrows(NullPointerException.class, () -> transactionSigner.multiSignInner(null, batchMock));
+    Address batchSignerAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.multiSignInner(null, batchMock, batchSignerAddress));
   }
 
   @Test
   void multiSignInnerWithNullBatch() {
-    assertThrows(NullPointerException.class, () -> transactionSigner.multiSignInner(privateKeyableMock, null));
+    Address batchSignerAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.multiSignInner(privateKeyableMock, null, batchSignerAddress));
+  }
+
+  @Test
+  void multiSignInnerWithNullBatchSignerAddress() {
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.multiSignInner(privateKeyableMock, batchMock, null));
   }
 
   @Test
   void multiSignInnerEd25519() {
     keyType = KeyType.ED25519;
+    Address batchSignerAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
 
-    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock);
+    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock, batchSignerAddress);
     assertThat(signature).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.ED_ADDRESS);
+    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, batchSignerAddress, TestConstants.ED_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   void multiSignInnerSecp256k1() {
     keyType = KeyType.SECP256K1;
+    Address batchSignerAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
 
-    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock);
+    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock, batchSignerAddress);
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS);
+    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, batchSignerAddress, TestConstants.EC_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 

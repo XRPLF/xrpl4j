@@ -91,7 +91,7 @@ public interface Batch extends Transaction {
    * <ul>
    *   <li><b>Flag:</b> {@code tfInnerBatchTxn} ({@code 0x40000000}) must be set. A standalone transaction that carries
    *       this flag is rejected by rippled with {@code temINVALID_INNER_BATCH} to prevent submission of unsigned inner
-   *       transactions as normal transactions. <em>(xrpl4j does not currently enforce this at construction
+   *       transactions as normal transactions. <em>(Enforced by {@link RawTransactionWrapper} at construction
    *       time.)</em></li>
    *   <li><b>Fee:</b> must be exactly {@code 0} XRP drops; the fee is paid by the outer {@link Batch} transaction.
    *       A non-zero or non-XRP fee yields {@code temBAD_FEE}. <em>(Enforced by xrpl4j.)</em></li>
@@ -151,7 +151,8 @@ public interface Batch extends Transaction {
 
   /**
    * Validates all properties of inner transactions in a single pass for efficiency. This combines multiple validations
-   * to avoid iterating over rawTransactions multiple times.
+   * to avoid iterating over rawTransactions multiple times. Note: the {@code tfInnerBatchTxn} flag is enforced earlier,
+   * by {@link RawTransactionWrapper#check()}, and is not re-checked here.
    */
   @Value.Check
   default void checkRawTransactions() {

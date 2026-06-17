@@ -468,9 +468,8 @@ public class SignatureUtilsTest {
       new RuntimeException("codec error"));
     assertThrows(RuntimeException.class, () -> signatureUtils.toSignableInnerBytes(batch, batchSignerAddress));
 
-    when(xrplBinaryCodecMock.encodeForBatchInnerMultiSigning(
-      any(Batch.class), any(Address.class), any(Address.class))).thenThrow(
-      new RuntimeException("codec error"));
+    when(xrplBinaryCodecMock.encodeForBatchInnerMultiSigning(any(Batch.class), any(Address.class), any(Address.class)))
+      .thenThrow(new RuntimeException("codec error"));
     assertThrows(RuntimeException.class,
       () -> signatureUtils.toMultiSignableInnerBytes(batch, batchSignerAddress, nestedSignerAddress));
   }

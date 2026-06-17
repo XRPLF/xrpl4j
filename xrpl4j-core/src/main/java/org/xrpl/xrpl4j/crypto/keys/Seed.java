@@ -476,6 +476,8 @@ public interface Seed extends javax.security.auth.Destroyable {
 
         BigInteger key = null;
         for (long i = 0; i <= 0xFFFFFFFFL; i++) {
+          // Rarely loops (secp256k1 order ≈ 2^256, so iteration is needed with negligible probability),
+          // but seedCopy must be recreated each iteration to avoid accumulating bytes across retries.
           UnsignedByteArray seedCopy = UnsignedByteArray.of(seed.toByteArray());
           discriminator.map(d -> HashingUtils.addUInt32(seedCopy, d));
           HashingUtils.addUInt32(seedCopy, (int) i);

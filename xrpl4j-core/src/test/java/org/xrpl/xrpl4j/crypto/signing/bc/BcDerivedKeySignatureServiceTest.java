@@ -862,14 +862,17 @@ class BcDerivedKeySignatureServiceTest {
     final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
 
     final Batch batchTransaction = createBatchTransaction(publicKey);
+    final Address batchSignerAddress = Address.of(sourceClassicAddressEd);
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedBatchCallable = () -> {
-      Signature signature = this.derivedKeySignatureService.multiSignInner(privateKeyReference, batchTransaction);
+      Signature signature = this.derivedKeySignatureService.multiSignInner(privateKeyReference, batchTransaction,
+        batchSignerAddress);
       assertThat(signature).isNotNull();
       assertThat(signature.base16Value()).isNotEmpty();
       // Verify signature is deterministic
-      Signature signature2 = this.derivedKeySignatureService.multiSignInner(privateKeyReference, batchTransaction);
+      Signature signature2 = this.derivedKeySignatureService.multiSignInner(privateKeyReference, batchTransaction,
+        batchSignerAddress);
       assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
       return true;
     };
@@ -896,14 +899,17 @@ class BcDerivedKeySignatureServiceTest {
     final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
 
     final Batch batchTransaction = createBatchTransaction(publicKey);
+    final Address batchSignerAddress = Address.of(sourceClassicAddressEc);
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedBatchCallable = () -> {
-      Signature signature = this.derivedKeySignatureService.multiSignInner(privateKeyReference, batchTransaction);
+      Signature signature = this.derivedKeySignatureService.multiSignInner(privateKeyReference, batchTransaction,
+        batchSignerAddress);
       assertThat(signature).isNotNull();
       assertThat(signature.base16Value()).isNotEmpty();
       // Verify signature is deterministic for SECP256K1
-      Signature signature2 = this.derivedKeySignatureService.multiSignInner(privateKeyReference, batchTransaction);
+      Signature signature2 = this.derivedKeySignatureService.multiSignInner(privateKeyReference, batchTransaction,
+        batchSignerAddress);
       assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
       return true;
     };

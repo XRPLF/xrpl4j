@@ -20,16 +20,20 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.BatchFlags;
 
+import java.math.BigInteger;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -106,6 +110,17 @@ public interface Batch extends Transaction {
    */
   @JsonProperty("BatchSigners")
   List<BatchSignerWrapper> batchSigners();
+
+  /**
+   * Internal flag used to prevent infinite recursion when auto-sorting {@link #batchSigners()}.
+   *
+   * @return {@code true} if {@link #batchSigners()} has already been sorted.
+   */
+  @JsonIgnore
+  @Value.Default
+  default boolean sortedBatchSigners() {
+    return false;
+  }
 
   /**
    * Validates all properties of inner transactions in a single pass for efficiency. This combines multiple validations
@@ -211,12 +226,26 @@ public interface Batch extends Transaction {
   }
 
   /**
-   * Validates all BatchSigners-related constraints in a single pass for efficiency. This combines multiple validations
-   * to avoid iterating over batchSigners and computing account sets multiple times.
+   * Validates BatchSigners constraints and auto-sorts entries by {@code Account} in ascending order (required by
+   * V1_1). Follows the same normalizing {@link Value.Check} pattern as {@link BatchSigner#checkAndNormalize()}.
+   *
+   * <p>Changes from V1_0 → V1_1:
+   * <ul>
+   *   <li>BatchSigners are now auto-sorted ascending by Account (temBAD_SIGNER if out of order on-chain).</li>
+   *   <li>Hard cap of 8 BatchSigners (was: ≤ number of inner transactions).</li>
+   *   <li>"Extra signers" check removed: V1_1 allows co-signers/delegates without their own inner transaction.</li>
+   * </ul>
    */
   @Value.Check
-  default void checkBatchSigners() {
-    // Check 1: Validate no duplicate batch signers
+  default Batch checkBatchSigners() {
+    // Check 1: Hard cap of 8 BatchSigners (V1_1)
+    Preconditions.checkArgument(
+      this.batchSigners().size() <= 8,
+      "BatchSigners must not exceed 8 entries, but contained %s.",
+      this.batchSigners().size()
+    );
+
+    // Check 2: No duplicate signers by account
     final long uniqueSignerCount = this.batchSigners().stream()
       .map(wrapper -> wrapper.batchSigner().account())
       .distinct()
@@ -229,16 +258,13 @@ public interface Batch extends Transaction {
       this.batchSigners().size()
     );
 
-    // Check 2: Validate that the outer account is not included as a signer in BatchSigners
-    // This applies to both single-sig and multi-sig scenarios
+    // Check 3: Outer account must not appear in BatchSigners (directly or via nested Signers)
     final Optional<BatchSigner> firstSignerMatchingOuterAccount = this.batchSigners().stream()
       .map(BatchSignerWrapper::batchSigner)
       .filter(batchSigner -> {
-        // Check single-sig: BatchSigner.Account matches outer account
         if (batchSigner.account().equals(this.account())) {
           return true;
         }
-        // Check multi-sig: Any nested Signer.Account matches outer account
         return batchSigner.signers().stream()
           .anyMatch(signerWrapper -> signerWrapper.signer().account().equals(this.account()));
       })
@@ -251,8 +277,8 @@ public interface Batch extends Transaction {
       firstSignerMatchingOuterAccount.orElse(null)
     );
 
-    // Checks 3-4: Validate BatchSigners completeness (no missing, no extra)
-    // Only perform these checks if BatchSigners is non-empty
+    // Check 4: When BatchSigners is non-empty, every inner-transaction account (excluding the outer account)
+    // must have a corresponding BatchSigner entry.
     if (!this.batchSigners().isEmpty()) {
       // Compute the set of accounts that require signatures (all inner transaction accounts except outer account)
       final Set<Address> requiredSignerAccounts = this.rawTransactions().stream()
@@ -265,32 +291,40 @@ public interface Batch extends Transaction {
         .map(wrapper -> wrapper.batchSigner().account())
         .collect(Collectors.toSet());
 
-      // Check 3: Validate no missing BatchSigners
-      // Every required account must have a corresponding BatchSigner
+      // Find the first inner-transaction account (excluding the outer account) that has no BatchSigner entry.
       final Optional<Address> missingSignerAccount = requiredSignerAccounts.stream()
         .filter(account -> !actualSignerAccounts.contains(account))
         .findFirst();
 
+      // Note: we intentionally do NOT check for extra BatchSigners (accounts with no inner transaction).
+      // V1_1 allows co-signers and delegates who sign on behalf of an inner-transaction account without
+      // having their own inner transaction. Whether an extra signer is legitimate requires ledger state
+      // (e.g. SignerList entries), so that check belongs on the server, not here.
       Preconditions.checkArgument(
         !missingSignerAccount.isPresent(),
         "BatchSigners must contain signatures from all accounts with inner transactions " +
           "(excluding outer signer). Missing BatchSigner for account: %s",
         missingSignerAccount.orElse(null)
       );
-
-      // Check 4: Validate no extra BatchSigners
-      // Every BatchSigner must correspond to an inner transaction account
-      final Optional<Address> extraSignerAccount = actualSignerAccounts.stream()
-        .filter(signerAccount -> !requiredSignerAccounts.contains(signerAccount))
-        .findFirst();
-
-      Preconditions.checkArgument(
-        !extraSignerAccount.isPresent(),
-        "BatchSigners must only contain signatures from accounts that have inner transactions. " +
-          "Found BatchSigner with no inner transactions: %s",
-        extraSignerAccount.orElse(null)
-      );
     }
+
+    // Auto-sort BatchSigners ascending by Account (V1_1 requirement). Uses the same normalizing
+    // @Value.Check pattern as BatchSigner#checkAndNormalize to avoid infinite recursion.
+    if (!this.batchSigners().isEmpty() && !sortedBatchSigners()) {
+      final List<BatchSignerWrapper> sorted = this.batchSigners().stream()
+        .sorted(Comparator.comparing(wrapper -> new BigInteger(
+          AddressCodec.getInstance().decodeAccountId(wrapper.batchSigner().account()).hexValue(), 16
+        )))
+        .collect(Collectors.toList());
+
+      return ImmutableBatch.builder()
+        .from(this)
+        .batchSigners(sorted)
+        .sortedBatchSigners(true)
+        .build();
+    }
+
+    return this;
   }
 
 }

@@ -153,21 +153,20 @@ public class SignatureUtils {
 
 
   /**
-   * Convert a {@link Batch} transaction to bytes that can be signed by a Batch inner transaction signer. Per XLS-0056,
-   * BatchSigners sign the inner transaction in a specific format: HashPrefix::batch + flags + count + inner tx IDs.
+   * Convert a {@link Batch} transaction to bytes that can be signed by a Batch inner transaction signer (single-sign
+   * path). Per XLS-0056 V1_1, the payload is: {@code HashPrefix::Batch} + outer {@code Account} + sequence +
+   * {@code Flags} + count + inner tx IDs + {@code batchSignerAddress}.
    *
-   * @param batch A {@link Batch} transaction.
+   * @param batch              A {@link Batch} transaction.
+   * @param batchSignerAddress The {@link Address} of the BatchSigner entry signing this batch.
    *
    * @return An {@link UnsignedByteArray} containing the bytes to be signed.
    */
   @Beta
-  public UnsignedByteArray toSignableInnerBytes(final Batch batch) {
+  public UnsignedByteArray toSignableInnerBytes(final Batch batch, final Address batchSignerAddress) {
     Objects.requireNonNull(batch);
-    try {
-      return binaryCodec.encodeForBatchInnerSigning(batch);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
+    Objects.requireNonNull(batchSignerAddress);
+    return binaryCodec.encodeForBatchInnerSigning(batch, batchSignerAddress);
   }
 
   /**
@@ -200,23 +199,23 @@ public class SignatureUtils {
 
   /**
    * Converts a {@link Batch} to multi-signable bytes for a specific signer. This is used when a multi-sig account acts
-   * as a BatchSigner with nested Signers. Per rippled's checkBatchMultiSign, this uses batch serialization followed by
-   * appending the signer's account ID.
+   * as a BatchSigner with nested Signers. Per XLS-0056 V1_1 / rippled's {@code checkBatchMultiSign}, the payload is the
+   * base batch serialization followed by {@code batchSignerAddress} then {@code nestedSignerAddress}.
    *
-   * @param batch         The {@link Batch} to convert.
-   * @param signerAddress The {@link Address} of the signer.
+   * @param batch               The {@link Batch} to convert.
+   * @param batchSignerAddress  The {@link Address} of the BatchSigner entry (outer multi-sig account).
+   * @param nestedSignerAddress The {@link Address} of the individual signer within the BatchSigner's Signers list.
    *
-   * @return An {@link UnsignedByteArray} containing the batch serialization with account ID suffix.
+   * @return An {@link UnsignedByteArray} containing the batch serialization with both account ID suffixes.
    */
   @Beta
-  public UnsignedByteArray toMultiSignableInnerBytes(final Batch batch, final Address signerAddress) {
+  public UnsignedByteArray toMultiSignableInnerBytes(
+    final Batch batch, final Address batchSignerAddress, final Address nestedSignerAddress
+  ) {
     Objects.requireNonNull(batch);
-    Objects.requireNonNull(signerAddress);
-    try {
-      return binaryCodec.encodeForBatchInnerMultiSigning(batch, signerAddress);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
+    Objects.requireNonNull(batchSignerAddress);
+    Objects.requireNonNull(nestedSignerAddress);
+    return binaryCodec.encodeForBatchInnerMultiSigning(batch, batchSignerAddress, nestedSignerAddress);
   }
 
 }

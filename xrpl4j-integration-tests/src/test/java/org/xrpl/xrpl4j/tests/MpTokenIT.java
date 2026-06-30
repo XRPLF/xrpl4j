@@ -732,10 +732,6 @@ public class MpTokenIT extends AbstractIT {
       issuerKeyPair.privateKey(), issuanceCreate
     );
     SubmitResult<MpTokenIssuanceCreate> createResult = xrplClient.submit(signedCreate);
-    Assumptions.assumeTrue(
-      !"temDISABLED".equals(createResult.engineResult()),
-      "Skipping: DynamicMPT amendment not enabled on this node"
-    );
     assertThat(createResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
     this.scanForResult(

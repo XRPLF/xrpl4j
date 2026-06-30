@@ -699,6 +699,118 @@ public class MpTokenIT extends AbstractIT {
     assertThat(afterSet.flags().lsfMptCanLock()).isTrue();
   }
 
+  /**
+   * Verifies the one-way "enable-once" semantic introduced by rippled #7439 / XLS-94: a capability declared mutable at
+   * creation (here {@code CanTransfer}) starts disabled, can be enabled via {@code MPTokenIssuanceSet.MutableFlags},
+   * and stays enabled afterward. There is no corresponding "clear" flag in the protocol, so once enabled the capability
+   * cannot be disabled; the {@code CanEnable} declaration is not consumed and remains set on the issuance object.
+   */
+  @Test
+  void createDynamicIssuanceThenEnableCanTransferIsOneWay()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    // Create issuance with lsfMPTCanTransfer declared mutable but NOT initially set.
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mutableFlags(MpTokenIssuanceCreateMutableFlags.builder()
+        .tmfMptCanEnableCanTransfer(true)
+        .build()
+      )
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedCreate = signatureService.sign(
+      issuerKeyPair.privateKey(), issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> createResult = xrplClient.submit(signedCreate);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(createResult.engineResult()),
+      "Skipping: DynamicMPT amendment not enabled on this node"
+    );
+    assertThat(createResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedCreate.hash(),
+        createResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("missing issuance ID"));
+
+    // Before the set: CanTransfer is disabled, but declared enable-able.
+    MpTokenIssuanceObject beforeSet = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    assertThat(beforeSet.flags().lsfMptCanTransfer()).isFalse();
+    MpTokenIssuanceMutableFlags lsmfBefore = beforeSet.mutableFlags().orElseThrow(RuntimeException::new);
+    assertThat(lsmfBefore.lsmfMptCanEnableCanTransfer()).isTrue();
+
+    // Enable lsfMPTCanTransfer via MPTokenIssuanceSet.MutableFlags.
+    AccountInfoResult issuerInfoAfterCreate = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenIssuanceSet enableTransfer = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterCreate.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterCreate.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .mutableFlags(MpTokenIssuanceSetMutableFlags.builder()
+        .tmfMptSetCanTransfer(true)
+        .build()
+      )
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedEnable = signatureService.sign(
+      issuerKeyPair.privateKey(), enableTransfer
+    );
+    SubmitResult<MpTokenIssuanceSet> enableResult = xrplClient.submit(signedEnable);
+    assertThat(enableResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedEnable.hash(),
+        enableResult.validatedLedgerIndex(),
+        enableTransfer.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        enableTransfer.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    // After the set: CanTransfer is enabled, and the CanEnable declaration persists (the capability is now one-way;
+    // there is no protocol flag to clear it).
+    MpTokenIssuanceObject afterSet = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    assertThat(afterSet.flags().lsfMptCanTransfer()).isTrue();
+    MpTokenIssuanceMutableFlags lsmfAfter = afterSet.mutableFlags().orElseThrow(RuntimeException::new);
+    assertThat(lsmfAfter.lsmfMptCanEnableCanTransfer()).isTrue();
+  }
+
   @Test
   void mptIssuanceWithPermissionedDomainSuccessAndFailure()
     throws JsonRpcClientErrorException, JsonProcessingException {

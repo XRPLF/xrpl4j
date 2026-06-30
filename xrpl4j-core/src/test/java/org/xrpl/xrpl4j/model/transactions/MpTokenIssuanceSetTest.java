@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
@@ -304,9 +306,15 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
       .hasMessageContaining("MutableFlags must not be 0");
   }
 
-  @Test
-  void mutableFlagsRejectsInvalidBits() {
-    // bit 0x1000 is not a valid MutableFlags bit for MPTokenIssuanceSet
+  /**
+   * After removing the {@code Clear*} flags (rippled #7439 / XLS-94), {@code VALID_MASK} is {@code 0x3F}. Bits
+   * {@code 0x40}–{@code 0x800} were valid {@code Set}/{@code Clear} bits under the old mask but are now rejected,
+   * and {@code 0x1000} is out of range under both masks. This exercises the tightened mask rather than only a
+   * bit that was already invalid before the change.
+   */
+  @ParameterizedTest
+  @ValueSource(longs = {0x40L, 0x80L, 0x100L, 0x200L, 0x400L, 0x800L, 0x1000L})
+  void mutableFlagsRejectsInvalidBits(long invalidBit) {
     assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
       .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
       .sequence(UnsignedInteger.valueOf(335))
@@ -315,7 +323,7 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
       )
-      .mutableFlags(MpTokenIssuanceSetMutableFlags.of(0x1000L))
+      .mutableFlags(MpTokenIssuanceSetMutableFlags.of(invalidBit))
       .build()
     ).isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("invalid bits");

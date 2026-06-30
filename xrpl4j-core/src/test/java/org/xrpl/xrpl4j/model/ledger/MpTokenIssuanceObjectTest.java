@@ -145,7 +145,7 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
     MpTokenIssuanceMutableFlags lsmf = MpTokenIssuanceMutableFlags.builder()
       .lsmfMptCanMutateMetadata(true)
       .lsmfMptCanMutateTransferFee(true)
-      .lsmfMptCanMutateCanLock(true)
+      .lsmfMptCanEnableCanLock(true)
       .build();
 
     MpTokenIssuanceObject object = MpTokenIssuanceObject.builder()

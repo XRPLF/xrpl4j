@@ -416,7 +416,7 @@ public class MpTokenIT extends AbstractIT {
       .mutableFlags(MpTokenIssuanceCreateMutableFlags.builder()
         .tmfMptCanMutateMetadata(true)
         .tmfMptCanMutateTransferFee(true)
-        .tmfMptCanMutateCanLock(true)
+        .tmfMptCanEnableCanLock(true)
         .build()
       )
       .mpTokenMetadata(MpTokenMetadata.of("464F4F"))
@@ -461,8 +461,8 @@ public class MpTokenIT extends AbstractIT {
       .orElseThrow(RuntimeException::new);
     assertThat(lsmf.lsmfMptCanMutateMetadata()).isTrue();
     assertThat(lsmf.lsmfMptCanMutateTransferFee()).isTrue();
-    assertThat(lsmf.lsmfMptCanMutateCanLock()).isTrue();
-    assertThat(lsmf.lsmfMptCanMutateCanTransfer()).isFalse();
+    assertThat(lsmf.lsmfMptCanEnableCanLock()).isTrue();
+    assertThat(lsmf.lsmfMptCanEnableCanTransfer()).isFalse();
     assertThat(issuanceObject.mpTokenMetadata()).contains(MpTokenMetadata.of("464F4F"));
 
     // Mutate MPTokenMetadata via MPTokenIssuanceSet
@@ -618,7 +618,7 @@ public class MpTokenIT extends AbstractIT {
       .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
       .signingPublicKey(issuerKeyPair.publicKey())
       .mutableFlags(MpTokenIssuanceCreateMutableFlags.builder()
-        .tmfMptCanMutateCanLock(true)
+        .tmfMptCanEnableCanLock(true)
         .build()
       )
       .build();

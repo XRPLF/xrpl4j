@@ -4,10 +4,11 @@ package org.xrpl.xrpl4j.model.flags;
  * A set of static {@link Flags} which can be set in the {@code MutableFlags} field of
  * {@link org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate} transactions.
  *
- * <p>These flags (prefixed with {@code tmf}) declare which fields or flags of the created
- * {@code MPTokenIssuance} may be mutated after issuance via {@code MPTokenIssuanceSet}. The
- * {@code CanEnable*} flags declare that the corresponding capability may later be enabled (once) by the
- * issuer, while the {@code CanMutate*} flags declare that the corresponding field may be modified.
+ * <p>These flags (prefixed with {@code tmf}) declare which capabilities of the created
+ * {@code MPTokenIssuance} may be mutated after issuance via {@code MPTokenIssuanceSet}. Only
+ * capabilities that were declared mutable at creation time may be enabled, and a capability
+ * becomes immutable once enabled. The {@code CanMutate*} flags declare that the corresponding
+ * field may be modified.
  *
  * @see <a href="https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0094-dynamic-MPT">XLS-94</a>
  */

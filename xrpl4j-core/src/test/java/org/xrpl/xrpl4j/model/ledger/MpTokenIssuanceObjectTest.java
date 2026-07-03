@@ -48,6 +48,7 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
                   "  \"MPTokenMetadata\" : \"ABCD\",\n" +
                   "  \"MaximumAmount\" : \"9223372036854775807\",\n" +
                   "  \"OutstandingAmount\" : \"0\",\n" +
+                  "  \"ConfidentialOutstandingAmount\" : \"0\",\n" +
                   "  \"OwnerNode\" : \"0\",\n" +
                   "  \"PreviousTxnID\" : \"8C20A85CE9EA44CEF32C8B06209890154D8810A8409D8582884566CD24DE694F\",\n" +
                   "  \"PreviousTxnLgrSeq\" : 420,\n" +
@@ -80,6 +81,7 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
 
     assertThat(object.assetScale()).isEqualTo(AssetScale.of(UnsignedInteger.ZERO));
     assertThat(object.transferFee()).isEqualTo(TransferFee.of(UnsignedInteger.ZERO));
+    assertThat(object.confidentialOutstandingAmount()).isEqualTo(MpTokenNumericAmount.of(0));
   }
 
   @Test
@@ -109,6 +111,7 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
                   "  \"MPTokenMetadata\" : \"ABCD\",\n" +
                   "  \"MaximumAmount\" : \"9223372036854775807\",\n" +
                   "  \"OutstandingAmount\" : \"50000\",\n" +
+                  "  \"ConfidentialOutstandingAmount\" : \"0\",\n" +
                   "  \"LockedAmount\" : \"10000\",\n" +
                   "  \"OwnerNode\" : \"0\",\n" +
                   "  \"PreviousTxnID\" : \"8C20A85CE9EA44CEF32C8B06209890154D8810A8409D8582884566CD24DE694F\",\n" +
@@ -174,6 +177,7 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
                   "  \"MPTokenMetadata\" : \"ABCD\",\n" +
                   "  \"MaximumAmount\" : \"9223372036854775807\",\n" +
                   "  \"OutstandingAmount\" : \"0\",\n" +
+                  "  \"ConfidentialOutstandingAmount\" : \"0\",\n" +
                   "  \"OwnerNode\" : \"0\",\n" +
                   "  \"PreviousTxnID\" : \"8C20A85CE9EA44CEF32C8B06209890154D8810A8409D8582884566CD24DE694F\",\n" +
                   "  \"PreviousTxnLgrSeq\" : 420,\n" +

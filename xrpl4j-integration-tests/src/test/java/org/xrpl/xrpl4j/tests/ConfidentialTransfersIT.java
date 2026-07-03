@@ -157,7 +157,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .flags(MpTokenIssuanceCreateFlags.builder()
         .tfMptCanTransfer(true)
         .tfMptCanClawback(true)
-        .tfMptCanConfidentialAmount(true)
+        .tfMptCanHoldConfidentialBalance(true)
         .build())
       .build();
 
@@ -175,7 +175,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ).node();
     assertThat(issuance.flags().lsfMptCanTransfer()).isTrue();
     assertThat(issuance.flags().lsfMptCanClawback()).isTrue();
-    assertThat(issuance.flags().lsfMptCanConfidentialAmount()).isTrue();
+    assertThat(issuance.flags().lsfMptCanHoldConfidentialBalance()).isTrue();
 
     // =====================================================================
     // 2. Register the issuer's and auditor's ElGamal public keys via

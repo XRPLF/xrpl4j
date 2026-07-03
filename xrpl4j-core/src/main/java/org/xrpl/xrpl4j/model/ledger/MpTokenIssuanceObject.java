@@ -119,12 +119,15 @@ public interface MpTokenIssuanceObject extends LedgerObject {
   /**
    * The total amount of this token that is currently held in confidential balances. This value is adjusted with
    * every {@code ConfidentialMPTConvert}, {@code ConfidentialMPTConvertBack}, and {@code ConfidentialMPTClawback}
-   * transaction. Required to use the confidential transfer feature.
+   * transaction.
    *
    * @return An optionally-present {@link MpTokenNumericAmount}.
    */
   @JsonProperty("ConfidentialOutstandingAmount")
-  Optional<MpTokenNumericAmount> confidentialOutstandingAmount();
+  @Value.Default
+  default MpTokenNumericAmount confidentialOutstandingAmount() {
+    return MpTokenNumericAmount.of(0);
+  }
 
   /**
    * A 33-byte compressed ElGamal public key for the issuer. Required to use the confidential transfer feature.

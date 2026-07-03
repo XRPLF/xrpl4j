@@ -40,6 +40,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialUriDeserializer;
@@ -50,6 +52,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidUriDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidUriSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.EncryptedAmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.EncryptedAmountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Deserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Serializer;
 import org.xrpl.xrpl4j.model.jackson.modules.LoanBrokerDataDeserializer;
@@ -87,6 +91,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.XChainCountDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XChainCountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ZkProofDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ZkProofSerializer;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -1196,6 +1202,170 @@ public class Wrappers {
     public boolean equals(Object obj) {
       if (obj instanceof CredentialUri) {
         String otherValue = ((CredentialUri) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+
+  }
+
+  /**
+   * A wrapped, hex-encoded {@link String} containing an ElGamal ciphertext (an "encrypted amount") used in confidential
+   * MPT transactions and ledger objects. An encrypted amount is always a fixed-size ciphertext consisting of two
+   * compressed EC points, for a total of 66 bytes (132 hex characters).
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = EncryptedAmount.class, using = EncryptedAmountSerializer.class)
+  @JsonDeserialize(as = EncryptedAmount.class, using = EncryptedAmountDeserializer.class)
+  @Beta
+  abstract static class _EncryptedAmount extends Wrapper<String> implements Serializable {
+
+    /**
+     * The required length, in hex characters, of an {@link EncryptedAmount} (66 bytes = 132 hex characters).
+     */
+    static final int HEX_LENGTH = 132;
+
+    /**
+     * Validates that an {@link EncryptedAmount}'s value is exactly {@link #HEX_LENGTH} hex characters (66 bytes).
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(
+        this.value().length() == HEX_LENGTH,
+        "EncryptedAmount must be 66 bytes (%s hex characters).", HEX_LENGTH);
+    }
+
+    /**
+     * Validates that an {@link EncryptedAmount}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("EncryptedAmount must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof EncryptedAmount) {
+        String otherValue = ((EncryptedAmount) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+
+  }
+
+  /**
+   * A wrapped, hex-encoded {@link String} containing the 32-byte scalar blinding factor used to encrypt an amount in
+   * confidential MPT transactions. A blinding factor is always exactly 32 bytes (64 hex characters).
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = BlindingFactor.class, using = BlindingFactorSerializer.class)
+  @JsonDeserialize(as = BlindingFactor.class, using = BlindingFactorDeserializer.class)
+  @Beta
+  abstract static class _BlindingFactor extends Wrapper<String> implements Serializable {
+
+    /**
+     * The required length, in hex characters, of a {@link BlindingFactor} (32 bytes = 64 hex characters).
+     */
+    static final int HEX_LENGTH = 64;
+
+    /**
+     * Validates that a {@link BlindingFactor}'s value is exactly {@link #HEX_LENGTH} hex characters (32 bytes).
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(
+        this.value().length() == HEX_LENGTH,
+        "BlindingFactor must be 32 bytes (%s hex characters).", HEX_LENGTH);
+    }
+
+    /**
+     * Validates that a {@link BlindingFactor}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("BlindingFactor must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof BlindingFactor) {
+        String otherValue = ((BlindingFactor) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+
+  }
+
+  /**
+   * A wrapped, hex-encoded {@link String} containing a zero-knowledge proof used in confidential MPT transactions. The
+   * required length of a {@link ZkProof} depends on the specific transaction it appears in, so this wrapper enforces
+   * only that the value is valid hexadecimal; the exact length is validated by each transaction.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = ZkProof.class, using = ZkProofSerializer.class)
+  @JsonDeserialize(as = ZkProof.class, using = ZkProofDeserializer.class)
+  @Beta
+  abstract static class _ZkProof extends Wrapper<String> implements Serializable {
+
+    /**
+     * Validates that a {@link ZkProof}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("ZkProof must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof ZkProof) {
+        String otherValue = ((ZkProof) obj).value(); // <-- Can't be null due to Immutables
         return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;

@@ -71,11 +71,11 @@ ConfidentialMptConvert convert = ConfidentialMptConvert.builder()
   .lastLedgerSequence(lastLedgerSeq)
   .mpTokenIssuanceId(mpTokenIssuanceId)
   .mptAmount(MpTokenNumericAmount.of(amount))
-  .holderEncryptionKey(holderElGamalKeyPair.publicKey().base16Value())  // Only on first convert
-  .holderEncryptedAmount(holderCiphertext.toHex())
-  .issuerEncryptedAmount(issuerCiphertext.toHex())
-  .blindingFactor(blindingFactor.hexValue())
-  .zkProof(zkProof.hexValue())                                         // Only when registering key
+  .holderEncryptionKey(holderElGamalKeyPair.publicKey())               // Only on first convert
+  .holderEncryptedAmount(EncryptedAmount.of(holderCiphertext.toHex()))
+  .issuerEncryptedAmount(EncryptedAmount.of(issuerCiphertext.toHex()))
+  .blindingFactor(BlindingFactor.of(blindingFactor.hexValue()))
+  .zkProof(ZkProof.of(zkProof.hexValue()))                            // Only when registering key
   .build();
 ```
 

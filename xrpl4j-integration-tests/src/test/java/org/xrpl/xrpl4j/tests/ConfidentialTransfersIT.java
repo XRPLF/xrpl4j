@@ -84,6 +84,7 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.ZkProof;
 
 import java.util.Arrays;
 
@@ -303,12 +304,15 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(amountToConvert))
-      .holderEncryptionKey(holderElGamalKeyPair.publicKey().base16Value())
-      .holderEncryptedAmount(holderEncryptedForConvert.toHex())
-      .issuerEncryptedAmount(issuerEncryptedForConvert.toHex())
-      .auditorEncryptedAmount(auditorEncryptedForConvert.toHex())
-      .blindingFactor(convertBlindingFactor.hexValue())
-      .zkProof(convertZkProof.hexValue())
+      .holderEncryptionKey(holderElGamalKeyPair.publicKey())
+      .holderEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(holderEncryptedForConvert.toHex()))
+      .issuerEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(issuerEncryptedForConvert.toHex()))
+      .auditorEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(auditorEncryptedForConvert.toHex()))
+      .blindingFactor(org.xrpl.xrpl4j.model.transactions.BlindingFactor.of(convertBlindingFactor.hexValue()))
+      .zkProof(ZkProof.of(convertZkProof.hexValue()))
       .build();
 
     TransactionResult<ConfidentialMptConvert> convertResult =
@@ -396,12 +400,16 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .lastLedgerSequence(lastLedgerSeq(holder2AccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(UnsignedLong.ZERO))
-      .holderEncryptionKey(holder2ElGamalKeyPair.publicKey().base16Value())
-      .holderEncryptedAmount(holder2EncryptedForConvert.toHex())
-      .issuerEncryptedAmount(issuerEncryptedForHolder2Convert.toHex())
-      .auditorEncryptedAmount(auditorEncryptedForHolder2Convert.toHex())
-      .blindingFactor(holder2ConvertBlindingFactor.hexValue())
-      .zkProof(holder2ConvertProof.hexValue())
+      .holderEncryptionKey(holder2ElGamalKeyPair.publicKey())
+      .holderEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(holder2EncryptedForConvert.toHex()))
+      .issuerEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(issuerEncryptedForHolder2Convert.toHex()))
+      .auditorEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(auditorEncryptedForHolder2Convert.toHex()))
+      .blindingFactor(
+        org.xrpl.xrpl4j.model.transactions.BlindingFactor.of(holder2ConvertBlindingFactor.hexValue()))
+      .zkProof(ZkProof.of(holder2ConvertProof.hexValue()))
       .build();
 
     TransactionResult<ConfidentialMptConvert> holder2ConvertResult =

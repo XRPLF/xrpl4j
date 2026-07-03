@@ -3,7 +3,9 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
@@ -24,6 +26,12 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableConfidentialMptConvert.class)
 @JsonDeserialize(as = ImmutableConfidentialMptConvert.class)
 public interface ConfidentialMptConvert extends Transaction {
+
+  /**
+   * The required length, in hex characters, of the Schnorr proof-of-knowledge {@link ZkProof} used to register a new
+   * {@code HolderEncryptionKey} (64 bytes).
+   */
+  int SCHNORR_ZK_PROOF_HEX_LENGTH = 128;
 
   /**
    * Construct a {@code ConfidentialMptConvert} builder.
@@ -63,58 +71,82 @@ public interface ConfidentialMptConvert extends Transaction {
   MpTokenNumericAmount mptAmount();
 
   /**
-   * The holder's encryption key. Mandatory if the account has not yet registered a key (initialization). Forbidden
-   * if a key is already registered.
+   * The holder's ElGamal encryption key. Mandatory if the account has not yet registered a key (initialization).
+   * Forbidden if a key is already registered.
    *
-   * <p>This is a 64-byte hex-encoded string representing the ElGamal public key.</p>
+   * <p>This is a 33-byte compressed EC public key.</p>
    *
-   * @return An optionally-present hex-encoded {@link String}.
+   * @return An optionally-present {@link PublicKey}.
    */
   @JsonProperty("HolderEncryptionKey")
-  Optional<String> holderEncryptionKey();
+  Optional<PublicKey> holderEncryptionKey();
 
   /**
    * ElGamal ciphertext credited to the holder's confidential inbox balance (CB_IN).
    *
-   * @return A hex-encoded {@link String} containing the ciphertext.
+   * @return An {@link EncryptedAmount} containing the ciphertext.
    */
   @JsonProperty("HolderEncryptedAmount")
-  String holderEncryptedAmount();
+  EncryptedAmount holderEncryptedAmount();
 
   /**
    * ElGamal ciphertext credited to the issuer's mirror balance.
    *
-   * @return A hex-encoded {@link String} containing the ciphertext.
+   * @return An {@link EncryptedAmount} containing the ciphertext.
    */
   @JsonProperty("IssuerEncryptedAmount")
-  String issuerEncryptedAmount();
+  EncryptedAmount issuerEncryptedAmount();
 
   /**
    * ElGamal ciphertext for the auditor. Required if {@code sfAuditorEncryptionKey} is present on the issuance.
    *
-   * @return An optionally-present hex-encoded {@link String} containing the ciphertext.
+   * @return An optionally-present {@link EncryptedAmount} containing the ciphertext.
    */
   @JsonProperty("AuditorEncryptedAmount")
-  Optional<String> auditorEncryptedAmount();
+  Optional<EncryptedAmount> auditorEncryptedAmount();
 
   /**
    * The 32-byte scalar value used to encrypt the amount. Used by validators to verify the ciphertexts match the
    * plaintext MPTAmount.
    *
-   * @return A hex-encoded {@link String} containing the blinding factor.
+   * @return A {@link BlindingFactor} containing the blinding factor.
    */
   @JsonProperty("BlindingFactor")
-  String blindingFactor();
+  BlindingFactor blindingFactor();
 
   /**
    * A Schnorr Proof of Knowledge (PoK): proves the knowledge of the private key for the provided ElGamal Public Key.
-   * Required when registering a new HolderEncryptionKey.
+   * Required when registering a new HolderEncryptionKey, and forbidden otherwise.
    *
-   * <p>This is a 65-byte hex-encoded string (130 hex characters).</p>
+   * <p>When present, this is a 64-byte (128 hex character) proof.</p>
    *
-   * @return An optionally-present {@link String} containing the hex-encoded ZK proof.
+   * @return An optionally-present {@link ZkProof}.
    */
   @JsonProperty("ZKProof")
-  Optional<String> zkProof();
-}
+  Optional<ZkProof> zkProof();
 
+  /**
+   * Validates field-combination invariants for {@link ConfidentialMptConvert}, mirroring the {@code temMALFORMED}
+   * checks in {@code rippled}'s {@code ConfidentialMPTConvert} preflight.
+   *
+   * <ul>
+   *   <li>{@code HolderEncryptionKey} and {@code ZKProof} must both be present (when registering a new encryption key)
+   *       or both be absent — a proof of knowledge is required exactly when a key is being registered.</li>
+   *   <li>When present, {@code ZKProof} must be exactly {@value #SCHNORR_ZK_PROOF_HEX_LENGTH} hex characters
+   *       (64 bytes), the length of a Schnorr proof of knowledge.</li>
+   * </ul>
+   */
+  @Value.Check
+  default void validateFieldCombinations() {
+    Preconditions.checkState(
+      holderEncryptionKey().isPresent() == zkProof().isPresent(),
+      "HolderEncryptionKey and ZKProof must both be present (when registering a new encryption key) or both be absent."
+    );
+
+    zkProof().ifPresent(proof -> Preconditions.checkState(
+      proof.value().length() == SCHNORR_ZK_PROOF_HEX_LENGTH,
+      "ZKProof must be %s bytes (%s hex characters) for ConfidentialMptConvert.",
+      SCHNORR_ZK_PROOF_HEX_LENGTH / 2, SCHNORR_ZK_PROOF_HEX_LENGTH
+    ));
+  }
+}

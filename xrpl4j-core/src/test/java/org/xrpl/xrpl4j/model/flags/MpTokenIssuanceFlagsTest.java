@@ -33,8 +33,8 @@ class MpTokenIssuanceFlagsTest extends AbstractFlagsTest {
                          (lsfMptCanTrade ? MpTokenIssuanceFlags.CAN_TRADE.getValue() : 0L) |
                          (lsfMptCanTransfer ? MpTokenIssuanceFlags.CAN_TRANSFER.getValue() : 0L) |
                          (lsfMptCanClawback ? MpTokenIssuanceFlags.CAN_CLAWBACK.getValue() : 0L) |
-                         (lsfMptCanHoldConfidentialBalance
-                           ? MpTokenIssuanceFlags.CAN_HOLD_CONFIDENTIAL_BALANCE.getValue() : 0L);
+                         (lsfMptCanHoldConfidentialBalance ?
+                           MpTokenIssuanceFlags.CAN_HOLD_CONFIDENTIAL_BALANCE.getValue() : 0L);
 
     MpTokenIssuanceFlags flags = MpTokenIssuanceFlags.of(expectedFlags);
 

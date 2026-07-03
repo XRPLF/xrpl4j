@@ -34,8 +34,8 @@ class MpTokenIssuanceCreateFlagsTest extends AbstractFlagsTest {
                          (tfMptCanTrade ? MpTokenIssuanceCreateFlags.CAN_TRADE.getValue() : 0L) |
                          (tfMptCanTransfer ? MpTokenIssuanceCreateFlags.CAN_TRANSFER.getValue() : 0L) |
                          (tfMptCanClawback ? MpTokenIssuanceCreateFlags.CAN_CLAWBACK.getValue() : 0L) |
-                         (tfMptCanHoldConfidentialBalance
-                           ? MpTokenIssuanceCreateFlags.CAN_HOLD_CONFIDENTIAL_BALANCE.getValue() : 0L) |
+                         (tfMptCanHoldConfidentialBalance ?
+                           MpTokenIssuanceCreateFlags.CAN_HOLD_CONFIDENTIAL_BALANCE.getValue() : 0L) |
                          (tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN.getValue() : 0L);
 
     MpTokenIssuanceCreateFlags flags = MpTokenIssuanceCreateFlags.builder()

@@ -247,4 +247,62 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
     assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
     assertThat(((MpTokenIssuanceCreateFlags) copied.transactionFlags()).tfMptCanTransfer()).isTrue();
   }
+
+  @Test
+  void nonZeroTransferFeeWithCanHoldConfidentialBalanceIsRejected() {
+    assertThatThrownBy(() -> MpTokenIssuanceCreate.builder()
+      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(321))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
+      )
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptCanTransfer(true)
+        .tfMptCanHoldConfidentialBalance(true)
+        .build()
+      )
+      .transferFee(TransferFee.of(UnsignedInteger.valueOf(10)))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("tfMPTCanHoldConfidentialBalance");
+  }
+
+  @Test
+  void zeroTransferFeeWithCanHoldConfidentialBalanceIsAllowed() {
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(321))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
+      )
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptCanHoldConfidentialBalance(true)
+        .build()
+      )
+      .transferFee(TransferFee.of(UnsignedInteger.ZERO))
+      .build();
+
+    assertThat(issuanceCreate.transferFee()).contains(TransferFee.of(UnsignedInteger.ZERO));
+  }
+
+  @Test
+  void nonZeroTransferFeeWithoutCanHoldConfidentialBalanceIsAllowed() {
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(321))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
+      )
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptCanTransfer(true)
+        .build()
+      )
+      .transferFee(TransferFee.of(UnsignedInteger.valueOf(10)))
+      .build();
+
+    assertThat(issuanceCreate.transferFee()).contains(TransferFee.of(UnsignedInteger.valueOf(10)));
+  }
 }

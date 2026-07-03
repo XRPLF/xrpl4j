@@ -95,6 +95,8 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.client.vault.VaultInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.vault.VaultInfoResult;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -891,6 +893,27 @@ public class XrplClient {
       .build();
 
     return jsonRpcClient.send(request, MptHoldersResponse.class);
+  }
+
+  /**
+   * Get info about a Vault by making a call to the vault_info rippled RPC method.
+   *
+   * @param params The {@link VaultInfoRequestParams} to send in the request.
+   *
+   * @return A {@link VaultInfoResult}.
+   *
+   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   */
+  @Beta
+  public VaultInfoResult vaultInfo(
+    VaultInfoRequestParams params
+  ) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.VAULT_INFO)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, VaultInfoResult.class);
   }
 
   public JsonRpcClient getJsonRpcClient() {

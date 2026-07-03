@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeBatchFee;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeLoanSetNetworkFees;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeMultisigNetworkFees;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeNetworkFees;
 import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP;
@@ -765,6 +766,103 @@ public class FeeUtilsTest {
     // Formula: (5 + 2) * 2923 + (5 * 2923) = 20461 + 14615 = 35076 drops
     XrpCurrencyAmount result = FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(5));
     assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(35076));
+  }
+
+  // /////////////////
+  // computeLoanSetNetworkFees
+  // /////////////////
+
+  @Test
+  void testComputeLoanSetNetworkFeesNullInputs() {
+    assertThrows(NullPointerException.class,
+      () -> computeLoanSetNetworkFees(null, UnsignedInteger.ZERO, UnsignedInteger.ZERO));
+    assertThrows(NullPointerException.class,
+      () -> computeLoanSetNetworkFees(mock(FeeResult.class), null, UnsignedInteger.ZERO));
+    assertThrows(NullPointerException.class,
+      () -> computeLoanSetNetworkFees(mock(FeeResult.class), UnsignedInteger.ZERO, null));
+  }
+
+  @Test
+  void testComputeLoanSetNetworkFeesFirstPartySignersExceedsLimit() {
+    FeeResult feeResult = feeResultBuilder().build();
+    assertThrows(IllegalArgumentException.class,
+      () -> computeLoanSetNetworkFees(feeResult, UnsignedInteger.valueOf(33), UnsignedInteger.ZERO));
+  }
+
+  @Test
+  void testComputeLoanSetNetworkFeesCounterpartySignersExceedsLimit() {
+    FeeResult feeResult = feeResultBuilder().build();
+    assertThrows(IllegalArgumentException.class,
+      () -> computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.valueOf(33)));
+  }
+
+  @Test
+  void testComputeLoanSetNetworkFeesAtSignerLimit() {
+    FeeResult feeResult = feeResultBuilder().build();
+    // 32 is the max — should not throw
+    assertThat(computeLoanSetNetworkFees(feeResult, UnsignedInteger.valueOf(32), UnsignedInteger.valueOf(32)))
+      .isNotNull();
+  }
+
+  @Test
+  void testComputeLoanSetNetworkFeesSingleSignBothParties() {
+    // Case 1: Single-sign broker + single-sign counterparty
+    // Multiplier: (1 + 0 + max(1, 0)) = 2
+    FeeResult feeResult = feeResultBuilder().build();
+    ComputedNetworkFees result = computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO);
+    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(2000));
+    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(10016));
+    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(20000));
+  }
+
+  @Test
+  void testComputeLoanSetNetworkFeesSingleSignBrokerMultiSignCounterparty() {
+    // Case 2: Single-sign broker + 2 counterparty signers
+    // Multiplier: (1 + 0 + max(1, 2)) = 3
+    FeeResult feeResult = feeResultBuilder().build();
+    ComputedNetworkFees result = computeLoanSetNetworkFees(
+      feeResult, UnsignedInteger.ZERO, UnsignedInteger.valueOf(2)
+    );
+    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(3000));
+    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(15024));
+    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(30000));
+  }
+
+  @Test
+  void testComputeLoanSetNetworkFeesMultiSignBrokerSingleSignCounterparty() {
+    // Case 3: 2 broker signers + single-sign counterparty
+    // Multiplier: (1 + 2 + max(1, 0)) = 4
+    FeeResult feeResult = feeResultBuilder().build();
+    ComputedNetworkFees result = computeLoanSetNetworkFees(
+      feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.ZERO
+    );
+    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(4000));
+    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(20032));
+    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(40000));
+  }
+
+  @Test
+  void testComputeLoanSetNetworkFeesMultiSignBothParties() {
+    // Case 4: 2 broker signers + 2 counterparty signers
+    // Multiplier: (1 + 2 + max(1, 2)) = 5
+    FeeResult feeResult = feeResultBuilder().build();
+    ComputedNetworkFees result = computeLoanSetNetworkFees(
+      feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.valueOf(2)
+    );
+    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(5000));
+    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(25040));
+    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(50000));
+  }
+
+  @Test
+  void testComputeLoanSetNetworkFeesWithOneCounterpartySigner() {
+    // 1 counterparty signer: max(1, 1) = 1, same multiplier as single-sign counterparty
+    // Multiplier: (1 + 0 + 1) = 2
+    FeeResult feeResult = feeResultBuilder().build();
+    ComputedNetworkFees result = computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ONE);
+    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(2000));
+    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(10016));
+    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(20000));
   }
 
   private ImmutableFeeResult.Builder feeResultBuilder() {

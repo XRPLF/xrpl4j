@@ -112,7 +112,22 @@ public interface Transaction {
       .put(ImmutableConfidentialMptClawback.class, TransactionType.CONFIDENTIAL_MPT_CLAWBACK)
       .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
       .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
+      .put(ImmutableVaultCreate.class, TransactionType.VAULT_CREATE)
+      .put(ImmutableVaultSet.class, TransactionType.VAULT_SET)
+      .put(ImmutableVaultDelete.class, TransactionType.VAULT_DELETE)
+      .put(ImmutableVaultDeposit.class, TransactionType.VAULT_DEPOSIT)
+      .put(ImmutableVaultWithdraw.class, TransactionType.VAULT_WITHDRAW)
+      .put(ImmutableVaultClawback.class, TransactionType.VAULT_CLAWBACK)
       .put(ImmutableBatch.class, TransactionType.BATCH)
+      .put(ImmutableLoanBrokerSet.class, TransactionType.LOAN_BROKER_SET)
+      .put(ImmutableLoanBrokerDelete.class, TransactionType.LOAN_BROKER_DELETE)
+      .put(ImmutableLoanBrokerCoverDeposit.class, TransactionType.LOAN_BROKER_COVER_DEPOSIT)
+      .put(ImmutableLoanBrokerCoverWithdraw.class, TransactionType.LOAN_BROKER_COVER_WITHDRAW)
+      .put(ImmutableLoanBrokerCoverClawback.class, TransactionType.LOAN_BROKER_COVER_CLAWBACK)
+      .put(ImmutableLoanSet.class, TransactionType.LOAN_SET)
+      .put(ImmutableLoanDelete.class, TransactionType.LOAN_DELETE)
+      .put(ImmutableLoanManage.class, TransactionType.LOAN_MANAGE)
+      .put(ImmutableLoanPay.class, TransactionType.LOAN_PAY)
       .build();
 
   /**

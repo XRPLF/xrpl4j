@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.codec.binary.definitions;
  * ========================LICENSE_START=================================
  * xrpl4j :: binary-codec
  * %%
- * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value.Immutable;
 
 import java.util.List;
@@ -78,5 +79,53 @@ public interface Definitions {
    */
   @JsonProperty("TRANSACTION_RESULTS")
   Map<String, Integer> transactionResults();
+
+  /**
+   * AccountSet flag definitions (flag name to integer value).
+   *
+   * @return A {@link Map} of AccountSet flag names to their integer values.
+   */
+  @JsonProperty("ACCOUNT_SET_FLAGS")
+  Map<String, UnsignedInteger> accountSetFlags();
+
+  /**
+   * Ledger entry flag definitions grouped by ledger entry type (flag name to integer value).
+   *
+   * @return A nested {@link Map} keyed by ledger entry type name, then flag name to integer value.
+   */
+  @JsonProperty("LEDGER_ENTRY_FLAGS")
+  Map<String, Map<String, UnsignedInteger>> ledgerEntryFlags();
+
+  /**
+   * Transaction flag definitions grouped by transaction type (flag name to integer value).
+   *
+   * @return A nested {@link Map} keyed by transaction type name, then flag name to integer value.
+   */
+  @JsonProperty("TRANSACTION_FLAGS")
+  Map<String, Map<String, UnsignedInteger>> transactionFlags();
+
+  /**
+   * Ledger entry format definitions (field name/optionality lists per ledger entry type).
+   *
+   * @return A {@link Map} keyed by ledger entry type name to a {@link List} of {@link FieldFormat}.
+   */
+  @JsonProperty("LEDGER_ENTRY_FORMATS")
+  Map<String, List<FieldFormat>> ledgerEntryFormats();
+
+  /**
+   * Transaction format definitions (field name/optionality lists per transaction type).
+   *
+   * @return A {@link Map} keyed by transaction type name to a {@link List} of {@link FieldFormat}.
+   */
+  @JsonProperty("TRANSACTION_FORMATS")
+  Map<String, List<FieldFormat>> transactionFormats();
+
+  /**
+   * Hash of the definitions, as produced by the rippled server_definitions RPC.
+   *
+   * @return A {@link String} hash.
+   */
+  @JsonProperty("hash")
+  String hash();
 
 }

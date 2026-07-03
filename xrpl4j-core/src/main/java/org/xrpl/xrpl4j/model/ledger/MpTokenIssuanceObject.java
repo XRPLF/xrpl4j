@@ -8,6 +8,7 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceMutableFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -152,6 +153,14 @@ public interface MpTokenIssuanceObject extends LedgerObject {
   Optional<MpTokenMetadata> mpTokenMetadata();
 
   /**
+   * The {@link Hash256} of a {@link PermissionedDomainObject} that restricts who can hold this MPT.
+   *
+   * @return An optionally present {@link Hash256} representing the domain ID.
+   */
+  @JsonProperty("DomainID")
+  Optional<Hash256> domainId();
+
+  /**
    * The identifying hash of the transaction that most recently modified this object.
    *
    * @return A {@link Hash256} containing the previous transaction hash.
@@ -195,4 +204,23 @@ public interface MpTokenIssuanceObject extends LedgerObject {
    */
   @JsonProperty("mpt_issuance_id")
   Optional<MpTokenIssuanceId> mpTokenIssuanceId();
+
+  /**
+   * An optional set of flags indicating which fields or flags of this issuance may be mutated via
+   * {@code MPTokenIssuanceSet}. Only present when the {@code DynamicMPT} amendment is enabled and mutability was
+   * declared at creation.
+   *
+   * @return An optionally-present {@link MpTokenIssuanceMutableFlags}.
+   */
+  @JsonProperty("MutableFlags")
+  Optional<MpTokenIssuanceMutableFlags> mutableFlags();
+
+  /**
+   * {@link Hash256} pointing to the vault pseudo-account's holding for the underlying asset. Present for IOU and
+   * MPT-backed vaults. Absent for XRP-backed vaults.
+   *
+   * @return An optionally-present {@link Hash256}.
+   */
+  @JsonProperty("ReferenceHolding")
+  Optional<Hash256> referenceHolding();
 }

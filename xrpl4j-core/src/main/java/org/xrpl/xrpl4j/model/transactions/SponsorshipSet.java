@@ -43,7 +43,7 @@ import java.util.Optional;
  * <ul>
  *   <li>{@link #feeAmount()} - Total amount of XRP allocated for transaction fees</li>
  *   <li>{@link #maxFee()} - Maximum fee per transaction that can be drawn from the allocation</li>
- *   <li>{@link #reserveCount()} - Number of reserve units to sponsor for the sponsee</li>
+ *   <li>{@link #remainingOwnerCount()} - Number of reserve units to sponsor for the sponsee</li>
  * </ul>
  *
  * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
@@ -121,8 +121,8 @@ public interface SponsorshipSet extends Transaction {
    *
    * @return An {@link Optional} {@link UnsignedInteger} representing the number of reserve units.
    */
-  @JsonProperty("ReserveCount")
-  Optional<UnsignedInteger> reserveCount();
+  @JsonProperty("RemainingOwnerCount")
+  Optional<UnsignedInteger> remainingOwnerCount();
 
 }
 

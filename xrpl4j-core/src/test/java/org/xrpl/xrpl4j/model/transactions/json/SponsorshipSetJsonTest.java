@@ -91,13 +91,13 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
   }
 
   @Test
-  public void testSponsorshipSetWithReserveCountJson() throws JsonProcessingException, JSONException {
+  public void testSponsorshipSetWithRemainingOwnerCountJson() throws JsonProcessingException, JSONException {
     SponsorshipSet sponsorshipSet = SponsorshipSet.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
-      .reserveCount(UnsignedInteger.valueOf(5))
+      .remainingOwnerCount(UnsignedInteger.valueOf(5))
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
@@ -109,7 +109,7 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
       "  \"Fee\": \"10\"," +
       "  \"Sequence\": 1," +
       "  \"Sponsee\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\"," +
-      "  \"ReserveCount\": 5," +
+      "  \"RemainingOwnerCount\": 5," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
 
@@ -126,7 +126,7 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
       .counterpartySponsor(Address.of("rU6K7V3Po4snVhBBaU29sesqs2qTQJWDw1"))
       .feeAmount(XrpCurrencyAmount.ofDrops(1000000))
       .maxFee(XrpCurrencyAmount.ofDrops(100))
-      .reserveCount(UnsignedInteger.valueOf(5))
+      .remainingOwnerCount(UnsignedInteger.valueOf(5))
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
@@ -141,7 +141,7 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
       "  \"CounterpartySponsor\": \"rU6K7V3Po4snVhBBaU29sesqs2qTQJWDw1\"," +
       "  \"FeeAmount\": \"1000000\"," +
       "  \"MaxFee\": \"100\"," +
-      "  \"ReserveCount\": 5," +
+      "  \"RemainingOwnerCount\": 5," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
 

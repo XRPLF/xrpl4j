@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.ledger;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
@@ -185,4 +186,17 @@ public interface MpTokenIssuanceObject extends LedgerObject {
    */
   @JsonProperty("MutableFlags")
   Optional<MpTokenIssuanceMutableFlags> mutableFlags();
+
+  /**
+   * The account that is sponsoring the reserve for this MPTokenIssuance object. If present, the sponsor is
+   * responsible for the reserve requirement of this object instead of the owner.
+   *
+   * <p>This field will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @return An optionally-present {@link Address} of the sponsoring account.
+   */
+  @Beta
+  @JsonProperty("Sponsor")
+  Optional<Address> sponsor();
 }

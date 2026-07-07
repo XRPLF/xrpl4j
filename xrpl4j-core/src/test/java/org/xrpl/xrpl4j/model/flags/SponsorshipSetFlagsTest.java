@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.flags;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -119,8 +120,58 @@ public class SponsorshipSetFlagsTest {
   void testFlagValues() {
     // Verify the flag values match the spec
     assertThat(SponsorshipSetFlags.of(0x00010000L).tfRequireSignForFee()).isTrue();
+    assertThat(SponsorshipSetFlags.of(0x00020000L).tfClearRequireSignForFee()).isTrue();
     assertThat(SponsorshipSetFlags.of(0x00040000L).tfRequireSignForReserve()).isTrue();
+    assertThat(SponsorshipSetFlags.of(0x00080000L).tfClearRequireSignForReserve()).isTrue();
     assertThat(SponsorshipSetFlags.of(0x00100000L).tfDeleteObject()).isTrue();
+  }
+
+  @Test
+  void testBuilderWithClearRequireSignForFee() {
+    SponsorshipSetFlags flags = SponsorshipSetFlags.builder()
+      .tfClearRequireSignForFee()
+      .build();
+
+    assertThat(flags.tfFullyCanonicalSig()).isTrue();
+    assertThat(flags.tfRequireSignForFee()).isFalse();
+    assertThat(flags.tfClearRequireSignForFee()).isTrue();
+    assertThat(flags.tfRequireSignForReserve()).isFalse();
+    assertThat(flags.tfClearRequireSignForReserve()).isFalse();
+    assertThat(flags.tfDeleteObject()).isFalse();
+  }
+
+  @Test
+  void testBuilderWithClearRequireSignForReserve() {
+    SponsorshipSetFlags flags = SponsorshipSetFlags.builder()
+      .tfClearRequireSignForReserve()
+      .build();
+
+    assertThat(flags.tfFullyCanonicalSig()).isTrue();
+    assertThat(flags.tfRequireSignForFee()).isFalse();
+    assertThat(flags.tfClearRequireSignForFee()).isFalse();
+    assertThat(flags.tfRequireSignForReserve()).isFalse();
+    assertThat(flags.tfClearRequireSignForReserve()).isTrue();
+    assertThat(flags.tfDeleteObject()).isFalse();
+  }
+
+  @Test
+  void testBuilderThrowsWhenSetAndClearRequireSignForFeeBothSet() {
+    assertThatThrownBy(() -> SponsorshipSetFlags.builder()
+      .tfRequireSignForFee()
+      .tfClearRequireSignForFee()
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("tfRequireSignForFee and tfClearRequireSignForFee must not both be set");
+  }
+
+  @Test
+  void testBuilderThrowsWhenSetAndClearRequireSignForReserveBothSet() {
+    assertThatThrownBy(() -> SponsorshipSetFlags.builder()
+      .tfRequireSignForReserve()
+      .tfClearRequireSignForReserve()
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("tfRequireSignForReserve and tfClearRequireSignForReserve must not both be set");
   }
 
 }

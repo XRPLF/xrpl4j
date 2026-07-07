@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.flags;
  */
 
 import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import org.xrpl.xrpl4j.model.transactions.SponsorshipSet;
 
 /**
@@ -48,12 +49,28 @@ public class SponsorshipSetFlags extends TransactionFlags {
   protected static final SponsorshipSetFlags REQUIRE_SIGN_FOR_FEE = new SponsorshipSetFlags(0x00010000L);
 
   /**
+   * Constant {@link SponsorshipSetFlags} for the {@code tfSponsorshipClearRequireSignForFee} flag.
+   *
+   * <p>If set on a {@link SponsorshipSet} transaction, the created/modified {@code Sponsorship} object will
+   * no longer require a signature from the sponsor for fee sponsorship.</p>
+   */
+  protected static final SponsorshipSetFlags CLEAR_REQUIRE_SIGN_FOR_FEE = new SponsorshipSetFlags(0x00020000L);
+
+  /**
    * Constant {@link SponsorshipSetFlags} for the {@code tfSponsorshipSetRequireSignForReserve} flag.
    *
    * <p>If set on a {@link SponsorshipSet} transaction, the created/modified {@code Sponsorship} object will
    * require a signature from the sponsor for reserve sponsorship.</p>
    */
   protected static final SponsorshipSetFlags REQUIRE_SIGN_FOR_RESERVE = new SponsorshipSetFlags(0x00040000L);
+
+  /**
+   * Constant {@link SponsorshipSetFlags} for the {@code tfSponsorshipClearRequireSignForReserve} flag.
+   *
+   * <p>If set on a {@link SponsorshipSet} transaction, the created/modified {@code Sponsorship} object will
+   * no longer require a signature from the sponsor for reserve sponsorship.</p>
+   */
+  protected static final SponsorshipSetFlags CLEAR_REQUIRE_SIGN_FOR_RESERVE = new SponsorshipSetFlags(0x00080000L);
 
   /**
    * Constant {@link SponsorshipSetFlags} for the {@code tfDeleteObject} flag.
@@ -90,15 +107,28 @@ public class SponsorshipSetFlags extends TransactionFlags {
   private static SponsorshipSetFlags of(
     boolean tfFullyCanonicalSig,
     boolean tfRequireSignForFee,
+    boolean tfClearRequireSignForFee,
     boolean tfRequireSignForReserve,
+    boolean tfClearRequireSignForReserve,
     boolean tfDeleteObject,
     boolean tfInnerBatchTxn
   ) {
+    Preconditions.checkState(
+      !(tfRequireSignForFee && tfClearRequireSignForFee),
+      "tfRequireSignForFee and tfClearRequireSignForFee must not both be set"
+    );
+    Preconditions.checkState(
+      !(tfRequireSignForReserve && tfClearRequireSignForReserve),
+      "tfRequireSignForReserve and tfClearRequireSignForReserve must not both be set"
+    );
+
     return new SponsorshipSetFlags(
       Flags.of(
         tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
         tfRequireSignForFee ? REQUIRE_SIGN_FOR_FEE : UNSET,
+        tfClearRequireSignForFee ? CLEAR_REQUIRE_SIGN_FOR_FEE : UNSET,
         tfRequireSignForReserve ? REQUIRE_SIGN_FOR_RESERVE : UNSET,
+        tfClearRequireSignForReserve ? CLEAR_REQUIRE_SIGN_FOR_RESERVE : UNSET,
         tfDeleteObject ? DELETE_OBJECT : UNSET,
         tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN : UNSET
       ).getValue()
@@ -145,12 +175,32 @@ public class SponsorshipSetFlags extends TransactionFlags {
   }
 
   /**
+   * If set, the {@code Sponsorship} object will no longer require a signature from the sponsor for fee
+   * sponsorship.
+   *
+   * @return {@code true} if {@code tfSponsorshipClearRequireSignForFee} is set, otherwise {@code false}.
+   */
+  public boolean tfClearRequireSignForFee() {
+    return this.isSet(CLEAR_REQUIRE_SIGN_FOR_FEE);
+  }
+
+  /**
    * If set, the {@code Sponsorship} object will require a signature from the sponsor for reserve sponsorship.
    *
    * @return {@code true} if {@code tfSponsorshipSetRequireSignForReserve} is set, otherwise {@code false}.
    */
   public boolean tfRequireSignForReserve() {
     return this.isSet(REQUIRE_SIGN_FOR_RESERVE);
+  }
+
+  /**
+   * If set, the {@code Sponsorship} object will no longer require a signature from the sponsor for reserve
+   * sponsorship.
+   *
+   * @return {@code true} if {@code tfSponsorshipClearRequireSignForReserve} is set, otherwise {@code false}.
+   */
+  public boolean tfClearRequireSignForReserve() {
+    return this.isSet(CLEAR_REQUIRE_SIGN_FOR_RESERVE);
   }
 
   /**
@@ -179,7 +229,9 @@ public class SponsorshipSetFlags extends TransactionFlags {
   public static class Builder {
 
     private boolean tfRequireSignForFee = false;
+    private boolean tfClearRequireSignForFee = false;
     private boolean tfRequireSignForReserve = false;
+    private boolean tfClearRequireSignForReserve = false;
     private boolean tfDeleteObject = false;
     private boolean tfInnerBatchTxn = false;
 
@@ -194,12 +246,32 @@ public class SponsorshipSetFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfClearRequireSignForFee} to {@code true}.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfClearRequireSignForFee() {
+      this.tfClearRequireSignForFee = true;
+      return this;
+    }
+
+    /**
      * Set {@code tfRequireSignForReserve} to {@code true}.
      *
      * @return The same {@link Builder}.
      */
     public Builder tfRequireSignForReserve() {
       this.tfRequireSignForReserve = true;
+      return this;
+    }
+
+    /**
+     * Set {@code tfClearRequireSignForReserve} to {@code true}.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfClearRequireSignForReserve() {
+      this.tfClearRequireSignForReserve = true;
       return this;
     }
 
@@ -234,7 +306,9 @@ public class SponsorshipSetFlags extends TransactionFlags {
       return SponsorshipSetFlags.of(
         true,
         tfRequireSignForFee,
+        tfClearRequireSignForFee,
         tfRequireSignForReserve,
+        tfClearRequireSignForReserve,
         tfDeleteObject,
         tfInnerBatchTxn
       );

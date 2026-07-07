@@ -70,6 +70,7 @@ import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
+import org.xrpl.xrpl4j.model.transactions.Commitment;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptClawback;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvert;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvertBack;
@@ -516,13 +517,17 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
       .destination(holder2KeyPair.publicKey().deriveAddress())
       .mpTokenIssuanceId(mpTokenIssuanceId)
-      .senderEncryptedAmount(senderCiphertext.toHex())
-      .destinationEncryptedAmount(destCiphertext.toHex())
-      .issuerEncryptedAmount(issuerCiphertextForSend.toHex())
-      .auditorEncryptedAmount(auditorCiphertextForSend.toHex())
-      .zkProof(sendProof.hexValue())
-      .amountCommitment(amountCommitment.hexValue())
-      .balanceCommitment(balanceParams.pedersenCommitment().hexValue())
+      .senderEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(senderCiphertext.toHex()))
+      .destinationEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(destCiphertext.toHex()))
+      .issuerEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(issuerCiphertextForSend.toHex()))
+      .auditorEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(auditorCiphertextForSend.toHex()))
+      .zkProof(ZkProof.of(sendProof.hexValue()))
+      .amountCommitment(Commitment.of(amountCommitment.hexValue()))
+      .balanceCommitment(Commitment.of(balanceParams.pedersenCommitment().hexValue()))
       .build();
 
     TransactionResult<ConfidentialMptSend> sendResult =

@@ -195,12 +195,12 @@ ConfidentialMptSend send = ConfidentialMptSend.builder()
   .lastLedgerSequence(lastLedgerSeq)
   .destination(destAddress)
   .mpTokenIssuanceId(mpTokenIssuanceId)
-  .senderEncryptedAmount(senderCiphertext.toHex())
-  .destinationEncryptedAmount(destCiphertext.toHex())
-  .issuerEncryptedAmount(issuerCiphertext.toHex())
-  .zkProof(sendProof.hexValue())
-  .amountCommitment(amountParams.pedersenCommitment().hexValue())
-  .balanceCommitment(balanceParams.pedersenCommitment().hexValue())
+  .senderEncryptedAmount(EncryptedAmount.of(senderCiphertext.toHex()))
+  .destinationEncryptedAmount(EncryptedAmount.of(destCiphertext.toHex()))
+  .issuerEncryptedAmount(EncryptedAmount.of(issuerCiphertext.toHex()))
+  .zkProof(ZkProof.of(sendProof.hexValue()))
+  .amountCommitment(Commitment.of(amountParams.pedersenCommitment().hexValue()))
+  .balanceCommitment(Commitment.of(balanceParams.pedersenCommitment().hexValue()))
   .build();
 ```
 

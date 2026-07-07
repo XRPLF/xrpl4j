@@ -42,6 +42,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CommitmentDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CommitmentSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialUriDeserializer;
@@ -1321,6 +1323,65 @@ public class Wrappers {
     public boolean equals(Object obj) {
       if (obj instanceof BlindingFactor) {
         String otherValue = ((BlindingFactor) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+
+  }
+
+  /**
+   * A wrapped, hex-encoded {@link String} containing a Pedersen commitment used in confidential MPT transactions. A
+   * commitment is a single compressed EC point, always exactly 33 bytes (66 hex characters).
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = Commitment.class, using = CommitmentSerializer.class)
+  @JsonDeserialize(as = Commitment.class, using = CommitmentDeserializer.class)
+  @Beta
+  abstract static class _Commitment extends Wrapper<String> implements Serializable {
+
+    /**
+     * The required length, in hex characters, of a {@link Commitment} (33 bytes = 66 hex characters).
+     */
+    static final int HEX_LENGTH = 66;
+
+    /**
+     * Validates that a {@link Commitment}'s value is exactly {@link #HEX_LENGTH} hex characters (33 bytes).
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(
+        this.value().length() == HEX_LENGTH,
+        "Commitment must be 33 bytes (%s hex characters).", HEX_LENGTH);
+    }
+
+    /**
+     * Validates that a {@link Commitment}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("Commitment must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof Commitment) {
+        String otherValue = ((Commitment) obj).value(); // <-- Can't be null due to Immutables
         return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;

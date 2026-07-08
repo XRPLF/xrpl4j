@@ -144,8 +144,8 @@ public interface ConfidentialMptSend extends Transaction {
   List<Hash256> credentialIds();
 
   /**
-   * Validates invariants for {@link ConfidentialMptSend}, mirroring the {@code temMALFORMED} checks in {@code rippled}'s
-   * {@code ConfidentialMPTSend} preflight.
+   * Validates invariants for {@link ConfidentialMptSend}, mirroring the {@code temMALFORMED} checks in
+   * {@code rippled}'s {@code ConfidentialMPTSend} preflight.
    *
    * <ul>
    *   <li>The {@code Account} (sender) must not equal the {@code Destination} — an account cannot send to itself.</li>

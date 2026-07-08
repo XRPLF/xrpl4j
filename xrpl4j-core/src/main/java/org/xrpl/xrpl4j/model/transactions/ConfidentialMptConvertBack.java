@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
@@ -21,6 +22,12 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableConfidentialMptConvertBack.class)
 @JsonDeserialize(as = ImmutableConfidentialMptConvertBack.class)
 public interface ConfidentialMptConvertBack extends Transaction {
+
+  /**
+   * The required length, in hex characters, of the {@link ZkProof} for a {@link ConfidentialMptConvertBack} (816 bytes:
+   * a 128-byte compact sigma proof plus a 688-byte single bulletproof).
+   */
+  int CONVERT_BACK_ZK_PROOF_HEX_LENGTH = 1632;
 
   /**
    * Construct a {@code ConfidentialMptConvertBack} builder.
@@ -62,52 +69,69 @@ public interface ConfidentialMptConvertBack extends Transaction {
   /**
    * Ciphertext to be subtracted from the holder's confidential spending balance (sfConfidentialBalanceSpending).
    *
-   * @return A hex-encoded {@link String} containing the ciphertext.
+   * @return An {@link EncryptedAmount} containing the ciphertext.
    */
   @JsonProperty("HolderEncryptedAmount")
-  String holderEncryptedAmount();
+  EncryptedAmount holderEncryptedAmount();
 
   /**
    * Ciphertext to be subtracted from the issuer's mirror balance.
    *
-   * @return A hex-encoded {@link String} containing the ciphertext.
+   * @return An {@link EncryptedAmount} containing the ciphertext.
    */
   @JsonProperty("IssuerEncryptedAmount")
-  String issuerEncryptedAmount();
+  EncryptedAmount issuerEncryptedAmount();
 
   /**
    * The 32-byte scalar value used to encrypt the amount. Used by validators to verify the ciphertexts match the
    * plaintext MPTAmount.
    *
-   * @return A hex-encoded {@link String} containing the blinding factor.
+   * @return A {@link BlindingFactor} containing the blinding factor.
    */
   @JsonProperty("BlindingFactor")
-  String blindingFactor();
+  BlindingFactor blindingFactor();
 
   /**
    * A cryptographic commitment to the user's confidential spending balance after the conversion. Used to prove the
    * balance remains non-negative without revealing it.
    *
-   * @return A hex-encoded string containing the Pedersen commitment.
+   * @return A {@link Commitment} containing the Pedersen commitment.
    */
   @JsonProperty("BalanceCommitment")
-  String balanceCommitment();
+  Commitment balanceCommitment();
 
   /**
    * A bundle containing the Pedersen Linkage Proof (linking the ElGamal balance to the commitment) and the Range Proof
    * (proving the remaining balance is non-negative).
    *
-   * @return A hex-encoded string containing the ZK proof bundle.
+   * @return A {@link ZkProof} containing the proof bundle.
    */
   @JsonProperty("ZKProof")
-  String zkProof();
+  ZkProof zkProof();
 
   /**
    * Ciphertext for the auditor. Required if {@code sfAuditorEncryptionKey} is present on the issuance.
    *
-   * @return An optionally-present hex-encoded {@link String} containing the ciphertext.
+   * @return An optionally-present {@link EncryptedAmount} containing the ciphertext.
    */
   @JsonProperty("AuditorEncryptedAmount")
-  Optional<String> auditorEncryptedAmount();
-}
+  Optional<EncryptedAmount> auditorEncryptedAmount();
 
+  /**
+   * Validates invariants for {@link ConfidentialMptConvertBack}, mirroring the {@code temMALFORMED} checks in
+   * {@code rippled}'s {@code ConfidentialMPTConvertBack} preflight.
+   *
+   * <ul>
+   *   <li>{@code ZKProof} must be exactly {@value #CONVERT_BACK_ZK_PROOF_HEX_LENGTH} hex characters (816 bytes).</li>
+   * </ul>
+   *
+   */
+  @Value.Check
+  default void validateConfidentialMptConvertBack() {
+    Preconditions.checkState(
+      zkProof().value().length() == CONVERT_BACK_ZK_PROOF_HEX_LENGTH,
+      "ZKProof must be %s bytes (%s hex characters) for ConfidentialMptConvertBack.",
+      CONVERT_BACK_ZK_PROOF_HEX_LENGTH / 2, CONVERT_BACK_ZK_PROOF_HEX_LENGTH
+    );
+  }
+}

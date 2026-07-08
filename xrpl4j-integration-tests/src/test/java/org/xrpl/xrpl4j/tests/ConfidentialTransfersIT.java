@@ -618,12 +618,15 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(convertBackAmount))
-      .holderEncryptedAmount(holderEncryptedForConvertBack.toHex())
-      .issuerEncryptedAmount(issuerEncryptedForConvertBack.toHex())
-      .auditorEncryptedAmount(auditorEncryptedForConvertBack.toHex())
-      .blindingFactor(convertBackBlindingFactor.hexValue())
-      .balanceCommitment(convertBackCommitment.hexValue())
-      .zkProof(convertBackProof.hexValue())
+      .holderEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(holderEncryptedForConvertBack.toHex()))
+      .issuerEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(issuerEncryptedForConvertBack.toHex()))
+      .auditorEncryptedAmount(
+        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(auditorEncryptedForConvertBack.toHex()))
+      .blindingFactor(org.xrpl.xrpl4j.model.transactions.BlindingFactor.of(convertBackBlindingFactor.hexValue()))
+      .balanceCommitment(Commitment.of(convertBackCommitment.hexValue()))
+      .zkProof(ZkProof.of(convertBackProof.hexValue()))
       .build();
 
     TransactionResult<ConfidentialMptConvertBack> convertBackResult =

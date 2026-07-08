@@ -126,10 +126,13 @@ public interface ConfidentialMptConvert extends Transaction {
   Optional<ZkProof> zkProof();
 
   /**
-   * Validates field-combination invariants for {@link ConfidentialMptConvert}, mirroring the {@code temMALFORMED}
-   * checks in {@code rippled}'s {@code ConfidentialMPTConvert} preflight.
+   * Validates field-combination invariants for {@link ConfidentialMptConvert}, mirroring the {@code temMALFORMED} and
+   * {@code temBAD_AMOUNT} checks in {@code rippled}'s {@code ConfidentialMPTConvert} preflight.
    *
    * <ul>
+   *   <li>{@code MPTAmount} must be no greater than the maximum allowable supply ({@code temBAD_AMOUNT} in
+   *       {@code rippled}). A zero amount is permitted, since a zero-amount conversion is the opt-in mechanism used to
+   *       register a {@code HolderEncryptionKey}.</li>
    *   <li>{@code HolderEncryptionKey} and {@code ZKProof} must both be present (when registering a new encryption key)
    *       or both be absent — a proof of knowledge is required exactly when a key is being registered.</li>
    *   <li>When present, {@code ZKProof} must be exactly {@value #SCHNORR_ZK_PROOF_HEX_LENGTH} hex characters
@@ -138,6 +141,11 @@ public interface ConfidentialMptConvert extends Transaction {
    */
   @Value.Check
   default void validateFieldCombinations() {
+    Preconditions.checkState(
+      mptAmount().value().compareTo(MpTokenNumericAmount.MAX_AMOUNT) <= 0,
+      "MPTAmount must not exceed the maximum allowable supply (%s).", MpTokenNumericAmount.MAX_AMOUNT
+    );
+
     Preconditions.checkState(
       holderEncryptionKey().isPresent() == zkProof().isPresent(),
       "HolderEncryptionKey and ZKProof must both be present (when registering a new encryption key) or both be absent."

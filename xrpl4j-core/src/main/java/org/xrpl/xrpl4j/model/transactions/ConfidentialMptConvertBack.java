@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
@@ -118,16 +119,27 @@ public interface ConfidentialMptConvertBack extends Transaction {
   Optional<EncryptedAmount> auditorEncryptedAmount();
 
   /**
-   * Validates invariants for {@link ConfidentialMptConvertBack}, mirroring the {@code temMALFORMED} checks in
-   * {@code rippled}'s {@code ConfidentialMPTConvertBack} preflight.
+   * Validates invariants for {@link ConfidentialMptConvertBack}, mirroring the {@code temMALFORMED} and
+   * {@code temBAD_AMOUNT} checks in {@code rippled}'s {@code ConfidentialMPTConvertBack} preflight.
    *
    * <ul>
+   *   <li>{@code MPTAmount} must be non-zero and no greater than the maximum allowable supply
+   *       ({@code temBAD_AMOUNT} in {@code rippled}).</li>
    *   <li>{@code ZKProof} must be exactly {@value #CONVERT_BACK_ZK_PROOF_HEX_LENGTH} hex characters (816 bytes).</li>
    * </ul>
-   *
    */
   @Value.Check
   default void validateConfidentialMptConvertBack() {
+    Preconditions.checkState(
+      !mptAmount().value().equals(UnsignedLong.ZERO),
+      "MPTAmount must not be zero for ConfidentialMptConvertBack."
+    );
+
+    Preconditions.checkState(
+      mptAmount().value().compareTo(MpTokenNumericAmount.MAX_AMOUNT) <= 0,
+      "MPTAmount must not exceed the maximum allowable supply (%s).", MpTokenNumericAmount.MAX_AMOUNT
+    );
+
     Preconditions.checkState(
       zkProof().value().length() == CONVERT_BACK_ZK_PROOF_HEX_LENGTH,
       "ZKProof must be %s bytes (%s hex characters) for ConfidentialMptConvertBack.",

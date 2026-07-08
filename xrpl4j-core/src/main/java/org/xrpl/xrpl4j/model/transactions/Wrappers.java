@@ -867,6 +867,11 @@ public class Wrappers {
   @Beta
   abstract static class _MpTokenNumericAmount extends Wrapper<UnsignedLong> implements Serializable {
 
+    /**
+     * The maximum allowable value for an MPT amount.
+     */
+    static final UnsignedLong MAX_AMOUNT = UnsignedLong.valueOf(0x7FFF_FFFF_FFFF_FFFFL);
+
     public static MpTokenNumericAmount of(long amount) {
       return MpTokenNumericAmount.of(UnsignedLong.valueOf(amount));
     }

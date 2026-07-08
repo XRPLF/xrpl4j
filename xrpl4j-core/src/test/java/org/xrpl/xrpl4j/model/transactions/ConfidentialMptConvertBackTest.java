@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
@@ -34,6 +35,25 @@ class ConfidentialMptConvertBackTest {
       .build()
     ).isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("ZKProof must be 816 bytes");
+  }
+
+  @Test
+  void zeroMptAmountIsRejected() {
+    assertThatThrownBy(() -> baseBuilder()
+      .mptAmount(MpTokenNumericAmount.of(0))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("MPTAmount must not be zero");
+  }
+
+  @Test
+  void mptAmountExceedingMaxIsRejected() {
+    UnsignedLong tooLarge = UnsignedLong.valueOf(0x7FFF_FFFF_FFFF_FFFFL).plus(UnsignedLong.ONE);
+    assertThatThrownBy(() -> baseBuilder()
+      .mptAmount(MpTokenNumericAmount.of(tooLarge))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("MPTAmount must not exceed the maximum allowable supply");
   }
 
   @Test

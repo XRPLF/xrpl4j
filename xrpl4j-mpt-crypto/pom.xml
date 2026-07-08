@@ -13,8 +13,8 @@
   <name>xrpl4j :: mpt-crypto</name>
 
   <properties>
-    <mpt-crypto.version>0.3.0-rc2</mpt-crypto.version>
-    <mpt-crypto.natives.sha256>486c775b5b3c1fc18c3a9e8cbd4b458802b49eb307475df695fc899127226c0d</mpt-crypto.natives.sha256>
+    <mpt-crypto.version>0.4.0-rc2</mpt-crypto.version>
+    <mpt-crypto.natives.sha256>e9f417e31d0a5558a8cd8e64515f4b2b13a90bf20bb8cab7e98fbea8d52da7a3</mpt-crypto.natives.sha256>
   </properties>
 
   <build>

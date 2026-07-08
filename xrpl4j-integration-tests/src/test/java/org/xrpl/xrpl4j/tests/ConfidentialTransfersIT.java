@@ -140,6 +140,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
   public void testEntireFlow() throws JsonRpcClientErrorException, JsonProcessingException {
     FeeResult feeResult = xrplClient.fee();
     XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
+    // Confidential MPT transactions carry a base-fee multiplier (kConfidentialFeeMultiplier = 9) in rippled,
+    // so they require a substantially higher fee than the standard recommended fee.
+    XrpCurrencyAmount confidentialFee = XrpCurrencyAmount.ofDrops(fee.value().longValue() * 12L);
 
     // =====================================================================
     // 1. Create MPTokenIssuance with transfer, clawback, and privacy flags
@@ -199,8 +202,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .signingPublicKey(issuerKeyPair.publicKey())
       .lastLedgerSequence(lastLedgerSeq(issuerAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
-      .issuerEncryptionKey(issuerElGamalKeyPair.publicKey().base16Value())
-      .auditorEncryptionKey(auditorElGamalKeyPair.publicKey().base16Value())
+      .issuerEncryptionKey(issuerElGamalKeyPair.publicKey())
+      .auditorEncryptionKey(auditorElGamalKeyPair.publicKey())
       .build();
 
     signSubmitAndWait(issuanceSet, issuerKeyPair, MpTokenIssuanceSet.class);
@@ -299,7 +302,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     ConfidentialMptConvert confidentialConvert = ConfidentialMptConvert.builder()
       .account(holderKeyPair.publicKey().deriveAddress())
-      .fee(fee)
+      .fee(confidentialFee)
       .sequence(holderAccountInfo.accountData().sequence())
       .signingPublicKey(holderKeyPair.publicKey())
       .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
@@ -331,7 +334,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     ConfidentialMptMergeInbox mergeInbox = ConfidentialMptMergeInbox.builder()
       .account(holderKeyPair.publicKey().deriveAddress())
-      .fee(fee)
+      .fee(confidentialFee)
       .sequence(holderAccountInfo.accountData().sequence())
       .signingPublicKey(holderKeyPair.publicKey())
       .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
@@ -395,7 +398,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     ConfidentialMptConvert holder2ConfidentialConvert = ConfidentialMptConvert.builder()
       .account(holder2KeyPair.publicKey().deriveAddress())
-      .fee(fee)
+      .fee(confidentialFee)
       .sequence(holder2AccountInfo.accountData().sequence())
       .signingPublicKey(holder2KeyPair.publicKey())
       .lastLedgerSequence(lastLedgerSeq(holder2AccountInfo))
@@ -511,7 +514,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     ConfidentialMptSend confidentialSend = ConfidentialMptSend.builder()
       .account(holderKeyPair.publicKey().deriveAddress())
-      .fee(fee)
+      .fee(confidentialFee)
       .sequence(holderAccountInfo.accountData().sequence())
       .signingPublicKey(holderKeyPair.publicKey())
       .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
@@ -612,7 +615,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     ConfidentialMptConvertBack convertBack = ConfidentialMptConvertBack.builder()
       .account(holderKeyPair.publicKey().deriveAddress())
-      .fee(fee)
+      .fee(confidentialFee)
       .sequence(holderAccountInfo.accountData().sequence())
       .signingPublicKey(holderKeyPair.publicKey())
       .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
@@ -694,7 +697,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     ConfidentialMptClawback clawback = ConfidentialMptClawback.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())
-      .fee(fee)
+      .fee(confidentialFee)
       .sequence(issuerAccountInfo.accountData().sequence())
       .signingPublicKey(issuerKeyPair.publicKey())
       .lastLedgerSequence(lastLedgerSeq(issuerAccountInfo))

@@ -50,7 +50,7 @@ public interface MptCryptoLibrary extends Library {
 
   int mpt_encrypt_amount(long amount, byte[] pubkey, byte[] blindingFactor, byte[] outCiphertext);
 
-  int mpt_decrypt_amount(byte[] ciphertext, byte[] privkey, long[] outAmount);
+  int mpt_decrypt_amount(byte[] ciphertext, byte[] privkey, long[] outAmount, long rangeLow, long rangeHigh);
 
   int mpt_generate_blinding_factor(byte[] outFactor);
 

@@ -96,7 +96,9 @@ public class JnaMptAmountDecryptor implements MptAmountDecryptor {
     );
 
     long[] outAmount = new long[1];
-    int result = lib.mpt_decrypt_amount(ciphertextBytes, privkeyBytes, outAmount);
+    int result = lib.mpt_decrypt_amount(
+      ciphertextBytes, privkeyBytes, outAmount, minAmount.longValue(), maxAmount.longValue()
+    );
 
     naturalBytes.destroy();
 

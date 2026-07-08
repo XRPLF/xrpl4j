@@ -701,7 +701,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .holder(holderKeyPair.publicKey().deriveAddress())
       .mptAmount(MpTokenNumericAmount.of(clawbackAmount))
-      .zkProof(clawbackProof.hexValue())
+      .zkProof(ZkProof.of(clawbackProof.hexValue()))
       .build();
 
     TransactionResult<ConfidentialMptClawback> clawbackResult =

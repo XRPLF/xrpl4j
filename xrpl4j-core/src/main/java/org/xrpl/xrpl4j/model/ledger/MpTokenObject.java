@@ -6,8 +6,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.MpTokenFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.EncryptedAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
@@ -111,49 +113,61 @@ public interface MpTokenObject extends LedgerObject {
   Optional<String> ownerNode();
 
   /**
-   * The holder's encryption key for confidential transfers.
+   * The holder's 33-byte compressed ElGamal encryption key for confidential transfers.
    * Present after the holder has registered via ConfidentialMptConvert.
    *
-   * @return An optionally-present hex-encoded {@link String}.
+   * @return An optionally-present {@link PublicKey}.
    */
   @JsonProperty("HolderEncryptionKey")
-  Optional<String> holderEncryptionKey();
+  Optional<PublicKey> holderEncryptionKey();
 
   /**
    * The holder's confidential spending balance (encrypted).
    * Present after the holder has converted tokens via ConfidentialMptConvert.
    *
-   * @return An optionally-present hex-encoded {@link String}.
+   * @return An optionally-present {@link EncryptedAmount} containing the ciphertext.
    */
   @JsonProperty("ConfidentialBalanceSpending")
-  Optional<String> confidentialBalanceSpending();
+  Optional<EncryptedAmount> confidentialBalanceSpending();
 
   /**
    * The holder's confidential inbox balance (encrypted).
    * Tokens received via ConfidentialMptSend are credited here.
    *
-   * @return An optionally-present hex-encoded {@link String}.
+   * @return An optionally-present {@link EncryptedAmount} containing the ciphertext.
    */
   @JsonProperty("ConfidentialBalanceInbox")
-  Optional<String> confidentialBalanceInbox();
+  Optional<EncryptedAmount> confidentialBalanceInbox();
 
   /**
-   * The issuer's encrypted balance for this holder's tokens.
-   * Used for auditing purposes.
+   * The issuer's encrypted mirror balance for this holder's tokens.
+   * Used for supply consistency checks and issuer-level auditing.
    *
-   * @return An optionally-present hex-encoded {@link String}.
+   * @return An optionally-present {@link EncryptedAmount} containing the ciphertext.
    */
   @JsonProperty("IssuerEncryptedBalance")
-  Optional<String> issuerEncryptedBalance();
+  Optional<EncryptedAmount> issuerEncryptedBalance();
 
   /**
-   * The version number of the confidential balance.
-   * Incremented each time the confidential balance is modified.
+   * The auditor's encrypted balance for this holder's tokens. Present when the issuance has a registered
+   * auditor encryption key, enabling selective disclosure for regulatory oversight.
    *
-   * @return An optionally-present {@link UnsignedInteger}.
+   * @return An optionally-present {@link EncryptedAmount} containing the ciphertext.
+   */
+  @JsonProperty("AuditorEncryptedBalance")
+  Optional<EncryptedAmount> auditorEncryptedBalance();
+
+  /**
+   * The version number of the confidential balance. Incremented each time the confidential balance is modified.
+   * Defaults to 0 when absent.
+   *
+   * @return An {@link UnsignedInteger} representing the confidential balance version.
    */
   @JsonProperty("ConfidentialBalanceVersion")
-  Optional<UnsignedInteger> confidentialBalanceVersion();
+  @Value.Default
+  default UnsignedInteger confidentialBalanceVersion() {
+    return UnsignedInteger.ZERO;
+  }
 
   /**
    * The unique ID of this {@link MpTokenObject}.

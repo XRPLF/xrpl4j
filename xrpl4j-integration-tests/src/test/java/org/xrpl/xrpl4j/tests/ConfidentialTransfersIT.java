@@ -434,8 +434,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
 
     holderMpToken = getMpToken(holderKeyPair, mpTokenIssuanceId);
-    UnsignedInteger holder1Version = holderMpToken.confidentialBalanceVersion()
-      .orElse(UnsignedInteger.ZERO);
+    UnsignedInteger holder1Version = holderMpToken.confidentialBalanceVersion();
 
     // Generate context hash incorporating sender, sequence, issuance, destination, and version
     ConfidentialMptSendContext sendContext = sendService.generateContext(
@@ -464,7 +463,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Decrypt the sender's current spending balance to use in Pedersen proof params
     EncryptedAmount senderBalanceCiphertext = EncryptedAmount.fromHex(
       holderMpToken.confidentialBalanceSpending()
-        .orElseThrow(() -> new RuntimeException("Sender has no confidential balance"))
+        .orElseThrow(() -> new RuntimeException("Sender has no confidential balance")).value()
     );
     UnsignedLong senderCurrentBalance = decryptor.decrypt(
       senderBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
@@ -541,7 +540,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     MpTokenObject senderMpTokenAfterSend = getMpToken(holderKeyPair, mpTokenIssuanceId);
     EncryptedAmount senderBalanceAfterSendCiphertext = EncryptedAmount.fromHex(
       senderMpTokenAfterSend.confidentialBalanceSpending()
-        .orElseThrow(() -> new RuntimeException("Sender has no confidential balance after send"))
+        .orElseThrow(() -> new RuntimeException("Sender has no confidential balance after send")).value()
     );
     UnsignedLong senderBalanceAfterSend = decryptor.decrypt(
       senderBalanceAfterSendCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
@@ -561,7 +560,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     MpTokenObject holderMpTokenForConvertBack = getMpToken(holderKeyPair, mpTokenIssuanceId);
     UnsignedInteger holderVersionForConvertBack = holderMpTokenForConvertBack
-      .confidentialBalanceVersion().orElse(UnsignedInteger.ZERO);
+      .confidentialBalanceVersion();
 
     // Encrypt the convert-back amount for holder, issuer, and auditor
     BlindingFactor convertBackBlindingFactor = blindingFactorGenerator.generate();
@@ -586,7 +585,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Decrypt current spending balance to generate a Pedersen commitment proving sufficient funds
     EncryptedAmount currentBalanceForConvertBack = EncryptedAmount.fromHex(
       holderMpTokenForConvertBack.confidentialBalanceSpending()
-        .orElseThrow(() -> new RuntimeException("Holder has no confidential balance"))
+        .orElseThrow(() -> new RuntimeException("Holder has no confidential balance")).value()
     );
     UnsignedLong currentSpendingBalance = decryptor.decrypt(
       currentBalanceForConvertBack, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
@@ -640,7 +639,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     MpTokenObject holderMpTokenAfterConvertBack = getMpToken(holderKeyPair, mpTokenIssuanceId);
     EncryptedAmount remainingBalanceCiphertext = EncryptedAmount.fromHex(
       holderMpTokenAfterConvertBack.confidentialBalanceSpending()
-        .orElseThrow(() -> new RuntimeException("No confidential balance after convert back"))
+        .orElseThrow(() -> new RuntimeException("No confidential balance after convert back")).value()
     );
     UnsignedLong remainingConfidentialBalance = decryptor.decrypt(
       remainingBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
@@ -659,7 +658,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     MpTokenObject holderMpTokenForClawback = getMpToken(holderKeyPair, mpTokenIssuanceId);
     EncryptedAmount issuerBalanceCiphertext = EncryptedAmount.fromHex(
       holderMpTokenForClawback.issuerEncryptedBalance()
-        .orElseThrow(() -> new RuntimeException("No issuer encrypted balance found"))
+        .orElseThrow(() -> new RuntimeException("No issuer encrypted balance found")).value()
     );
 
     // Verify issuer can decrypt and the balance is sufficient for the clawback

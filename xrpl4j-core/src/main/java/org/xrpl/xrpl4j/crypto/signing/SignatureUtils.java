@@ -217,5 +217,4 @@ public class SignatureUtils {
     Objects.requireNonNull(nestedSignerAddress);
     return binaryCodec.encodeForBatchInnerMultiSigning(batch, batchSignerAddress, nestedSignerAddress);
   }
-
 }

@@ -27,7 +27,6 @@ import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
-import org.testcontainers.shaded.com.github.dockerjava.core.dockerfile.DockerfileStatement.Add;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -1235,8 +1234,8 @@ public class BatchTransactionIT extends AbstractIT {
 
     final Address account1BatchSignerAddress = account1KeyPair.publicKey().deriveAddress();
     final List<SignerWrapper> account1InnerSignerWrappers = Lists.newArrayList(
-      account1Signer1KeyPair, account1Signer2KeyPair
-    ).stream()
+        account1Signer1KeyPair, account1Signer2KeyPair
+      ).stream()
       .map(keyPair -> {
         final PublicKey signingPublicKey = signatureService.derivePublicKey(keyPair.privateKey());
         final Signer signer = Signer.builder()
@@ -1255,8 +1254,8 @@ public class BatchTransactionIT extends AbstractIT {
 
     final Address account2BatchSignerAddress = account2KeyPair.publicKey().deriveAddress();
     final List<SignerWrapper> account2InnerSignerWrappers = Lists.newArrayList(
-      account2Signer1KeyPair, account2Signer2KeyPair
-    ).stream()
+        account2Signer1KeyPair, account2Signer2KeyPair
+      ).stream()
       .map(keyPair -> {
         final PublicKey signingPublicKey = signatureService.derivePublicKey(keyPair.privateKey());
         final Signer signer = Signer.builder()
@@ -1512,11 +1511,10 @@ public class BatchTransactionIT extends AbstractIT {
   }
 
   /**
-   * Test a multi-account batch transaction where the outer Batch transaction is submitted via a Ticket (so its
-   * Sequence is 0), and a second account contributes an inner transaction authorized via a {@link BatchSignerWrapper}.
-   * This specifically exercises the requirement that the BatchSigner's signing payload binds to the outer
-   * transaction's TicketSequence (instead of its Sequence, which is 0) — see
-   * {@code XrplBinaryCodec#buildBatchSigningPayload}.
+   * Test a multi-account batch transaction where the outer Batch transaction is submitted via a Ticket (so its Sequence
+   * is 0), and a second account contributes an inner transaction authorized via a {@link BatchSignerWrapper}. This
+   * specifically exercises the requirement that the BatchSigner's signing payload binds to the outer transaction's
+   * TicketSequence (instead of its Sequence, which is 0) — see {@code XrplBinaryCodec#buildBatchSigningPayload}.
    */
   @Test
   void batchWithOuterTicketSequenceAndBatchSigner() throws JsonRpcClientErrorException, JsonProcessingException {
@@ -1605,9 +1603,8 @@ public class BatchTransactionIT extends AbstractIT {
   }
 
   /**
-   * Test a single-account batch transaction where one inner {@link Payment} is authorized via a Ticket
-   * (TicketSequence) instead of a Sequence number, alongside a second inner {@link Payment} that uses a normal
-   * Sequence.
+   * Test a single-account batch transaction where one inner {@link Payment} is authorized via a Ticket (TicketSequence)
+   * instead of a Sequence number, alongside a second inner {@link Payment} that uses a normal Sequence.
    */
   @Test
   void batchWithInnerTicketSequence() throws JsonRpcClientErrorException, JsonProcessingException {
@@ -1735,8 +1732,7 @@ public class BatchTransactionIT extends AbstractIT {
   }
 
   /**
-   * Helper method to create a single Ticket for the given account and return the resulting Ticket's sequence
-   * number.
+   * Helper method to create a single Ticket for the given account and return the resulting Ticket's sequence number.
    *
    * @param keyPair   The {@link KeyPair} of the account that will own the Ticket.
    * @param feeResult The {@link FeeResult} used to determine the appropriate transaction fee for the TicketCreate.

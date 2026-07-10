@@ -90,10 +90,10 @@ public interface TransactionSigner<P extends PrivateKeyable> {
    *
    * <p>Per XLS-0056 V1_1, the payload is: {@code HashPrefix::Batch} + outer {@code Account} + sequence +
    * {@code Flags} + count + inner tx IDs, followed by {@code batchSignerAddress} (the {@link BatchSigner}'s own
-   * account) as a per-signer suffix. Note that {@code batchSignerAddress} is <b>not</b> necessarily the address
-   * derived from {@code privateKeyable} — e.g. when a {@link BatchSigner} is authorized via a regular key, the
-   * signing key derives to the regular key's own address, but {@code batchSignerAddress} must be the underlying
-   * account's master address.</p>
+   * account) as a per-signer suffix. Note that {@code batchSignerAddress} is <b>not</b> necessarily the address derived
+   * from {@code privateKeyable} — e.g. when a {@link BatchSigner} is authorized via a regular key, the signing key
+   * derives to the regular key's own address, but {@code batchSignerAddress} must be the underlying account's master
+   * address.</p>
    *
    * <p>This method will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet.
    * Its API is subject to change.</p>

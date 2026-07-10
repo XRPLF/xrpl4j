@@ -146,10 +146,13 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   }
 
   @Override
-  public Signature signInner(final PrivateKeyReference privateKeyable, final Batch batchTransaction) {
+  public Signature signInner(
+    final PrivateKeyReference privateKeyable, final Batch batchTransaction, final Address batchSignerAddress
+  ) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(batchTransaction);
-    return getTransactionSigner(privateKeyable).signInner(batchTransaction);
+    Objects.requireNonNull(batchSignerAddress);
+    return getTransactionSigner(privateKeyable).signInner(batchTransaction, batchSignerAddress);
   }
 
   @Override
@@ -353,8 +356,8 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
       return bcSignatureService.multiSignToSigner(this.privateKey, transaction);
     }
 
-    public final Signature signInner(final Batch transaction) {
-      return bcSignatureService.signInner(this.privateKey, transaction);
+    public final Signature signInner(final Batch transaction, final Address batchSignerAddress) {
+      return bcSignatureService.signInner(this.privateKey, transaction, batchSignerAddress);
     }
 
     public final Signature multiSignInner(final Batch transaction, final Address batchSignerAddress) {

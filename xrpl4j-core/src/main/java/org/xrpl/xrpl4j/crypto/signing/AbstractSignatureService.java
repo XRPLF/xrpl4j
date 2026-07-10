@@ -111,8 +111,10 @@ public abstract class AbstractSignatureService<P extends PrivateKeyable> impleme
   }
 
   @Override
-  public Signature signInner(final P privateKeyable, final Batch batchTransaction) {
-    return this.abstractTransactionSigner.signInner(privateKeyable, batchTransaction);
+  public Signature signInner(
+    final P privateKeyable, final Batch batchTransaction, final Address batchSignerAddress
+  ) {
+    return this.abstractTransactionSigner.signInner(privateKeyable, batchTransaction, batchSignerAddress);
   }
 
   @Override

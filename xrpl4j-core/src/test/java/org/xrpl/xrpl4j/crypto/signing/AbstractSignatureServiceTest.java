@@ -484,18 +484,23 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void signInnerWithNullPrivateKey() {
-    assertThrows(NullPointerException.class, () -> signatureService.signInner(null, batchMock));
+    assertThrows(
+      NullPointerException.class,
+      () -> signatureService.signInner(null, batchMock, TestConstants.ED_ADDRESS)
+    );
   }
 
   @Test
   public void signInnerWithNullBatch() {
     assertThrows(NullPointerException.class,
-      () -> signatureService.signInner(TestConstants.getEdPrivateKey(), null));
+      () -> signatureService.signInner(TestConstants.getEdPrivateKey(), null, TestConstants.ED_ADDRESS));
   }
 
   @Test
   public void signInnerEd25519() {
-    Signature actualSignature = signatureService.signInner(TestConstants.getEdPrivateKey(), batchMock);
+    Signature actualSignature = signatureService.signInner(
+      TestConstants.getEdPrivateKey(), batchMock, TestConstants.ED_ADDRESS
+    );
     assertThat(actualSignature).isEqualTo(ed25519SignatureMock);
 
     verify(signatureUtilsMock).toSignableInnerBytes(batchMock, TestConstants.ED_ADDRESS);
@@ -505,7 +510,9 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void signInnerSecp256k1() {
-    Signature actualSignature = signatureService.signInner(TestConstants.getEcPrivateKey(), batchMock);
+    Signature actualSignature = signatureService.signInner(
+      TestConstants.getEcPrivateKey(), batchMock, TestConstants.EC_ADDRESS
+    );
     assertThat(actualSignature).isEqualTo(secp256k1SignatureMock);
 
     verify(signatureUtilsMock).toSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS);

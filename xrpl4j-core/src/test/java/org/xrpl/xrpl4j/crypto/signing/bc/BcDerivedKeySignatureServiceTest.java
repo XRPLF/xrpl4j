@@ -797,11 +797,15 @@ class BcDerivedKeySignatureServiceTest {
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedBatchCallable = () -> {
-      Signature signature = this.derivedKeySignatureService.signInner(privateKeyReference, batchTransaction);
+      Signature signature = this.derivedKeySignatureService.signInner(
+        privateKeyReference, batchTransaction, publicKey.deriveAddress()
+      );
       assertThat(signature).isNotNull();
       assertThat(signature.base16Value()).isNotEmpty();
       // Verify signature is deterministic
-      Signature signature2 = this.derivedKeySignatureService.signInner(privateKeyReference, batchTransaction);
+      Signature signature2 = this.derivedKeySignatureService.signInner(
+        privateKeyReference, batchTransaction, publicKey.deriveAddress()
+      );
       assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
       return true;
     };
@@ -831,11 +835,15 @@ class BcDerivedKeySignatureServiceTest {
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedBatchCallable = () -> {
-      Signature signature = this.derivedKeySignatureService.signInner(privateKeyReference, batchTransaction);
+      Signature signature = this.derivedKeySignatureService.signInner(
+        privateKeyReference, batchTransaction, publicKey.deriveAddress()
+      );
       assertThat(signature).isNotNull();
       assertThat(signature.base16Value()).isNotEmpty();
       // Verify signature is deterministic for SECP256K1
-      Signature signature2 = this.derivedKeySignatureService.signInner(privateKeyReference, batchTransaction);
+      Signature signature2 = this.derivedKeySignatureService.signInner(
+        privateKeyReference, batchTransaction, publicKey.deriveAddress()
+      );
       assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
       return true;
     };

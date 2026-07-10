@@ -44,6 +44,7 @@ import org.xrpl.xrpl4j.model.flags.BatchFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
+import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.BatchSigner;
@@ -54,6 +55,7 @@ import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
+import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -255,7 +257,9 @@ public class BatchTransactionIT extends AbstractIT {
         .account(account2KeyPair.publicKey().deriveAddress())
         .signingPublicKey(account2KeyPair.publicKey())
         .transactionSignature(
-          signatureService.signInner(account2KeyPair.privateKey(), unsignedBatch) // <-- `signInner` is crucial here
+          signatureService.signInner(
+            account2KeyPair.privateKey(), unsignedBatch, account2KeyPair.publicKey().deriveAddress()
+          ) // <-- `signInner` is crucial here
         )
         .build()
       )
@@ -717,7 +721,9 @@ public class BatchTransactionIT extends AbstractIT {
         .account(account2KeyPair.publicKey().deriveAddress())
         .signingPublicKey(account2KeyPair.publicKey())
         .transactionSignature(
-          signatureService.signInner(account2KeyPair.privateKey(), unsignedBatch) // <-- `signInner` is crucial here
+          signatureService.signInner(
+            account2KeyPair.privateKey(), unsignedBatch, account2KeyPair.publicKey().deriveAddress()
+          ) // <-- `signInner` is crucial here
         )
         .build()
       )
@@ -897,7 +903,9 @@ public class BatchTransactionIT extends AbstractIT {
         .account(account2KeyPair.publicKey().deriveAddress())
         .signingPublicKey(account2KeyPair.publicKey())
         .transactionSignature(
-          signatureService.signInner(account2KeyPair.privateKey(), unsignedBatch) // <-- `signInner` is crucial here
+          signatureService.signInner(
+            account2KeyPair.privateKey(), unsignedBatch, account2KeyPair.publicKey().deriveAddress()
+          ) // <-- `signInner` is crucial here
         )
         .build()
       )
@@ -1059,7 +1067,9 @@ public class BatchTransactionIT extends AbstractIT {
         .account(innerSigner1KeyPair.publicKey().deriveAddress())
         .signingPublicKey(innerSigner1KeyPair.publicKey())
         .transactionSignature(
-          signatureService.signInner(innerSigner1KeyPair.privateKey(), unsignedBatch) // <-- `signInner` is crucial here
+          signatureService.signInner(
+            innerSigner1KeyPair.privateKey(), unsignedBatch, innerSigner1KeyPair.publicKey().deriveAddress()
+          ) // <-- `signInner` is crucial here
         )
         .build()
       ),
@@ -1068,7 +1078,9 @@ public class BatchTransactionIT extends AbstractIT {
         .account(innerSigner2KeyPair.publicKey().deriveAddress())
         .signingPublicKey(innerSigner2KeyPair.publicKey())
         .transactionSignature(
-          signatureService.signInner(innerSigner2KeyPair.privateKey(), unsignedBatch) // <-- `signInner` is crucial here
+          signatureService.signInner(
+            innerSigner2KeyPair.privateKey(), unsignedBatch, innerSigner2KeyPair.publicKey().deriveAddress()
+          ) // <-- `signInner` is crucial here
         )
         .build()
       )
@@ -1369,13 +1381,16 @@ public class BatchTransactionIT extends AbstractIT {
       .addRawTransactions(RawTransactionWrapper.of(innerPayment1), RawTransactionWrapper.of(innerPayment2))
       .build();
 
-    // Sign inner with regular key - BatchSigner.account will be derived from regular key
+    // Sign inner with regular key - BatchSigner.account is account1's real (master-key) address, even though the
+    // signature itself is produced using the regular key's private key.
     List<BatchSignerWrapper> signerWrappers = Lists.newArrayList(
       BatchSignerWrapper.of(BatchSigner.builder()
         .account(account1KeyPair.publicKey().deriveAddress()) // Must specify real XRP Address via account1KeyPair
         .signingPublicKey(account1RegularKeyPair.publicKey()) // <-- Must specify regular public key.
         .transactionSignature(
-          signatureService.signInner(account1RegularKeyPair.privateKey(), unsignedBatch)
+          signatureService.signInner(
+            account1RegularKeyPair.privateKey(), unsignedBatch, account1KeyPair.publicKey().deriveAddress()
+          )
         )
         .build()
       )
@@ -1413,6 +1428,252 @@ public class BatchTransactionIT extends AbstractIT {
       .orElseThrow(() -> new RuntimeException("Signing public key is missing."));
 
     verifyBatchMetadata(validatedBatch);
+  }
+
+  // //////////////////////
+  // 10. This section tests the interplay between Batch transactions and Tickets (XLS-0056 V1_1, see
+  // https://github.com/XRPLF/XRPL-Standards/pull/563/changes). Sequence and TicketSequence are mutually exclusive
+  // on both the outer Batch transaction and each inner transaction (temSEQ_AND_TICKET). Also, when the outer
+  // transaction's Sequence is 0 (i.e. it was submitted via a Ticket), the BatchSigner signing payload must bind to
+  // the outer transaction's TicketSequence instead (see XrplBinaryCodec#buildBatchSigningPayload).
+  // //////////////////////
+
+  /**
+   * Test a single-account batch transaction where the outer Batch transaction itself is submitted using a Ticket
+   * (TicketSequence) instead of a Sequence number.
+   */
+  @Test
+  void batchWithOuterTicketSequence() throws JsonRpcClientErrorException, JsonProcessingException {
+    final KeyPair sourceKeyPair = createRandomAccountEd25519();
+    final KeyPair destination1KeyPair = createRandomAccountEd25519();
+    final KeyPair destination2KeyPair = createRandomAccountEd25519();
+
+    final FeeResult feeResult = xrplClient.fee();
+    final UnsignedInteger ticketSequence = createTicket(sourceKeyPair, feeResult);
+
+    final AccountInfoResult sourceAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
+    );
+
+    // The outer Batch tx doesn't consume a Sequence (it uses a Ticket instead), so the first inner payment can use
+    // the account's current (next-available) Sequence.
+    final Payment innerPayment1 = createInnerPayment(
+      sourceKeyPair.publicKey().deriveAddress(),
+      sourceAccountInfo.accountData().sequence(),
+      destination1KeyPair.publicKey().deriveAddress(),
+      10000
+    );
+    final Payment innerPayment2 = createInnerPayment(
+      sourceKeyPair.publicKey().deriveAddress(),
+      sourceAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE),
+      destination2KeyPair.publicKey().deriveAddress(),
+      20000
+    );
+
+    // Build the Batch transaction, submitted via a Ticket instead of a Sequence (Sequence defaults to 0).
+    final Batch unsignedBatch = Batch.builder()
+      .account(sourceKeyPair.publicKey().deriveAddress())
+      .signingPublicKey(sourceKeyPair.publicKey())
+      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .ticketSequence(ticketSequence) // <-- outer Batch tx uses a Ticket, not a Sequence
+      .flags(BatchFlags.ofAllOrNothing())
+      .addRawTransactions(
+        RawTransactionWrapper.of(innerPayment1),
+        RawTransactionWrapper.of(innerPayment2)
+      )
+      .build();
+
+    assertThat(unsignedBatch.sequence()).isEqualTo(UnsignedInteger.ZERO);
+
+    // Only outer needs to be signed because the same account authorizes both inner transactions.
+    final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(
+      sourceKeyPair.privateKey(), unsignedBatch
+    );
+    final SubmitResult<Batch> submitResult = xrplClient.submit(signedBatch);
+    assertTesSuccess(submitResult);
+
+    final TransactionResult<Batch> validatedBatch = this.scanForResult(
+      () -> this.getValidatedTransaction(submitResult.transactionResult().hash(), Batch.class)
+    );
+    assertTesSuccess(validatedBatch);
+    assertThat(validatedBatch.transaction().ticketSequence()).hasValue(ticketSequence);
+    assertThat(validatedBatch.transaction().sequence()).isEqualTo(UnsignedInteger.ZERO);
+
+    verifyBatchMetadata(validatedBatch);
+
+    final AccountInfoResult dest1Info = this.scanForResult(
+      () -> this.getValidatedAccountInfo(destination1KeyPair.publicKey().deriveAddress())
+    );
+    final AccountInfoResult dest2Info = this.scanForResult(
+      () -> this.getValidatedAccountInfo(destination2KeyPair.publicKey().deriveAddress())
+    );
+    assertThat(dest1Info.accountData().balance()).isNotNull();
+    assertThat(dest2Info.accountData().balance()).isNotNull();
+  }
+
+  /**
+   * Test a multi-account batch transaction where the outer Batch transaction is submitted via a Ticket (so its
+   * Sequence is 0), and a second account contributes an inner transaction authorized via a {@link BatchSignerWrapper}.
+   * This specifically exercises the requirement that the BatchSigner's signing payload binds to the outer
+   * transaction's TicketSequence (instead of its Sequence, which is 0) — see
+   * {@code XrplBinaryCodec#buildBatchSigningPayload}.
+   */
+  @Test
+  void batchWithOuterTicketSequenceAndBatchSigner() throws JsonRpcClientErrorException, JsonProcessingException {
+    final KeyPair account1KeyPair = createRandomAccountEd25519();
+    final KeyPair account2KeyPair = createRandomAccountEd25519();
+    final KeyPair destinationKeyPair = createRandomAccountEd25519();
+
+    final FeeResult feeResult = xrplClient.fee();
+    final UnsignedInteger account1TicketSequence = createTicket(account1KeyPair, feeResult);
+
+    final AccountInfoResult account1Info = this.scanForResult(
+      () -> this.getValidatedAccountInfo(account1KeyPair.publicKey().deriveAddress())
+    );
+    final AccountInfoResult account2Info = this.scanForResult(
+      () -> this.getValidatedAccountInfo(account2KeyPair.publicKey().deriveAddress())
+    );
+
+    // Inner payment from account1 (the batch submitter), which still uses a normal Sequence.
+    final Payment innerPayment1 = createInnerPayment(
+      account1KeyPair.publicKey().deriveAddress(),
+      account1Info.accountData().sequence(),
+      destinationKeyPair.publicKey().deriveAddress(),
+      10000
+    );
+    // Inner payment from account2, authorized via a BatchSigner.
+    final Payment innerPayment2 = createInnerPayment(
+      account2KeyPair.publicKey().deriveAddress(),
+      account2Info.accountData().sequence(),
+      destinationKeyPair.publicKey().deriveAddress(),
+      20000
+    );
+
+    // Build the Batch transaction - account1 is the batch submitter, using a Ticket instead of a Sequence.
+    final Batch unsignedBatch = Batch.builder()
+      .account(account1KeyPair.publicKey().deriveAddress())
+      .signingPublicKey(account1KeyPair.publicKey())
+      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .ticketSequence(account1TicketSequence) // <-- outer Batch tx uses a Ticket, not a Sequence
+      .flags(BatchFlags.ofAllOrNothing())
+      .addRawTransactions(
+        RawTransactionWrapper.of(innerPayment1),
+        RawTransactionWrapper.of(innerPayment2)
+      )
+      .build();
+
+    // ///////////////
+    // Inner Sign (account2 is the inner signer). Because account1's Sequence is 0 on this outer transaction, the
+    // signing payload must bind to account1's TicketSequence instead.
+    // ///////////////
+    final List<BatchSignerWrapper> signerWrappers = Lists.newArrayList(
+      BatchSignerWrapper.of(BatchSigner.builder()
+        .account(account2KeyPair.publicKey().deriveAddress())
+        .signingPublicKey(account2KeyPair.publicKey())
+        .transactionSignature(
+          signatureService.signInner(
+            account2KeyPair.privateKey(), unsignedBatch, account2KeyPair.publicKey().deriveAddress()
+          )
+        )
+        .build()
+      )
+    );
+
+    // ///////////////
+    // Outer Sign (account1 is the batch submitter)
+    // ///////////////
+    final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(
+      account1KeyPair.privateKey(),
+      Batch.builder().from(unsignedBatch).batchSigners(signerWrappers).build()
+    );
+
+    final SubmitResult<Batch> result = xrplClient.submit(signedBatch);
+    assertTesSuccess(result);
+    final TransactionResult<Batch> validatedBatch = this.scanForResult(
+      () -> this.getValidatedTransaction(result.transactionResult().hash(), Batch.class)
+    );
+    assertTesSuccess(validatedBatch);
+    assertThat(validatedBatch.transaction().ticketSequence()).hasValue(account1TicketSequence);
+    assertThat(validatedBatch.transaction().sequence()).isEqualTo(UnsignedInteger.ZERO);
+
+    verifyBatchMetadata(validatedBatch);
+
+    final AccountInfoResult destInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress())
+    );
+    assertThat(destInfo.accountData().balance()).isNotNull();
+  }
+
+  /**
+   * Test a single-account batch transaction where one inner {@link Payment} is authorized via a Ticket
+   * (TicketSequence) instead of a Sequence number, alongside a second inner {@link Payment} that uses a normal
+   * Sequence.
+   */
+  @Test
+  void batchWithInnerTicketSequence() throws JsonRpcClientErrorException, JsonProcessingException {
+    final KeyPair sourceKeyPair = createRandomAccountEd25519();
+    final KeyPair destination1KeyPair = createRandomAccountEd25519();
+    final KeyPair destination2KeyPair = createRandomAccountEd25519();
+
+    final FeeResult feeResult = xrplClient.fee();
+    final UnsignedInteger ticketSequence = createTicket(sourceKeyPair, feeResult);
+
+    final AccountInfoResult sourceAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
+    );
+
+    // Inner payment1 is authorized via a Ticket instead of a Sequence.
+    final Payment innerPayment1 = Payment.builder()
+      .account(sourceKeyPair.publicKey().deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.ZERO)
+      .ticketSequence(ticketSequence) // <-- inner Payment tx uses a Ticket, not a Sequence
+      .destination(destination1KeyPair.publicKey().deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .flags(PaymentFlags.INNER_BATCH_TXN)
+      .build();
+
+    // Inner payment2 uses a normal Sequence. The outer Batch tx below consumes the account's current Sequence, so
+    // this inner payment must use the next one (the Ticket used by innerPayment1 doesn't consume a Sequence).
+    final Payment innerPayment2 = createInnerPayment(
+      sourceKeyPair.publicKey().deriveAddress(),
+      sourceAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE),
+      destination2KeyPair.publicKey().deriveAddress(),
+      20000
+    );
+
+    // Build the Batch transaction (outer tx uses a normal Sequence).
+    final Batch batch = Batch.builder()
+      .account(sourceKeyPair.publicKey().deriveAddress())
+      .signingPublicKey(sourceKeyPair.publicKey())
+      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .sequence(sourceAccountInfo.accountData().sequence())
+      .flags(BatchFlags.ofAllOrNothing())
+      .addRawTransactions(
+        RawTransactionWrapper.of(innerPayment1),
+        RawTransactionWrapper.of(innerPayment2)
+      )
+      .build();
+
+    // Only outer needs to be signed because the same account authorizes both inner transactions.
+    final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(sourceKeyPair.privateKey(), batch);
+    final SubmitResult<Batch> submitResult = xrplClient.submit(signedBatch);
+    assertTesSuccess(submitResult);
+
+    final TransactionResult<Batch> validatedBatch = this.scanForResult(
+      () -> this.getValidatedTransaction(submitResult.transactionResult().hash(), Batch.class)
+    );
+    assertTesSuccess(validatedBatch);
+    verifyBatchMetadata(validatedBatch);
+
+    final AccountInfoResult dest1Info = this.scanForResult(
+      () -> this.getValidatedAccountInfo(destination1KeyPair.publicKey().deriveAddress())
+    );
+    final AccountInfoResult dest2Info = this.scanForResult(
+      () -> this.getValidatedAccountInfo(destination2KeyPair.publicKey().deriveAddress())
+    );
+    assertThat(dest1Info.accountData().balance()).isNotNull();
+    assertThat(dest2Info.accountData().balance()).isNotNull();
   }
 
   // //////////////////////
@@ -1471,6 +1732,49 @@ public class BatchTransactionIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(accountKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().signerLists().size() == 1
     );
+  }
+
+  /**
+   * Helper method to create a single Ticket for the given account and return the resulting Ticket's sequence
+   * number.
+   *
+   * @param keyPair   The {@link KeyPair} of the account that will own the Ticket.
+   * @param feeResult The {@link FeeResult} used to determine the appropriate transaction fee for the TicketCreate.
+   *
+   * @return The {@link UnsignedInteger} ticket sequence number of the newly-created Ticket.
+   */
+  private UnsignedInteger createTicket(
+    final KeyPair keyPair,
+    final FeeResult feeResult
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    final AccountInfoResult accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+    );
+
+    final TicketCreate ticketCreate = TicketCreate.builder()
+      .account(keyPair.publicKey().deriveAddress())
+      .sequence(accountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .ticketCount(UnsignedInteger.ONE)
+      .signingPublicKey(keyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<TicketCreate> signedTicketCreate = signatureService.sign(
+      keyPair.privateKey(), ticketCreate
+    );
+    final SubmitResult<TicketCreate> ticketCreateResult = xrplClient.submit(signedTicketCreate);
+    assertThat(ticketCreateResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+
+    this.scanForResult(
+      () -> this.getValidatedTransaction(ticketCreateResult.transactionResult().hash(), TicketCreate.class)
+    );
+
+    final List<TicketObject> tickets = this.scanForResult(
+      () -> this.getValidatedAccountObjects(keyPair.publicKey().deriveAddress(), TicketObject.class),
+      result -> !result.isEmpty()
+    );
+
+    return tickets.get(0).ticketSequence();
   }
 
   /**

@@ -27,6 +27,7 @@ import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.BatchSigner;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -87,19 +88,24 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   /**
    * Get a signature for a batch transaction using the supplied {@link P}.
    *
-   * <p>Per XLS-0056, BatchSigners sign a specific format: HashPrefix::batch + flags + count + inner tx IDs.
-   * This differs from both single-signing and multi-signing.</p>
+   * <p>Per XLS-0056 V1_1, the payload is: {@code HashPrefix::Batch} + outer {@code Account} + sequence +
+   * {@code Flags} + count + inner tx IDs, followed by {@code batchSignerAddress} (the {@link BatchSigner}'s own
+   * account) as a per-signer suffix. Note that {@code batchSignerAddress} is <b>not</b> necessarily the address
+   * derived from {@code privateKeyable} — e.g. when a {@link BatchSigner} is authorized via a regular key, the
+   * signing key derives to the regular key's own address, but {@code batchSignerAddress} must be the underlying
+   * account's master address.</p>
    *
    * <p>This method will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet.
    * Its API is subject to change.</p>
    *
-   * @param privateKeyable   The {@link P} used to sign {@code batchTransaction}.
-   * @param batchTransaction The {@link Batch} transaction to sign.
+   * @param privateKeyable     The {@link P} used to sign {@code batchTransaction}.
+   * @param batchTransaction   The {@link Batch} transaction to sign.
+   * @param batchSignerAddress The {@link Address} of the {@link BatchSigner} entry that this signature is for.
    *
    * @return A {@link Signature} for the batch transaction.
    */
   @Beta
-  Signature signInner(P privateKeyable, Batch batchTransaction);
+  Signature signInner(P privateKeyable, Batch batchTransaction, Address batchSignerAddress);
 
   /**
    * Get a signature for the supplied unsigned transaction using the supplied {@link P}. The primary reason this

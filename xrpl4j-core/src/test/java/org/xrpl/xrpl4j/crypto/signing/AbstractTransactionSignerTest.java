@@ -403,16 +403,14 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void multiSignInnerWithNullMetadata() {
-    Address batchSignerAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
     assertThrows(NullPointerException.class,
-      () -> transactionSigner.multiSignInner(null, batchMock, batchSignerAddress));
+      () -> transactionSigner.multiSignInner(null, batchMock, TestConstants.EC_ADDRESS));
   }
 
   @Test
   void multiSignInnerWithNullBatch() {
-    Address batchSignerAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
     assertThrows(NullPointerException.class,
-      () -> transactionSigner.multiSignInner(privateKeyableMock, null, batchSignerAddress));
+      () -> transactionSigner.multiSignInner(privateKeyableMock, null, TestConstants.EC_ADDRESS));
   }
 
   @Test
@@ -424,24 +422,22 @@ public class AbstractTransactionSignerTest {
   @Test
   void multiSignInnerEd25519() {
     keyType = KeyType.ED25519;
-    Address batchSignerAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
 
-    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock, batchSignerAddress);
+    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock, TestConstants.EC_ADDRESS);
     assertThat(signature).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, batchSignerAddress, TestConstants.ED_ADDRESS);
+    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS, TestConstants.ED_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   void multiSignInnerSecp256k1() {
     keyType = KeyType.SECP256K1;
-    Address batchSignerAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
 
-    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock, batchSignerAddress);
+    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock, TestConstants.EC_ADDRESS);
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, batchSignerAddress, TestConstants.EC_ADDRESS);
+    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS, TestConstants.EC_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 

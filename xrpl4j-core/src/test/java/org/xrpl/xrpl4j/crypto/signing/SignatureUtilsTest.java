@@ -737,8 +737,9 @@ public class SignatureUtilsTest {
       .sequence(UnsignedInteger.valueOf(6)).flags(BatchFlags.ALL_OR_NOTHING)
       .addRawTransactions(RawTransactionWrapper.of(payment), RawTransactionWrapper.of(accountSet))
       .signingPublicKey(sourcePublicKey).build();
-    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch,
-      sourcePublicKey.deriveAddress());
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(
+      batch, sourcePublicKey.deriveAddress()
+    );
     assertThat(bytes).isNotNull();
     assertThat(bytes.hexValue()).isNotEmpty();
   }

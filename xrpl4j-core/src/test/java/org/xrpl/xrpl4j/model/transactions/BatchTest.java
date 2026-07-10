@@ -723,7 +723,7 @@ public class BatchTest {
   }
 
   @Test
-  void testBatchWithCoSignerHavingNoInnerTransaction() {
+  void testBatchSignersMayIncludeAccountWithoutInnerTransaction() {
     // V1_1: a BatchSigner may be a co-signer or delegate for an inner transaction even if that
     // account has no inner transaction of its own. Previously this was rejected; it is now allowed.
     Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();

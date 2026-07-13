@@ -303,9 +303,6 @@ public interface Transaction {
   @JsonProperty("SponsorSignature")
   Optional<SponsorSignature> sponsorSignature();
 
-  // TODO: Add Granular Permission fields (SponsorFee, SponsorReserve) for sponsorship now that #689 has merged.
-  //  See XLS-0068 Section 9.1
-
   /**
    * Validates the sponsorship fields ({@link #sponsor()} and {@link #sponsorFlags()}) on this transaction per
    * XLS-0068. This runs on every concrete {@link Transaction} construction (including JSON deserialization), so

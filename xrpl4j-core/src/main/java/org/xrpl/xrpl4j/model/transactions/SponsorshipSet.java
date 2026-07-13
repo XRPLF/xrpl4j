@@ -44,7 +44,7 @@ import java.util.Optional;
  * <ul>
  *   <li>{@link #feeAmount()} - Total amount of XRP allocated for transaction fees</li>
  *   <li>{@link #maxFee()} - Maximum fee per transaction that can be drawn from the allocation</li>
- *   <li>{@link #reserveCount()} - Number of reserve units to sponsor for the sponsee</li>
+ *   <li>{@link #remainingOwnerCount()} - Number of reserve units to sponsor for the sponsee</li>
  * </ul>
  *
  * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
@@ -124,8 +124,8 @@ public interface SponsorshipSet extends Transaction {
    *
    * @return An {@link Optional} {@link UnsignedInteger} representing the number of reserve units.
    */
-  @JsonProperty("ReserveCount")
-  Optional<UnsignedInteger> reserveCount();
+  @JsonProperty("RemainingOwnerCount")
+  Optional<UnsignedInteger> remainingOwnerCount();
 
   /**
    * Validates this transaction's field combinations per XLS-0068 Section 9.4, mirroring the field-level checks
@@ -138,7 +138,7 @@ public interface SponsorshipSet extends Transaction {
    *       {@link #counterpartySponsor()} is set instead, {@link SponsorshipSetFlags#tfDeleteObject()} must be
    *       set.</li>
    *   <li>When {@link SponsorshipSetFlags#tfDeleteObject()} is set, none of {@link #feeAmount()},
-   *       {@link #maxFee()}, or {@link #reserveCount()} may be present, and none of the RequireSignFor* /
+   *       {@link #maxFee()}, or {@link #remainingOwnerCount()} may be present, and none of the RequireSignFor* /
    *       ClearRequireSignFor* flags may be set.</li>
    *   <li>The RequireSignForFee/ClearRequireSignForFee flags are mutually exclusive, as are the
    *       RequireSignForReserve/ClearRequireSignForReserve flags.</li>
@@ -181,8 +181,8 @@ public interface SponsorshipSet extends Transaction {
         "SponsorshipSet must not set any RequireSignFor*/ClearRequireSignFor* flags when tfDeleteObject is set"
       );
       Preconditions.checkState(
-        !feeAmount().isPresent() && !maxFee().isPresent() && !reserveCount().isPresent(),
-        "SponsorshipSet must not include FeeAmount, MaxFee, or ReserveCount when tfDeleteObject is set"
+        !feeAmount().isPresent() && !maxFee().isPresent() && !remainingOwnerCount().isPresent(),
+        "SponsorshipSet must not include FeeAmount, MaxFee, or RemainingOwnerCount when tfDeleteObject is set"
       );
     } else {
       Preconditions.checkState(

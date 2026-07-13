@@ -874,7 +874,7 @@
         "isSerialized": true,
         "isSigningField": true,
         "isVLEncoded": false,
-        "nth": 69,
+        "nth": 70,
         "type": "UInt32"
       }
     ],
@@ -884,7 +884,7 @@
         "isSerialized": true,
         "isSigningField": true,
         "isVLEncoded": false,
-        "nth": 70,
+        "nth": 71,
         "type": "UInt32"
       }
     ],
@@ -894,17 +894,17 @@
         "isSerialized": true,
         "isSigningField": true,
         "isVLEncoded": false,
-        "nth": 71,
+        "nth": 72,
         "type": "UInt32"
       }
     ],
     [
-      "ReserveCount",
+      "RemainingOwnerCount",
       {
         "isSerialized": true,
         "isSigningField": true,
         "isVLEncoded": false,
-        "nth": 72,
+        "nth": 73,
         "type": "UInt32"
       }
     ],
@@ -914,7 +914,7 @@
         "isSerialized": true,
         "isSigningField": true,
         "isVLEncoded": false,
-        "nth": 73,
+        "nth": 74,
         "type": "UInt32"
       }
     ],

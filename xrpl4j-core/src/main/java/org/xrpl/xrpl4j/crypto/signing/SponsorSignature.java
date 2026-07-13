@@ -29,7 +29,6 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 
 import java.math.BigInteger;
@@ -84,11 +83,12 @@ public interface SponsorSignature {
   Optional<Signature> transactionSignature();
 
   /**
-   * An array of {@link Signer} objects representing the sponsor's multi-signature. This field is used for
-   * multi-signature sponsorship. If this field is present, {@link #signingPublicKey()} and
-   * {@link #transactionSignature()} must not be present.
+   * An array of {@link org.xrpl.xrpl4j.model.transactions.Signer} objects representing the sponsor's
+   * multi-signature. This field is used for multi-signature sponsorship. If this field is present,
+   * {@link #signingPublicKey()} and {@link #transactionSignature()} must not be present.
    *
-   * @return An {@link Optional} {@link List} of {@link Signer} objects, sorted by account address.
+   * @return An {@link Optional} {@link List} of {@link org.xrpl.xrpl4j.model.transactions.Signer} objects,
+   *         sorted by account address.
    */
   @JsonProperty("Signers")
   Optional<List<SignerWrapper>> signers();

@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.transactions;
+package org.xrpl.xrpl4j.crypto.signing;
 
 /*-
  * ========================LICENSE_START=================================
@@ -23,10 +23,11 @@ package org.xrpl.xrpl4j.model.transactions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.signing.Signature;
+import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Signer;
+import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 
 import java.util.Collections;
 
@@ -162,4 +163,3 @@ public class SponsorSignatureTest {
   }
 
 }
-

@@ -29,10 +29,10 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
+import org.xrpl.xrpl4j.crypto.signing.SponsorSignature;
 import org.xrpl.xrpl4j.model.flags.BatchFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
-import org.xrpl.xrpl4j.model.transactions.SponsorSignature;
 
 import java.util.ArrayList;
 import java.util.List;

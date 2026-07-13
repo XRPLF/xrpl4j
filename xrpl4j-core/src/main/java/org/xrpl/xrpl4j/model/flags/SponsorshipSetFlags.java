@@ -161,6 +161,7 @@ public class SponsorshipSetFlags extends TransactionFlags {
    *
    * @return {@code true} if {@code tfFullyCanonicalSig} is set, otherwise {@code false}.
    */
+  @Override
   public boolean tfFullyCanonicalSig() {
     return this.isSet(TransactionFlags.FULLY_CANONICAL_SIG);
   }
@@ -219,6 +220,7 @@ public class SponsorshipSetFlags extends TransactionFlags {
    *
    * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0056-batch"
    */
+  @Override
   public boolean tfInnerBatchTxn() {
     return this.isSet(SponsorshipSetFlags.INNER_BATCH_TXN);
   }

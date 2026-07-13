@@ -95,7 +95,9 @@ public class SponsorshipValidationsTest {
 
   @Test
   void validateSponsorFieldsWithSponsorButNoFlagsFails() {
-    Payment payment = Payment.builder()
+    // Transaction.checkSponsorshipFields() now runs this validation as a @Value.Check, so an invalid
+    // combination fails at construction time rather than needing a separate validate call.
+    assertThatThrownBy(() -> Payment.builder()
       .account(ACCOUNT)
       .destination(DESTINATION)
       .amount(AMOUNT)
@@ -104,18 +106,14 @@ public class SponsorshipValidationsTest {
       .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
       .sponsor(SPONSOR)
       // No sponsorFlags
-      .build();
-
-    assertThatThrownBy(() -> SponsorshipValidations.validateSponsorFields(payment))
+      .build())
       .isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("Sponsor field requires SponsorFlags to be set");
-
-    assertThat(SponsorshipValidations.isValidSponsorFields(payment)).isFalse();
   }
 
   @Test
   void validateSponsorFieldsWithFlagsButNoSponsorFails() {
-    Payment payment = Payment.builder()
+    assertThatThrownBy(() -> Payment.builder()
       .account(ACCOUNT)
       .destination(DESTINATION)
       .amount(AMOUNT)
@@ -124,18 +122,14 @@ public class SponsorshipValidationsTest {
       .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
       // No sponsor
       .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_FEE.getValue()))
-      .build();
-
-    assertThatThrownBy(() -> SponsorshipValidations.validateSponsorFields(payment))
+      .build())
       .isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("SponsorFlags must not be present without Sponsor field");
-
-    assertThat(SponsorshipValidations.isValidSponsorFields(payment)).isFalse();
   }
 
   @Test
   void validateSponsorFieldsWithZeroFlagsFails() {
-    Payment payment = Payment.builder()
+    assertThatThrownBy(() -> Payment.builder()
       .account(ACCOUNT)
       .destination(DESTINATION)
       .amount(AMOUNT)
@@ -144,12 +138,8 @@ public class SponsorshipValidationsTest {
       .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
       .sponsor(SPONSOR)
       .sponsorFlags(UnsignedInteger.ZERO)  // No flags set
-      .build();
-
-    assertThatThrownBy(() -> SponsorshipValidations.validateSponsorFields(payment))
+      .build())
       .isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("SponsorFlags must have at least one flag set");
-
-    assertThat(SponsorshipValidations.isValidSponsorFields(payment)).isFalse();
   }
 }

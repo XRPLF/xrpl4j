@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.transactions;
+package org.xrpl.xrpl4j.crypto.signing;
 
 /*-
  * ========================LICENSE_START=================================
@@ -29,7 +29,8 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.signing.Signature;
+import org.xrpl.xrpl4j.model.transactions.Signer;
+import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 
 import java.math.BigInteger;
 import java.util.Comparator;
@@ -155,4 +156,3 @@ public interface SponsorSignature {
   }
 
 }
-

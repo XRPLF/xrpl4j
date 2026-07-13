@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.flags.SponsorFlags;
 import org.xrpl.xrpl4j.model.flags.SponsorshipTransferFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
@@ -113,6 +114,11 @@ public interface SponsorshipTransfer extends Transaction {
    * account-level reserve sponsorship cannot be reassigned without the new sponsor's consent. Object-level
    * reassignment drawing from a pre-funded {@code Sponsorship} object's budget does not require this signature.
    *
+   * <p>Per XLS-0068 Section 10.3, also validates that {@link Transaction#sponsor()} and
+   * {@link Transaction#sponsorFlags()} are excluded for {@code tfSponsorshipEnd} (which dissolves an existing
+   * sponsorship), and that both are present (with {@code SponsorFlags.spfSponsorReserve} set) for
+   * {@code tfSponsorshipCreate} and {@code tfSponsorshipReassign} (which establish a new sponsor).</p>
+   *
    * @throws IllegalStateException if validation fails.
    */
   @Value.Check
@@ -147,6 +153,26 @@ public interface SponsorshipTransfer extends Transaction {
       "An account-level SponsorshipTransfer (tfSponsorshipReassign with no ObjectID) requires a " +
         "SponsorSignature from the new sponsor"
     );
+
+    if (txFlags.tfSponsorshipEnd()) {
+      Preconditions.checkState(
+        !sponsor().isPresent(),
+        "Sponsor must not be present when tfSponsorshipEnd is set"
+      );
+      Preconditions.checkState(
+        !sponsorFlags().isPresent() || !SponsorFlags.of(sponsorFlags().get().longValue()).spfSponsorReserve(),
+        "SponsorFlags must not include spfSponsorReserve when tfSponsorshipEnd is set"
+      );
+    } else {
+      Preconditions.checkState(
+        sponsor().isPresent() && sponsorFlags().isPresent(),
+        "Sponsor and SponsorFlags are both required when tfSponsorshipCreate or tfSponsorshipReassign is set"
+      );
+      Preconditions.checkState(
+        SponsorFlags.of(sponsorFlags().get().longValue()).spfSponsorReserve(),
+        "SponsorFlags must include spfSponsorReserve when tfSponsorshipCreate or tfSponsorshipReassign is set"
+      );
+    }
   }
 
 }

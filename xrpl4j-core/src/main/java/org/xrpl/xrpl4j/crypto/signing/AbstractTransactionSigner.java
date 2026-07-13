@@ -140,8 +140,12 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
 
-    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSponsorSignableBytes(transaction);
-    return this.signatureHelper(privateKeyable, signableTransactionBytes);
+    // Per the rippled implementation of the Sponsorship amendment, sponsor single-signing uses the same
+    // HashPrefix::txSign (STX, 0x53545800) prefix and serialization as regular single-signing. Domain separation
+    // between the account-owner and sponsor roles is not required at the signing-bytes level because the resulting
+    // signatures are placed in distinct transaction fields (TxnSignature vs SponsorSignature.TxnSignature), and the
+    // account-owner and sponsor use different key pairs. So this can safely reuse the regular sign() path.
+    return this.sign(privateKeyable, transaction).signature();
   }
 
   @Override

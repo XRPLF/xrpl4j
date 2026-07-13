@@ -33,6 +33,7 @@ import org.immutables.value.Value;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
+import org.xrpl.xrpl4j.crypto.signing.SponsorSignature;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.List;
@@ -302,6 +303,18 @@ public interface Transaction {
 
   // TODO: Add Granular Permission fields (SponsorFee, SponsorReserve) for sponsorship once #689 is merged.
   //  See XLS-0068 Section 9.1 and https://github.com/XRPLF/xrpl4j/pull/689
+
+  /**
+   * Validates the sponsorship fields ({@link #sponsor()} and {@link #sponsorFlags()}) on this transaction per
+   * XLS-0068. This runs on every concrete {@link Transaction} construction (including JSON deserialization), so
+   * callers no longer need to invoke {@link SponsorshipValidations} manually before signing.
+   *
+   * @see SponsorshipValidations#validateSponsorFields(Transaction)
+   */
+  @Value.Check
+  default void checkSponsorshipFields() {
+    SponsorshipValidations.validateSponsorFields(this);
+  }
 
   @JsonAnyGetter
   @JsonInclude(Include.NON_ABSENT)

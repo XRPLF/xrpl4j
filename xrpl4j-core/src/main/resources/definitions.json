@@ -881,12 +881,12 @@
       }
     ],
     [
-      "RemainingOwnerCount",
+      "ReserveCount",
       {
         "isSerialized": true,
         "isSigningField": true,
         "isVLEncoded": false,
-        "nth": 73,
+        "nth": 72,
         "type": "UInt32"
       }
     ],
@@ -896,7 +896,7 @@
         "isSerialized": true,
         "isSigningField": true,
         "isVLEncoded": false,
-        "nth": 74,
+        "nth": 73,
         "type": "UInt32"
       }
     ],
@@ -1576,7 +1576,7 @@
         "isSerialized": true,
         "isSigningField": true,
         "isVLEncoded": false,
-        "nth": 41,
+        "nth": 39,
         "type": "Hash256"
       }
     ],

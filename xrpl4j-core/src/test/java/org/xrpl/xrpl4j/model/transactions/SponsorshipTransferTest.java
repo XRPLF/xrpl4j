@@ -7,6 +7,8 @@ import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
+import org.xrpl.xrpl4j.crypto.signing.SponsorSignature;
+import org.xrpl.xrpl4j.model.flags.SponsorFlags;
 import org.xrpl.xrpl4j.model.flags.SponsorshipTransferFlags;
 
 public class SponsorshipTransferTest {
@@ -42,6 +44,7 @@ public class SponsorshipTransferTest {
       .sequence(UnsignedInteger.ONE)
       .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
       .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
       .build();
 
@@ -57,6 +60,7 @@ public class SponsorshipTransferTest {
       .sequence(UnsignedInteger.ONE)
       .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
       .flags(SponsorshipTransferFlags.builder().tfSponsorshipReassign(true).build())
       .build();
 
@@ -213,6 +217,7 @@ public class SponsorshipTransferTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
       .sponsorSignature(sponsorSignature)
       .flags(SponsorshipTransferFlags.builder().tfSponsorshipReassign(true).build())
       .build();
@@ -229,6 +234,7 @@ public class SponsorshipTransferTest {
       .sequence(UnsignedInteger.ONE)
       .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
       .flags(SponsorshipTransferFlags.builder().tfSponsorshipReassign(true).build())
       .build();
 

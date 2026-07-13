@@ -48,7 +48,7 @@ import java.util.Optional;
  * <ul>
  *   <li>The total amount of XRP allocated for transaction fees ({@link #feeAmount()})</li>
  *   <li>The maximum fee per transaction ({@link #maxFee()})</li>
- *   <li>The number of reserve units sponsored ({@link #remainingOwnerCount()})</li>
+ *   <li>The number of reserve units sponsored ({@link #reserveCount()})</li>
  * </ul>
  *
  * <p>This class will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
@@ -143,9 +143,9 @@ public interface SponsorshipObject extends LedgerObject {
    *
    * @return An {@link UnsignedInteger} representing the number of reserve units.
    */
-  @JsonProperty("RemainingOwnerCount")
+  @JsonProperty("ReserveCount")
   @Value.Default
-  default UnsignedInteger remainingOwnerCount() {
+  default UnsignedInteger reserveCount() {
     return UnsignedInteger.ZERO;
   }
 

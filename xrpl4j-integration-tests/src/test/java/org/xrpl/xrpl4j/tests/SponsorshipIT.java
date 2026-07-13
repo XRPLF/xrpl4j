@@ -34,6 +34,7 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
+import org.xrpl.xrpl4j.crypto.signing.SponsorSignature;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.AccountObjectType;
@@ -57,7 +58,6 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
-import org.xrpl.xrpl4j.model.transactions.SponsorSignature;
 import org.xrpl.xrpl4j.model.transactions.SponsorshipSet;
 import org.xrpl.xrpl4j.model.transactions.SponsorshipTransfer;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -299,7 +299,7 @@ public class SponsorshipIT extends AbstractIT {
 
     /**
      * Test: Sponsor covers reserve for CheckCreate.
-     * 1. Alice creates SponsorshipSet with RemainingOwnerCount for Bob
+     * 1. Alice creates SponsorshipSet with ReserveCount for Bob
      * 2. Bob creates a Check with Alice as reserve sponsor
      * 3. Assert that the Check is owned by Bob but reserve is covered by Alice
      */
@@ -312,7 +312,7 @@ public class SponsorshipIT extends AbstractIT {
 
       FeeResult feeResult = xrplClient.fee();
 
-      // Step 1: Alice creates SponsorshipSet with RemainingOwnerCount for Bob
+      // Step 1: Alice creates SponsorshipSet with ReserveCount for Bob
       AccountInfoResult aliceAccountInfo = scanForResult(() -> getValidatedAccountInfo(aliceAddress));
 
       SponsorshipSet sponsorshipSet = SponsorshipSet.builder()
@@ -320,7 +320,7 @@ public class SponsorshipIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .sequence(aliceAccountInfo.accountData().sequence())
         .sponsee(bobAddress)
-        .remainingOwnerCount(UnsignedInteger.valueOf(5))
+        .reserveCount(UnsignedInteger.valueOf(5))
         .signingPublicKey(aliceKeyPair.publicKey())
         .build();
 
@@ -470,7 +470,7 @@ public class SponsorshipIT extends AbstractIT {
      * reassigned from one sponsor to another.
      *
      * <ol>
-     *   <li>Alice sponsors Bob's reserves via SponsorshipSet.remainingOwnerCount.</li>
+     *   <li>Alice sponsors Bob's reserves via SponsorshipSet.reserveCount.</li>
      *   <li>Bob creates a Check, with Alice co-signing as the reserve sponsor.</li>
      *   <li>Bob submits SponsorshipTransfer (tfSponsorshipReassign) naming Charlie as the new
      *       sponsor; Charlie co-signs. The Check's sponsor moves from Alice to Charlie.</li>
@@ -494,7 +494,7 @@ public class SponsorshipIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .sequence(aliceAccountInfo.accountData().sequence())
         .sponsee(bobAddress)
-        .remainingOwnerCount(UnsignedInteger.valueOf(5))
+        .reserveCount(UnsignedInteger.valueOf(5))
         .signingPublicKey(aliceKeyPair.publicKey())
         .build();
 

@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.flags.SponsorFlags;
 import org.xrpl.xrpl4j.model.flags.SponsorshipTransferFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -48,6 +49,7 @@ public class SponsorshipTransferJsonTest extends AbstractJsonTest {
       .sequence(UnsignedInteger.ONE)
       .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
       .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
@@ -61,6 +63,7 @@ public class SponsorshipTransferJsonTest extends AbstractJsonTest {
       "  \"Sequence\": 1," +
       "  \"ObjectID\": \"E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321\"," +
       "  \"Sponsor\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\"," +
+      "  \"SponsorFlags\": 2," +
       "  \"Flags\": 2147483650," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
@@ -76,6 +79,7 @@ public class SponsorshipTransferJsonTest extends AbstractJsonTest {
       .sequence(UnsignedInteger.ONE)
       .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
       .flags(SponsorshipTransferFlags.builder().tfSponsorshipReassign(true).build())
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
@@ -89,6 +93,7 @@ public class SponsorshipTransferJsonTest extends AbstractJsonTest {
       "  \"Sequence\": 1," +
       "  \"ObjectID\": \"E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321\"," +
       "  \"Sponsor\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\"," +
+      "  \"SponsorFlags\": 2," +
       "  \"Flags\": 2147483652," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";

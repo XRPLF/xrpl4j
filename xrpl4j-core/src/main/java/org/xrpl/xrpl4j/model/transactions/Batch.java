@@ -128,7 +128,7 @@ public interface Batch extends Transaction {
    * <p>Notes on the current ({@code V1_1}) design:
    * <ul>
    *   <li>Entries are auto-sorted ascending by {@code Account} address (required by the wire format).</li>
-   *   <li>There is a hard cap of 8 entries, independent of the number of inner transactions.</li>
+   *   <li>There is a hard cap of 24 entries, independent of the number of inner transactions.</li>
    *   <li>Extra signers are allowed: an account may sign without having its own inner transaction (e.g.,
    *       co-signer or delegate).</li>
    * </ul>
@@ -260,17 +260,17 @@ public interface Batch extends Transaction {
    * <p>Notes on the current ({@code V1_1}) design:
    * <ul>
    *   <li>BatchSigners are auto-sorted ascending by Account (temBAD_SIGNER if out of order on-chain).</li>
-   *   <li>There is a hard cap of 8 BatchSigners, independent of the number of inner transactions.</li>
+   *   <li>There is a hard cap of 24 BatchSigners, independent of the number of inner transactions.</li>
    *   <li>No "extra signers" check is performed: co-signers/delegates are allowed without their own inner
    *       transaction.</li>
    * </ul>
    */
   @Value.Check
   default Batch checkBatchSigners() {
-    // Check 1: Hard cap of 8 BatchSigners (V1_1)
+    // Check 1: Hard cap of 24 BatchSigners (V1_1)
     Preconditions.checkArgument(
-      this.batchSigners().size() <= 8,
-      "BatchSigners must not exceed 8 entries, but contained %s.",
+      this.batchSigners().size() <= 24,
+      "BatchSigners must not exceed 24 entries, but contained %s.",
       this.batchSigners().size()
     );
 

@@ -654,13 +654,13 @@ public class BatchTest {
 
   @Test
   void testBatchWithTooManyBatchSigners() {
-    // V1_1: hard cap of 8 BatchSigners regardless of inner transaction count. Build 9 co-signer entries
+    // V1_1: hard cap of 24 BatchSigners regardless of inner transaction count. Build 25 co-signer entries
     // (all inner txs are from ACCOUNT, so no BatchSigners are strictly required) and verify the cap fires.
-    List<BatchSignerWrapper> nineSigners = new ArrayList<>();
-    for (int i = 0; i < 9; i++) {
+    List<BatchSignerWrapper> tooManySigners = new ArrayList<>();
+    for (int i = 0; i < 25; i++) {
       Address addr = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
       PublicKey key = Seed.ed25519Seed().deriveKeyPair().publicKey();
-      nineSigners.add(BatchSignerWrapper.of(BatchSigner.builder()
+      tooManySigners.add(BatchSignerWrapper.of(BatchSigner.builder()
         .account(addr)
         .signingPublicKey(key)
         .transactionSignature(Signature.fromBase16("00112233"))
@@ -673,10 +673,10 @@ public class BatchTest {
       .sequence(UnsignedInteger.ONE)
       .flags(BatchFlags.ALL_OR_NOTHING)
       .rawTransactions(createInnerTransactionsFromOuterSigner(2))
-      .batchSigners(nineSigners)
+      .batchSigners(tooManySigners)
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("BatchSigners must not exceed 8 entries");
+      .hasMessageContaining("BatchSigners must not exceed 24 entries");
   }
 
   @Test

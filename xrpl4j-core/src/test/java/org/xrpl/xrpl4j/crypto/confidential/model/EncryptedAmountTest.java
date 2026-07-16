@@ -12,12 +12,12 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  */
 class EncryptedAmountTest {
 
-  private static final String HEX = Strings.repeat("03", EncryptedAmount.LENGTH); // 66 bytes.
+  private static final String HEX = Strings.repeat("03", 66); // 66 bytes.
 
   @Test
   void ofUnsignedByteArrayExposesValueAndHex() {
     EncryptedAmount amount = EncryptedAmount.of(UnsignedByteArray.fromHex(HEX));
-    assertThat(amount.value().length()).isEqualTo(EncryptedAmount.LENGTH);
+    assertThat(amount.value().length()).isEqualTo(66); // 66 bytes.
     assertThat(amount.hexValue()).isEqualTo(HEX);
   }
 

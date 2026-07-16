@@ -97,18 +97,18 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     byte[] outProof = new byte[PROOF_SIZE];
 
     // Extract keys and context just before use; zero the private key copy when done
-    byte[] privkey = senderKeyPair.privateKey().naturalBytes().toByteArray();
-    byte[] pubkey = senderKeyPair.publicKey().value().toByteArray();
-    byte[] ctxHash = context.value().toByteArray();
+    byte[] privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
+    byte[] publicKeyBytes = senderKeyPair.publicKey().value().toByteArray();
+    byte[] contextHash = context.value().toByteArray();
 
     int result;
     try {
       result = lib.mpt_get_convert_back_proof(
-        privkey, pubkey, ctxHash, amount.longValue(),
+        privateKeyBytes, publicKeyBytes, contextHash, amount.longValue(),
         params, outProof
       );
     } finally {
-      Arrays.fill(privkey, (byte) 0);
+      Arrays.fill(privateKeyBytes, (byte) 0);
     }
 
     if (result != 0) {

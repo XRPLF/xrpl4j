@@ -84,21 +84,21 @@ public class JnaConfidentialMptClawbackProofGenerator implements ConfidentialMpt
       "issuerPublicKey must be SECP256K1"
     );
 
-    byte[] pubkey = issuerPublicKey.value().toByteArray();
-    byte[] ctxHash = context.value().toByteArray();
+    byte[] publicKeyBytes = issuerPublicKey.value().toByteArray();
+    byte[] contextHash = context.value().toByteArray();
     byte[] encryptedAmount = issuerEncryptedBalance.value().toByteArray();
 
     // Extract the private key just before use; zero the copy when done
-    byte[] privkey = issuerPrivateKey.naturalBytes().toByteArray();
+    byte[] privateKeyBytes = issuerPrivateKey.naturalBytes().toByteArray();
 
     byte[] outProof = new byte[PROOF_SIZE];
     int result;
     try {
       result = lib.mpt_get_clawback_proof(
-        privkey, pubkey, ctxHash, amount.longValue(), encryptedAmount, outProof
+        privateKeyBytes, publicKeyBytes, contextHash, amount.longValue(), encryptedAmount, outProof
       );
     } finally {
-      Arrays.fill(privkey, (byte) 0);
+      Arrays.fill(privateKeyBytes, (byte) 0);
     }
 
     if (result != 0) {

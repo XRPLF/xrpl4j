@@ -40,11 +40,6 @@ import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorSerializer;
 public interface BlindingFactor {
 
   /**
-   * The exact size of a blinding factor in bytes.
-   */
-  int LENGTH = 32;
-
-  /**
    * Creates a blinding factor from an {@link UnsignedByteArray}.
    *
    * @param value The 32-byte scalar.
@@ -85,14 +80,15 @@ public interface BlindingFactor {
   UnsignedByteArray value();
 
   /**
-   * Validates that the blinding factor is exactly {@link #LENGTH} bytes.
+   * Validates that the blinding factor is exactly 32 bytes.
    */
   @Value.Check
   default void check() {
+    final int expectedLength = 32;
     Preconditions.checkArgument(
-      value().length() == LENGTH,
+      value().length() == expectedLength,
       "BlindingFactor must be %s bytes, but was %s bytes",
-      LENGTH, value().length()
+      expectedLength, value().length()
     );
   }
 

@@ -48,9 +48,9 @@ public interface MptCryptoLibrary extends Library {
   // Encryption / Decryption
   // =========================================================================
 
-  int mpt_encrypt_amount(long amount, byte[] pubkey, byte[] blindingFactor, byte[] outCiphertext);
+  int mpt_encrypt_amount(long amount, byte[] publicKey, byte[] blindingFactor, byte[] outCiphertext);
 
-  int mpt_decrypt_amount(byte[] ciphertext, byte[] privkey, long[] outAmount, long rangeLow, long rangeHigh);
+  int mpt_decrypt_amount(byte[] ciphertext, byte[] privateKey, long[] outAmount, long rangeLow, long rangeHigh);
 
   int mpt_generate_blinding_factor(byte[] outFactor);
 
@@ -60,19 +60,19 @@ public interface MptCryptoLibrary extends Library {
   // Proof Generation
   // =========================================================================
 
-  int mpt_get_convert_proof(byte[] pubkey, byte[] privkey, byte[] ctxHash, byte[] outProof);
+  int mpt_get_convert_proof(byte[] publicKey, byte[] privateKey, byte[] contextHash, byte[] outProof);
 
   int mpt_get_clawback_proof(
-    byte[] priv, byte[] pub, byte[] contextHash, long amount, byte[] encryptedAmount, byte[] outProof
+    byte[] privateKey, byte[] publicKey, byte[] contextHash, long amount, byte[] encryptedAmount, byte[] outProof
   );
 
   int mpt_get_convert_back_proof(
-    byte[] priv, byte[] pub, byte[] contextHash, long amount,
+    byte[] privateKey, byte[] publicKey, byte[] contextHash, long amount,
     MptPedersenProofParams params, byte[] outProof
   );
 
   int mpt_get_confidential_send_proof(
-    byte[] priv, byte[] pub, long amount,
+    byte[] privateKey, byte[] publicKey, long amount,
     MptConfidentialParticipant[] participants, long numParticipants,
     byte[] txBlindingFactor, byte[] contextHash,
     byte[] amountCommitment, MptPedersenProofParams balanceParams,
@@ -83,10 +83,10 @@ public interface MptCryptoLibrary extends Library {
   // Proof Verification
   // =========================================================================
 
-  int mpt_verify_convert_proof(byte[] proof, byte[] pubkey, byte[] contextHash);
+  int mpt_verify_convert_proof(byte[] proof, byte[] publicKey, byte[] contextHash);
 
   int mpt_verify_convert_back_proof(
-    byte[] proof, byte[] pubkey, byte[] ciphertext,
+    byte[] proof, byte[] publicKey, byte[] ciphertext,
     byte[] balanceCommitment, long amount, byte[] contextHash
   );
 
@@ -97,21 +97,25 @@ public interface MptCryptoLibrary extends Library {
     byte[] balanceCommitment, byte[] contextHash
   );
 
-  int mpt_verify_clawback_proof(byte[] proof, long amount, byte[] pubkey, byte[] ciphertext, byte[] contextHash);
+  int mpt_verify_clawback_proof(byte[] proof, long amount, byte[] publicKey, byte[] ciphertext, byte[] contextHash);
 
   // =========================================================================
   // Context Hash Generation
   // =========================================================================
 
-  int mpt_get_convert_context_hash(MptAccountId account, MptIssuanceId iss, int sequence, byte[] outHash);
+  int mpt_get_convert_context_hash(MptAccountId account, MptIssuanceId issuanceId, int sequence, byte[] outHash);
 
-  int mpt_get_convert_back_context_hash(MptAccountId acc, MptIssuanceId iss, int seq, int ver, byte[] outHash);
-
-  int mpt_get_send_context_hash(
-    MptAccountId acc, MptIssuanceId iss, int seq, MptAccountId dest, int ver, byte[] outHash
+  int mpt_get_convert_back_context_hash(
+    MptAccountId account, MptIssuanceId issuanceId, int sequence, int version, byte[] outHash
   );
 
-  int mpt_get_clawback_context_hash(MptAccountId acc, MptIssuanceId iss, int seq, MptAccountId holder, byte[] outHash);
+  int mpt_get_send_context_hash(
+    MptAccountId account, MptIssuanceId issuanceId, int sequence, MptAccountId destination, int version, byte[] outHash
+  );
+
+  int mpt_get_clawback_context_hash(
+    MptAccountId account, MptIssuanceId issuanceId, int sequence, MptAccountId holder, byte[] outHash
+  );
 
   // =========================================================================
   // JNA Struct Types
@@ -135,9 +139,9 @@ public interface MptCryptoLibrary extends Library {
     public byte[] blindingFactor = new byte[32];
   }
 
-  @Structure.FieldOrder({"pubkey", "ciphertext"})
+  @Structure.FieldOrder({"publicKey", "ciphertext"})
   class MptConfidentialParticipant extends Structure {
-    public byte[] pubkey = new byte[33];
+    public byte[] publicKey = new byte[33];
     public byte[] ciphertext = new byte[66];
   }
 

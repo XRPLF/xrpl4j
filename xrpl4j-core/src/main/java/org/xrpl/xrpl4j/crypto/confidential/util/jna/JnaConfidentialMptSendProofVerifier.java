@@ -40,7 +40,7 @@ import java.util.Objects;
  */
 public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendProofVerifier {
 
-  private static final int PUBKEY_SIZE = 33;
+  private static final int PUBLIC_KEY_SIZE = 33;
   private static final int CIPHERTEXT_SIZE = 66;
   private static final int MIN_PARTICIPANTS = 3;
   private static final int MAX_PARTICIPANTS = 4;
@@ -95,7 +95,7 @@ public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendP
     for (int i = 0; i < numParticipants; i++) {
       MptConfidentialParty party = participants.get(i);
       System.arraycopy(
-        party.publicKey().value().toByteArray(), 0, participantArray[i].pubkey, 0, PUBKEY_SIZE
+        party.publicKey().value().toByteArray(), 0, participantArray[i].publicKey, 0, PUBLIC_KEY_SIZE
       );
       System.arraycopy(
         party.encryptedAmount().value().toByteArray(), 0,

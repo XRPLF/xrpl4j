@@ -12,12 +12,12 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  */
 class CommitmentTest {
 
-  private static final String HEX = Strings.repeat("02", Commitment.LENGTH); // 33 bytes.
+  private static final String HEX = Strings.repeat("02", 33); // 33 bytes.
 
   @Test
   void ofUnsignedByteArrayExposesValueAndHex() {
     Commitment commitment = Commitment.of(UnsignedByteArray.fromHex(HEX));
-    assertThat(commitment.value().length()).isEqualTo(Commitment.LENGTH);
+    assertThat(commitment.value().length()).isEqualTo(33); // 33 bytes.
     assertThat(commitment.hexValue()).isEqualTo(HEX);
   }
 

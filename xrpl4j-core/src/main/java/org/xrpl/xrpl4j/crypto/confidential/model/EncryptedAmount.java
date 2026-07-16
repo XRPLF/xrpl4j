@@ -41,11 +41,6 @@ import org.xrpl.xrpl4j.model.jackson.modules.EncryptedAmountSerializer;
 public interface EncryptedAmount {
 
   /**
-   * The exact size of an encrypted amount in bytes (two compressed EC points).
-   */
-  int LENGTH = 66;
-
-  /**
    * Creates an encrypted amount from an {@link UnsignedByteArray}.
    *
    * @param value The 66-byte ciphertext.
@@ -86,14 +81,15 @@ public interface EncryptedAmount {
   UnsignedByteArray value();
 
   /**
-   * Validates that the ciphertext is exactly {@link #LENGTH} bytes.
+   * Validates that the ciphertext is exactly 66 bytes.
    */
   @Value.Check
   default void check() {
+    final int expectedLength = 66;
     Preconditions.checkArgument(
-      value().length() == LENGTH,
+      value().length() == expectedLength,
       "EncryptedAmount must be %s bytes, but was %s bytes",
-      LENGTH, value().length()
+      expectedLength, value().length()
     );
   }
 

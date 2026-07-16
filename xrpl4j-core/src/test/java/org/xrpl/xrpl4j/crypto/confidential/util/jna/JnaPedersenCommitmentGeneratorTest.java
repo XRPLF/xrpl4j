@@ -42,7 +42,7 @@ class JnaPedersenCommitmentGeneratorTest {
 
     Commitment commitment = generator.generateCommitment(AMOUNT, BLINDING_FACTOR);
 
-    assertThat(commitment.value().length()).isEqualTo(Commitment.LENGTH);
+    assertThat(commitment.value().length()).isEqualTo(33); // 33 bytes.
   }
 
   @Test

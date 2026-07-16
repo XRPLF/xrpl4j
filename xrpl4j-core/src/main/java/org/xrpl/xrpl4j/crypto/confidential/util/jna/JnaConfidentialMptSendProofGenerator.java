@@ -46,7 +46,7 @@ import java.util.Objects;
  */
 public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSendProofGenerator {
 
-  private static final int PUBKEY_SIZE = 33;
+  private static final int PUBLIC_KEY_SIZE = 33;
   private static final int CIPHERTEXT_SIZE = 66;
   private static final int SEND_PROOF_SIZE = 946;
   private static final int MIN_PARTICIPANTS = 3;
@@ -108,7 +108,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
         new MptCryptoLibrary.MptConfidentialParticipant().toArray(numParticipants);
     for (int i = 0; i < numParticipants; i++) {
       MptConfidentialParty party = participants.get(i);
-      System.arraycopy(party.publicKey().value().toByteArray(), 0, participantArray[i].pubkey, 0, PUBKEY_SIZE);
+      System.arraycopy(party.publicKey().value().toByteArray(), 0, participantArray[i].publicKey, 0, PUBLIC_KEY_SIZE);
       System.arraycopy(
         party.encryptedAmount().value().toByteArray(), 0,
         participantArray[i].ciphertext, 0, CIPHERTEXT_SIZE
@@ -132,20 +132,20 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     long[] outLen = new long[]{SEND_PROOF_SIZE};
 
     // Extract sender keys just before use; zero the private key copy when done
-    byte[] privkey = senderKeyPair.privateKey().naturalBytes().toByteArray();
-    byte[] pubkey = senderKeyPair.publicKey().value().toByteArray();
+    byte[] privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
+    byte[] publicKeyBytes = senderKeyPair.publicKey().value().toByteArray();
 
     int result;
     try {
       result = lib.mpt_get_confidential_send_proof(
-        privkey, pubkey, amount.longValue(),
+        privateKeyBytes, publicKeyBytes, amount.longValue(),
         participantArray, numParticipants,
         txBlindingFactor.value().toByteArray(), context.value().toByteArray(),
         amountCommitment.value().toByteArray(), balanceStruct,
         outProof, outLen
       );
     } finally {
-      Arrays.fill(privkey, (byte) 0);
+      Arrays.fill(privateKeyBytes, (byte) 0);
     }
 
     if (result != 0) {

@@ -40,11 +40,6 @@ import org.xrpl.xrpl4j.model.jackson.modules.CommitmentSerializer;
 public interface Commitment {
 
   /**
-   * The exact size of a commitment in bytes (a compressed EC point).
-   */
-  int LENGTH = 33;
-
-  /**
    * Creates a commitment from an {@link UnsignedByteArray}.
    *
    * @param value The 33-byte compressed point.
@@ -85,14 +80,15 @@ public interface Commitment {
   UnsignedByteArray value();
 
   /**
-   * Validates that the commitment is exactly {@link #LENGTH} bytes.
+   * Validates that the commitment is exactly 33 bytes.
    */
   @Value.Check
   default void check() {
+    final int expectedLength = 33;
     Preconditions.checkArgument(
-      value().length() == LENGTH,
+      value().length() == expectedLength,
       "Commitment must be %s bytes, but was %s bytes",
-      LENGTH, value().length()
+      expectedLength, value().length()
     );
   }
 

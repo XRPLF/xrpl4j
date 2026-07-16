@@ -40,8 +40,8 @@ import java.util.Objects;
  */
 public class JnaConfidentialMptConvertProofGenerator implements ConfidentialMptConvertProofGenerator {
 
-  private static final int PUBKEY_SIZE = 33;
-  private static final int PRIVKEY_SIZE = 32;
+  private static final int PUBLIC_KEY_SIZE = 33;
+  private static final int PRIVATE_KEY_SIZE = 32;
   private static final int PROOF_SIZE = 64;
 
   private final MptCryptoLibrary lib;
@@ -78,33 +78,33 @@ public class JnaConfidentialMptConvertProofGenerator implements ConfidentialMptC
       keyPair.publicKey().keyType()
     );
 
-    byte[] pubkeyBytes = keyPair.publicKey().value().toByteArray();
+    byte[] publicKeyBytes = keyPair.publicKey().value().toByteArray();
     Preconditions.checkArgument(
-      pubkeyBytes.length == PUBKEY_SIZE,
+      publicKeyBytes.length == PUBLIC_KEY_SIZE,
       "publicKey must be %s bytes, but was %s bytes",
-      PUBKEY_SIZE, pubkeyBytes.length
+      PUBLIC_KEY_SIZE, publicKeyBytes.length
     );
 
-    byte[] ctxHash = context.value().toByteArray();
+    byte[] contextHash = context.value().toByteArray();
 
     // Extract the private key just before use; zero the copy when done
-    byte[] privkeyBytes = keyPair.privateKey().naturalBytes().toByteArray();
+    byte[] privateKeyBytes = keyPair.privateKey().naturalBytes().toByteArray();
     try {
       Preconditions.checkArgument(
-        privkeyBytes.length == PRIVKEY_SIZE,
+        privateKeyBytes.length == PRIVATE_KEY_SIZE,
         "privateKey must be %s bytes, but was %s bytes",
-        PRIVKEY_SIZE, privkeyBytes.length
+        PRIVATE_KEY_SIZE, privateKeyBytes.length
       );
 
       byte[] outProof = new byte[PROOF_SIZE];
-      int result = lib.mpt_get_convert_proof(pubkeyBytes, privkeyBytes, ctxHash, outProof);
+      int result = lib.mpt_get_convert_proof(publicKeyBytes, privateKeyBytes, contextHash, outProof);
       if (result != 0) {
         throw new IllegalStateException("mpt_get_convert_proof failed with error code: " + result);
       }
 
       return ConfidentialMptConvertProof.of(UnsignedByteArray.of(outProof));
     } finally {
-      Arrays.fill(privkeyBytes, (byte) 0);
+      Arrays.fill(privateKeyBytes, (byte) 0);
     }
   }
 }

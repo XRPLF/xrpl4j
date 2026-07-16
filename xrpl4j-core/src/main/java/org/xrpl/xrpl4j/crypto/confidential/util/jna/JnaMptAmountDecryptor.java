@@ -41,7 +41,7 @@ import java.util.Objects;
 public class JnaMptAmountDecryptor implements MptAmountDecryptor {
 
   private static final int CIPHERTEXT_SIZE = 66;
-  private static final int PRIVKEY_SIZE = 32;
+  private static final int PRIVATE_KEY_SIZE = 32;
 
   private final MptCryptoLibrary lib;
 
@@ -94,17 +94,17 @@ public class JnaMptAmountDecryptor implements MptAmountDecryptor {
     );
 
     // Extract the private key just before use; zero the copy when done
-    byte[] privkeyBytes = privateKey.naturalBytes().toByteArray();
+    byte[] privateKeyBytes = privateKey.naturalBytes().toByteArray();
     try {
       Preconditions.checkArgument(
-        privkeyBytes.length == PRIVKEY_SIZE,
+        privateKeyBytes.length == PRIVATE_KEY_SIZE,
         "privateKey must be %s bytes, but was %s bytes",
-        PRIVKEY_SIZE, privkeyBytes.length
+        PRIVATE_KEY_SIZE, privateKeyBytes.length
       );
 
       long[] outAmount = new long[1];
       int result = lib.mpt_decrypt_amount(
-        ciphertextBytes, privkeyBytes, outAmount, minAmount.longValue(), maxAmount.longValue()
+        ciphertextBytes, privateKeyBytes, outAmount, minAmount.longValue(), maxAmount.longValue()
       );
       if (result != 0) {
         throw new IllegalStateException("mpt_decrypt_amount failed with error code: " + result);
@@ -112,7 +112,7 @@ public class JnaMptAmountDecryptor implements MptAmountDecryptor {
 
       return UnsignedLong.fromLongBits(outAmount[0]);
     } finally {
-      Arrays.fill(privkeyBytes, (byte) 0);
+      Arrays.fill(privateKeyBytes, (byte) 0);
     }
   }
 }

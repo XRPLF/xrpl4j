@@ -39,7 +39,7 @@ import java.util.Objects;
  */
 public class JnaMptAmountEncryptor implements MptAmountEncryptor {
 
-  private static final int PUBKEY_SIZE = 33;
+  private static final int PUBLIC_KEY_SIZE = 33;
   private static final int BLINDING_FACTOR_SIZE = 32;
   private static final int CIPHERTEXT_SIZE = 66;
 
@@ -79,11 +79,11 @@ public class JnaMptAmountEncryptor implements MptAmountEncryptor {
       publicKey.keyType()
     );
 
-    byte[] pubkeyBytes = publicKey.value().toByteArray();
+    byte[] publicKeyBytes = publicKey.value().toByteArray();
     Preconditions.checkArgument(
-      pubkeyBytes.length == PUBKEY_SIZE,
+      publicKeyBytes.length == PUBLIC_KEY_SIZE,
       "publicKey must be %s bytes, but was %s bytes",
-      PUBKEY_SIZE, pubkeyBytes.length
+      PUBLIC_KEY_SIZE, publicKeyBytes.length
     );
 
     byte[] blindingBytes = blindingFactor.value().toByteArray();
@@ -94,7 +94,7 @@ public class JnaMptAmountEncryptor implements MptAmountEncryptor {
     );
 
     byte[] outCiphertext = new byte[CIPHERTEXT_SIZE];
-    int result = lib.mpt_encrypt_amount(amount.longValue(), pubkeyBytes, blindingBytes, outCiphertext);
+    int result = lib.mpt_encrypt_amount(amount.longValue(), publicKeyBytes, blindingBytes, outCiphertext);
     if (result != 0) {
       throw new IllegalStateException("mpt_encrypt_amount failed with error code: " + result);
     }

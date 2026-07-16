@@ -38,7 +38,7 @@ import java.util.Objects;
  */
 public class JnaConfidentialMptConvertProofVerifier implements ConfidentialMptConvertProofVerifier {
 
-  private static final int PUBKEY_SIZE = 33;
+  private static final int PUBLIC_KEY_SIZE = 33;
 
   private final MptCryptoLibrary lib;
 
@@ -76,15 +76,15 @@ public class JnaConfidentialMptConvertProofVerifier implements ConfidentialMptCo
       publicKey.keyType()
     );
 
-    byte[] pubkeyBytes = publicKey.value().toByteArray();
+    byte[] publicKeyBytes = publicKey.value().toByteArray();
     Preconditions.checkArgument(
-      pubkeyBytes.length == PUBKEY_SIZE,
+      publicKeyBytes.length == PUBLIC_KEY_SIZE,
       "publicKey must be %s bytes, but was %s bytes",
-      PUBKEY_SIZE, pubkeyBytes.length
+      PUBLIC_KEY_SIZE, publicKeyBytes.length
     );
 
     return lib.mpt_verify_convert_proof(
-      proof.value().toByteArray(), pubkeyBytes, context.value().toByteArray()
+      proof.value().toByteArray(), publicKeyBytes, context.value().toByteArray()
     ) == 0;
   }
 }

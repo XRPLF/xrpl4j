@@ -20,6 +20,8 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 
+import java.util.Arrays;
+
 /**
  * Unit tests for {@link JnaConfidentialMptClawbackProofGenerator} using a mocked {@link MptCryptoLibrary}, verifying
  * key-type preconditions and error handling without loading the native mpt-crypto library.
@@ -48,12 +50,18 @@ class JnaConfidentialMptClawbackProofGeneratorTest {
 
   @Test
   void generateProofReturnsNativeProof() {
-    when(lib.mpt_get_clawback_proof(any(), any(), any(), anyLong(), any(), any())).thenReturn(0);
+    byte[] expected = new byte[64]; // 64-byte compact clawback proof.
+    Arrays.fill(expected, (byte) 0x09);
+    when(lib.mpt_get_clawback_proof(any(), any(), any(), anyLong(), any(), any())).thenAnswer(invocation -> {
+      byte[] out = invocation.getArgument(5);
+      System.arraycopy(expected, 0, out, 0, expected.length);
+      return 0;
+    });
 
     ConfidentialMptClawbackProof proof =
       generator.generateProof(CIPHERTEXT, SECP_PUBLIC_KEY, AMOUNT, SECP_PRIVATE_KEY, CONTEXT);
 
-    assertThat(proof.value().length()).isEqualTo(64); // 64 bytes.
+    assertThat(proof.value().toByteArray()).isEqualTo(expected);
   }
 
   @Test

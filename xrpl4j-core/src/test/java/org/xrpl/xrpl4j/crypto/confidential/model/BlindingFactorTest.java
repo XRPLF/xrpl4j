@@ -11,19 +11,19 @@ import org.junit.jupiter.api.Test;
  */
 class BlindingFactorTest {
 
-  private static final String VALID = Strings.repeat("12", 32); // 64 hex chars = 32 bytes.
-
   @Test
   void constructsValidBlindingFactor() {
-    BlindingFactor factor = BlindingFactor.of(VALID);
+    String hex = Strings.repeat("12", 32); // 64 hex chars = 32 bytes.
+    BlindingFactor factor = BlindingFactor.of(hex);
     assertThat(factor.value().length()).isEqualTo(32);
-    assertThat(factor.hexValue()).isEqualTo(VALID);
+    assertThat(factor.hexValue()).isEqualTo(hex);
   }
 
   @Test
   void fromBytesRoundTrips() {
     byte[] bytes = new byte[32];
-    assertThat(BlindingFactor.fromBytes(bytes).value().length()).isEqualTo(32);
+    java.util.Arrays.fill(bytes, (byte) 0x12);
+    assertThat(BlindingFactor.fromBytes(bytes).value().toByteArray()).isEqualTo(bytes);
   }
 
   @Test

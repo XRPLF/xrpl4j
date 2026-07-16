@@ -34,27 +34,11 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
  */
 class ConfidentialMptConvertBackServiceTest {
 
-  private static final KeyPair KEY_PAIR =
-    Seed.secp256k1SeedFromPassphrase(Passphrase.of("convert-back-service")).deriveKeyPair();
-  private static final PublicKey PUBLIC_KEY = KEY_PAIR.publicKey();
-  private static final Address ACCOUNT = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
-  private static final MpTokenIssuanceId ISSUANCE_ID = MpTokenIssuanceId.of(Strings.repeat("0A", 24));
-  private static final UnsignedInteger SEQUENCE = UnsignedInteger.valueOf(7);
-  private static final UnsignedInteger VERSION = UnsignedInteger.valueOf(3);
   private static final UnsignedLong AMOUNT = UnsignedLong.valueOf(100);
-  private static final BlindingFactor BLINDING_FACTOR = BlindingFactor.of(Strings.repeat("11", 32));
   private static final Commitment COMMITMENT = Commitment.of(Strings.repeat("02", 33));
   private static final EncryptedAmount CIPHERTEXT = EncryptedAmount.of(Strings.repeat("03", 66));
   private static final ConfidentialMptConvertBackContext CONTEXT =
     ConfidentialMptConvertBackContext.fromHex(Strings.repeat("AB", 32));
-  private static final ConfidentialMptConvertBackProof PROOF =
-    ConfidentialMptConvertBackProof.fromHex(Strings.repeat("CD", 816)); // 816 bytes.
-  private static final PedersenProofParams BALANCE_PARAMS = PedersenProofParams.builder()
-    .pedersenCommitment(COMMITMENT.value())
-    .amount(UnsignedLong.valueOf(500))
-    .encryptedAmount(CIPHERTEXT)
-    .blindingFactor(BLINDING_FACTOR)
-    .build();
 
   private ContextHashGenerator contextHashGenerator;
   private ConfidentialMptConvertBackProofGenerator proofGenerator;
@@ -75,40 +59,58 @@ class ConfidentialMptConvertBackServiceTest {
 
   @Test
   void generateContextDelegates() {
-    when(contextHashGenerator.generateConvertBackContext(ACCOUNT, SEQUENCE, ISSUANCE_ID, VERSION))
+    Address account = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+    MpTokenIssuanceId issuanceId = MpTokenIssuanceId.of(Strings.repeat("0A", 24));
+    UnsignedInteger sequence = UnsignedInteger.valueOf(7);
+    UnsignedInteger version = UnsignedInteger.valueOf(3);
+    when(contextHashGenerator.generateConvertBackContext(account, sequence, issuanceId, version))
       .thenReturn(CONTEXT);
 
-    assertThat(service.generateContext(ACCOUNT, SEQUENCE, ISSUANCE_ID, VERSION)).isSameAs(CONTEXT);
-    verify(contextHashGenerator).generateConvertBackContext(ACCOUNT, SEQUENCE, ISSUANCE_ID, VERSION);
+    assertThat(service.generateContext(account, sequence, issuanceId, version)).isSameAs(CONTEXT);
+    verify(contextHashGenerator).generateConvertBackContext(account, sequence, issuanceId, version);
   }
 
   @Test
   void generatePedersenProofParamsBundlesCommitment() {
-    when(commitmentGenerator.generateCommitment(AMOUNT, BLINDING_FACTOR)).thenReturn(COMMITMENT);
+    BlindingFactor blindingFactor = BlindingFactor.of(Strings.repeat("11", 32));
+    when(commitmentGenerator.generateCommitment(AMOUNT, blindingFactor)).thenReturn(COMMITMENT);
 
-    PedersenProofParams params = service.generatePedersenProofParams(AMOUNT, CIPHERTEXT, BLINDING_FACTOR);
+    PedersenProofParams params = service.generatePedersenProofParams(AMOUNT, CIPHERTEXT, blindingFactor);
 
     assertThat(params.pedersenCommitment()).isEqualTo(COMMITMENT.value());
     assertThat(params.amount()).isEqualTo(AMOUNT);
     assertThat(params.encryptedAmount()).isSameAs(CIPHERTEXT);
-    assertThat(params.blindingFactor()).isSameAs(BLINDING_FACTOR);
-    verify(commitmentGenerator).generateCommitment(AMOUNT, BLINDING_FACTOR);
+    assertThat(params.blindingFactor()).isSameAs(blindingFactor);
+    verify(commitmentGenerator).generateCommitment(AMOUNT, blindingFactor);
   }
 
   @Test
   void generateProofDelegates() {
-    when(proofGenerator.generateProof(KEY_PAIR, AMOUNT, CONTEXT, BALANCE_PARAMS)).thenReturn(PROOF);
+    KeyPair keyPair = Seed.secp256k1SeedFromPassphrase(Passphrase.of("convert-back-service")).deriveKeyPair();
+    ConfidentialMptConvertBackProof proof =
+      ConfidentialMptConvertBackProof.fromHex(Strings.repeat("CD", 816)); // 816 bytes.
+    PedersenProofParams balanceParams = PedersenProofParams.builder()
+      .pedersenCommitment(COMMITMENT.value())
+      .amount(UnsignedLong.valueOf(500))
+      .encryptedAmount(CIPHERTEXT)
+      .blindingFactor(BlindingFactor.of(Strings.repeat("11", 32)))
+      .build();
+    when(proofGenerator.generateProof(keyPair, AMOUNT, CONTEXT, balanceParams)).thenReturn(proof);
 
-    assertThat(service.generateProof(KEY_PAIR, AMOUNT, CONTEXT, BALANCE_PARAMS)).isSameAs(PROOF);
-    verify(proofGenerator).generateProof(KEY_PAIR, AMOUNT, CONTEXT, BALANCE_PARAMS);
+    assertThat(service.generateProof(keyPair, AMOUNT, CONTEXT, balanceParams)).isSameAs(proof);
+    verify(proofGenerator).generateProof(keyPair, AMOUNT, CONTEXT, balanceParams);
   }
 
   @Test
   void verifyProofDelegates() {
-    when(proofVerifier.verifyProof(PROOF, PUBLIC_KEY, CIPHERTEXT, COMMITMENT, AMOUNT, CONTEXT)).thenReturn(true);
+    PublicKey publicKey =
+      Seed.secp256k1SeedFromPassphrase(Passphrase.of("convert-back-service")).deriveKeyPair().publicKey();
+    ConfidentialMptConvertBackProof proof =
+      ConfidentialMptConvertBackProof.fromHex(Strings.repeat("CD", 816)); // 816 bytes.
+    when(proofVerifier.verifyProof(proof, publicKey, CIPHERTEXT, COMMITMENT, AMOUNT, CONTEXT)).thenReturn(true);
 
-    assertThat(service.verifyProof(PROOF, PUBLIC_KEY, CIPHERTEXT, COMMITMENT, AMOUNT, CONTEXT)).isTrue();
-    verify(proofVerifier).verifyProof(PROOF, PUBLIC_KEY, CIPHERTEXT, COMMITMENT, AMOUNT, CONTEXT);
+    assertThat(service.verifyProof(proof, publicKey, CIPHERTEXT, COMMITMENT, AMOUNT, CONTEXT)).isTrue();
+    verify(proofVerifier).verifyProof(proof, publicKey, CIPHERTEXT, COMMITMENT, AMOUNT, CONTEXT);
   }
 
   @Test

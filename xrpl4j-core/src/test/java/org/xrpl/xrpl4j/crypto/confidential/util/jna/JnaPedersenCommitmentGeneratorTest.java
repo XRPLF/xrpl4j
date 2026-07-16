@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 
+import java.util.Arrays;
+
 /**
  * Unit tests for {@link JnaPedersenCommitmentGenerator} using a mocked {@link MptCryptoLibrary}. Verifies that the
  * 33-byte native commitment is returned as a {@link Commitment} and that error handling and null guards are enforced.
@@ -34,15 +36,17 @@ class JnaPedersenCommitmentGeneratorTest {
 
   @Test
   void generateCommitmentReturnsCommitment() {
+    byte[] expected = new byte[33]; // 33-byte compressed point.
+    Arrays.fill(expected, (byte) 0x02);
     when(lib.mpt_get_pedersen_commitment(anyLong(), any(), any())).thenAnswer(invocation -> {
       byte[] out = invocation.getArgument(2);
-      java.util.Arrays.fill(out, (byte) 0x02);
+      System.arraycopy(expected, 0, out, 0, expected.length);
       return 0;
     });
 
     Commitment commitment = generator.generateCommitment(AMOUNT, BLINDING_FACTOR);
 
-    assertThat(commitment.value().length()).isEqualTo(33); // 33 bytes.
+    assertThat(commitment.value().toByteArray()).isEqualTo(expected);
   }
 
   @Test

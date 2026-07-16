@@ -15,6 +15,8 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 
+import java.util.Arrays;
+
 /**
  * Unit tests for {@link JnaConfidentialMptConvertProofGenerator} using a mocked {@link MptCryptoLibrary}, verifying
  * key-type/size preconditions and error handling without loading the native mpt-crypto library.
@@ -39,15 +41,17 @@ class JnaConfidentialMptConvertProofGeneratorTest {
 
   @Test
   void generateProofReturnsNativeProof() {
+    byte[] expected = new byte[64]; // 64-byte Schnorr proof.
+    Arrays.fill(expected, (byte) 0x09);
     when(lib.mpt_get_convert_proof(any(), any(), any(), any())).thenAnswer(invocation -> {
       byte[] out = invocation.getArgument(3);
-      java.util.Arrays.fill(out, (byte) 0x09);
+      System.arraycopy(expected, 0, out, 0, expected.length);
       return 0;
     });
 
     ConfidentialMptConvertProof proof = generator.generateProof(SECP_KEY_PAIR, CONTEXT);
 
-    assertThat(proof.value().length()).isEqualTo(64);
+    assertThat(proof.value().toByteArray()).isEqualTo(expected);
   }
 
   @Test

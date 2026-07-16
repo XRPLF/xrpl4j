@@ -106,8 +106,6 @@ import java.util.List;
 @DisabledIf(value = "shouldNotRun", disabledReason = "ConfidentialTransfersIT only runs on local rippled node.")
 public class ConfidentialTransfersIT extends AbstractIT {
 
-  private static final UnsignedLong DECRYPT_MAX = UnsignedLong.valueOf(1_000_000);
-
   private static ConfidentialMptConvertService convertService;
   private static ConfidentialMptSendService sendService;
   private static ConfidentialMptConvertBackService convertBackService;
@@ -468,8 +466,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     EncryptedAmount senderBalanceCiphertext = holderMpToken.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Sender has no confidential balance"));
+    // The holder's confidential balance can never exceed the 500 originally converted, so decrypt within that range.
     UnsignedLong senderCurrentBalance = decryptor.decrypt(
-      senderBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
+      senderBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, amountToConvert
     );
 
     Commitment amountCommitment = sendService.generatePedersenCommitment(
@@ -540,7 +539,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     EncryptedAmount senderBalanceAfterSendCiphertext = senderMpTokenAfterSend.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Sender has no confidential balance after send"));
     UnsignedLong senderBalanceAfterSend = decryptor.decrypt(
-      senderBalanceAfterSendCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
+      senderBalanceAfterSendCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, amountToConvert
     );
     assertThat(senderBalanceAfterSend.longValue()).isEqualTo(400L);
 
@@ -576,7 +575,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     EncryptedAmount currentBalanceForConvertBack = holderMpTokenForConvertBack.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Holder has no confidential balance"));
     UnsignedLong currentSpendingBalance = decryptor.decrypt(
-      currentBalanceForConvertBack, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
+      currentBalanceForConvertBack, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, amountToConvert
     );
 
     BlindingFactor convertBackBalanceBlindingFactor = blindingFactorGenerator.generate();
@@ -630,7 +629,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     EncryptedAmount remainingBalanceCiphertext = holderMpTokenAfterConvertBack.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("No confidential balance after convert back"));
     UnsignedLong remainingConfidentialBalance = decryptor.decrypt(
-      remainingBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
+      remainingBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, amountToConvert
     );
     assertThat(remainingConfidentialBalance.longValue()).isEqualTo(350L);
 
@@ -642,8 +641,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
     EncryptedAmount issuerBalanceCiphertext = holderMpTokenForClawback.issuerEncryptedBalance()
       .orElseThrow(() -> new RuntimeException("No issuer encrypted balance found"));
 
+    // The issuer's encrypted mirror tracks the holder's balance, so it is bounded by the same range.
     UnsignedLong issuerDecryptedBalance = decryptor.decrypt(
-      issuerBalanceCiphertext, issuerElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
+      issuerBalanceCiphertext, issuerElGamalKeyPair.privateKey(), UnsignedLong.ZERO, amountToConvert
     );
     assertThat(issuerDecryptedBalance.longValue()).isGreaterThanOrEqualTo(clawbackAmount.longValue());
 

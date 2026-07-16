@@ -28,16 +28,8 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
  */
 class ConfidentialMptConvertServiceTest {
 
-  private static final KeyPair KEY_PAIR =
-    Seed.secp256k1SeedFromPassphrase(Passphrase.of("convert-service")).deriveKeyPair();
-  private static final PublicKey PUBLIC_KEY = KEY_PAIR.publicKey();
-  private static final Address ACCOUNT = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
-  private static final MpTokenIssuanceId ISSUANCE_ID = MpTokenIssuanceId.of(Strings.repeat("0A", 24));
-  private static final UnsignedInteger SEQUENCE = UnsignedInteger.valueOf(7);
   private static final ConfidentialMptConvertContext CONTEXT =
     ConfidentialMptConvertContext.fromHex(Strings.repeat("AB", 32));
-  private static final ConfidentialMptConvertProof PROOF =
-    ConfidentialMptConvertProof.fromHex(Strings.repeat("CD", 64));
 
   private ContextHashGenerator contextHashGenerator;
   private ConfidentialMptConvertProofGenerator proofGenerator;
@@ -54,26 +46,34 @@ class ConfidentialMptConvertServiceTest {
 
   @Test
   void generateContextDelegates() {
-    when(contextHashGenerator.generateConvertContext(ACCOUNT, SEQUENCE, ISSUANCE_ID)).thenReturn(CONTEXT);
+    Address account = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+    MpTokenIssuanceId issuanceId = MpTokenIssuanceId.of(Strings.repeat("0A", 24));
+    UnsignedInteger sequence = UnsignedInteger.valueOf(7);
+    when(contextHashGenerator.generateConvertContext(account, sequence, issuanceId)).thenReturn(CONTEXT);
 
-    assertThat(service.generateContext(ACCOUNT, SEQUENCE, ISSUANCE_ID)).isSameAs(CONTEXT);
-    verify(contextHashGenerator).generateConvertContext(ACCOUNT, SEQUENCE, ISSUANCE_ID);
+    assertThat(service.generateContext(account, sequence, issuanceId)).isSameAs(CONTEXT);
+    verify(contextHashGenerator).generateConvertContext(account, sequence, issuanceId);
   }
 
   @Test
   void generateProofDelegates() {
-    when(proofGenerator.generateProof(KEY_PAIR, CONTEXT)).thenReturn(PROOF);
+    KeyPair keyPair = Seed.secp256k1SeedFromPassphrase(Passphrase.of("convert-service")).deriveKeyPair();
+    ConfidentialMptConvertProof proof = ConfidentialMptConvertProof.fromHex(Strings.repeat("CD", 64)); // 64 bytes.
+    when(proofGenerator.generateProof(keyPair, CONTEXT)).thenReturn(proof);
 
-    assertThat(service.generateProof(KEY_PAIR, CONTEXT)).isSameAs(PROOF);
-    verify(proofGenerator).generateProof(KEY_PAIR, CONTEXT);
+    assertThat(service.generateProof(keyPair, CONTEXT)).isSameAs(proof);
+    verify(proofGenerator).generateProof(keyPair, CONTEXT);
   }
 
   @Test
   void verifyProofDelegates() {
-    when(proofVerifier.verifyProof(PROOF, PUBLIC_KEY, CONTEXT)).thenReturn(true);
+    PublicKey publicKey =
+      Seed.secp256k1SeedFromPassphrase(Passphrase.of("convert-service")).deriveKeyPair().publicKey();
+    ConfidentialMptConvertProof proof = ConfidentialMptConvertProof.fromHex(Strings.repeat("CD", 64)); // 64 bytes.
+    when(proofVerifier.verifyProof(proof, publicKey, CONTEXT)).thenReturn(true);
 
-    assertThat(service.verifyProof(PROOF, PUBLIC_KEY, CONTEXT)).isTrue();
-    verify(proofVerifier).verifyProof(PROOF, PUBLIC_KEY, CONTEXT);
+    assertThat(service.verifyProof(proof, publicKey, CONTEXT)).isTrue();
+    verify(proofVerifier).verifyProof(proof, publicKey, CONTEXT);
   }
 
   @Test

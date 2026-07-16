@@ -67,15 +67,36 @@ class JnaConfidentialMptSendProofGeneratorTest {
 
   @Test
   void generateProofReturnsNativeProof() {
+    byte[] expected = new byte[946]; // 946-byte send proof.
+    Arrays.fill(expected, (byte) 0x09);
     when(lib.mpt_get_confidential_send_proof(
       any(), any(), anyLong(), any(), anyLong(), any(), any(), any(), any(), any(), any()
-    )).thenReturn(0);
+    )).thenAnswer(invocation -> {
+      byte[] out = invocation.getArgument(9);
+      System.arraycopy(expected, 0, out, 0, expected.length);
+      return 0;
+    });
 
     ConfidentialMptSendProof proof = generator.generateProof(
       SECP_KEY_PAIR, AMOUNT, PARTICIPANTS, BLINDING_FACTOR, CONTEXT, AMOUNT_COMMITMENT, BALANCE_PARAMS
     );
 
-    assertThat(proof.value().length()).isEqualTo(946); // 946 bytes.
+    assertThat(proof.value().toByteArray()).isEqualTo(expected);
+  }
+
+  @Test
+  void generateProofThrowsWhenNativeWritesUnexpectedLength() {
+    when(lib.mpt_get_confidential_send_proof(
+      any(), any(), anyLong(), any(), anyLong(), any(), any(), any(), any(), any(), any()
+    )).thenAnswer(invocation -> {
+      long[] outLen = invocation.getArgument(10);
+      outLen[0] = 900L;
+      return 0;
+    });
+
+    assertThatThrownBy(() -> generator.generateProof(
+      SECP_KEY_PAIR, AMOUNT, PARTICIPANTS, BLINDING_FACTOR, CONTEXT, AMOUNT_COMMITMENT, BALANCE_PARAMS
+    )).isInstanceOf(IllegalStateException.class).hasMessageContaining("wrote 900 bytes");
   }
 
   @Test

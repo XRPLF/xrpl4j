@@ -31,20 +31,8 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
  */
 class ConfidentialMptClawbackServiceTest {
 
-  private static final KeyPair KEY_PAIR =
-    Seed.secp256k1SeedFromPassphrase(Passphrase.of("clawback-service")).deriveKeyPair();
-  private static final PublicKey PUBLIC_KEY = KEY_PAIR.publicKey();
-  private static final PrivateKey PRIVATE_KEY = KEY_PAIR.privateKey();
-  private static final Address ACCOUNT = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
-  private static final Address HOLDER = Address.of("rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w");
-  private static final MpTokenIssuanceId ISSUANCE_ID = MpTokenIssuanceId.of(Strings.repeat("0A", 24));
-  private static final UnsignedInteger SEQUENCE = UnsignedInteger.valueOf(7);
-  private static final UnsignedLong AMOUNT = UnsignedLong.valueOf(100);
-  private static final EncryptedAmount CIPHERTEXT = EncryptedAmount.of(Strings.repeat("03", 66));
   private static final ConfidentialMptClawbackContext CONTEXT =
     ConfidentialMptClawbackContext.fromHex(Strings.repeat("AB", 32));
-  private static final ConfidentialMptClawbackProof PROOF =
-    ConfidentialMptClawbackProof.fromHex(Strings.repeat("CD", 64)); // 64 bytes.
 
   private ContextHashGenerator contextHashGenerator;
   private ConfidentialMptClawbackProofGenerator proofGenerator;
@@ -61,26 +49,41 @@ class ConfidentialMptClawbackServiceTest {
 
   @Test
   void generateContextDelegates() {
-    when(contextHashGenerator.generateClawbackContext(ACCOUNT, SEQUENCE, ISSUANCE_ID, HOLDER)).thenReturn(CONTEXT);
+    Address account = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+    Address holder = Address.of("rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w");
+    MpTokenIssuanceId issuanceId = MpTokenIssuanceId.of(Strings.repeat("0A", 24));
+    UnsignedInteger sequence = UnsignedInteger.valueOf(7);
+    when(contextHashGenerator.generateClawbackContext(account, sequence, issuanceId, holder)).thenReturn(CONTEXT);
 
-    assertThat(service.generateContext(ACCOUNT, SEQUENCE, ISSUANCE_ID, HOLDER)).isSameAs(CONTEXT);
-    verify(contextHashGenerator).generateClawbackContext(ACCOUNT, SEQUENCE, ISSUANCE_ID, HOLDER);
+    assertThat(service.generateContext(account, sequence, issuanceId, holder)).isSameAs(CONTEXT);
+    verify(contextHashGenerator).generateClawbackContext(account, sequence, issuanceId, holder);
   }
 
   @Test
   void generateProofDelegates() {
-    when(proofGenerator.generateProof(CIPHERTEXT, PUBLIC_KEY, AMOUNT, PRIVATE_KEY, CONTEXT)).thenReturn(PROOF);
+    KeyPair keyPair = Seed.secp256k1SeedFromPassphrase(Passphrase.of("clawback-service")).deriveKeyPair();
+    PublicKey publicKey = keyPair.publicKey();
+    PrivateKey privateKey = keyPair.privateKey();
+    UnsignedLong amount = UnsignedLong.valueOf(100);
+    EncryptedAmount ciphertext = EncryptedAmount.of(Strings.repeat("03", 66));
+    ConfidentialMptClawbackProof proof = ConfidentialMptClawbackProof.fromHex(Strings.repeat("CD", 64)); // 64 bytes.
+    when(proofGenerator.generateProof(ciphertext, publicKey, amount, privateKey, CONTEXT)).thenReturn(proof);
 
-    assertThat(service.generateProof(CIPHERTEXT, PUBLIC_KEY, AMOUNT, PRIVATE_KEY, CONTEXT)).isSameAs(PROOF);
-    verify(proofGenerator).generateProof(CIPHERTEXT, PUBLIC_KEY, AMOUNT, PRIVATE_KEY, CONTEXT);
+    assertThat(service.generateProof(ciphertext, publicKey, amount, privateKey, CONTEXT)).isSameAs(proof);
+    verify(proofGenerator).generateProof(ciphertext, publicKey, amount, privateKey, CONTEXT);
   }
 
   @Test
   void verifyProofDelegates() {
-    when(proofVerifier.verifyProof(PROOF, CIPHERTEXT, PUBLIC_KEY, AMOUNT, CONTEXT)).thenReturn(true);
+    PublicKey publicKey =
+      Seed.secp256k1SeedFromPassphrase(Passphrase.of("clawback-service")).deriveKeyPair().publicKey();
+    UnsignedLong amount = UnsignedLong.valueOf(100);
+    EncryptedAmount ciphertext = EncryptedAmount.of(Strings.repeat("03", 66));
+    ConfidentialMptClawbackProof proof = ConfidentialMptClawbackProof.fromHex(Strings.repeat("CD", 64)); // 64 bytes.
+    when(proofVerifier.verifyProof(proof, ciphertext, publicKey, amount, CONTEXT)).thenReturn(true);
 
-    assertThat(service.verifyProof(PROOF, CIPHERTEXT, PUBLIC_KEY, AMOUNT, CONTEXT)).isTrue();
-    verify(proofVerifier).verifyProof(PROOF, CIPHERTEXT, PUBLIC_KEY, AMOUNT, CONTEXT);
+    assertThat(service.verifyProof(proof, ciphertext, publicKey, amount, CONTEXT)).isTrue();
+    verify(proofVerifier).verifyProof(proof, ciphertext, publicKey, amount, CONTEXT);
   }
 
   @Test

@@ -17,6 +17,8 @@ import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 
+import java.util.Arrays;
+
 /**
  * Unit tests for {@link JnaMptAmountEncryptor} using a mocked {@link MptCryptoLibrary}. Verifies that the 66-byte
  * native ciphertext is returned as a wire {@link EncryptedAmount} and that preconditions are enforced.
@@ -41,15 +43,17 @@ class JnaMptAmountEncryptorTest {
 
   @Test
   void encryptReturnsWireEncryptedAmount() {
+    byte[] expected = new byte[66]; // 66-byte ciphertext.
+    Arrays.fill(expected, (byte) 0x02);
     when(lib.mpt_encrypt_amount(anyLong(), any(), any(), any())).thenAnswer(invocation -> {
       byte[] out = invocation.getArgument(3);
-      java.util.Arrays.fill(out, (byte) 0x02);
+      System.arraycopy(expected, 0, out, 0, expected.length);
       return 0;
     });
 
     EncryptedAmount ciphertext = encryptor.encrypt(AMOUNT, SECP_PUBLIC_KEY, BLINDING_FACTOR);
 
-    assertThat(ciphertext.value().length()).isEqualTo(66); // 66-byte ciphertext.
+    assertThat(ciphertext.value().toByteArray()).isEqualTo(expected);
   }
 
   @Test

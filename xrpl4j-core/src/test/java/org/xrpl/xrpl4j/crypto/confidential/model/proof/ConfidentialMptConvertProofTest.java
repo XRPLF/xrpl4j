@@ -13,14 +13,12 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  */
 class ConfidentialMptConvertProofTest {
 
-  private static final int EXPECTED_SIZE = 64;
-
-  private static final String PROOF_HEX = Strings.repeat("CD", EXPECTED_SIZE); // 64 bytes.
+  private static final String PROOF_HEX = Strings.repeat("CD", 64); // 64 bytes.
 
   @Test
   void ofExposesValueAndHex() {
     ConfidentialMptConvertProof proof = ConfidentialMptConvertProof.of(UnsignedByteArray.fromHex(PROOF_HEX));
-    assertThat(proof.value().length()).isEqualTo(EXPECTED_SIZE);
+    assertThat(proof.value().length()).isEqualTo(64);
     assertThat(proof.hexValue()).isEqualTo(PROOF_HEX);
   }
 
@@ -33,6 +31,6 @@ class ConfidentialMptConvertProofTest {
   void rejectsWrongLength() {
     assertThatThrownBy(() -> ConfidentialMptConvertProof.fromHex(Strings.repeat("CD", 63)))
       .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("Proof must be");
+      .hasMessageContaining("ConfidentialMptConvertProof must be");
   }
 }

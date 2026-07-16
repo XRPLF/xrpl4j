@@ -21,6 +21,8 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 
+import java.util.Arrays;
+
 /**
  * Unit tests for {@link JnaConfidentialMptConvertBackProofGenerator} using a mocked {@link MptCryptoLibrary}, verifying
  * key-type preconditions and error handling without loading the native mpt-crypto library.
@@ -52,11 +54,17 @@ class JnaConfidentialMptConvertBackProofGeneratorTest {
 
   @Test
   void generateProofReturnsNativeProof() {
-    when(lib.mpt_get_convert_back_proof(any(), any(), any(), anyLong(), any(), any())).thenReturn(0);
+    byte[] expected = new byte[816]; // 816-byte convert-back proof.
+    Arrays.fill(expected, (byte) 0x09);
+    when(lib.mpt_get_convert_back_proof(any(), any(), any(), anyLong(), any(), any())).thenAnswer(invocation -> {
+      byte[] out = invocation.getArgument(5);
+      System.arraycopy(expected, 0, out, 0, expected.length);
+      return 0;
+    });
 
     ConfidentialMptConvertBackProof proof = generator.generateProof(SECP_KEY_PAIR, AMOUNT, CONTEXT, BALANCE_PARAMS);
 
-    assertThat(proof.value().length()).isEqualTo(816); // 816 bytes.
+    assertThat(proof.value().toByteArray()).isEqualTo(expected);
   }
 
   @Test

@@ -24,7 +24,6 @@ import org.xrpl.xrpl4j.crypto.confidential.util.ContextHashGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.PedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
-import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
@@ -40,31 +39,17 @@ class ConfidentialMptSendServiceTest {
 
   private static final KeyPair KEY_PAIR =
     Seed.secp256k1SeedFromPassphrase(Passphrase.of("send-service")).deriveKeyPair();
-  private static final PublicKey PUBLIC_KEY = KEY_PAIR.publicKey();
-  private static final Address ACCOUNT = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
-  private static final Address DESTINATION = Address.of("rMTi57fNy2UkUb4RcdoUeJm7gjxVQvxzUo");
-  private static final MpTokenIssuanceId ISSUANCE_ID = MpTokenIssuanceId.of(Strings.repeat("0A", 24));
-  private static final UnsignedInteger SEQUENCE = UnsignedInteger.valueOf(7);
-  private static final UnsignedInteger VERSION = UnsignedInteger.valueOf(3);
   private static final UnsignedLong AMOUNT = UnsignedLong.valueOf(100);
   private static final BlindingFactor BLINDING_FACTOR = BlindingFactor.of(Strings.repeat("11", 32));
   private static final Commitment COMMITMENT = Commitment.of(Strings.repeat("02", 33));
   private static final EncryptedAmount CIPHERTEXT = EncryptedAmount.of(Strings.repeat("03", 66));
   private static final ConfidentialMptSendContext CONTEXT =
     ConfidentialMptSendContext.fromHex(Strings.repeat("AB", 32));
-  private static final ConfidentialMptSendProof PROOF =
-    ConfidentialMptSendProof.fromHex(Strings.repeat("CD", 946)); // 946 bytes.
   private static final List<MptConfidentialParty> PARTICIPANTS = Arrays.asList(
-    MptConfidentialParty.of(PUBLIC_KEY, CIPHERTEXT),
-    MptConfidentialParty.of(PUBLIC_KEY, CIPHERTEXT),
-    MptConfidentialParty.of(PUBLIC_KEY, CIPHERTEXT)
+    MptConfidentialParty.of(KEY_PAIR.publicKey(), CIPHERTEXT),
+    MptConfidentialParty.of(KEY_PAIR.publicKey(), CIPHERTEXT),
+    MptConfidentialParty.of(KEY_PAIR.publicKey(), CIPHERTEXT)
   );
-  private static final PedersenProofParams BALANCE_PARAMS = PedersenProofParams.builder()
-    .pedersenCommitment(COMMITMENT.value())
-    .amount(UnsignedLong.valueOf(500))
-    .encryptedAmount(CIPHERTEXT)
-    .blindingFactor(BLINDING_FACTOR)
-    .build();
 
   private ContextHashGenerator contextHashGenerator;
   private ConfidentialMptSendProofGenerator proofGenerator;
@@ -85,11 +70,16 @@ class ConfidentialMptSendServiceTest {
 
   @Test
   void generateContextDelegates() {
-    when(contextHashGenerator.generateSendContext(ACCOUNT, SEQUENCE, ISSUANCE_ID, DESTINATION, VERSION))
+    Address account = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+    Address destination = Address.of("rMTi57fNy2UkUb4RcdoUeJm7gjxVQvxzUo");
+    MpTokenIssuanceId issuanceId = MpTokenIssuanceId.of(Strings.repeat("0A", 24));
+    UnsignedInteger sequence = UnsignedInteger.valueOf(7);
+    UnsignedInteger version = UnsignedInteger.valueOf(3);
+    when(contextHashGenerator.generateSendContext(account, sequence, issuanceId, destination, version))
       .thenReturn(CONTEXT);
 
-    assertThat(service.generateContext(ACCOUNT, SEQUENCE, ISSUANCE_ID, DESTINATION, VERSION)).isSameAs(CONTEXT);
-    verify(contextHashGenerator).generateSendContext(ACCOUNT, SEQUENCE, ISSUANCE_ID, DESTINATION, VERSION);
+    assertThat(service.generateContext(account, sequence, issuanceId, destination, version)).isSameAs(CONTEXT);
+    verify(contextHashGenerator).generateSendContext(account, sequence, issuanceId, destination, version);
   }
 
   @Test
@@ -115,22 +105,30 @@ class ConfidentialMptSendServiceTest {
 
   @Test
   void generateProofDelegates() {
+    ConfidentialMptSendProof proof = ConfidentialMptSendProof.fromHex(Strings.repeat("CD", 946)); // 946 bytes.
+    PedersenProofParams balanceParams = PedersenProofParams.builder()
+      .pedersenCommitment(COMMITMENT.value())
+      .amount(UnsignedLong.valueOf(500))
+      .encryptedAmount(CIPHERTEXT)
+      .blindingFactor(BLINDING_FACTOR)
+      .build();
     when(proofGenerator.generateProof(KEY_PAIR, AMOUNT, PARTICIPANTS, BLINDING_FACTOR, CONTEXT, COMMITMENT,
-      BALANCE_PARAMS)).thenReturn(PROOF);
+      balanceParams)).thenReturn(proof);
 
     assertThat(service.generateProof(KEY_PAIR, AMOUNT, PARTICIPANTS, BLINDING_FACTOR, CONTEXT, COMMITMENT,
-      BALANCE_PARAMS)).isSameAs(PROOF);
+      balanceParams)).isSameAs(proof);
     verify(proofGenerator).generateProof(KEY_PAIR, AMOUNT, PARTICIPANTS, BLINDING_FACTOR, CONTEXT, COMMITMENT,
-      BALANCE_PARAMS);
+      balanceParams);
   }
 
   @Test
   void verifyProofDelegates() {
-    when(proofVerifier.verifyProof(PROOF, PARTICIPANTS, CIPHERTEXT, CONTEXT, COMMITMENT, COMMITMENT))
+    ConfidentialMptSendProof proof = ConfidentialMptSendProof.fromHex(Strings.repeat("CD", 946)); // 946 bytes.
+    when(proofVerifier.verifyProof(proof, PARTICIPANTS, CIPHERTEXT, CONTEXT, COMMITMENT, COMMITMENT))
       .thenReturn(true);
 
-    assertThat(service.verifyProof(PROOF, PARTICIPANTS, CIPHERTEXT, CONTEXT, COMMITMENT, COMMITMENT)).isTrue();
-    verify(proofVerifier).verifyProof(PROOF, PARTICIPANTS, CIPHERTEXT, CONTEXT, COMMITMENT, COMMITMENT);
+    assertThat(service.verifyProof(proof, PARTICIPANTS, CIPHERTEXT, CONTEXT, COMMITMENT, COMMITMENT)).isTrue();
+    verify(proofVerifier).verifyProof(proof, PARTICIPANTS, CIPHERTEXT, CONTEXT, COMMITMENT, COMMITMENT);
   }
 
   @Test

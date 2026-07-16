@@ -10,6 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 
+import java.util.Arrays;
+
 /**
  * Unit tests for {@link JnaBlindingFactorGenerator} using a mocked {@link MptCryptoLibrary}. Verifies that the 32-byte
  * native blinding factor is returned as a wire {@link BlindingFactor} and that native errors are surfaced.
@@ -27,15 +29,17 @@ class JnaBlindingFactorGeneratorTest {
 
   @Test
   void generateReturnsWireBlindingFactor() {
+    byte[] expected = new byte[32]; // 32-byte scalar.
+    Arrays.fill(expected, (byte) 0x05);
     when(lib.mpt_generate_blinding_factor(any())).thenAnswer(invocation -> {
       byte[] out = invocation.getArgument(0);
-      java.util.Arrays.fill(out, (byte) 0x05);
+      System.arraycopy(expected, 0, out, 0, expected.length);
       return 0;
     });
 
     BlindingFactor blindingFactor = generator.generate();
 
-    assertThat(blindingFactor.value().length()).isEqualTo(32); // 32-byte scalar.
+    assertThat(blindingFactor.value().toByteArray()).isEqualTo(expected);
   }
 
   @Test

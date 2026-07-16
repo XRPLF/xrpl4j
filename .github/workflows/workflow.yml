@@ -152,6 +152,9 @@ jobs:
             network: devnet
             it_flags: '-DuseDevnet'
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v6

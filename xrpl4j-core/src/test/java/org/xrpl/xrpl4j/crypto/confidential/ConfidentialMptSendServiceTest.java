@@ -9,8 +9,6 @@ import static org.mockito.Mockito.when;
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import java.util.Arrays;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
@@ -30,6 +28,9 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Unit tests for {@link ConfidentialMptSendService}, verifying that each public method delegates to the injected

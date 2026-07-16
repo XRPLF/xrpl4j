@@ -156,9 +156,9 @@ public interface MptCryptoLibrary extends Library {
         return Native.load("mpt-crypto", MptCryptoLibrary.class);
       } catch (UnsatisfiedLinkError e) {
         UnsatisfiedLinkError error = new UnsatisfiedLinkError(
-          "Unable to load the native 'mpt-crypto' library. Ensure it is installed and discoverable, "
-            + "e.g. via the 'jna.library.path' system property or the system library path. "
-            + "Original error: " + e.getMessage()
+          "Unable to load the native 'mpt-crypto' library. Ensure it is installed and discoverable, " +
+            "e.g. via the 'jna.library.path' system property or the system library path. " +
+            "Original error: " + e.getMessage()
         );
         error.initCause(e);
         throw error;

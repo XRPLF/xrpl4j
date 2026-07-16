@@ -21,8 +21,8 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  */
 
 import com.google.common.primitives.UnsignedLong;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
-import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertBackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -52,7 +52,7 @@ public interface ConfidentialMptConvertBackProofVerifier {
     ConfidentialMptConvertBackProof proof,
     PublicKey senderPublicKey,
     EncryptedAmount encryptedBalance,
-    PedersenCommitment balanceCommitment,
+    Commitment balanceCommitment,
     UnsignedLong amount,
     ConfidentialMptConvertBackContext context
   );

@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
@@ -26,12 +29,6 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableConfidentialMptConvert.class)
 @JsonDeserialize(as = ImmutableConfidentialMptConvert.class)
 public interface ConfidentialMptConvert extends Transaction {
-
-  /**
-   * The required length, in hex characters, of the Schnorr proof-of-knowledge {@link ZkProof} used to register a new
-   * {@code HolderEncryptionKey} (64 bytes).
-   */
-  int SCHNORR_ZK_PROOF_HEX_LENGTH = 128;
 
   /**
    * Construct a {@code ConfidentialMptConvert} builder.
@@ -120,10 +117,10 @@ public interface ConfidentialMptConvert extends Transaction {
    *
    * <p>When present, this is a 64-byte (128 hex character) proof.</p>
    *
-   * @return An optionally-present {@link ZkProof}.
+   * @return An optionally-present {@link ConfidentialMptConvertProof}.
    */
   @JsonProperty("ZKProof")
-  Optional<ZkProof> zkProof();
+  Optional<ConfidentialMptConvertProof> zkProof();
 
   /**
    * Validates field-combination invariants for {@link ConfidentialMptConvert}, mirroring the {@code temMALFORMED} and
@@ -135,9 +132,9 @@ public interface ConfidentialMptConvert extends Transaction {
    *       register a {@code HolderEncryptionKey}.</li>
    *   <li>{@code HolderEncryptionKey} and {@code ZKProof} must both be present (when registering a new encryption key)
    *       or both be absent — a proof of knowledge is required exactly when a key is being registered.</li>
-   *   <li>When present, {@code ZKProof} must be exactly {@value #SCHNORR_ZK_PROOF_HEX_LENGTH} hex characters
-   *       (64 bytes), the length of a Schnorr proof of knowledge.</li>
    * </ul>
+   *
+   * <p>The proof's fixed length (64 bytes) is enforced by {@link ConfidentialMptConvertProof} itself.</p>
    */
   @Value.Check
   default void validateFieldCombinations() {
@@ -150,11 +147,5 @@ public interface ConfidentialMptConvert extends Transaction {
       holderEncryptionKey().isPresent() == zkProof().isPresent(),
       "HolderEncryptionKey and ZKProof must both be present (when registering a new encryption key) or both be absent."
     );
-
-    zkProof().ifPresent(proof -> Preconditions.checkState(
-      proof.value().length() == SCHNORR_ZK_PROOF_HEX_LENGTH,
-      "ZKProof must be %s bytes (%s hex characters) for ConfidentialMptConvert.",
-      SCHNORR_ZK_PROOF_HEX_LENGTH / 2, SCHNORR_ZK_PROOF_HEX_LENGTH
-    ));
   }
 }

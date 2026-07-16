@@ -22,8 +22,9 @@ package org.xrpl.xrpl4j.crypto.confidential;
 
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
-import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertBackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
@@ -136,7 +137,7 @@ public class ConfidentialMptConvertBackService {
     Objects.requireNonNull(pedersenBlindingFactor, "pedersenBlindingFactor must not be null");
 
     // Generate Pedersen commitment
-    PedersenCommitment commitment = commitmentGenerator.generateCommitment(balance, pedersenBlindingFactor);
+    Commitment commitment = commitmentGenerator.generateCommitment(balance, pedersenBlindingFactor);
 
     return PedersenProofParams.builder()
       .pedersenCommitment(commitment.value())
@@ -187,7 +188,7 @@ public class ConfidentialMptConvertBackService {
     final ConfidentialMptConvertBackProof proof,
     final PublicKey senderPublicKey,
     final EncryptedAmount encryptedBalance,
-    final PedersenCommitment balanceCommitment,
+    final Commitment balanceCommitment,
     final UnsignedLong amount,
     final ConfidentialMptConvertBackContext context
   ) {

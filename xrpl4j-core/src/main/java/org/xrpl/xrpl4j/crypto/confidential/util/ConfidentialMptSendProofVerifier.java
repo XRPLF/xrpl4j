@@ -20,9 +20,9 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  * =========================LICENSE_END==================================
  */
 
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
-import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 
@@ -64,8 +64,8 @@ public interface ConfidentialMptSendProofVerifier {
     List<MptConfidentialParty> recipients,
     EncryptedAmount senderSpendingCiphertext,
     ConfidentialMptSendContext context,
-    PedersenCommitment amountCommitment,
-    PedersenCommitment balanceCommitment
+    Commitment amountCommitment,
+    Commitment balanceCommitment
   );
 }
 

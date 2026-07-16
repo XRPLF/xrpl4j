@@ -23,7 +23,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
-import org.xrpl.xrpl4j.model.transactions.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 
 import java.io.IOException;
 
@@ -42,6 +42,6 @@ public class BlindingFactorSerializer extends StdScalarSerializer<BlindingFactor
   @Override
   public void serialize(BlindingFactor blindingFactor, JsonGenerator gen, SerializerProvider provider)
     throws IOException {
-    gen.writeString(blindingFactor.value());
+    gen.writeString(blindingFactor.hexValue());
   }
 }

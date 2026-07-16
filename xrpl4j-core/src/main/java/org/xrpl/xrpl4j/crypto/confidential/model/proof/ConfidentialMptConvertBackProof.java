@@ -26,22 +26,23 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Lazy;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptConvertBackProofDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptConvertBackProofSerializer;
 
 /**
- * Represents the proof for a ConfidentialMptConvertBack transaction.
- *
- * <p>The proof consists of a compact AND-composed sigma proof (128 bytes) over the balance
- * witness, followed by a single Bulletproof range proof (688 bytes) over the remainder
- * commitment.</p>
- *
- * <p>Total size: 128 + 688 = 816 bytes
- * (SECP256K1_COMPACT_CONVERTBACK_PROOF_SIZE + kMPT_SINGLE_BULLETPROOF_SIZE)</p>
+ * The zero-knowledge proof for a {@code ConfidentialMptConvertBack} transaction: a compact AND-composed sigma proof
+ * (128 bytes) over the balance witness, followed by a single Bulletproof range proof (688 bytes) over the remainder
+ * commitment. Total 816 bytes (SECP256K1_COMPACT_CONVERTBACK_PROOF_SIZE + kMPT_SINGLE_BULLETPROOF_SIZE). Held as raw
+ * bytes; on the wire it is serialized as an uppercase hex string.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableConfidentialMptConvertBackProof.class)
-@JsonDeserialize(as = ImmutableConfidentialMptConvertBackProof.class)
+@JsonSerialize(
+  as = ImmutableConfidentialMptConvertBackProof.class, using = ConfidentialMptConvertBackProofSerializer.class
+)
+@JsonDeserialize(
+  as = ImmutableConfidentialMptConvertBackProof.class, using = ConfidentialMptConvertBackProofDeserializer.class
+)
 public interface ConfidentialMptConvertBackProof {
 
   /**
@@ -50,79 +51,64 @@ public interface ConfidentialMptConvertBackProof {
   int COMPACT_SIGMA_SIZE = 128;
 
   /**
-   * Size of a single bulletproof range proof (for 1 value).
+   * Size of a single Bulletproof range proof (kMPT_SINGLE_BULLETPROOF_SIZE).
    */
   int SINGLE_BULLETPROOF_SIZE = 688;
 
   /**
-   * Expected total proof size: compact sigma (128) + single bulletproof (688) = 816 bytes.
+   * The exact size of this proof in bytes: compact sigma (128) + single bulletproof (688) = 816.
    */
   int EXPECTED_SIZE = COMPACT_SIGMA_SIZE + SINGLE_BULLETPROOF_SIZE;
 
   /**
-   * Creates a new builder for {@link ConfidentialMptConvertBackProof}.
-   *
-   * @return A new builder.
-   */
-  static ImmutableConfidentialMptConvertBackProof.Builder builder() {
-    return ImmutableConfidentialMptConvertBackProof.builder();
-  }
-
-  /**
    * Creates a proof from an {@link UnsignedByteArray}.
    *
-   * @param value The proof bytes.
+   * @param value The 816-byte proof.
    *
    * @return A {@link ConfidentialMptConvertBackProof}.
-   *
-   * @throws NullPointerException if value is null.
    */
   static ConfidentialMptConvertBackProof of(final UnsignedByteArray value) {
-    return builder().value(value).build();
+    return ImmutableConfidentialMptConvertBackProof.builder().value(value).build();
   }
 
   /**
    * Creates a proof from a hex string.
    *
-   * @param hex The hex string representing the proof.
+   * @param hex The 1632-character hex string representing the proof.
    *
    * @return A {@link ConfidentialMptConvertBackProof}.
-   *
-   * @throws NullPointerException     if hex is null.
-   * @throws IllegalArgumentException if hex is not a valid hex string.
    */
   static ConfidentialMptConvertBackProof fromHex(final String hex) {
     return of(UnsignedByteArray.fromHex(hex));
   }
 
   /**
-   * The proof bytes.
+   * The raw proof bytes.
    *
-   * @return An {@link UnsignedByteArray} containing the proof bytes.
+   * @return An {@link UnsignedByteArray}.
    */
   UnsignedByteArray value();
 
   /**
-   * Validates that the proof is exactly the expected size.
+   * Validates that the proof is exactly {@link #EXPECTED_SIZE} bytes.
    */
   @Value.Check
   default void check() {
     Preconditions.checkArgument(
       value().length() == EXPECTED_SIZE,
-      "ConvertBack proof must be %s bytes, but was %s bytes",
+      "ConfidentialMptConvertBackProof must be %s bytes, but was %s bytes",
       EXPECTED_SIZE, value().length()
     );
   }
 
   /**
-   * Returns the proof as an uppercase hex string.
+   * The proof as an uppercase hex string, as it appears on the XRP Ledger wire format.
    *
-   * @return A {@link String}.
+   * @return A hex-encoded {@link String}.
    */
-  @Lazy
   @JsonIgnore
+  @Value.Lazy
   default String hexValue() {
     return BaseEncoding.base16().encode(value().toByteArray());
   }
 }
-

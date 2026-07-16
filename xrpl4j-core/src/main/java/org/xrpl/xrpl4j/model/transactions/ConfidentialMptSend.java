@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.HashSet;
@@ -24,12 +27,6 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableConfidentialMptSend.class)
 @JsonDeserialize(as = ImmutableConfidentialMptSend.class)
 public interface ConfidentialMptSend extends Transaction {
-
-  /**
-   * The required length, in hex characters, of the {@link ZkProof} for a {@link ConfidentialMptSend} (946 bytes: a
-   * 192-byte compact sigma proof plus a 754-byte double bulletproof).
-   */
-  int SEND_ZK_PROOF_HEX_LENGTH = 1892;
 
   /**
    * Construct a {@code ConfidentialMptSend} builder.
@@ -111,10 +108,10 @@ public interface ConfidentialMptSend extends Transaction {
   /**
    * ZKP bundle establishing equality, linkage, and range sufficiency.
    *
-   * @return A {@link ZkProof} containing the proof.
+   * @return A {@link ConfidentialMptSendProof} containing the proof.
    */
   @JsonProperty("ZKProof")
-  ZkProof zkProof();
+  ConfidentialMptSendProof zkProof();
 
   /**
    * A Pedersen commitment to the transfer amount.
@@ -149,21 +146,16 @@ public interface ConfidentialMptSend extends Transaction {
    *
    * <ul>
    *   <li>The {@code Account} (sender) must not equal the {@code Destination} — an account cannot send to itself.</li>
-   *   <li>{@code ZKProof} must be exactly {@value #SEND_ZK_PROOF_HEX_LENGTH} hex characters (946 bytes).</li>
    *   <li>{@code CredentialIDs}, when present, must contain at most 8 unique entries.</li>
    * </ul>
+   *
+   * <p>The proof's fixed length (946 bytes) is enforced by {@link ConfidentialMptSendProof} itself.</p>
    */
   @Value.Check
   default void validateConfidentialMptSend() {
     Preconditions.checkState(
       !account().equals(destination()),
       "Account and Destination must not be the same (an account cannot send to itself)."
-    );
-
-    Preconditions.checkState(
-      zkProof().value().length() == SEND_ZK_PROOF_HEX_LENGTH,
-      "ZKProof must be %s bytes (%s hex characters) for ConfidentialMptSend.",
-      SEND_ZK_PROOF_HEX_LENGTH / 2, SEND_ZK_PROOF_HEX_LENGTH
     );
 
     if (!credentialIds().isEmpty()) {

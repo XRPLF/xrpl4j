@@ -7,6 +7,7 @@ import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptClawbackProof;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 /**
@@ -16,7 +17,8 @@ class ConfidentialMptClawbackTest {
 
   private static final Address ACCOUNT = Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c");
   private static final Address HOLDER = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
-  private static final ZkProof ZK_PROOF = ZkProof.of(Strings.repeat("34", 64));
+  private static final ConfidentialMptClawbackProof ZK_PROOF =
+    ConfidentialMptClawbackProof.fromHex(Strings.repeat("34", 64));
 
   @Test
   void transactionFlagsReturnsEmptyFlags() {
@@ -56,12 +58,10 @@ class ConfidentialMptClawbackTest {
 
   @Test
   void zkProofMustBeClawbackLength() {
-    ZkProof wrongLengthProof = ZkProof.of(Strings.repeat("34", 32)); // 64 hex chars (32 bytes), not 128.
-    assertThatThrownBy(() -> baseBuilder()
-      .zkProof(wrongLengthProof)
-      .build()
-    ).isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("ZKProof must be 64 bytes");
+    // A ConfidentialMptClawbackProof enforces its own 64-byte length at construction.
+    assertThatThrownBy(() -> ConfidentialMptClawbackProof.fromHex(Strings.repeat("34", 32))) // 32 bytes, not 64.
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("ConfidentialMptClawbackProof must be 64 bytes");
   }
 
   @Test
@@ -69,7 +69,7 @@ class ConfidentialMptClawbackTest {
     ConfidentialMptClawback clawback = baseBuilder().build();
 
     assertThat(clawback.holder()).isEqualTo(HOLDER);
-    assertThat(clawback.zkProof().value()).hasSize(ConfidentialMptClawback.CLAWBACK_ZK_PROOF_HEX_LENGTH);
+    assertThat(clawback.zkProof().value().length()).isEqualTo(ConfidentialMptClawbackProof.EXPECTED_SIZE);
   }
 
   /**

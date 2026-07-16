@@ -23,24 +23,25 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import org.xrpl.xrpl4j.model.transactions.ZkProof;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptClawbackProof;
 
 import java.io.IOException;
 
 /**
- * Custom Jackson deserializer for {@link ZkProof}s.
+ * Custom Jackson deserializer for {@link ConfidentialMptClawbackProof}s, which reads an uppercase hex string.
  */
-public class ZkProofDeserializer extends StdDeserializer<ZkProof> {
+public class ConfidentialMptClawbackProofDeserializer extends StdDeserializer<ConfidentialMptClawbackProof> {
 
   /**
    * No-args constructor.
    */
-  public ZkProofDeserializer() {
-    super(ZkProof.class);
+  public ConfidentialMptClawbackProofDeserializer() {
+    super(ConfidentialMptClawbackProof.class);
   }
 
   @Override
-  public ZkProof deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
-    return ZkProof.of(jsonParser.getText());
+  public ConfidentialMptClawbackProof deserialize(JsonParser jsonParser, DeserializationContext ctxt)
+    throws IOException {
+    return ConfidentialMptClawbackProof.fromHex(jsonParser.getText());
   }
 }

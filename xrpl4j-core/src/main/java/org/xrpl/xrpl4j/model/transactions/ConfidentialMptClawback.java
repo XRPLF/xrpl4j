@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptClawbackProof;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 /**
@@ -24,12 +25,6 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 @JsonSerialize(as = ImmutableConfidentialMptClawback.class)
 @JsonDeserialize(as = ImmutableConfidentialMptClawback.class)
 public interface ConfidentialMptClawback extends Transaction {
-
-  /**
-   * The required length, in hex characters, of the {@link ZkProof} for a {@link ConfidentialMptClawback} (64 bytes),
-   * the length of an Equality Plaintext Proof.
-   */
-  int CLAWBACK_ZK_PROOF_HEX_LENGTH = 128;
 
   /**
    * Construct a {@code ConfidentialMptClawback} builder.
@@ -81,10 +76,10 @@ public interface ConfidentialMptClawback extends Transaction {
    * A Zero-Knowledge Proof proving that the issuer's encrypted balance for this holder
    * encrypts the claimed MPTAmount. This uses the Equality Plaintext Proof protocol.
    *
-   * @return A {@link ZkProof} containing the ZK proof (64 bytes).
+   * @return A {@link ConfidentialMptClawbackProof} containing the ZK proof (64 bytes).
    */
   @JsonProperty("ZKProof")
-  ZkProof zkProof();
+  ConfidentialMptClawbackProof zkProof();
 
   /**
    * Validates invariants for {@link ConfidentialMptClawback}, mirroring the {@code temMALFORMED} and
@@ -94,7 +89,6 @@ public interface ConfidentialMptClawback extends Transaction {
    *   <li>The {@code Account} (issuer) must not equal the {@code Holder} — an issuer cannot clawback from itself.</li>
    *   <li>{@code MPTAmount} must be non-zero and no greater than the maximum allowable supply
    *       ({@code temBAD_AMOUNT} in {@code rippled}).</li>
-   *   <li>{@code ZKProof} must be exactly {@value #CLAWBACK_ZK_PROOF_HEX_LENGTH} hex characters (64 bytes).</li>
    * </ul>
    */
   @Value.Check
@@ -112,12 +106,6 @@ public interface ConfidentialMptClawback extends Transaction {
     Preconditions.checkState(
       mptAmount().value().compareTo(MpTokenNumericAmount.MAX_AMOUNT) <= 0,
       "MPTAmount must not exceed the maximum allowable supply (%s).", MpTokenNumericAmount.MAX_AMOUNT
-    );
-
-    Preconditions.checkState(
-      zkProof().value().length() == CLAWBACK_ZK_PROOF_HEX_LENGTH,
-      "ZKProof must be %s bytes (%s hex characters) for ConfidentialMptClawback.",
-      CLAWBACK_ZK_PROOF_HEX_LENGTH / 2, CLAWBACK_ZK_PROOF_HEX_LENGTH
     );
   }
 }

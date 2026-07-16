@@ -26,91 +26,76 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Lazy;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptClawbackProofDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptClawbackProofSerializer;
 
 /**
- * Represents the proof for a ConfidentialMptClawback transaction.
- *
- * <p>The proof is a compact sigma proof that proves the issuer can decrypt the ciphertext
- * and it equals exactly the claimed amount.</p>
- *
- * <p>Total size: 64 bytes (SECP256K1_COMPACT_CLAWBACK_PROOF_SIZE).</p>
+ * The zero-knowledge proof for a {@code ConfidentialMptClawback} transaction: a 64-byte compact sigma proof that the
+ * issuer can decrypt the ciphertext and that it equals exactly the claimed amount
+ * (SECP256K1_COMPACT_CLAWBACK_PROOF_SIZE). Held as raw bytes; on the wire it is serialized as an uppercase hex string.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableConfidentialMptClawbackProof.class)
-@JsonDeserialize(as = ImmutableConfidentialMptClawbackProof.class)
+@JsonSerialize(as = ImmutableConfidentialMptClawbackProof.class, using = ConfidentialMptClawbackProofSerializer.class)
+@JsonDeserialize(
+  as = ImmutableConfidentialMptClawbackProof.class, using = ConfidentialMptClawbackProofDeserializer.class
+)
 public interface ConfidentialMptClawbackProof {
 
   /**
-   * Expected proof size: 64 bytes (SECP256K1_COMPACT_CLAWBACK_PROOF_SIZE).
+   * The exact size of this proof in bytes (SECP256K1_COMPACT_CLAWBACK_PROOF_SIZE).
    */
   int EXPECTED_SIZE = 64;
 
   /**
-   * Creates a new builder for {@link ConfidentialMptClawbackProof}.
-   *
-   * @return A new builder.
-   */
-  static ImmutableConfidentialMptClawbackProof.Builder builder() {
-    return ImmutableConfidentialMptClawbackProof.builder();
-  }
-
-  /**
    * Creates a proof from an {@link UnsignedByteArray}.
    *
-   * @param value The proof bytes.
+   * @param value The 64-byte compact sigma proof.
    *
    * @return A {@link ConfidentialMptClawbackProof}.
-   *
-   * @throws NullPointerException if value is null.
    */
   static ConfidentialMptClawbackProof of(final UnsignedByteArray value) {
-    return builder().value(value).build();
+    return ImmutableConfidentialMptClawbackProof.builder().value(value).build();
   }
 
   /**
    * Creates a proof from a hex string.
    *
-   * @param hex The hex string representing the proof.
+   * @param hex The 128-character hex string representing the proof.
    *
    * @return A {@link ConfidentialMptClawbackProof}.
-   *
-   * @throws NullPointerException     if hex is null.
-   * @throws IllegalArgumentException if hex is not a valid hex string.
    */
   static ConfidentialMptClawbackProof fromHex(final String hex) {
     return of(UnsignedByteArray.fromHex(hex));
   }
 
   /**
-   * The proof bytes.
+   * The raw proof bytes.
    *
-   * @return An {@link UnsignedByteArray} containing the proof bytes.
+   * @return An {@link UnsignedByteArray}.
    */
   UnsignedByteArray value();
 
   /**
-   * Validates that the proof is exactly the expected size.
+   * Validates that the proof is exactly {@link #EXPECTED_SIZE} bytes.
    */
   @Value.Check
   default void check() {
     Preconditions.checkArgument(
       value().length() == EXPECTED_SIZE,
-      "Clawback proof must be %s bytes, but was %s bytes",
+      "ConfidentialMptClawbackProof must be %s bytes, but was %s bytes",
       EXPECTED_SIZE, value().length()
     );
   }
 
   /**
-   * Returns the proof as an uppercase hex string.
+   * The proof as an uppercase hex string, as it appears on the XRP Ledger wire format.
    *
-   * @return A {@link String}.
+   * @return A hex-encoded {@link String}.
    */
-  @Lazy
   @JsonIgnore
+  @Value.Lazy
   default String hexValue() {
     return BaseEncoding.base16().encode(value().toByteArray());
   }
 }
-

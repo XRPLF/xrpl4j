@@ -87,7 +87,7 @@ public class JnaConfidentialMptClawbackProofGenerator implements ConfidentialMpt
     byte[] privkey = naturalBytes.toByteArray();
     byte[] pubkey = issuerPublicKey.value().toByteArray();
     byte[] ctxHash = context.value().toByteArray();
-    byte[] encryptedAmount = issuerEncryptedBalance.toBytes().toByteArray();
+    byte[] encryptedAmount = issuerEncryptedBalance.value().toByteArray();
 
     byte[] outProof = new byte[PROOF_SIZE];
     int result = lib.mpt_get_clawback_proof(

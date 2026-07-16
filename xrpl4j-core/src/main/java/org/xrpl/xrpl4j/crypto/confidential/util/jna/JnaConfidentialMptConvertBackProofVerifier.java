@@ -23,8 +23,8 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
-import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertBackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertBackProofVerifier;
@@ -66,7 +66,7 @@ public class JnaConfidentialMptConvertBackProofVerifier implements ConfidentialM
     final ConfidentialMptConvertBackProof proof,
     final PublicKey senderPublicKey,
     final EncryptedAmount encryptedBalance,
-    final PedersenCommitment balanceCommitment,
+    final Commitment balanceCommitment,
     final UnsignedLong amount,
     final ConfidentialMptConvertBackContext context
   ) {
@@ -84,7 +84,7 @@ public class JnaConfidentialMptConvertBackProofVerifier implements ConfidentialM
     return lib.mpt_verify_convert_back_proof(
       proof.value().toByteArray(),
       senderPublicKey.value().toByteArray(),
-      encryptedBalance.toBytes().toByteArray(),
+      encryptedBalance.value().toByteArray(),
       balanceCommitment.value().toByteArray(),
       amount.longValue(),
       context.value().toByteArray()

@@ -21,99 +21,90 @@ package org.xrpl.xrpl4j.crypto.confidential.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.model.ImmutableEncryptedAmount.Builder;
+import org.xrpl.xrpl4j.model.jackson.modules.EncryptedAmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.EncryptedAmountSerializer;
 
 /**
- * An immutable ElGamal ciphertext represented as a 66-byte value (two compressed secp256k1 points).
+ * An ElGamal ciphertext ("encrypted amount") used in Confidential MPT transactions and ledger objects: a fixed-size
+ * 66-byte value made of two compressed secp256k1 points (C1 || C2). Held as raw bytes; on the wire it is serialized as
+ * an uppercase hex string.
  */
 @Value.Immutable
+@JsonSerialize(as = ImmutableEncryptedAmount.class, using = EncryptedAmountSerializer.class)
+@JsonDeserialize(as = ImmutableEncryptedAmount.class, using = EncryptedAmountDeserializer.class)
 public interface EncryptedAmount {
 
   /**
-   * Instantiates a new builder.
-   *
-   * @return An {@link Builder}.
+   * The exact size of an encrypted amount in bytes (two compressed EC points).
    */
-  static Builder builder() {
-    return ImmutableEncryptedAmount.builder();
-  }
+  int LENGTH = 66;
 
   /**
-   * Creates a ciphertext from a 66-byte array.
-   *
-   * @param bytes The 66-byte ciphertext.
-   *
-   * @return A new {@link EncryptedAmount}.
-   *
-   * @throws NullPointerException     if bytes is null.
-   * @throws IllegalArgumentException if bytes is not exactly 66 bytes.
-   */
-  static EncryptedAmount fromBytes(byte[] bytes) {
-    Preconditions.checkNotNull(bytes, "bytes must not be null");
-    return builder().value(UnsignedByteArray.of(bytes)).build();
-  }
-
-  /**
-   * Creates a ciphertext from a 66-byte {@link UnsignedByteArray}.
+   * Creates an encrypted amount from an {@link UnsignedByteArray}.
    *
    * @param value The 66-byte ciphertext.
    *
-   * @return A new {@link EncryptedAmount}.
-   *
-   * @throws NullPointerException     if value is null.
-   * @throws IllegalArgumentException if value is not exactly 66 bytes.
+   * @return An {@link EncryptedAmount}.
    */
-  static EncryptedAmount fromBytes(UnsignedByteArray value) {
-    Preconditions.checkNotNull(value, "value must not be null");
-    return builder().value(value).build();
+  static EncryptedAmount of(final UnsignedByteArray value) {
+    return ImmutableEncryptedAmount.builder().value(value).build();
   }
 
   /**
-   * Creates a ciphertext from a 132-character hex string.
+   * Creates an encrypted amount from a hex string.
    *
-   * @param hex The hex string.
+   * @param hex The 132-character hex string representing the ciphertext.
    *
-   * @return A new {@link EncryptedAmount}.
-   *
-   * @throws NullPointerException     if hex is null.
-   * @throws IllegalArgumentException if hex is not a valid 132-character hex string.
+   * @return An {@link EncryptedAmount}.
    */
-  static EncryptedAmount fromHex(String hex) {
-    Preconditions.checkNotNull(hex, "hex must not be null");
-    return fromBytes(UnsignedByteArray.fromHex(hex));
+  static EncryptedAmount of(final String hex) {
+    return of(UnsignedByteArray.fromHex(hex));
+  }
+
+  /**
+   * Creates an encrypted amount from a 66-byte array.
+   *
+   * @param bytes The 66-byte ciphertext.
+   *
+   * @return An {@link EncryptedAmount}.
+   */
+  static EncryptedAmount fromBytes(final byte[] bytes) {
+    return of(UnsignedByteArray.of(bytes));
   }
 
   /**
    * The raw 66-byte ElGamal ciphertext.
    *
-   * @return An {@link UnsignedByteArray} of 66 bytes.
+   * @return An {@link UnsignedByteArray}.
    */
   UnsignedByteArray value();
 
   /**
-   * Returns the ciphertext as a byte array.
-   *
-   * @return A 66-byte {@link UnsignedByteArray}.
+   * Validates that the ciphertext is exactly {@link #LENGTH} bytes.
    */
-  @JsonIgnore
-  @Value.Lazy
-  default UnsignedByteArray toBytes() {
-    return value();
+  @Value.Check
+  default void check() {
+    Preconditions.checkArgument(
+      value().length() == LENGTH,
+      "EncryptedAmount must be %s bytes, but was %s bytes",
+      LENGTH, value().length()
+    );
   }
 
   /**
-   * Returns the ciphertext as an uppercase hex string.
+   * The ciphertext as an uppercase hex string, as it appears on the XRP Ledger wire format.
    *
-   * @return A 132-character uppercase hex string.
+   * @return A 132-character hex {@link String}.
    */
   @JsonIgnore
   @Value.Lazy
-  default String toHex() {
+  default String hexValue() {
     return BaseEncoding.base16().encode(value().toByteArray());
   }
 }
-

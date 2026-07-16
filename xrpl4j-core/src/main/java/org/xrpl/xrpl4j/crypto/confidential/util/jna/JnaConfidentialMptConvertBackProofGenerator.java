@@ -84,8 +84,14 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     MptCryptoLibrary.MptPedersenProofParams params = new MptCryptoLibrary.MptPedersenProofParams();
     System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, params.pedersenCommitment, 0, 33);
     params.amount = balanceParams.amount().longValue();
-    System.arraycopy(balanceParams.encryptedAmount().toBytes().toByteArray(), 0, params.encryptedAmount, 0, 66);
-    System.arraycopy(balanceParams.blindingFactor().toBytes(), 0, params.blindingFactor, 0, 32);
+    System.arraycopy(
+      balanceParams.encryptedAmount().value().toByteArray(), 0,
+      params.encryptedAmount, 0, 66
+    );
+    System.arraycopy(
+      balanceParams.blindingFactor().value().toByteArray(), 0,
+      params.blindingFactor, 0, 32
+    );
 
     byte[] outProof = new byte[PROOF_SIZE];
 

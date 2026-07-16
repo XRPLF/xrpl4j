@@ -22,8 +22,8 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
 
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.util.PedersenCommitmentGenerator;
 
 import java.util.Objects;
@@ -60,17 +60,17 @@ public class JnaPedersenCommitmentGenerator implements PedersenCommitmentGenerat
   }
 
   @Override
-  public PedersenCommitment generateCommitment(final UnsignedLong amount, final BlindingFactor blindingFactor) {
+  public Commitment generateCommitment(final UnsignedLong amount, final BlindingFactor blindingFactor) {
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(blindingFactor, "blindingFactor must not be null");
 
     byte[] outCommitment = new byte[COMMITMENT_SIZE];
     int result = lib.mpt_get_pedersen_commitment(
-      amount.longValue(), blindingFactor.toBytes(), outCommitment
+      amount.longValue(), blindingFactor.value().toByteArray(), outCommitment
     );
     if (result != 0) {
       throw new IllegalStateException("mpt_get_pedersen_commitment failed with error code: " + result);
     }
-    return PedersenCommitment.of(UnsignedByteArray.of(outCommitment));
+    return Commitment.of(UnsignedByteArray.of(outCommitment));
   }
 }

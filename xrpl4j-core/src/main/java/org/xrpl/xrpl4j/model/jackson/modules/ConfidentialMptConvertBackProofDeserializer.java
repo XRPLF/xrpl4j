@@ -20,27 +20,28 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  * =========================LICENSE_END==================================
  */
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
-import org.xrpl.xrpl4j.model.transactions.ZkProof;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 
 import java.io.IOException;
 
 /**
- * Custom Jackson serializer for {@link ZkProof}s.
+ * Custom Jackson deserializer for {@link ConfidentialMptConvertBackProof}s, which reads an uppercase hex string.
  */
-public class ZkProofSerializer extends StdScalarSerializer<ZkProof> {
+public class ConfidentialMptConvertBackProofDeserializer extends StdDeserializer<ConfidentialMptConvertBackProof> {
 
   /**
    * No-args constructor.
    */
-  public ZkProofSerializer() {
-    super(ZkProof.class, false);
+  public ConfidentialMptConvertBackProofDeserializer() {
+    super(ConfidentialMptConvertBackProof.class);
   }
 
   @Override
-  public void serialize(ZkProof zkProof, JsonGenerator gen, SerializerProvider provider) throws IOException {
-    gen.writeString(zkProof.value());
+  public ConfidentialMptConvertBackProof deserialize(JsonParser jsonParser, DeserializationContext ctxt)
+    throws IOException {
+    return ConfidentialMptConvertBackProof.fromHex(jsonParser.getText());
   }
 }

@@ -27,17 +27,16 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import java.util.List;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptClawbackService;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptConvertBackService;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptConvertService;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptSendService;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
-import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptClawbackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertBackContext;
@@ -70,7 +69,6 @@ import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
-import org.xrpl.xrpl4j.model.transactions.Commitment;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptClawback;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvert;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvertBack;
@@ -85,9 +83,9 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.ZkProof;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Integration test for the full Confidential MPT (Multi-Purpose Token) transfer lifecycle.
@@ -142,7 +140,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
     // Confidential MPT transactions carry a base-fee multiplier (kConfidentialFeeMultiplier = 9) in rippled,
     // so they require a substantially higher fee than the standard recommended fee.
-    XrpCurrencyAmount confidentialFee = XrpCurrencyAmount.ofDrops(fee.value().longValue() * 12L);
+    final XrpCurrencyAmount confidentialFee = XrpCurrencyAmount.ofDrops(fee.value().longValue() * 12L);
 
     // =====================================================================
     // 1. Create MPTokenIssuance with transfer, clawback, and privacy flags
@@ -309,14 +307,11 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(amountToConvert))
       .holderEncryptionKey(holderElGamalKeyPair.publicKey())
-      .holderEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(holderEncryptedForConvert.toHex()))
-      .issuerEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(issuerEncryptedForConvert.toHex()))
-      .auditorEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(auditorEncryptedForConvert.toHex()))
-      .blindingFactor(org.xrpl.xrpl4j.model.transactions.BlindingFactor.of(convertBlindingFactor.hexValue()))
-      .zkProof(ZkProof.of(convertZkProof.hexValue()))
+      .holderEncryptedAmount(holderEncryptedForConvert)
+      .issuerEncryptedAmount(issuerEncryptedForConvert)
+      .auditorEncryptedAmount(auditorEncryptedForConvert)
+      .blindingFactor(convertBlindingFactor)
+      .zkProof(convertZkProof)
       .build();
 
     TransactionResult<ConfidentialMptConvert> convertResult =
@@ -405,15 +400,11 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(UnsignedLong.ZERO))
       .holderEncryptionKey(holder2ElGamalKeyPair.publicKey())
-      .holderEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(holder2EncryptedForConvert.toHex()))
-      .issuerEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(issuerEncryptedForHolder2Convert.toHex()))
-      .auditorEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(auditorEncryptedForHolder2Convert.toHex()))
-      .blindingFactor(
-        org.xrpl.xrpl4j.model.transactions.BlindingFactor.of(holder2ConvertBlindingFactor.hexValue()))
-      .zkProof(ZkProof.of(holder2ConvertProof.hexValue()))
+      .holderEncryptedAmount(holder2EncryptedForConvert)
+      .issuerEncryptedAmount(issuerEncryptedForHolder2Convert)
+      .auditorEncryptedAmount(auditorEncryptedForHolder2Convert)
+      .blindingFactor(holder2ConvertBlindingFactor)
+      .zkProof(holder2ConvertProof)
       .build();
 
     TransactionResult<ConfidentialMptConvert> holder2ConvertResult =
@@ -461,17 +452,15 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
 
     // Decrypt the sender's current spending balance to use in Pedersen proof params
-    EncryptedAmount senderBalanceCiphertext = EncryptedAmount.fromHex(
-      holderMpToken.confidentialBalanceSpending()
-        .orElseThrow(() -> new RuntimeException("Sender has no confidential balance")).value()
-    );
+    EncryptedAmount senderBalanceCiphertext = holderMpToken.confidentialBalanceSpending()
+      .orElseThrow(() -> new RuntimeException("Sender has no confidential balance"));
     UnsignedLong senderCurrentBalance = decryptor.decrypt(
       senderBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
     );
 
     // Generate Pedersen commitment for the amount using txBlindingFactor as the blinding factor
     // (per spec: pc_m = m*G + r*H where r is the shared ElGamal randomness)
-    PedersenCommitment amountCommitment = sendService.generatePedersenCommitment(
+    Commitment amountCommitment = sendService.generatePedersenCommitment(
       sendAmount, sendBlindingFactor
     );
 
@@ -508,7 +497,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       senderBalanceCiphertext,
       sendContext,
       amountCommitment,
-      PedersenCommitment.of(balanceParams.pedersenCommitment())
+      Commitment.of(balanceParams.pedersenCommitment())
     )).isTrue();
 
     ConfidentialMptSend confidentialSend = ConfidentialMptSend.builder()
@@ -519,15 +508,11 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
       .destination(holder2KeyPair.publicKey().deriveAddress())
       .mpTokenIssuanceId(mpTokenIssuanceId)
-      .senderEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(senderCiphertext.toHex()))
-      .destinationEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(destCiphertext.toHex()))
-      .issuerEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(issuerCiphertextForSend.toHex()))
-      .auditorEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(auditorCiphertextForSend.toHex()))
-      .zkProof(ZkProof.of(sendProof.hexValue()))
+      .senderEncryptedAmount(senderCiphertext)
+      .destinationEncryptedAmount(destCiphertext)
+      .issuerEncryptedAmount(issuerCiphertextForSend)
+      .auditorEncryptedAmount(auditorCiphertextForSend)
+      .zkProof(sendProof)
       .amountCommitment(Commitment.of(amountCommitment.hexValue()))
       .balanceCommitment(Commitment.of(balanceParams.pedersenCommitment().hexValue()))
       .build();
@@ -538,10 +523,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     // Verify sender's confidential balance was reduced: 500 - 100 = 400
     MpTokenObject senderMpTokenAfterSend = getMpToken(holderKeyPair, mpTokenIssuanceId);
-    EncryptedAmount senderBalanceAfterSendCiphertext = EncryptedAmount.fromHex(
-      senderMpTokenAfterSend.confidentialBalanceSpending()
-        .orElseThrow(() -> new RuntimeException("Sender has no confidential balance after send")).value()
-    );
+    EncryptedAmount senderBalanceAfterSendCiphertext = senderMpTokenAfterSend.confidentialBalanceSpending()
+      .orElseThrow(() -> new RuntimeException("Sender has no confidential balance after send"));
     UnsignedLong senderBalanceAfterSend = decryptor.decrypt(
       senderBalanceAfterSendCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
     );
@@ -583,10 +566,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
 
     // Decrypt current spending balance to generate a Pedersen commitment proving sufficient funds
-    EncryptedAmount currentBalanceForConvertBack = EncryptedAmount.fromHex(
-      holderMpTokenForConvertBack.confidentialBalanceSpending()
-        .orElseThrow(() -> new RuntimeException("Holder has no confidential balance")).value()
-    );
+    EncryptedAmount currentBalanceForConvertBack = holderMpTokenForConvertBack.confidentialBalanceSpending()
+      .orElseThrow(() -> new RuntimeException("Holder has no confidential balance"));
     UnsignedLong currentSpendingBalance = decryptor.decrypt(
       currentBalanceForConvertBack, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
     );
@@ -603,12 +584,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
       convertBackProof,
       holderElGamalKeyPair.publicKey(),
       currentBalanceForConvertBack,
-      PedersenCommitment.of(convertBackBalanceParams.pedersenCommitment()),
+      Commitment.of(convertBackBalanceParams.pedersenCommitment()),
       convertBackAmount,
       convertBackContext
     )).isTrue();
 
-    PedersenCommitment convertBackCommitment = PedersenCommitment.of(
+    Commitment convertBackCommitment = Commitment.of(
       convertBackBalanceParams.pedersenCommitment()
     );
 
@@ -620,15 +601,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(convertBackAmount))
-      .holderEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(holderEncryptedForConvertBack.toHex()))
-      .issuerEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(issuerEncryptedForConvertBack.toHex()))
-      .auditorEncryptedAmount(
-        org.xrpl.xrpl4j.model.transactions.EncryptedAmount.of(auditorEncryptedForConvertBack.toHex()))
-      .blindingFactor(org.xrpl.xrpl4j.model.transactions.BlindingFactor.of(convertBackBlindingFactor.hexValue()))
+      .holderEncryptedAmount(holderEncryptedForConvertBack)
+      .issuerEncryptedAmount(issuerEncryptedForConvertBack)
+      .auditorEncryptedAmount(auditorEncryptedForConvertBack)
+      .blindingFactor(convertBackBlindingFactor)
       .balanceCommitment(Commitment.of(convertBackCommitment.hexValue()))
-      .zkProof(ZkProof.of(convertBackProof.hexValue()))
+      .zkProof(convertBackProof)
       .build();
 
     TransactionResult<ConfidentialMptConvertBack> convertBackResult =
@@ -637,10 +615,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     // Verify remaining confidential balance: 400 - 50 = 350
     MpTokenObject holderMpTokenAfterConvertBack = getMpToken(holderKeyPair, mpTokenIssuanceId);
-    EncryptedAmount remainingBalanceCiphertext = EncryptedAmount.fromHex(
-      holderMpTokenAfterConvertBack.confidentialBalanceSpending()
-        .orElseThrow(() -> new RuntimeException("No confidential balance after convert back")).value()
-    );
+    EncryptedAmount remainingBalanceCiphertext = holderMpTokenAfterConvertBack.confidentialBalanceSpending()
+      .orElseThrow(() -> new RuntimeException("No confidential balance after convert back"));
     UnsignedLong remainingConfidentialBalance = decryptor.decrypt(
       remainingBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
     );
@@ -656,10 +632,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     // Read the issuer's encrypted mirror of the holder's balance from the ledger
     MpTokenObject holderMpTokenForClawback = getMpToken(holderKeyPair, mpTokenIssuanceId);
-    EncryptedAmount issuerBalanceCiphertext = EncryptedAmount.fromHex(
-      holderMpTokenForClawback.issuerEncryptedBalance()
-        .orElseThrow(() -> new RuntimeException("No issuer encrypted balance found")).value()
-    );
+    EncryptedAmount issuerBalanceCiphertext = holderMpTokenForClawback.issuerEncryptedBalance()
+      .orElseThrow(() -> new RuntimeException("No issuer encrypted balance found"));
 
     // Verify issuer can decrypt and the balance is sufficient for the clawback
     UnsignedLong issuerDecryptedBalance = decryptor.decrypt(
@@ -703,7 +677,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .holder(holderKeyPair.publicKey().deriveAddress())
       .mptAmount(MpTokenNumericAmount.of(clawbackAmount))
-      .zkProof(ZkProof.of(clawbackProof.hexValue()))
+      .zkProof(clawbackProof)
       .build();
 
     TransactionResult<ConfidentialMptClawback> clawbackResult =

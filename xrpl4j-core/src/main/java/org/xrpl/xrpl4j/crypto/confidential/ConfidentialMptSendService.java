@@ -22,9 +22,10 @@ package org.xrpl.xrpl4j.crypto.confidential;
 
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
-import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
@@ -120,9 +121,9 @@ public class ConfidentialMptSendService {
    * @param amount         The amount to commit to.
    * @param blindingFactor The blinding factor.
    *
-   * @return A {@link PedersenCommitment}.
+   * @return A {@link Commitment}.
    */
-  public PedersenCommitment generatePedersenCommitment(
+  public Commitment generatePedersenCommitment(
     final UnsignedLong amount,
     final BlindingFactor blindingFactor
   ) {
@@ -154,7 +155,7 @@ public class ConfidentialMptSendService {
     Objects.requireNonNull(pedersenBlindingFactor, "pedersenBlindingFactor must not be null");
 
     // Generate Pedersen commitment
-    PedersenCommitment commitment = commitmentGenerator.generateCommitment(amount, pedersenBlindingFactor);
+    Commitment commitment = commitmentGenerator.generateCommitment(amount, pedersenBlindingFactor);
 
     return PedersenProofParams.builder()
       .pedersenCommitment(commitment.value())
@@ -188,7 +189,7 @@ public class ConfidentialMptSendService {
     final List<MptConfidentialParty> recipients,
     final BlindingFactor txBlindingFactor,
     final ConfidentialMptSendContext context,
-    final PedersenCommitment amountCommitment,
+    final Commitment amountCommitment,
     final PedersenProofParams balanceParams
   ) {
     return proofGenerator.generateProof(
@@ -219,8 +220,8 @@ public class ConfidentialMptSendService {
     final List<MptConfidentialParty> recipients,
     final EncryptedAmount senderSpendingCiphertext,
     final ConfidentialMptSendContext context,
-    final PedersenCommitment amountCommitment,
-    final PedersenCommitment balanceCommitment
+    final Commitment amountCommitment,
+    final Commitment balanceCommitment
   ) {
     return proofVerifier.verifyProof(
       proof, recipients, senderSpendingCiphertext, context, amountCommitment, balanceCommitment

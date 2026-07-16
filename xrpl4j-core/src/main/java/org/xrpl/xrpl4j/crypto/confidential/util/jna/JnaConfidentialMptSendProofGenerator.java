@@ -24,9 +24,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
-import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
@@ -76,7 +76,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     final List<MptConfidentialParty> recipients,
     final BlindingFactor txBlindingFactor,
     final ConfidentialMptSendContext context,
-    final PedersenCommitment amountCommitment,
+    final Commitment amountCommitment,
     final PedersenProofParams balanceParams
   ) {
     Objects.requireNonNull(senderKeyPair, "senderKeyPair must not be null");
@@ -103,7 +103,8 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
       MptConfidentialParty party = recipients.get(i);
       System.arraycopy(party.publicKey().value().toByteArray(), 0, recipientArray[i].pubkey, 0, PUBKEY_SIZE);
       System.arraycopy(
-        party.encryptedAmount().toBytes().toByteArray(), 0, recipientArray[i].ciphertext, 0, CIPHERTEXT_SIZE
+        party.encryptedAmount().value().toByteArray(), 0,
+        recipientArray[i].ciphertext, 0, CIPHERTEXT_SIZE
       );
     }
 
@@ -111,8 +112,14 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     MptCryptoLibrary.MptPedersenProofParams balanceStruct = new MptCryptoLibrary.MptPedersenProofParams();
     System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, balanceStruct.pedersenCommitment, 0, 33);
     balanceStruct.amount = balanceParams.amount().longValue();
-    System.arraycopy(balanceParams.encryptedAmount().toBytes().toByteArray(), 0, balanceStruct.encryptedAmount, 0, 66);
-    System.arraycopy(balanceParams.blindingFactor().toBytes(), 0, balanceStruct.blindingFactor, 0, 32);
+    System.arraycopy(
+      balanceParams.encryptedAmount().value().toByteArray(), 0,
+      balanceStruct.encryptedAmount, 0, 66
+    );
+    System.arraycopy(
+      balanceParams.blindingFactor().value().toByteArray(), 0,
+      balanceStruct.blindingFactor, 0, 32
+    );
 
     byte[] outProof = new byte[MAX_PROOF_SIZE];
     long[] outLen = new long[]{MAX_PROOF_SIZE};
@@ -125,7 +132,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     int result = lib.mpt_get_confidential_send_proof(
       privkey, pubkey, amount.longValue(),
       recipientArray[0], numRecipients,
-      txBlindingFactor.toBytes(), context.value().toByteArray(),
+      txBlindingFactor.value().toByteArray(), context.value().toByteArray(),
       amountCommitment.value().toByteArray(), balanceStruct,
       outProof, outLen
     );

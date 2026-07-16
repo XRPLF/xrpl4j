@@ -7,6 +7,10 @@ import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 /**
@@ -16,7 +20,8 @@ class ConfidentialMptConvertBackTest {
 
   private static final Address ACCOUNT = Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c");
   // A valid 816-byte (1632 hex character) ConvertBack ZKProof.
-  private static final ZkProof ZK_PROOF = ZkProof.of(Strings.repeat("34", 816));
+  private static final ConfidentialMptConvertBackProof ZK_PROOF =
+    ConfidentialMptConvertBackProof.fromHex(Strings.repeat("34", 816));
 
   @Test
   void transactionFlagsReturnsEmptyFlags() {
@@ -28,13 +33,10 @@ class ConfidentialMptConvertBackTest {
 
   @Test
   void zkProofMustBeConvertBackLength() {
-    // A ZKProof of the wrong length (Send length, not ConvertBack length) -> temMALFORMED in rippled.
-    ZkProof wrongLengthProof = ZkProof.of(Strings.repeat("34", 946)); // 1892 hex chars, not 1632.
-    assertThatThrownBy(() -> baseBuilder()
-      .zkProof(wrongLengthProof)
-      .build()
-    ).isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("ZKProof must be 816 bytes");
+    // A ConfidentialMptConvertBackProof enforces its own 816-byte length at construction.
+    assertThatThrownBy(() -> ConfidentialMptConvertBackProof.fromHex(Strings.repeat("34", 946))) // 946 bytes, not 816.
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("ConfidentialMptConvertBackProof must be 816 bytes");
   }
 
   @Test
@@ -63,7 +65,7 @@ class ConfidentialMptConvertBackTest {
       .build();
 
     assertThat(convertBack.auditorEncryptedAmount()).isPresent();
-    assertThat(convertBack.zkProof().value()).hasSize(ConfidentialMptConvertBack.CONVERT_BACK_ZK_PROOF_HEX_LENGTH);
+    assertThat(convertBack.zkProof().value().length()).isEqualTo(ConfidentialMptConvertBackProof.EXPECTED_SIZE);
   }
 
   /**

@@ -23,7 +23,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
-import org.xrpl.xrpl4j.model.transactions.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 
 import java.io.IOException;
 
@@ -42,6 +42,6 @@ public class EncryptedAmountSerializer extends StdScalarSerializer<EncryptedAmou
   @Override
   public void serialize(EncryptedAmount encryptedAmount, JsonGenerator gen, SerializerProvider provider)
     throws IOException {
-    gen.writeString(encryptedAmount.value());
+    gen.writeString(encryptedAmount.hexValue());
   }
 }

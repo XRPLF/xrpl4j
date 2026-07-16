@@ -23,7 +23,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
-import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.util.MptAmountEncryptor;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -86,7 +86,7 @@ public class JnaMptAmountEncryptor implements MptAmountEncryptor {
       PUBKEY_SIZE, pubkeyBytes.length
     );
 
-    byte[] blindingBytes = blindingFactor.toBytes();
+    byte[] blindingBytes = blindingFactor.value().toByteArray();
     Preconditions.checkArgument(
       blindingBytes.length == BLINDING_FACTOR_SIZE,
       "blindingFactor must be %s bytes, but was %s bytes",

@@ -23,23 +23,23 @@ package org.xrpl.xrpl4j.crypto.confidential.model.proof;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Lazy;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptSendProofDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptSendProofSerializer;
 
 /**
- * Represents the proof for a ConfidentialMptSend transaction.
- *
- * <p>The proof consists of a compact AND-composed sigma proof (192 bytes) that simultaneously
- * proves ciphertext equality, Pedersen commitment linkage, and balance ownership,
- * followed by an aggregated Bulletproof range proof (754 bytes).</p>
- *
- * <p>Total size: fixed at 946 bytes (SECP256K1_COMPACT_STANDARD_PROOF_SIZE + kMPT_DOUBLE_BULLETPROOF_SIZE).</p>
+ * The zero-knowledge proof for a {@code ConfidentialMptSend} transaction: a compact AND-composed sigma proof
+ * (192 bytes) proving ciphertext equality, Pedersen commitment linkage, and balance ownership, followed by an
+ * aggregated Bulletproof range proof (754 bytes). Total fixed at 946 bytes
+ * (SECP256K1_COMPACT_STANDARD_PROOF_SIZE + kMPT_DOUBLE_BULLETPROOF_SIZE). Held as raw bytes; on the wire it is
+ * serialized as an uppercase hex string.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableConfidentialMptSendProof.class)
-@JsonDeserialize(as = ImmutableConfidentialMptSendProof.class)
+@JsonSerialize(as = ImmutableConfidentialMptSendProof.class, using = ConfidentialMptSendProofSerializer.class)
+@JsonDeserialize(as = ImmutableConfidentialMptSendProof.class, using = ConfidentialMptSendProofDeserializer.class)
 public interface ConfidentialMptSendProof {
 
   /**
@@ -48,76 +48,64 @@ public interface ConfidentialMptSendProof {
   int COMPACT_SIGMA_SIZE = 192;
 
   /**
-   * Size of the aggregated bulletproof for 2 values (amount + remaining balance).
+   * Size of the aggregated Bulletproof for two values (amount + remaining balance) (kMPT_DOUBLE_BULLETPROOF_SIZE).
    */
   int DOUBLE_BULLETPROOF_SIZE = 754;
 
   /**
-   * Fixed total proof size: 192 (compact sigma) + 754 (double bulletproof) = 946 bytes.
+   * The exact size of this proof in bytes: compact sigma (192) + double bulletproof (754) = 946.
    */
   int EXPECTED_SIZE = COMPACT_SIGMA_SIZE + DOUBLE_BULLETPROOF_SIZE;
 
   /**
-   * Creates a new builder for {@link ConfidentialMptSendProof}.
-   *
-   * @return A new builder.
-   */
-  static ImmutableConfidentialMptSendProof.Builder builder() {
-    return ImmutableConfidentialMptSendProof.builder();
-  }
-
-  /**
    * Creates a proof from an {@link UnsignedByteArray}.
    *
-   * @param value The proof bytes.
+   * @param value The 946-byte proof.
    *
    * @return A {@link ConfidentialMptSendProof}.
-   *
-   * @throws NullPointerException if value is null.
    */
   static ConfidentialMptSendProof of(final UnsignedByteArray value) {
-    return builder().value(value).build();
+    return ImmutableConfidentialMptSendProof.builder().value(value).build();
   }
 
   /**
    * Creates a proof from a hex string.
    *
-   * @param hex The hex string representing the proof.
+   * @param hex The 1892-character hex string representing the proof.
    *
    * @return A {@link ConfidentialMptSendProof}.
-   *
-   * @throws NullPointerException     if hex is null.
-   * @throws IllegalArgumentException if hex is not a valid hex string.
    */
   static ConfidentialMptSendProof fromHex(final String hex) {
     return of(UnsignedByteArray.fromHex(hex));
   }
 
   /**
-   * The proof bytes.
+   * The raw proof bytes.
    *
-   * @return An {@link UnsignedByteArray} containing the proof bytes.
+   * @return An {@link UnsignedByteArray}.
    */
   UnsignedByteArray value();
 
   /**
-   * Returns the fixed expected proof size (946 bytes).
-   *
-   * @return The expected proof size in bytes.
+   * Validates that the proof is exactly {@link #EXPECTED_SIZE} bytes.
    */
-  static int expectedSize() {
-    return EXPECTED_SIZE;
+  @Value.Check
+  default void check() {
+    Preconditions.checkArgument(
+      value().length() == EXPECTED_SIZE,
+      "ConfidentialMptSendProof must be %s bytes, but was %s bytes",
+      EXPECTED_SIZE, value().length()
+    );
   }
 
   /**
-   * Returns the proof as an uppercase hex string.
+   * The proof as an uppercase hex string, as it appears on the XRP Ledger wire format.
    *
-   * @return A {@link String}.
+   * @return A hex-encoded {@link String}.
    */
-  @Lazy
   @JsonIgnore
+  @Value.Lazy
   default String hexValue() {
     return BaseEncoding.base16().encode(value().toByteArray());
   }
 }
-

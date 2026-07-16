@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
@@ -23,12 +27,6 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableConfidentialMptConvertBack.class)
 @JsonDeserialize(as = ImmutableConfidentialMptConvertBack.class)
 public interface ConfidentialMptConvertBack extends Transaction {
-
-  /**
-   * The required length, in hex characters, of the {@link ZkProof} for a {@link ConfidentialMptConvertBack} (816 bytes:
-   * a 128-byte compact sigma proof plus a 688-byte single bulletproof).
-   */
-  int CONVERT_BACK_ZK_PROOF_HEX_LENGTH = 1632;
 
   /**
    * Construct a {@code ConfidentialMptConvertBack} builder.
@@ -105,10 +103,10 @@ public interface ConfidentialMptConvertBack extends Transaction {
    * A bundle containing the Pedersen Linkage Proof (linking the ElGamal balance to the commitment) and the Range Proof
    * (proving the remaining balance is non-negative).
    *
-   * @return A {@link ZkProof} containing the proof bundle.
+   * @return A {@link ConfidentialMptConvertBackProof} containing the proof bundle.
    */
   @JsonProperty("ZKProof")
-  ZkProof zkProof();
+  ConfidentialMptConvertBackProof zkProof();
 
   /**
    * Ciphertext for the auditor. Required if {@code sfAuditorEncryptionKey} is present on the issuance.
@@ -125,8 +123,9 @@ public interface ConfidentialMptConvertBack extends Transaction {
    * <ul>
    *   <li>{@code MPTAmount} must be non-zero and no greater than the maximum allowable supply
    *       ({@code temBAD_AMOUNT} in {@code rippled}).</li>
-   *   <li>{@code ZKProof} must be exactly {@value #CONVERT_BACK_ZK_PROOF_HEX_LENGTH} hex characters (816 bytes).</li>
    * </ul>
+   *
+   * <p>The proof's fixed length (816 bytes) is enforced by {@link ConfidentialMptConvertBackProof} itself.</p>
    */
   @Value.Check
   default void validateConfidentialMptConvertBack() {
@@ -138,12 +137,6 @@ public interface ConfidentialMptConvertBack extends Transaction {
     Preconditions.checkState(
       mptAmount().value().compareTo(MpTokenNumericAmount.MAX_AMOUNT) <= 0,
       "MPTAmount must not exceed the maximum allowable supply (%s).", MpTokenNumericAmount.MAX_AMOUNT
-    );
-
-    Preconditions.checkState(
-      zkProof().value().length() == CONVERT_BACK_ZK_PROOF_HEX_LENGTH,
-      "ZKProof must be %s bytes (%s hex characters) for ConfidentialMptConvertBack.",
-      CONVERT_BACK_ZK_PROOF_HEX_LENGTH / 2, CONVERT_BACK_ZK_PROOF_HEX_LENGTH
     );
   }
 }

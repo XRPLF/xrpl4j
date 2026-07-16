@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
 
 /**
  * Parameters required to generate a Pedersen Linkage Proof.
@@ -35,7 +34,7 @@ import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
  * <p>Contains all the data needed to generate a proof linking an ElGamal ciphertext
  * and a Pedersen commitment:</p>
  * <ul>
- *   <li>{@code pedersenCommitment} - The 64-byte Pedersen commitment</li>
+ *   <li>{@code pedersenCommitment} - The 33-byte Pedersen commitment</li>
  *   <li>{@code amount} - The actual numeric value being committed</li>
  *   <li>{@code encryptedAmount} - The 66-byte ElGamal ciphertext</li>
  *   <li>{@code blindingFactor} - The 32-byte secret random value used to blind the Pedersen commitment</li>

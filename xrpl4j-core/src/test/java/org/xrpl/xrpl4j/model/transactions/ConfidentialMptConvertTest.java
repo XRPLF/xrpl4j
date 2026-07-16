@@ -7,6 +7,9 @@ import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 /**
@@ -19,7 +22,8 @@ class ConfidentialMptConvertTest {
     "028D7500BFCD792B487E4E51664037AB543E76CEBACF0E7E17AD4B83057E1F2B30"
   );
   // A valid 64-byte (128 hex character) Schnorr proof of knowledge.
-  private static final ZkProof ZK_PROOF = ZkProof.of(Strings.repeat("34", 64));
+  private static final ConfidentialMptConvertProof ZK_PROOF =
+    ConfidentialMptConvertProof.fromHex(Strings.repeat("34", 64));
 
   @Test
   void transactionFlagsReturnsEmptyFlags() {
@@ -51,14 +55,10 @@ class ConfidentialMptConvertTest {
 
   @Test
   void zkProofMustBeSchnorrLength() {
-    // HolderEncryptionKey present with a ZKProof of the wrong length -> temMALFORMED in rippled.
-    ZkProof wrongLengthProof = ZkProof.of(Strings.repeat("34", 32)); // 64 hex chars (32 bytes), not 128.
-    assertThatThrownBy(() -> baseBuilder()
-      .holderEncryptionKey(HOLDER_ENCRYPTION_KEY)
-      .zkProof(wrongLengthProof)
-      .build()
-    ).isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("ZKProof must be 64 bytes");
+    // A ConfidentialMptConvertProof enforces its own 64-byte length at construction.
+    assertThatThrownBy(() -> ConfidentialMptConvertProof.fromHex(Strings.repeat("34", 32))) // 32 bytes, not 64.
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("ConfidentialMptConvertProof must be 64 bytes");
   }
 
   @Test

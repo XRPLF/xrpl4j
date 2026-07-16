@@ -80,7 +80,7 @@ public class JnaMptAmountDecryptor implements MptAmountDecryptor {
       privateKey.keyType()
     );
 
-    byte[] ciphertextBytes = ciphertext.toBytes().toByteArray();
+    byte[] ciphertextBytes = ciphertext.value().toByteArray();
     Preconditions.checkArgument(
       ciphertextBytes.length == CIPHERTEXT_SIZE,
       "ciphertext must be %s bytes, but was %s bytes",

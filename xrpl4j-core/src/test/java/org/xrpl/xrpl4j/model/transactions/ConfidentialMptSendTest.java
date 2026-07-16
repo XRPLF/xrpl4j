@@ -6,6 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 /**
@@ -15,7 +18,8 @@ class ConfidentialMptSendTest {
 
   private static final Address ACCOUNT = Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c");
   private static final Address DESTINATION = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
-  private static final ZkProof ZK_PROOF = ZkProof.of(Strings.repeat("34", 946));
+  private static final ConfidentialMptSendProof ZK_PROOF =
+    ConfidentialMptSendProof.fromHex(Strings.repeat("34", 946));
 
   @Test
   void transactionFlagsReturnsEmptyFlags() {
@@ -36,13 +40,10 @@ class ConfidentialMptSendTest {
 
   @Test
   void zkProofMustBeSendLength() {
-    // A ZKProof of the wrong length (Schnorr length, not send length) -> temMALFORMED in rippled.
-    ZkProof wrongLengthProof = ZkProof.of(Strings.repeat("34", 64)); // 128 hex chars, not 1892.
-    assertThatThrownBy(() -> baseBuilder()
-      .zkProof(wrongLengthProof)
-      .build()
-    ).isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("ZKProof must be 946 bytes");
+    // A ConfidentialMptSendProof enforces its own 946-byte length at construction.
+    assertThatThrownBy(() -> ConfidentialMptSendProof.fromHex(Strings.repeat("34", 64))) // 64 bytes, not 946.
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("ConfidentialMptSendProof must be 946 bytes");
   }
 
   @Test

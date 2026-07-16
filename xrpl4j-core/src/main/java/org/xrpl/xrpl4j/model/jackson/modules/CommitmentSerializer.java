@@ -23,7 +23,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
-import org.xrpl.xrpl4j.model.transactions.Commitment;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 
 import java.io.IOException;
 
@@ -41,6 +41,6 @@ public class CommitmentSerializer extends StdScalarSerializer<Commitment> {
 
   @Override
   public void serialize(Commitment commitment, JsonGenerator gen, SerializerProvider provider) throws IOException {
-    gen.writeString(commitment.value());
+    gen.writeString(commitment.hexValue());
   }
 }

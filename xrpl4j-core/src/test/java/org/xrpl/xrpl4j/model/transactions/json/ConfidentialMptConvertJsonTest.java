@@ -25,16 +25,16 @@ import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.BlindingFactor;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvert;
-import org.xrpl.xrpl4j.model.transactions.EncryptedAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.ZkProof;
 
 /**
  * JSON serialization/deserialization tests for {@link ConfidentialMptConvert}.
@@ -68,7 +68,7 @@ public class ConfidentialMptConvertJsonTest extends AbstractJsonTest {
       .auditorEncryptedAmount(EncryptedAmount.of(Strings.repeat("EF", 66)))
       .blindingFactor(BLINDING_FACTOR)
       // A valid 64-byte (128 hex character) Schnorr proof of knowledge.
-      .zkProof(ZkProof.of(Strings.repeat("34", 64)))
+      .zkProof(ConfidentialMptConvertProof.fromHex(Strings.repeat("34", 64)))
       .build();
 
     String json = "{\n" +
@@ -80,10 +80,10 @@ public class ConfidentialMptConvertJsonTest extends AbstractJsonTest {
       "  \"MPTokenIssuanceID\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\",\n" +
       "  \"MPTAmount\" : \"1000\",\n" +
       "  \"HolderEncryptionKey\" : \"028D7500BFCD792B487E4E51664037AB543E76CEBACF0E7E17AD4B83057E1F2B30\",\n" +
-      "  \"HolderEncryptedAmount\" : \"" + HOLDER_ENCRYPTED_AMOUNT.value() + "\",\n" +
-      "  \"IssuerEncryptedAmount\" : \"" + ISSUER_ENCRYPTED_AMOUNT.value() + "\",\n" +
+      "  \"HolderEncryptedAmount\" : \"" + HOLDER_ENCRYPTED_AMOUNT.hexValue() + "\",\n" +
+      "  \"IssuerEncryptedAmount\" : \"" + ISSUER_ENCRYPTED_AMOUNT.hexValue() + "\",\n" +
       "  \"AuditorEncryptedAmount\" : \"" + Strings.repeat("EF", 66) + "\",\n" +
-      "  \"BlindingFactor\" : \"" + BLINDING_FACTOR.value() + "\",\n" +
+      "  \"BlindingFactor\" : \"" + BLINDING_FACTOR.hexValue() + "\",\n" +
       "  \"ZKProof\" : \"" + Strings.repeat("34", 64) + "\"\n" +
       "}";
 
@@ -114,9 +114,9 @@ public class ConfidentialMptConvertJsonTest extends AbstractJsonTest {
       "  \"SigningPubKey\" : \"EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710\",\n" +
       "  \"MPTokenIssuanceID\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\",\n" +
       "  \"MPTAmount\" : \"1000\",\n" +
-      "  \"HolderEncryptedAmount\" : \"" + HOLDER_ENCRYPTED_AMOUNT.value() + "\",\n" +
-      "  \"IssuerEncryptedAmount\" : \"" + ISSUER_ENCRYPTED_AMOUNT.value() + "\",\n" +
-      "  \"BlindingFactor\" : \"" + BLINDING_FACTOR.value() + "\"\n" +
+      "  \"HolderEncryptedAmount\" : \"" + HOLDER_ENCRYPTED_AMOUNT.hexValue() + "\",\n" +
+      "  \"IssuerEncryptedAmount\" : \"" + ISSUER_ENCRYPTED_AMOUNT.hexValue() + "\",\n" +
+      "  \"BlindingFactor\" : \"" + BLINDING_FACTOR.hexValue() + "\"\n" +
       "}";
 
     assertCanSerializeAndDeserialize(convert, json);

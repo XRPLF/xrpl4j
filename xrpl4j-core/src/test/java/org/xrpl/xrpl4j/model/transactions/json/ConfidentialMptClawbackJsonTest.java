@@ -25,6 +25,7 @@ import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptClawbackProof;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -32,7 +33,6 @@ import org.xrpl.xrpl4j.model.transactions.ConfidentialMptClawback;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.ZkProof;
 
 /**
  * JSON serialization/deserialization tests for {@link ConfidentialMptClawback}.
@@ -40,7 +40,8 @@ import org.xrpl.xrpl4j.model.transactions.ZkProof;
 public class ConfidentialMptClawbackJsonTest extends AbstractJsonTest {
 
   // A valid 64-byte (128 hex character) clawback ZKProof.
-  private static final ZkProof ZK_PROOF = ZkProof.of(Strings.repeat("34", 64));
+  private static final ConfidentialMptClawbackProof ZK_PROOF =
+    ConfidentialMptClawbackProof.fromHex(Strings.repeat("34", 64));
 
   @Test
   public void testJsonWithRequiredFieldsOnly() throws JSONException, JsonProcessingException {
@@ -66,7 +67,7 @@ public class ConfidentialMptClawbackJsonTest extends AbstractJsonTest {
       "  \"MPTokenIssuanceID\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\",\n" +
       "  \"Holder\" : \"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh\",\n" +
       "  \"MPTAmount\" : \"1000\",\n" +
-      "  \"ZKProof\" : \"" + ZK_PROOF.value() + "\"\n" +
+      "  \"ZKProof\" : \"" + ZK_PROOF.hexValue() + "\"\n" +
       "}";
 
     assertCanSerializeAndDeserialize(clawback, json);
@@ -98,7 +99,7 @@ public class ConfidentialMptClawbackJsonTest extends AbstractJsonTest {
       "  \"MPTokenIssuanceID\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\",\n" +
       "  \"Holder\" : \"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh\",\n" +
       "  \"MPTAmount\" : \"1000\",\n" +
-      "  \"ZKProof\" : \"" + ZK_PROOF.value() + "\"\n" +
+      "  \"ZKProof\" : \"" + ZK_PROOF.hexValue() + "\"\n" +
       "}";
 
     assertCanSerializeAndDeserialize(clawback, json);

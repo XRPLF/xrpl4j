@@ -20,7 +20,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  * =========================LICENSE_END==================================
  */
 
-import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 
 /**
  * Interface for generating blinding factors used in ElGamal encryption and zero-knowledge proofs.

@@ -79,7 +79,7 @@ public class JnaConfidentialMptClawbackProofVerifier implements ConfidentialMptC
       "issuerPublicKey must be SECP256K1"
     );
 
-    byte[] ciphertext = issuerEncryptedBalance.toBytes().toByteArray();
+    byte[] ciphertext = issuerEncryptedBalance.value().toByteArray();
 
     return lib.mpt_verify_clawback_proof(
       proof.value().toByteArray(),

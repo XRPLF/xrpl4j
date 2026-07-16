@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.base.Strings;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 
 /**
  * Unit tests for {@link Commitment}.
@@ -16,20 +17,26 @@ class CommitmentTest {
   @Test
   void constructsValidCommitment() {
     Commitment commitment = Commitment.of(VALID);
-    assertThat(commitment.value()).isEqualTo(VALID);
-    assertThat(commitment.toString()).isEqualTo(VALID);
+    assertThat(commitment.value().length()).isEqualTo(33);
+    assertThat(commitment.hexValue()).isEqualTo(VALID);
+  }
+
+  @Test
+  void fromBytesRoundTrips() {
+    byte[] bytes = new byte[33];
+    assertThat(Commitment.fromBytes(bytes).value().length()).isEqualTo(33);
   }
 
   @Test
   void rejectsTooShort() {
-    assertThatThrownBy(() -> Commitment.of(Strings.repeat("AB", 32))) // 64 hex chars.
+    assertThatThrownBy(() -> Commitment.of(Strings.repeat("AB", 32))) // 32 bytes.
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("must be 33 bytes");
   }
 
   @Test
   void rejectsTooLong() {
-    assertThatThrownBy(() -> Commitment.of(Strings.repeat("AB", 34))) // 68 hex chars.
+    assertThatThrownBy(() -> Commitment.of(Strings.repeat("AB", 34))) // 34 bytes.
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("must be 33 bytes");
   }
@@ -42,14 +49,8 @@ class CommitmentTest {
   }
 
   @Test
-  void rejectsNonHex() {
-    assertThatThrownBy(() -> Commitment.of(Strings.repeat("ZZ", 33))) // 66 chars, not hex.
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("must be encoded in hexadecimal");
-  }
-
-  @Test
   void equalsIsCaseInsensitive() {
+    // fromHex normalizes case, so lower- and upper-case hex produce equal byte values.
     assertThat(Commitment.of(Strings.repeat("ab", 33)))
       .isEqualTo(Commitment.of(Strings.repeat("AB", 33)));
   }

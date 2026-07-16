@@ -20,7 +20,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * =========================LICENSE_END==================================
  */
 
-import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
 
 import java.util.Objects;

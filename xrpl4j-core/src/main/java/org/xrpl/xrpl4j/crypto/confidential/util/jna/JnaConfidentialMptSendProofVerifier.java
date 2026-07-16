@@ -21,9 +21,9 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  */
 
 import com.google.common.base.Preconditions;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
-import org.xrpl.xrpl4j.crypto.confidential.model.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofVerifier;
@@ -69,8 +69,8 @@ public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendP
     final List<MptConfidentialParty> recipients,
     final EncryptedAmount senderSpendingCiphertext,
     final ConfidentialMptSendContext context,
-    final PedersenCommitment amountCommitment,
-    final PedersenCommitment balanceCommitment
+    final Commitment amountCommitment,
+    final Commitment balanceCommitment
   ) {
     Objects.requireNonNull(proof, "proof must not be null");
     Objects.requireNonNull(recipients, "recipients must not be null");
@@ -91,7 +91,7 @@ public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendP
         party.publicKey().value().toByteArray(), 0, recipientArray[i].pubkey, 0, PUBKEY_SIZE
       );
       System.arraycopy(
-        party.encryptedAmount().toBytes().toByteArray(), 0,
+        party.encryptedAmount().value().toByteArray(), 0,
         recipientArray[i].ciphertext, 0, CIPHERTEXT_SIZE
       );
     }
@@ -100,7 +100,7 @@ public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendP
     return lib.mpt_verify_send_proof(
       proofBytes,
       recipientArray[0], (byte) numRecipients,
-      senderSpendingCiphertext.toBytes().toByteArray(),
+      senderSpendingCiphertext.value().toByteArray(),
       amountCommitment.value().toByteArray(),
       balanceCommitment.value().toByteArray(),
       context.value().toByteArray()

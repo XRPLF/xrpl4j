@@ -21,7 +21,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  */
 
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.crypto.confidential.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 

@@ -103,7 +103,7 @@ import java.util.List;
  *   <li>Issuer claws back remaining confidential MPTs via ConfidentialMptClawback</li>
  * </ol>
  */
-@DisabledIf(value = "shouldNotRun", disabledReason = "ConfidentialTransfersIT only runs on local rippled node.")
+@DisabledIf(value = "shouldNotRun", disabledReason = "ConfidentialTransfersIT only runs on a local rippled node or Devnet.")
 public class ConfidentialTransfersIT extends AbstractIT {
 
   private static ConfidentialMptConvertService convertService;
@@ -116,8 +116,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
   static boolean shouldNotRun() {
     return System.getProperty("useTestnet") != null ||
-      System.getProperty("useClioTestnet") != null ||
-      System.getProperty("useDevnet") != null;
+      System.getProperty("useClioTestnet") != null;
   }
 
   @BeforeAll

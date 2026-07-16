@@ -41,11 +41,6 @@ import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptConvertProofSerializ
 public interface ConfidentialMptConvertProof {
 
   /**
-   * The exact size of this proof in bytes (kMPT_SCHNORR_PROOF_SIZE).
-   */
-  int EXPECTED_SIZE = 64;
-
-  /**
    * Creates a proof from an {@link UnsignedByteArray}.
    *
    * @param value The 64-byte compact Schnorr proof.
@@ -75,14 +70,15 @@ public interface ConfidentialMptConvertProof {
   UnsignedByteArray value();
 
   /**
-   * Validates that the proof is exactly {@link #EXPECTED_SIZE} bytes.
+   * Validates that the proof is exactly 64 bytes (kMPT_SCHNORR_PROOF_SIZE).
    */
   @Value.Check
   default void check() {
+    final int expectedSize = 64;
     Preconditions.checkArgument(
-      value().length() == EXPECTED_SIZE,
+      value().length() == expectedSize,
       "ConfidentialMptConvertProof must be %s bytes, but was %s bytes",
-      EXPECTED_SIZE, value().length()
+      expectedSize, value().length()
     );
   }
 

@@ -44,7 +44,7 @@ class ConfidentialMptClawbackServiceTest {
   private static final ConfidentialMptClawbackContext CONTEXT =
     ConfidentialMptClawbackContext.fromHex(Strings.repeat("AB", 32));
   private static final ConfidentialMptClawbackProof PROOF =
-    ConfidentialMptClawbackProof.fromHex(Strings.repeat("CD", ConfidentialMptClawbackProof.EXPECTED_SIZE));
+    ConfidentialMptClawbackProof.fromHex(Strings.repeat("CD", 64)); // 64 bytes.
 
   private ContextHashGenerator contextHashGenerator;
   private ConfidentialMptClawbackProofGenerator proofGenerator;

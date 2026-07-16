@@ -33,7 +33,7 @@ class JnaConfidentialMptConvertBackProofVerifierTest {
   private static final EncryptedAmount CIPHERTEXT = EncryptedAmount.of(Strings.repeat("03", 66));
   private static final Commitment BALANCE_COMMITMENT = Commitment.of(Strings.repeat("02", 33));
   private static final ConfidentialMptConvertBackProof PROOF =
-    ConfidentialMptConvertBackProof.fromHex(Strings.repeat("CD", ConfidentialMptConvertBackProof.EXPECTED_SIZE));
+    ConfidentialMptConvertBackProof.fromHex(Strings.repeat("CD", 816)); // 816 bytes.
   private static final ConfidentialMptConvertBackContext CONTEXT =
     ConfidentialMptConvertBackContext.fromHex(Strings.repeat("AB", 32));
 

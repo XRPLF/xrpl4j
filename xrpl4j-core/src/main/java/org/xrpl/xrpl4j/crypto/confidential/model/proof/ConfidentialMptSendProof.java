@@ -43,21 +43,6 @@ import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptSendProofSerializer;
 public interface ConfidentialMptSendProof {
 
   /**
-   * Size of the compact AND-composed sigma proof (SECP256K1_COMPACT_STANDARD_PROOF_SIZE).
-   */
-  int COMPACT_SIGMA_SIZE = 192;
-
-  /**
-   * Size of the aggregated Bulletproof for two values (amount + remaining balance) (kMPT_DOUBLE_BULLETPROOF_SIZE).
-   */
-  int DOUBLE_BULLETPROOF_SIZE = 754;
-
-  /**
-   * The exact size of this proof in bytes: compact sigma (192) + double bulletproof (754) = 946.
-   */
-  int EXPECTED_SIZE = COMPACT_SIGMA_SIZE + DOUBLE_BULLETPROOF_SIZE;
-
-  /**
    * Creates a proof from an {@link UnsignedByteArray}.
    *
    * @param value The 946-byte proof.
@@ -87,14 +72,17 @@ public interface ConfidentialMptSendProof {
   UnsignedByteArray value();
 
   /**
-   * Validates that the proof is exactly {@link #EXPECTED_SIZE} bytes.
+   * Validates that the proof is exactly 946 bytes: compact sigma (192) + double bulletproof (754).
    */
   @Value.Check
   default void check() {
+    final int compactSigmaSize = 192;
+    final int doubleBulletproofSize = 754;
+    final int expectedSize = compactSigmaSize + doubleBulletproofSize;
     Preconditions.checkArgument(
-      value().length() == EXPECTED_SIZE,
+      value().length() == expectedSize,
       "ConfidentialMptSendProof must be %s bytes, but was %s bytes",
-      EXPECTED_SIZE, value().length()
+      expectedSize, value().length()
     );
   }
 

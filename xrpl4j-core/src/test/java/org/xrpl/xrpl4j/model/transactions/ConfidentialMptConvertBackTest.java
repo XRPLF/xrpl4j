@@ -65,7 +65,7 @@ class ConfidentialMptConvertBackTest {
       .build();
 
     assertThat(convertBack.auditorEncryptedAmount()).isPresent();
-    assertThat(convertBack.zkProof().value().length()).isEqualTo(ConfidentialMptConvertBackProof.EXPECTED_SIZE);
+    assertThat(convertBack.zkProof().value().length()).isEqualTo(816); // 816 bytes.
   }
 
   /**

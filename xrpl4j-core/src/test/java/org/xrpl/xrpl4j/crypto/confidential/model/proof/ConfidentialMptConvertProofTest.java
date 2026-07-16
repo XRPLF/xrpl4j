@@ -13,12 +13,14 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  */
 class ConfidentialMptConvertProofTest {
 
-  private static final String PROOF_HEX = Strings.repeat("CD", ConfidentialMptConvertProof.EXPECTED_SIZE); // 64 bytes.
+  private static final int EXPECTED_SIZE = 64;
+
+  private static final String PROOF_HEX = Strings.repeat("CD", EXPECTED_SIZE); // 64 bytes.
 
   @Test
   void ofExposesValueAndHex() {
     ConfidentialMptConvertProof proof = ConfidentialMptConvertProof.of(UnsignedByteArray.fromHex(PROOF_HEX));
-    assertThat(proof.value().length()).isEqualTo(ConfidentialMptConvertProof.EXPECTED_SIZE);
+    assertThat(proof.value().length()).isEqualTo(EXPECTED_SIZE);
     assertThat(proof.hexValue()).isEqualTo(PROOF_HEX);
   }
 

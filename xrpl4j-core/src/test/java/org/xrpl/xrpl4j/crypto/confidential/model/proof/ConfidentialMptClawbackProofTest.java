@@ -13,13 +13,15 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  */
 class ConfidentialMptClawbackProofTest {
 
+  private static final int EXPECTED_SIZE = 64;
+
   private static final String PROOF_HEX =
-    Strings.repeat("CD", ConfidentialMptClawbackProof.EXPECTED_SIZE); // 64 bytes.
+    Strings.repeat("CD", EXPECTED_SIZE); // 64 bytes.
 
   @Test
   void ofExposesValueAndHex() {
     ConfidentialMptClawbackProof proof = ConfidentialMptClawbackProof.of(UnsignedByteArray.fromHex(PROOF_HEX));
-    assertThat(proof.value().length()).isEqualTo(ConfidentialMptClawbackProof.EXPECTED_SIZE);
+    assertThat(proof.value().length()).isEqualTo(EXPECTED_SIZE);
     assertThat(proof.hexValue()).isEqualTo(PROOF_HEX);
   }
 

@@ -53,7 +53,7 @@ class JnaConfidentialMptClawbackProofGeneratorTest {
     ConfidentialMptClawbackProof proof =
       generator.generateProof(CIPHERTEXT, SECP_PUBLIC_KEY, AMOUNT, SECP_PRIVATE_KEY, CONTEXT);
 
-    assertThat(proof.value().length()).isEqualTo(ConfidentialMptClawbackProof.EXPECTED_SIZE);
+    assertThat(proof.value().length()).isEqualTo(64); // 64 bytes.
   }
 
   @Test

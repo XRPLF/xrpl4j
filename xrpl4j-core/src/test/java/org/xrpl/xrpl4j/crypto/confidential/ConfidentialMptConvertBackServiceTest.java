@@ -48,7 +48,7 @@ class ConfidentialMptConvertBackServiceTest {
   private static final ConfidentialMptConvertBackContext CONTEXT =
     ConfidentialMptConvertBackContext.fromHex(Strings.repeat("AB", 32));
   private static final ConfidentialMptConvertBackProof PROOF =
-    ConfidentialMptConvertBackProof.fromHex(Strings.repeat("CD", ConfidentialMptConvertBackProof.EXPECTED_SIZE));
+    ConfidentialMptConvertBackProof.fromHex(Strings.repeat("CD", 816)); // 816 bytes.
   private static final PedersenProofParams BALANCE_PARAMS = PedersenProofParams.builder()
     .pedersenCommitment(COMMITMENT.value())
     .amount(UnsignedLong.valueOf(500))

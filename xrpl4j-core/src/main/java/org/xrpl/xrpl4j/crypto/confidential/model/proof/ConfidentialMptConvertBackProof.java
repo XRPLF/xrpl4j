@@ -46,21 +46,6 @@ import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptConvertBackProofSeri
 public interface ConfidentialMptConvertBackProof {
 
   /**
-   * Size of the compact AND-composed sigma proof (SECP256K1_COMPACT_CONVERTBACK_PROOF_SIZE).
-   */
-  int COMPACT_SIGMA_SIZE = 128;
-
-  /**
-   * Size of a single Bulletproof range proof (kMPT_SINGLE_BULLETPROOF_SIZE).
-   */
-  int SINGLE_BULLETPROOF_SIZE = 688;
-
-  /**
-   * The exact size of this proof in bytes: compact sigma (128) + single bulletproof (688) = 816.
-   */
-  int EXPECTED_SIZE = COMPACT_SIGMA_SIZE + SINGLE_BULLETPROOF_SIZE;
-
-  /**
    * Creates a proof from an {@link UnsignedByteArray}.
    *
    * @param value The 816-byte proof.
@@ -90,14 +75,17 @@ public interface ConfidentialMptConvertBackProof {
   UnsignedByteArray value();
 
   /**
-   * Validates that the proof is exactly {@link #EXPECTED_SIZE} bytes.
+   * Validates that the proof is exactly 816 bytes: compact sigma (128) + single bulletproof (688).
    */
   @Value.Check
   default void check() {
+    final int compactSigmaSize = 128;
+    final int singleBulletproofSize = 688;
+    final int expectedSize = compactSigmaSize + singleBulletproofSize;
     Preconditions.checkArgument(
-      value().length() == EXPECTED_SIZE,
+      value().length() == expectedSize,
       "ConfidentialMptConvertBackProof must be %s bytes, but was %s bytes",
-      EXPECTED_SIZE, value().length()
+      expectedSize, value().length()
     );
   }
 

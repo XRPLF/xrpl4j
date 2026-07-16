@@ -53,7 +53,7 @@ class ConfidentialMptSendServiceTest {
   private static final ConfidentialMptSendContext CONTEXT =
     ConfidentialMptSendContext.fromHex(Strings.repeat("AB", 32));
   private static final ConfidentialMptSendProof PROOF =
-    ConfidentialMptSendProof.fromHex(Strings.repeat("CD", ConfidentialMptSendProof.EXPECTED_SIZE));
+    ConfidentialMptSendProof.fromHex(Strings.repeat("CD", 946)); // 946 bytes.
   private static final List<MptConfidentialParty> PARTICIPANTS = Arrays.asList(
     MptConfidentialParty.of(PUBLIC_KEY, CIPHERTEXT),
     MptConfidentialParty.of(PUBLIC_KEY, CIPHERTEXT),

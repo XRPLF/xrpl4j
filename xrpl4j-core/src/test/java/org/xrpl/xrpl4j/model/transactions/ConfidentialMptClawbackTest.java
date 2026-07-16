@@ -69,7 +69,7 @@ class ConfidentialMptClawbackTest {
     ConfidentialMptClawback clawback = baseBuilder().build();
 
     assertThat(clawback.holder()).isEqualTo(HOLDER);
-    assertThat(clawback.zkProof().value().length()).isEqualTo(ConfidentialMptClawbackProof.EXPECTED_SIZE);
+    assertThat(clawback.zkProof().value().length()).isEqualTo(64); // 64 bytes.
   }
 
   /**

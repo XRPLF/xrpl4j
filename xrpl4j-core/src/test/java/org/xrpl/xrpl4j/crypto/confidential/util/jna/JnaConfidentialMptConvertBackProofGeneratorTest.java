@@ -56,7 +56,7 @@ class JnaConfidentialMptConvertBackProofGeneratorTest {
 
     ConfidentialMptConvertBackProof proof = generator.generateProof(SECP_KEY_PAIR, AMOUNT, CONTEXT, BALANCE_PARAMS);
 
-    assertThat(proof.value().length()).isEqualTo(ConfidentialMptConvertBackProof.EXPECTED_SIZE);
+    assertThat(proof.value().length()).isEqualTo(816); // 816 bytes.
   }
 
   @Test

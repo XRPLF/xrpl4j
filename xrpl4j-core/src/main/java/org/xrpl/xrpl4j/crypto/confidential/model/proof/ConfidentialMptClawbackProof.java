@@ -43,11 +43,6 @@ import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptClawbackProofSeriali
 public interface ConfidentialMptClawbackProof {
 
   /**
-   * The exact size of this proof in bytes (SECP256K1_COMPACT_CLAWBACK_PROOF_SIZE).
-   */
-  int EXPECTED_SIZE = 64;
-
-  /**
    * Creates a proof from an {@link UnsignedByteArray}.
    *
    * @param value The 64-byte compact sigma proof.
@@ -77,14 +72,15 @@ public interface ConfidentialMptClawbackProof {
   UnsignedByteArray value();
 
   /**
-   * Validates that the proof is exactly {@link #EXPECTED_SIZE} bytes.
+   * Validates that the proof is exactly 64 bytes (SECP256K1_COMPACT_CLAWBACK_PROOF_SIZE).
    */
   @Value.Check
   default void check() {
+    final int expectedSize = 64;
     Preconditions.checkArgument(
-      value().length() == EXPECTED_SIZE,
+      value().length() == expectedSize,
       "ConfidentialMptClawbackProof must be %s bytes, but was %s bytes",
-      EXPECTED_SIZE, value().length()
+      expectedSize, value().length()
     );
   }
 

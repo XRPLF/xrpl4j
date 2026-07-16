@@ -75,7 +75,7 @@ class JnaConfidentialMptSendProofGeneratorTest {
       SECP_KEY_PAIR, AMOUNT, PARTICIPANTS, BLINDING_FACTOR, CONTEXT, AMOUNT_COMMITMENT, BALANCE_PARAMS
     );
 
-    assertThat(proof.value().length()).isEqualTo(ConfidentialMptSendProof.EXPECTED_SIZE);
+    assertThat(proof.value().length()).isEqualTo(946); // 946 bytes.
   }
 
   @Test

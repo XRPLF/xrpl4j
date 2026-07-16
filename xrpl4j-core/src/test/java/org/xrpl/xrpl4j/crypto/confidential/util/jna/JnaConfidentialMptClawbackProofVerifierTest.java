@@ -31,7 +31,7 @@ class JnaConfidentialMptClawbackProofVerifierTest {
   private static final UnsignedLong AMOUNT = UnsignedLong.valueOf(100);
   private static final EncryptedAmount CIPHERTEXT = EncryptedAmount.of(Strings.repeat("03", 66));
   private static final ConfidentialMptClawbackProof PROOF =
-    ConfidentialMptClawbackProof.fromHex(Strings.repeat("CD", ConfidentialMptClawbackProof.EXPECTED_SIZE));
+    ConfidentialMptClawbackProof.fromHex(Strings.repeat("CD", 64)); // 64 bytes.
   private static final ConfidentialMptClawbackContext CONTEXT =
     ConfidentialMptClawbackContext.fromHex(Strings.repeat("AB", 32));
 

@@ -55,6 +55,7 @@ import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaMptAmountEncryptor;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.AccountObjectType;
@@ -140,7 +141,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
     XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
     // Confidential MPT transactions carry a base-fee multiplier (kConfidentialFeeMultiplier = 9) in rippled,
     // so they require a substantially higher fee than the standard recommended fee.
-    final XrpCurrencyAmount confidentialFee = XrpCurrencyAmount.ofDrops(fee.value().longValue() * 12L);
+    final XrpCurrencyAmount confidentialFee = FeeUtils
+      .computeConfidentialMptNetworkFees(feeResult, UnsignedInteger.ZERO)
+      .recommendedFee();
 
     // =====================================================================
     // 1. Create MPTokenIssuance with transfer, clawback, and privacy flags
@@ -154,7 +157,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .account(issuerKeyPair.publicKey().deriveAddress())
       .sequence(issuerAccountInfo.accountData().sequence())
       .fee(fee)
-      .lastLedgerSequence(lastLedgerSeq(issuerAccountInfo))
       .signingPublicKey(issuerKeyPair.publicKey())
       .maximumAmount(MpTokenNumericAmount.of(Long.MAX_VALUE))
       .flags(MpTokenIssuanceCreateFlags.builder()
@@ -164,8 +166,15 @@ public class ConfidentialTransfersIT extends AbstractIT {
         .build())
       .build();
 
-    TransactionResult<MpTokenIssuanceCreate> issuanceCreateResult =
-      signSubmitAndWait(issuanceCreate, issuerKeyPair, MpTokenIssuanceCreate.class);
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedIssuanceCreate = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      issuanceCreate
+    );
+    assertThat(xrplClient.submit(signedIssuanceCreate).engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    TransactionResult<MpTokenIssuanceCreate> issuanceCreateResult = this.scanForResult(
+      () -> this.getValidatedTransaction(signedIssuanceCreate.hash(), MpTokenIssuanceCreate.class)
+    );
 
     MpTokenIssuanceId mpTokenIssuanceId = issuanceCreateResult.metadata()
       .orElseThrow(RuntimeException::new)
@@ -198,13 +207,20 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .fee(fee)
       .sequence(issuerAccountInfo.accountData().sequence())
       .signingPublicKey(issuerKeyPair.publicKey())
-      .lastLedgerSequence(lastLedgerSeq(issuerAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .issuerEncryptionKey(issuerElGamalKeyPair.publicKey())
       .auditorEncryptionKey(auditorElGamalKeyPair.publicKey())
       .build();
 
-    signSubmitAndWait(issuanceSet, issuerKeyPair, MpTokenIssuanceSet.class);
+    SingleSignedTransaction<MpTokenIssuanceSet> signedIssuanceSet = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      issuanceSet
+    );
+    assertThat(xrplClient.submit(signedIssuanceSet).engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> this.getValidatedTransaction(signedIssuanceSet.hash(), MpTokenIssuanceSet.class)
+    );
 
     // Verify that the issuance now has the encryption keys and confidential outstanding amount
     MpTokenIssuanceObject issuanceObject = xrplClient.ledgerEntry(
@@ -232,11 +248,18 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .sequence(holderAccountInfo.accountData().sequence())
       .fee(fee)
       .signingPublicKey(holderKeyPair.publicKey())
-      .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .build();
 
-    signSubmitAndWait(holderAuthorize, holderKeyPair, MpTokenAuthorize.class);
+    SingleSignedTransaction<MpTokenAuthorize> signedHolderAuthorize = signatureService.sign(
+      holderKeyPair.privateKey(),
+      holderAuthorize
+    );
+    assertThat(xrplClient.submit(signedHolderAuthorize).engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> this.getValidatedTransaction(signedHolderAuthorize.hash(), MpTokenAuthorize.class)
+    );
 
     // Transfer 1000 public MPTs from issuer to Holder 1
     issuerAccountInfo = this.scanForResult(
@@ -253,10 +276,17 @@ public class ConfidentialTransfersIT extends AbstractIT {
         .value("1000")
         .build())
       .signingPublicKey(issuerKeyPair.publicKey())
-      .lastLedgerSequence(lastLedgerSeq(issuerAccountInfo))
       .build();
 
-    signSubmitAndWait(paymentToHolder, issuerKeyPair, Payment.class);
+    SingleSignedTransaction<Payment> signedPaymentToHolder = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      paymentToHolder
+    );
+    assertThat(xrplClient.submit(signedPaymentToHolder).engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> this.getValidatedTransaction(signedPaymentToHolder.hash(), Payment.class)
+    );
 
     // Verify Holder 1 has 1000 public MPTs
     MpTokenObject holderMpToken = getMpToken(holderKeyPair, mpTokenIssuanceId);
@@ -303,7 +333,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .fee(confidentialFee)
       .sequence(holderAccountInfo.accountData().sequence())
       .signingPublicKey(holderKeyPair.publicKey())
-      .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(amountToConvert))
       .holderEncryptionKey(holderElGamalKeyPair.publicKey())
@@ -314,8 +343,15 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .zkProof(convertZkProof)
       .build();
 
-    TransactionResult<ConfidentialMptConvert> convertResult =
-      signSubmitAndWait(confidentialConvert, holderKeyPair, ConfidentialMptConvert.class);
+    SingleSignedTransaction<ConfidentialMptConvert> signedConfidentialConvert = signatureService.sign(
+      holderKeyPair.privateKey(),
+      confidentialConvert
+    );
+    assertThat(xrplClient.submit(signedConfidentialConvert).engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    TransactionResult<ConfidentialMptConvert> convertResult = this.scanForResult(
+      () -> this.getValidatedTransaction(signedConfidentialConvert.hash(), ConfidentialMptConvert.class)
+    );
     final Hash256 convertHash = convertResult.hash();
 
     // =====================================================================
@@ -332,12 +368,18 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .fee(confidentialFee)
       .sequence(holderAccountInfo.accountData().sequence())
       .signingPublicKey(holderKeyPair.publicKey())
-      .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .build();
 
-    TransactionResult<ConfidentialMptMergeInbox> mergeResult =
-      signSubmitAndWait(mergeInbox, holderKeyPair, ConfidentialMptMergeInbox.class);
+    SingleSignedTransaction<ConfidentialMptMergeInbox> signedMergeInbox = signatureService.sign(
+      holderKeyPair.privateKey(),
+      mergeInbox
+    );
+    assertThat(xrplClient.submit(signedMergeInbox).engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    TransactionResult<ConfidentialMptMergeInbox> mergeResult = this.scanForResult(
+      () -> this.getValidatedTransaction(signedMergeInbox.hash(), ConfidentialMptMergeInbox.class)
+    );
     final Hash256 mergeHash = mergeResult.hash();
 
     // =====================================================================
@@ -355,11 +397,18 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .sequence(holder2AccountInfo.accountData().sequence())
       .fee(fee)
       .signingPublicKey(holder2KeyPair.publicKey())
-      .lastLedgerSequence(lastLedgerSeq(holder2AccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .build();
 
-    signSubmitAndWait(holder2Authorize, holder2KeyPair, MpTokenAuthorize.class);
+    SingleSignedTransaction<MpTokenAuthorize> signedHolder2Authorize = signatureService.sign(
+      holder2KeyPair.privateKey(),
+      holder2Authorize
+    );
+    assertThat(xrplClient.submit(signedHolder2Authorize).engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> this.getValidatedTransaction(signedHolder2Authorize.hash(), MpTokenAuthorize.class)
+    );
 
     // Register Holder 2's ElGamal key via zero-amount ConfidentialMptConvert
     KeyPair holder2ElGamalKeyPair = Seed.elGamalSecp256k1Seed().deriveKeyPair();
@@ -396,7 +445,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .fee(confidentialFee)
       .sequence(holder2AccountInfo.accountData().sequence())
       .signingPublicKey(holder2KeyPair.publicKey())
-      .lastLedgerSequence(lastLedgerSeq(holder2AccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(UnsignedLong.ZERO))
       .holderEncryptionKey(holder2ElGamalKeyPair.publicKey())
@@ -407,8 +455,15 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .zkProof(holder2ConvertProof)
       .build();
 
-    TransactionResult<ConfidentialMptConvert> holder2ConvertResult =
-      signSubmitAndWait(holder2ConfidentialConvert, holder2KeyPair, ConfidentialMptConvert.class);
+    SingleSignedTransaction<ConfidentialMptConvert> signedHolder2ConfidentialConvert = signatureService.sign(
+      holder2KeyPair.privateKey(),
+      holder2ConfidentialConvert
+    );
+    assertThat(xrplClient.submit(signedHolder2ConfidentialConvert).engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    TransactionResult<ConfidentialMptConvert> holder2ConvertResult = this.scanForResult(
+      () -> this.getValidatedTransaction(signedHolder2ConfidentialConvert.hash(), ConfidentialMptConvert.class)
+    );
     final Hash256 holder2ConvertHash = holder2ConvertResult.hash();
 
     // =====================================================================
@@ -505,7 +560,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .fee(confidentialFee)
       .sequence(holderAccountInfo.accountData().sequence())
       .signingPublicKey(holderKeyPair.publicKey())
-      .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
       .destination(holder2KeyPair.publicKey().deriveAddress())
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .senderEncryptedAmount(senderCiphertext)
@@ -517,8 +571,15 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .balanceCommitment(Commitment.of(balanceParams.pedersenCommitment().hexValue()))
       .build();
 
-    TransactionResult<ConfidentialMptSend> sendResult =
-      signSubmitAndWait(confidentialSend, holderKeyPair, ConfidentialMptSend.class);
+    SingleSignedTransaction<ConfidentialMptSend> signedConfidentialSend = signatureService.sign(
+      holderKeyPair.privateKey(),
+      confidentialSend
+    );
+    assertThat(xrplClient.submit(signedConfidentialSend).engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    TransactionResult<ConfidentialMptSend> sendResult = this.scanForResult(
+      () -> this.getValidatedTransaction(signedConfidentialSend.hash(), ConfidentialMptSend.class)
+    );
     final Hash256 sendHash = sendResult.hash();
 
     // Verify sender's confidential balance was reduced: 500 - 100 = 400
@@ -598,7 +659,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .fee(confidentialFee)
       .sequence(holderAccountInfo.accountData().sequence())
       .signingPublicKey(holderKeyPair.publicKey())
-      .lastLedgerSequence(lastLedgerSeq(holderAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .mptAmount(MpTokenNumericAmount.of(convertBackAmount))
       .holderEncryptedAmount(holderEncryptedForConvertBack)
@@ -609,8 +669,15 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .zkProof(convertBackProof)
       .build();
 
-    TransactionResult<ConfidentialMptConvertBack> convertBackResult =
-      signSubmitAndWait(convertBack, holderKeyPair, ConfidentialMptConvertBack.class);
+    SingleSignedTransaction<ConfidentialMptConvertBack> signedConvertBack = signatureService.sign(
+      holderKeyPair.privateKey(),
+      convertBack
+    );
+    assertThat(xrplClient.submit(signedConvertBack).engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    TransactionResult<ConfidentialMptConvertBack> convertBackResult = this.scanForResult(
+      () -> this.getValidatedTransaction(signedConvertBack.hash(), ConfidentialMptConvertBack.class)
+    );
     final Hash256 convertBackHash = convertBackResult.hash();
 
     // Verify remaining confidential balance: 400 - 50 = 350
@@ -673,15 +740,21 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .fee(confidentialFee)
       .sequence(issuerAccountInfo.accountData().sequence())
       .signingPublicKey(issuerKeyPair.publicKey())
-      .lastLedgerSequence(lastLedgerSeq(issuerAccountInfo))
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .holder(holderKeyPair.publicKey().deriveAddress())
       .mptAmount(MpTokenNumericAmount.of(clawbackAmount))
       .zkProof(clawbackProof)
       .build();
 
-    TransactionResult<ConfidentialMptClawback> clawbackResult =
-      signSubmitAndWait(clawback, issuerKeyPair, ConfidentialMptClawback.class);
+    SingleSignedTransaction<ConfidentialMptClawback> signedClawback = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      clawback
+    );
+    assertThat(xrplClient.submit(signedClawback).engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    TransactionResult<ConfidentialMptClawback> clawbackResult = this.scanForResult(
+      () -> this.getValidatedTransaction(signedClawback.hash(), ConfidentialMptClawback.class)
+    );
     final Hash256 clawbackHash = clawbackResult.hash();
 
     // Verify the holder's MPToken still exists after clawback (balances zeroed out)
@@ -714,11 +787,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
         LedgerSpecifier.VALIDATED
       )
     ).node();
-  }
-
-  private UnsignedInteger lastLedgerSeq(AccountInfoResult accountInfo) {
-    return accountInfo.ledgerIndexSafe()
-      .plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue();
   }
 
   private void assertMpTokenIssuanceEntryEqualsObjectFromAccountObjects(

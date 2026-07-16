@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
@@ -106,6 +107,8 @@ public interface MpTokenIssuanceCreate extends Transaction {
    * <ul>
    *   <li>{@code MutableFlags}, when present, must only contain bits from the allowed set — bit {@code 0x1} is
    *       reserved for {@code lsfMPTLocked} and may not appear here.</li>
+   *   <li>A non-zero {@code TransferFee} must not be combined with the {@code tfMPTCanHoldConfidentialBalance} flag.
+   *   </li>
    * </ul>
    */
   @Value.Check
@@ -114,6 +117,11 @@ public interface MpTokenIssuanceCreate extends Transaction {
       (mf.getValue() & ~MpTokenIssuanceCreateMutableFlags.VALID_MASK) == 0,
       "MutableFlags contains invalid or reserved bits. " +
         "Bit 0x1 is reserved (lsfMPTLocked) and must not be set in MutableFlags."
+    ));
+
+    transferFee().ifPresent(fee -> Preconditions.checkState(
+      fee.value().equals(UnsignedInteger.ZERO) || !flags().tfMptCanHoldConfidentialBalance(),
+      "A non-zero TransferFee must not be set when the tfMPTCanHoldConfidentialBalance flag is set"
     ));
   }
 }

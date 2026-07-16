@@ -52,6 +52,15 @@ public class SeedCodec {
   public Decoded decodeSeed(final String base58EncodedSeed) throws EncodingFormatException {
     Objects.requireNonNull(base58EncodedSeed);
 
+    if (base58EncodedSeed.length() == 51) {
+      return AddressBase58.decode(
+        base58EncodedSeed,
+        Lists.newArrayList(KeyType.SECP256K1),
+        Lists.newArrayList(Version.FAMILY_SEED),
+        Optional.of(UnsignedInteger.valueOf(32))
+      );
+    }
+
     return AddressBase58.decode(
       base58EncodedSeed,
       Lists.newArrayList(KeyType.ED25519, KeyType.SECP256K1),
@@ -72,11 +81,13 @@ public class SeedCodec {
     Objects.requireNonNull(entropy);
     Objects.requireNonNull(type);
 
-    if (entropy.getUnsignedBytes().size() != 16) {
-      throw new EncodeException("entropy must have length 16.");
+    if (entropy.getUnsignedBytes().size() != 16 && entropy.getUnsignedBytes().size() != 32) {
+      throw new EncodeException("entropy must have length 16 or 32.");
     }
 
     Version version = type.equals(KeyType.ED25519) ? Version.ED25519_SEED : Version.FAMILY_SEED;
-    return AddressBase58.encode(entropy, Lists.newArrayList(version), UnsignedInteger.valueOf(16));
+    return AddressBase58.encode(
+      entropy, Lists.newArrayList(version), UnsignedInteger.valueOf(entropy.getUnsignedBytes().size())
+    );
   }
 }

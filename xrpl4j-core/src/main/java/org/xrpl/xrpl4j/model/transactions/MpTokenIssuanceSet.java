@@ -7,6 +7,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetMutableFlags;
 
@@ -60,6 +61,28 @@ public interface MpTokenIssuanceSet extends Transaction {
   Optional<Address> holder();
 
   /**
+   * The 33-byte EC-ElGamal public key used for the issuer's mirror balances.
+   *
+   * <p>This key is used to encrypt confidential amounts that the issuer can decrypt to monitor
+   * the total supply of confidential tokens.</p>
+   *
+   * @return An optionally-present {@link PublicKey}.
+   */
+  @JsonProperty("IssuerEncryptionKey")
+  Optional<PublicKey> issuerEncryptionKey();
+
+  /**
+   * The 33-byte EC-ElGamal public key used for regulatory oversight (if applicable).
+   *
+   * <p>This key is used to encrypt confidential amounts that an auditor can decrypt for
+   * compliance and regulatory purposes.</p>
+   *
+   * @return An optionally-present {@link PublicKey}.
+   */
+  @JsonProperty("AuditorEncryptionKey")
+  Optional<PublicKey> auditorEncryptionKey();
+
+  /**
    * An optional set of flags to set or clear on the {@code MPTokenIssuance}. Only flags that were declared mutable at
    * creation time may be modified. Must not be {@code 0}, must only contain bits {@code 0x001}–{@code 0x800}, and
    * must not set and clear the same flag in one transaction. Mutually exclusive with {@link #flags()}
@@ -110,6 +133,9 @@ public interface MpTokenIssuanceSet extends Transaction {
    *       {@code Holder} and with the {@code tfMPTLock}/{@code tfMPTUnlock} flags.</li>
    *   <li>A non-zero {@code TransferFee} must not be combined with {@code tmfMPTClearCanTransfer}.</li>
    *   <li>{@code DomainID} is mutually exclusive with {@code Holder}.</li>
+   *   <li>{@code Account} must not equal {@code Holder}.</li>
+   *   <li>{@code Holder} is mutually exclusive with {@code IssuerEncryptionKey} and {@code AuditorEncryptionKey}.</li>
+   *   <li>{@code AuditorEncryptionKey} may only be present when {@code IssuerEncryptionKey} is also present.</li>
    * </ul>
    */
   @Value.Check
@@ -194,5 +220,24 @@ public interface MpTokenIssuanceSet extends Transaction {
       !holder().isPresent(),
       "DomainID and Holder are mutually exclusive."
     ));
+
+    holder().ifPresent(h -> Preconditions.checkState(
+      !h.equals(account()),
+      "Account and Holder must not be the same."
+    ));
+
+    if (holder().isPresent()) {
+      Preconditions.checkState(
+        !issuerEncryptionKey().isPresent() && !auditorEncryptionKey().isPresent(),
+        "Holder is mutually exclusive with IssuerEncryptionKey and AuditorEncryptionKey."
+      );
+    }
+
+    if (auditorEncryptionKey().isPresent()) {
+      Preconditions.checkState(
+        issuerEncryptionKey().isPresent(),
+        "AuditorEncryptionKey may only be present when IssuerEncryptionKey is also present."
+      );
+    }
   }
 }

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.MpTokenFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -29,6 +31,14 @@ public interface MetaMpTokenObject extends MetaLedgerObject {
 
   @JsonProperty("MPTAmount")
   Optional<MpTokenNumericAmount> mptAmount();
+
+  /**
+   * The amount of tokens currently locked up (for example, in escrow).
+   *
+   * @return An optionally-present {@link MpTokenNumericAmount}.
+   */
+  @JsonProperty("LockedAmount")
+  Optional<MpTokenNumericAmount> lockedAmount();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.
@@ -58,5 +68,53 @@ public interface MetaMpTokenObject extends MetaLedgerObject {
    */
   @JsonProperty("OwnerNode")
   Optional<String> ownerNode();
+
+  /**
+   * The holder's 33-byte compressed ElGamal encryption key for confidential transfers.
+   *
+   * @return An optionally-present {@link PublicKey}.
+   */
+  @JsonProperty("HolderEncryptionKey")
+  Optional<PublicKey> holderEncryptionKey();
+
+  /**
+   * The holder's confidential spending balance (encrypted).
+   *
+   * @return An optionally-present {@link EncryptedAmount} containing the ciphertext.
+   */
+  @JsonProperty("ConfidentialBalanceSpending")
+  Optional<EncryptedAmount> confidentialBalanceSpending();
+
+  /**
+   * The holder's confidential inbox balance (encrypted).
+   *
+   * @return An optionally-present {@link EncryptedAmount} containing the ciphertext.
+   */
+  @JsonProperty("ConfidentialBalanceInbox")
+  Optional<EncryptedAmount> confidentialBalanceInbox();
+
+  /**
+   * The issuer's encrypted mirror balance for this holder's tokens.
+   *
+   * @return An optionally-present {@link EncryptedAmount} containing the ciphertext.
+   */
+  @JsonProperty("IssuerEncryptedBalance")
+  Optional<EncryptedAmount> issuerEncryptedBalance();
+
+  /**
+   * The auditor's encrypted balance for this holder's tokens.
+   *
+   * @return An optionally-present {@link EncryptedAmount} containing the ciphertext.
+   */
+  @JsonProperty("AuditorEncryptedBalance")
+  Optional<EncryptedAmount> auditorEncryptedBalance();
+
+  /**
+   * The version number of the confidential balance.
+   *
+   * @return An optionally-present {@link UnsignedInteger}.
+   */
+  @JsonProperty("ConfidentialBalanceVersion")
+  Optional<UnsignedInteger> confidentialBalanceVersion();
 
 }

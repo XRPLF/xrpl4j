@@ -107,6 +107,26 @@ public interface Seed extends javax.security.auth.Destroyable {
   }
 
   /**
+   * Construct an ElGamal secp256k1-compatible {@link Seed} from the supplied {@link Passphrase}.
+   *
+   * @param passphrase A {@link Passphrase} to generate a seed from.
+   *
+   * @return A {@link Seed}.
+   */
+  static Seed elGamalSecp256k1SeedFromPassphrase(final Passphrase passphrase) {
+    Objects.requireNonNull(passphrase);
+
+    final byte[] entropyBytes = new byte[32];
+
+    // 32 bytes of deterministic entropy.
+    Hashing.sha512()
+      .hashBytes(passphrase.value())
+      .writeBytesTo(entropyBytes, 0, 32);
+
+    return elGamalSecp256k1SeedFromEntropy(Entropy.of(entropyBytes));
+  }
+
+  /**
    * Construct an Ed25519-compatible {@link Seed} using a random {@link Entropy} instance. This random {@link Entropy}
    * is created using {@link Entropy#newInstance()}.
    *
@@ -125,6 +145,7 @@ public interface Seed extends javax.security.auth.Destroyable {
    */
   static Seed ed25519SeedFromEntropy(final Entropy entropy) {
     Objects.requireNonNull(entropy);
+    Preconditions.checkArgument(entropy.value().length() == 16, "Entropy must be 16 bytes long.");
 
     final String base58EncodedSeed = AddressBase58.encode(
       entropy.value(),
@@ -154,6 +175,40 @@ public interface Seed extends javax.security.auth.Destroyable {
    */
   static Seed secp256k1SeedFromEntropy(final Entropy entropy) {
     Objects.requireNonNull(entropy);
+    Preconditions.checkArgument(entropy.value().length() == 16, "Entropy must be 16 bytes long.");
+
+    final String base58EncodedSeed = AddressBase58.encode(
+      entropy.value(),
+      Lists.newArrayList(Version.FAMILY_SEED),
+      UnsignedInteger.valueOf(entropy.value().length())
+    );
+
+    return new DefaultSeed(UnsignedByteArray.of(Base58.decode(base58EncodedSeed)));
+  }
+
+  /**
+   * Construct a secp256k1-compatible {@link Seed} using a random {@link Entropy} instance. This random {@link Entropy}
+   * is created using {@link Entropy#newInstance()}.
+   *
+   * <p>This method generates random entropy until a valid secp256k1 scalar is found
+   * (i.e., 1 ≤ scalar &lt; curve order n).</p>
+   *
+   * @return A {@link Seed}.
+   */
+  static Seed elGamalSecp256k1Seed() {
+    return elGamalSecp256k1SeedFromEntropy(Entropy.newInstance(32));
+  }
+
+  /**
+   * Construct a secp256k1-compatible {@link Seed} from the supplied {@link Entropy} of 32 bytes.
+   *
+   * @param entropy A {@link Entropy} to generate a {@link Seed} from.
+   *
+   * @return A {@link Seed}.
+   */
+  static Seed elGamalSecp256k1SeedFromEntropy(final Entropy entropy) {
+    Objects.requireNonNull(entropy);
+    Preconditions.checkArgument(entropy.value().length() == 32, "Entropy must be 32 bytes long.");
 
     final String base58EncodedSeed = AddressBase58.encode(
       entropy.value(),

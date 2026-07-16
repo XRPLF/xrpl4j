@@ -527,6 +527,50 @@ public enum TransactionType {
   LOAN_PAY("LoanPay"),
 
   /**
+   * The {@link TransactionType} for the {@link ConfidentialMptConvert} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   */
+  @Beta
+  CONFIDENTIAL_MPT_CONVERT("ConfidentialMPTConvert"),
+
+  /**
+   * The {@link TransactionType} for the {@link ConfidentialMptSend} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   */
+  @Beta
+  CONFIDENTIAL_MPT_SEND("ConfidentialMPTSend"),
+
+  /**
+   * The {@link TransactionType} for the {@link ConfidentialMptMergeInbox} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   */
+  @Beta
+  CONFIDENTIAL_MPT_MERGE_INBOX("ConfidentialMPTMergeInbox"),
+
+  /**
+   * The {@link TransactionType} for the {@link ConfidentialMptConvertBack} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
+   * </p>
+   */
+  @Beta
+  CONFIDENTIAL_MPT_CONVERT_BACK("ConfidentialMPTConvertBack"),
+
+  /**
+   * The {@link TransactionType} for the {@link ConfidentialMptClawback} transaction.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/discussions/241"
+   */
+  @Beta
+  CONFIDENTIAL_MPT_CLAWBACK("ConfidentialMPTClawback"),
+
+  /**
    * The {@link TransactionType} for any transaction that is unrecognized/unsupported by xrpl4j.
    */
   UNKNOWN("Unknown");

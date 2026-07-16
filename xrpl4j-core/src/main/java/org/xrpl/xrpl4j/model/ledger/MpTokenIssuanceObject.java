@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceMutableFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -114,6 +115,37 @@ public interface MpTokenIssuanceObject extends LedgerObject {
    */
   @JsonProperty("LockedAmount")
   Optional<MpTokenNumericAmount> lockedAmount();
+
+  /**
+   * The total amount of this token that is currently held in confidential balances. This value is adjusted with
+   * every {@code ConfidentialMPTConvert}, {@code ConfidentialMPTConvertBack}, and {@code ConfidentialMPTClawback}
+   * transaction.
+   *
+   * @return An optionally-present {@link MpTokenNumericAmount}.
+   */
+  @JsonProperty("ConfidentialOutstandingAmount")
+  @Value.Default
+  default MpTokenNumericAmount confidentialOutstandingAmount() {
+    return MpTokenNumericAmount.of(0);
+  }
+
+  /**
+   * A 33-byte compressed ElGamal public key for the issuer. Required to use the confidential transfer feature.
+   * Used for the issuer's mirror balances, enabling supply consistency checks and issuer-level auditing.
+   *
+   * @return An optionally-present {@link PublicKey}.
+   */
+  @JsonProperty("IssuerEncryptionKey")
+  Optional<PublicKey> issuerEncryptionKey();
+
+  /**
+   * A 33-byte compressed ElGamal public key for an optional on-chain auditor. When set, confidential balances
+   * are additionally encrypted under this key, enabling selective disclosure for regulatory oversight.
+   *
+   * @return An optionally-present {@link PublicKey}.
+   */
+  @JsonProperty("AuditorEncryptionKey")
+  Optional<PublicKey> auditorEncryptionKey();
 
   /**
    * Arbitrary hex-encoded metadata about this issuance.

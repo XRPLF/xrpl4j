@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 class MpTokenIssuanceFlagsTest extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(7);
+    return getBooleanCombinations(8);
   }
 
   @ParameterizedTest
@@ -23,7 +23,8 @@ class MpTokenIssuanceFlagsTest extends AbstractFlagsTest {
     boolean lsfMptCanEscrow,
     boolean lsfMptCanTrade,
     boolean lsfMptCanTransfer,
-    boolean lsfMptCanClawback
+    boolean lsfMptCanClawback,
+    boolean lsfMptCanHoldConfidentialBalance
   ) {
     long expectedFlags = (lsfMptLocked ? MpTokenIssuanceFlags.LOCKED.getValue() : 0L) |
                          (lsfMptCanLock ? MpTokenIssuanceFlags.CAN_LOCK.getValue() : 0L) |
@@ -31,7 +32,9 @@ class MpTokenIssuanceFlagsTest extends AbstractFlagsTest {
                          (lsfMptCanEscrow ? MpTokenIssuanceFlags.CAN_ESCROW.getValue() : 0L) |
                          (lsfMptCanTrade ? MpTokenIssuanceFlags.CAN_TRADE.getValue() : 0L) |
                          (lsfMptCanTransfer ? MpTokenIssuanceFlags.CAN_TRANSFER.getValue() : 0L) |
-                         (lsfMptCanClawback ? MpTokenIssuanceFlags.CAN_CLAWBACK.getValue() : 0L);
+                         (lsfMptCanClawback ? MpTokenIssuanceFlags.CAN_CLAWBACK.getValue() : 0L) |
+                         (lsfMptCanHoldConfidentialBalance ?
+                           MpTokenIssuanceFlags.CAN_HOLD_CONFIDENTIAL_BALANCE.getValue() : 0L);
 
     MpTokenIssuanceFlags flags = MpTokenIssuanceFlags.of(expectedFlags);
 
@@ -44,6 +47,7 @@ class MpTokenIssuanceFlagsTest extends AbstractFlagsTest {
     assertThat(flags.lsfMptCanTrade()).isEqualTo(lsfMptCanTrade);
     assertThat(flags.lsfMptCanTransfer()).isEqualTo(lsfMptCanTransfer);
     assertThat(flags.lsfMptCanClawback()).isEqualTo(lsfMptCanClawback);
+    assertThat(flags.lsfMptCanHoldConfidentialBalance()).isEqualTo(lsfMptCanHoldConfidentialBalance);
   }
 
 }

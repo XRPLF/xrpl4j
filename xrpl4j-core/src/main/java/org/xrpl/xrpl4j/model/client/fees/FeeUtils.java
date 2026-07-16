@@ -234,6 +234,46 @@ public class FeeUtils {
   }
 
   /**
+   * Computes the fee necessary for a confidential MPT transaction (i.e., {@code ConfidentialMPTConvert},
+   * {@code ConfidentialMPTConvertBack}, {@code ConfidentialMPTSend}, {@code ConfidentialMPTClawback}, and
+   * {@code ConfidentialMPTMergeInbox}).
+   *
+   * <p>rippled charges confidential MPT transactions an extra base-fee multiplier
+   * ({@code kConfidentialFeeMultiplier = 9}) on top of the standard transaction cost, which itself includes one
+   * base fee per multisigner. The total cost of a confidential transaction is therefore
+   * {@code (1 + numMultisigners + kConfidentialFeeMultiplier) * (the normal transaction cost)}.
+   *
+   * @param feeResult       {@link FeeResult} object obtained by querying the ledger (e.g., via an
+   *                        `XrplClient#fee()` call).
+   * @param numMultisigners The number of multisigners in the transaction's {@code Signers} array. Use 0 for
+   *                        single-signed transactions.
+   *
+   * @return A {@link ComputedNetworkFees} with low, medium and high fee levels scaled for confidential MPT
+   *   transactions.
+   */
+  public static ComputedNetworkFees computeConfidentialMptNetworkFees(
+    final FeeResult feeResult,
+    final UnsignedInteger numMultisigners
+  ) {
+    Objects.requireNonNull(feeResult);
+    Objects.requireNonNull(numMultisigners);
+
+    // kConfidentialFeeMultiplier in rippled's Protocol.h
+    final long confidentialFeeMultiplier = 9L;
+
+    ComputedNetworkFees computedNetworkFees = computeNetworkFees(feeResult);
+    XrpCurrencyAmount multiplierAsAmount = XrpCurrencyAmount.of(
+      UnsignedLong.valueOf(1L + numMultisigners.longValue() + confidentialFeeMultiplier)
+    );
+    return ComputedNetworkFees.builder()
+      .feeLow(computedNetworkFees.feeLow().times(multiplierAsAmount))
+      .feeMedium(computedNetworkFees.feeMedium().times(multiplierAsAmount))
+      .feeHigh(computedNetworkFees.feeHigh().times(multiplierAsAmount))
+      .queuePercentage(computedNetworkFees.queuePercentage())
+      .build();
+  }
+
+  /**
    * Calculate the lowest fee the user is able to pay if the queue is empty.
    *
    * @param decomposedFees A {@link DecomposedFees} that contains information about current XRPL fees.

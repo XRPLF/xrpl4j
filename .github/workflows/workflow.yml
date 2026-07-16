@@ -107,6 +107,80 @@ jobs:
       - name: Build
         run: mvn clean install -Dmaven.javadoc.skip=true -Pandroid
 
+  # Verifies the mpt-crypto native libraries (loaded via JNA) on each platform we ship binaries for.
+  build_confidential_native_its:
+    name: confidential_native_${{ matrix.platform }}_${{ matrix.network }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux x86-64 runners have Docker, so ConfidentialTransfersIT runs against the local
+          # rippled Testcontainer and exercises the real native library end-to-end.
+          - os: ubuntu-latest
+            platform: linux-x86-64
+            java: '8'
+            network: local-rippled
+            it_flags: ''
+          # The rippleci/xrpld image is published for linux/amd64 only, so the ARM Linux runner
+          # registers QEMU binfmt handlers to run the amd64 rippled container under emulation.
+          - os: ubuntu-24.04-arm
+            platform: linux-aarch64
+            java: '8'
+            network: local-rippled
+            it_flags: ''
+            setup_qemu: true
+          # Intel macOS runners have no Docker preinstalled, but support virtualization, so
+          # Colima provides a Docker engine for the rippled Testcontainer.
+          - os: macos-15-intel
+            platform: darwin-x86-64
+            java: '8'
+            network: local-rippled
+            it_flags: ''
+            setup_docker_via_colima: true
+          # ARM macOS runners cannot run Docker at all (Apple's Virtualization Framework does not
+          # support nested virtualization), and Windows runners cannot run Linux containers, so
+          # these platforms run ConfidentialTransfersIT against Devnet instead of a local rippled.
+          # Temurin doesn't ship JDK 8 for macOS ARM64, so we use JDK 11 there.
+          - os: macos-14
+            platform: darwin-aarch64
+            java: '11'
+            network: devnet
+            it_flags: '-DuseDevnet'
+          - os: windows-latest
+            platform: win32-x86-64
+            java: '8'
+            network: devnet
+            it_flags: '-DuseDevnet'
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v6
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+          cache: 'maven'
+      - name: Set up QEMU for amd64 emulation
+        if: matrix.setup_qemu
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: amd64
+      - name: Set up Docker via Colima
+        if: matrix.setup_docker_via_colima
+        run: |
+          brew install colima docker
+          colima start --cpus 3 --memory 8
+          echo "DOCKER_HOST=unix://$HOME/.colima/default/docker.sock" >> "$GITHUB_ENV"
+          echo "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock" >> "$GITHUB_ENV"
+      - name: Build and run unit tests
+        run: mvn clean install -DskipITs -Dmaven.javadoc.skip=true
+      - name: Run ConfidentialTransfersIT
+        run: mvn -pl xrpl4j-integration-tests verify -Dit.test=ConfidentialTransfersIT ${{ matrix.it_flags }} -Dmaven.javadoc.skip=true
+
   build_devnet_its:
     runs-on: ubuntu-latest
     steps:

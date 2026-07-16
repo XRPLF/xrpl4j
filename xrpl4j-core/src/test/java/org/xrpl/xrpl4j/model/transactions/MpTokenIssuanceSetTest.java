@@ -25,6 +25,12 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
         PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
       )
       .domainId(Hash256.of("FEDCBA0987654321FEDCBA0987654321FEDCBA0987654321FEDCBA0987654321"))
+      .issuerEncryptionKey(
+        PublicKey.fromBase16EncodedPublicKey("028D7500BFCD792B487E4E51664037AB543E76CEBACF0E7E17AD4B83057E1F2B30")
+      )
+      .auditorEncryptionKey(
+        PublicKey.fromBase16EncodedPublicKey("037C0863E64B648BFA3C89B921C57B11757E2B2054EE094E2CD05BFBFF0ED28CA4")
+      )
       .build();
 
     String json =
@@ -35,7 +41,9 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
       "  \"Sequence\" : 335,\n" +
       "  \"SigningPubKey\" : \"ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148\",\n" +
       "  \"MPTokenIssuanceID\" : \"0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4\",\n" +
-      "  \"DomainID\" : \"FEDCBA0987654321FEDCBA0987654321FEDCBA0987654321FEDCBA0987654321\"\n" +
+      "  \"DomainID\" : \"FEDCBA0987654321FEDCBA0987654321FEDCBA0987654321FEDCBA0987654321\",\n" +
+      "  \"IssuerEncryptionKey\" : \"028D7500BFCD792B487E4E51664037AB543E76CEBACF0E7E17AD4B83057E1F2B30\",\n" +
+      "  \"AuditorEncryptionKey\" : \"037C0863E64B648BFA3C89B921C57B11757E2B2054EE094E2CD05BFBFF0ED28CA4\"\n" +
       "}";
 
     assertCanSerializeAndDeserialize(issuanceSet, json);
@@ -517,5 +525,58 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
 
     assertThat(issuanceSet.transferFee()).isPresent();
     assertThat(issuanceSet.mutableFlags()).isPresent();
+  }
+
+  @Test
+  void holderAndEncryptionKeyMutuallyExclusive() {
+    assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
+      .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .sequence(UnsignedInteger.valueOf(335))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+      )
+      .holder(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .issuerEncryptionKey(
+        PublicKey.fromBase16EncodedPublicKey("028D7500BFCD792B487E4E51664037AB543E76CEBACF0E7E17AD4B83057E1F2B30")
+      )
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Holder is mutually exclusive with IssuerEncryptionKey and AuditorEncryptionKey");
+  }
+
+  @Test
+  void auditorEncryptionKeyRequiresIssuerEncryptionKey() {
+    assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
+      .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .sequence(UnsignedInteger.valueOf(335))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+      )
+      .auditorEncryptionKey(
+        PublicKey.fromBase16EncodedPublicKey("037C0863E64B648BFA3C89B921C57B11757E2B2054EE094E2CD05BFBFF0ED28CA4")
+      )
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("AuditorEncryptionKey may only be present when IssuerEncryptionKey is also present");
+  }
+
+  @Test
+  void accountAndHolderMustNotBeSame() {
+    assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
+      .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .sequence(UnsignedInteger.valueOf(335))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+      )
+      .holder(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Account and Holder must not be the same");
   }
 }

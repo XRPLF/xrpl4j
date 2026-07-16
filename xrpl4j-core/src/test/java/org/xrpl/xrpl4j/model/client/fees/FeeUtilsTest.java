@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeBatchFee;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeConfidentialMptNetworkFees;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeLoanSetNetworkFees;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeMultisigNetworkFees;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeNetworkFees;
@@ -863,6 +864,61 @@ public class FeeUtilsTest {
     assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(2000));
     assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(10016));
     assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(20000));
+  }
+
+  // /////////////////
+  // computeConfidentialMptNetworkFees
+  // /////////////////
+
+  @Test
+  void testComputeConfidentialMptNetworkFeesNullInputs() {
+    assertThrows(NullPointerException.class,
+      () -> computeConfidentialMptNetworkFees(null, UnsignedInteger.ZERO));
+    assertThrows(NullPointerException.class,
+      () -> computeConfidentialMptNetworkFees(mock(FeeResult.class), null));
+  }
+
+  @Test
+  void testComputeConfidentialMptNetworkFeesSingleSigned() {
+    // Multiplier: (1 + 0 signers + 9) = 10
+    FeeResult feeResult = feeResultBuilder().build();
+    ComputedNetworkFees result = computeConfidentialMptNetworkFees(feeResult, UnsignedInteger.ZERO);
+    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
+    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(50080));
+    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(100000));
+    assertThat(result.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(50080));
+  }
+
+  @Test
+  void testComputeConfidentialMptNetworkFeesForEmptyQueue() {
+    FeeResult feeResult = feeResultBuilder()
+      .currentQueueSize(UnsignedInteger.ZERO)
+      .drops(
+        FeeDrops.builder()
+          .baseFee(XrpCurrencyAmount.ofDrops(10))
+          .medianFee(XrpCurrencyAmount.ofDrops(100))
+          .minimumFee(XrpCurrencyAmount.ofDrops(10))
+          .openLedgerFee(XrpCurrencyAmount.ofDrops(2657))
+          .build()
+      )
+      .maxQueueSize(UnsignedInteger.valueOf(110))
+      .build();
+    ComputedNetworkFees result = computeConfidentialMptNetworkFees(feeResult, UnsignedInteger.ZERO);
+    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(150));
+    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(1500));
+    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(29230));
+    assertThat(result.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(150));
+  }
+
+  @Test
+  void testComputeConfidentialMptNetworkFeesMultisigned() {
+    // Multiplier: (1 + 2 signers + 9) = 12
+    FeeResult feeResult = feeResultBuilder().build();
+    ComputedNetworkFees result = computeConfidentialMptNetworkFees(feeResult, UnsignedInteger.valueOf(2));
+    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(12000));
+    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(60096));
+    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(120000));
+    assertThat(result.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(60096));
   }
 
   private ImmutableFeeResult.Builder feeResultBuilder() {

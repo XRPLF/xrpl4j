@@ -138,23 +138,19 @@ jobs:
             it_flags: ''
             setup_docker_via_colima: true
           # ARM macOS runners cannot run Docker at all (Apple's Virtualization Framework does not
-          # support nested virtualization), so this platform runs ConfidentialTransfersIT against
-          # Devnet instead of a local rippled.
+          # support nested virtualization), and Windows runners cannot run Linux containers, so
+          # these platforms run ConfidentialTransfersIT against Devnet instead of a local rippled.
           # Temurin doesn't ship JDK 8 for macOS ARM64, so we use JDK 11 there.
           - os: macos-14
             platform: darwin-aarch64
             java: '11'
             network: devnet
             it_flags: '-DuseDevnet'
-          # Windows runners only run Windows containers natively, but windows-latest (Windows
-          # Server 2025) supports WSL2, so a Linux Docker daemon inside WSL runs the rippled
-          # Testcontainer, exposed to the host over TCP.
           - os: windows-latest
             platform: win32-x86-64
             java: '8'
-            network: local-rippled
-            it_flags: ''
-            setup_docker_via_wsl: true
+            network: devnet
+            it_flags: '-DuseDevnet'
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -180,26 +176,6 @@ jobs:
           colima start --cpus 3 --memory 8
           echo "DOCKER_HOST=unix://$HOME/.colima/default/docker.sock" >> "$GITHUB_ENV"
           echo "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock" >> "$GITHUB_ENV"
-      - name: Set up WSL2
-        if: matrix.setup_docker_via_wsl
-        uses: Vampire/setup-wsl@v5
-        with:
-          distribution: Ubuntu-24.04
-          wsl-version: 2
-      - name: Set up Docker inside WSL
-        if: matrix.setup_docker_via_wsl
-        shell: wsl-bash {0}
-        run: |
-          curl -fsSL https://get.docker.com | sh
-          mkdir -p /etc/docker
-          echo '{"hosts": ["tcp://0.0.0.0:2375", "unix:///var/run/docker.sock"]}' > /etc/docker/daemon.json
-          # The WSL distro has no systemd session here, so start dockerd directly. The daemon
-          # keeps the WSL VM alive across subsequent workflow steps.
-          nohup dockerd > /tmp/dockerd.log 2>&1 &
-          timeout 90 sh -c 'until docker info > /dev/null 2>&1; do sleep 2; done'
-      - name: Point Testcontainers at the WSL Docker daemon
-        if: matrix.setup_docker_via_wsl
-        run: echo "DOCKER_HOST=tcp://localhost:2375" >> "$GITHUB_ENV"
       - name: Build and run unit tests
         run: mvn clean install -DskipITs -Dmaven.javadoc.skip=true
       - name: Run ConfidentialTransfersIT

@@ -114,18 +114,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Linux runners have Docker, so ConfidentialTransfersIT runs against the local rippled
-          # Testcontainer and exercises the real native library end-to-end.
+          # Linux x86-64 runners have Docker, so ConfidentialTransfersIT runs against the local
+          # rippled Testcontainer and exercises the real native library end-to-end.
           - os: ubuntu-latest
             platform: linux-x86-64
             java: '8'
             network: local-rippled
             it_flags: ''
+          # The rippleci/xrpld image is published for linux/amd64 only, so the ARM Linux runner
+          # registers QEMU binfmt handlers to run the amd64 rippled container under emulation.
           - os: ubuntu-24.04-arm
             platform: linux-aarch64
             java: '8'
             network: local-rippled
             it_flags: ''
+            setup_qemu: true
           # Intel macOS runners have no Docker preinstalled, but support virtualization, so
           # Colima provides a Docker engine for the rippled Testcontainer.
           - os: macos-15-intel
@@ -158,6 +161,11 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
           cache: 'maven'
+      - name: Set up QEMU for amd64 emulation
+        if: matrix.setup_qemu
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: amd64
       - name: Set up Docker via Colima
         if: matrix.setup_docker_via_colima
         run: |

@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.SponsorshipFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -153,19 +152,19 @@ public interface SponsorshipObject extends LedgerObject {
    * A hint indicating which page of the owner directory link list this object is linked into.
    * This field is used for efficient directory traversal.
    *
-   * @return An {@link UnsignedLong} representing the owner node hint.
+   * @return A {@link String} containing the owner node hint.
    */
   @JsonProperty("OwnerNode")
-  UnsignedLong ownerNode();
+  String ownerNode();
 
   /**
    * A hint indicating which page of the sponsee directory link list this object is linked into.
    * This field is used for efficient directory traversal.
    *
-   * @return An {@link UnsignedLong} representing the sponsee node hint.
+   * @return A {@link String} containing the sponsee node hint.
    */
   @JsonProperty("SponseeNode")
-  UnsignedLong sponseeNode();
+  String sponseeNode();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.

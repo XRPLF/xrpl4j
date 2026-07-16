@@ -2,7 +2,6 @@ package org.xrpl.xrpl4j.model.ledger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -17,8 +16,8 @@ public class SponsorshipObjectJsonTests extends AbstractJsonTest {
     SponsorshipObject object = SponsorshipObject.builder()
       .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
-      .ownerNode(UnsignedLong.ZERO)
-      .sponseeNode(UnsignedLong.ZERO)
+      .ownerNode("0")
+      .sponseeNode("0")
       .previousTransactionId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14091160))
       .index(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
@@ -30,8 +29,8 @@ public class SponsorshipObjectJsonTests extends AbstractJsonTest {
       "  \"Owner\": \"rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH\",\n" +
       "  \"Sponsee\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\",\n" +
       "  \"RemainingOwnerCount\": 0,\n" +
-      "  \"OwnerNode\": 0,\n" +
-      "  \"SponseeNode\": 0,\n" +
+      "  \"OwnerNode\": \"0\",\n" +
+      "  \"SponseeNode\": \"0\",\n" +
       "  \"PreviousTxnID\": \"E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321\",\n" +
       "  \"PreviousTxnLgrSeq\": 14091160,\n" +
       "  \"index\": \"49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0\"\n" +
@@ -46,8 +45,8 @@ public class SponsorshipObjectJsonTests extends AbstractJsonTest {
       .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
       .feeAmount(XrpCurrencyAmount.ofDrops(1000000))
-      .ownerNode(UnsignedLong.ZERO)
-      .sponseeNode(UnsignedLong.ZERO)
+      .ownerNode("0")
+      .sponseeNode("0")
       .previousTransactionId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14091160))
       .index(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
@@ -60,8 +59,8 @@ public class SponsorshipObjectJsonTests extends AbstractJsonTest {
       "  \"Sponsee\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\",\n" +
       "  \"FeeAmount\": \"1000000\",\n" +
       "  \"RemainingOwnerCount\": 0,\n" +
-      "  \"OwnerNode\": 0,\n" +
-      "  \"SponseeNode\": 0,\n" +
+      "  \"OwnerNode\": \"0\",\n" +
+      "  \"SponseeNode\": \"0\",\n" +
       "  \"PreviousTxnID\": \"E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321\",\n" +
       "  \"PreviousTxnLgrSeq\": 14091160,\n" +
       "  \"index\": \"49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0\"\n" +
@@ -77,8 +76,8 @@ public class SponsorshipObjectJsonTests extends AbstractJsonTest {
       .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
       .feeAmount(XrpCurrencyAmount.ofDrops(1000000))
       .maxFee(XrpCurrencyAmount.ofDrops(100))
-      .ownerNode(UnsignedLong.ZERO)
-      .sponseeNode(UnsignedLong.ZERO)
+      .ownerNode("0")
+      .sponseeNode("0")
       .previousTransactionId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14091160))
       .index(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
@@ -92,8 +91,8 @@ public class SponsorshipObjectJsonTests extends AbstractJsonTest {
       "  \"FeeAmount\": \"1000000\",\n" +
       "  \"MaxFee\": \"100\",\n" +
       "  \"RemainingOwnerCount\": 0,\n" +
-      "  \"OwnerNode\": 0,\n" +
-      "  \"SponseeNode\": 0,\n" +
+      "  \"OwnerNode\": \"0\",\n" +
+      "  \"SponseeNode\": \"0\",\n" +
       "  \"PreviousTxnID\": \"E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321\",\n" +
       "  \"PreviousTxnLgrSeq\": 14091160,\n" +
       "  \"index\": \"49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0\"\n" +
@@ -108,8 +107,8 @@ public class SponsorshipObjectJsonTests extends AbstractJsonTest {
       .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
       .remainingOwnerCount(UnsignedInteger.valueOf(5))
-      .ownerNode(UnsignedLong.ZERO)
-      .sponseeNode(UnsignedLong.ZERO)
+      .ownerNode("0")
+      .sponseeNode("0")
       .previousTransactionId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14091160))
       .index(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
@@ -121,8 +120,8 @@ public class SponsorshipObjectJsonTests extends AbstractJsonTest {
       "  \"Owner\": \"rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH\",\n" +
       "  \"Sponsee\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\",\n" +
       "  \"RemainingOwnerCount\": 5,\n" +
-      "  \"OwnerNode\": 0,\n" +
-      "  \"SponseeNode\": 0,\n" +
+      "  \"OwnerNode\": \"0\",\n" +
+      "  \"SponseeNode\": \"0\",\n" +
       "  \"PreviousTxnID\": \"E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321\",\n" +
       "  \"PreviousTxnLgrSeq\": 14091160,\n" +
       "  \"index\": \"49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0\"\n" +
@@ -139,8 +138,8 @@ public class SponsorshipObjectJsonTests extends AbstractJsonTest {
       .feeAmount(XrpCurrencyAmount.ofDrops(1000000))
       .maxFee(XrpCurrencyAmount.ofDrops(100))
       .remainingOwnerCount(UnsignedInteger.valueOf(5))
-      .ownerNode(UnsignedLong.valueOf(123))
-      .sponseeNode(UnsignedLong.valueOf(456))
+      .ownerNode("7B")
+      .sponseeNode("1C8")
       .previousTransactionId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14091160))
       .index(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
@@ -154,8 +153,8 @@ public class SponsorshipObjectJsonTests extends AbstractJsonTest {
       "  \"FeeAmount\": \"1000000\",\n" +
       "  \"MaxFee\": \"100\",\n" +
       "  \"RemainingOwnerCount\": 5,\n" +
-      "  \"OwnerNode\": 123,\n" +
-      "  \"SponseeNode\": 456,\n" +
+      "  \"OwnerNode\": \"7B\",\n" +
+      "  \"SponseeNode\": \"1C8\",\n" +
       "  \"PreviousTxnID\": \"E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321\",\n" +
       "  \"PreviousTxnLgrSeq\": 14091160,\n" +
       "  \"index\": \"49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0\"\n" +

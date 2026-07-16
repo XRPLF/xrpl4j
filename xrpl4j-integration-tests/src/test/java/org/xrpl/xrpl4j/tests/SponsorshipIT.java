@@ -41,6 +41,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.Account
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
@@ -775,10 +776,10 @@ public class SponsorshipIT extends AbstractIT {
       AccountInfoResult updatedSponseeInfo = scanForResult(() -> getValidatedAccountInfo(sponseeAddress));
 
       // Fee must cover baseFee * (1 + sponseeSigners + sponsorSigners). With 2 sponsee
-      // signers + 2 sponsor signers that's 5x the reference base fee, further scaled by
-      // load (see Transactor::calculateBaseFee() + scaleFeeLoad()). Use a generous fixed
-      // amount to avoid flake from load scaling between the preceding SignerListSets.
-      XrpCurrencyAmount multiSignFee = XrpCurrencyAmount.ofDrops(100000);
+      // signers + 2 sponsor signers that's 5x the reference base fee.
+      XrpCurrencyAmount multiSignFee = FeeUtils.computeSponsorshipTransferNetworkFees(
+        feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.valueOf(2)
+      ).recommendedFee();
 
       SponsorshipTransfer unsignedTransfer = SponsorshipTransfer.builder()
         .account(sponseeAddress)

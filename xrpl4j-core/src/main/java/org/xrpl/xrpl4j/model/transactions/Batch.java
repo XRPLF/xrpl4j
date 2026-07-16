@@ -125,11 +125,11 @@ public interface Batch extends Transaction {
    * that references a pseudo-account is rejected by rippled with {@code tefBAD_AUTH}. xrpl4j does not enforce this
    * at construction time because pseudo-account status is ledger state that is unknowable from an address alone.
    *
-   * <p>V1_1 changes from V1_0:
+   * <p>Notes on the current ({@code V1_1}) design:
    * <ul>
    *   <li>Entries are auto-sorted ascending by {@code Account} address (required by the wire format).</li>
-   *   <li>Hard cap of 8 entries (was: ≤ number of inner transactions).</li>
-   *   <li>Extra signers are now allowed: an account may sign without having its own inner transaction (e.g.,
+   *   <li>There is a hard cap of 8 entries, independent of the number of inner transactions.</li>
+   *   <li>Extra signers are allowed: an account may sign without having its own inner transaction (e.g.,
    *       co-signer or delegate).</li>
    * </ul>
    *
@@ -257,11 +257,12 @@ public interface Batch extends Transaction {
    * Validates BatchSigners constraints and auto-sorts entries by {@code Account} in ascending order (required by
    * V1_1). Follows the same normalizing {@link Value.Check} pattern as {@link BatchSigner#checkAndNormalize()}.
    *
-   * <p>Changes from V1_0 → V1_1:
+   * <p>Notes on the current ({@code V1_1}) design:
    * <ul>
-   *   <li>BatchSigners are now auto-sorted ascending by Account (temBAD_SIGNER if out of order on-chain).</li>
-   *   <li>Hard cap of 8 BatchSigners (was: ≤ number of inner transactions).</li>
-   *   <li>"Extra signers" check removed: V1_1 allows co-signers/delegates without their own inner transaction.</li>
+   *   <li>BatchSigners are auto-sorted ascending by Account (temBAD_SIGNER if out of order on-chain).</li>
+   *   <li>There is a hard cap of 8 BatchSigners, independent of the number of inner transactions.</li>
+   *   <li>No "extra signers" check is performed: co-signers/delegates are allowed without their own inner
+   *       transaction.</li>
    * </ul>
    */
   @Value.Check

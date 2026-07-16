@@ -94,6 +94,22 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
   }
 
   /**
+   * If present, filters the response to only include {@link org.xrpl.xrpl4j.model.ledger.LedgerObject}s whose
+   * sponsored state matches this value: {@code true} to only return sponsored objects, {@code false} to only
+   * return objects that are not sponsored. If omitted, no filtering is applied.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An {@link Optional} {@link Boolean} indicating whether to filter by sponsored state.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
+   */
+  @Beta
+  @JsonProperty("sponsored")
+  Optional<Boolean> sponsored();
+
+  /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
    * or a shortcut value.
    *

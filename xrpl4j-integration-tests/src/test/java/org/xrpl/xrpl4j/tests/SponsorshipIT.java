@@ -42,6 +42,9 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
+import org.xrpl.xrpl4j.model.client.ledger.SponsorshipLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
@@ -879,6 +882,60 @@ public class SponsorshipIT extends AbstractIT {
       // Verify the flag is set on the ledger object
       SponsorshipObject sponsorship = getSponsorshipObject(sponsorAddress, sponseeAddress);
       assertThat(sponsorship.flags().lsfSponsorshipRequireSignForFee()).isTrue();
+    }
+
+    @Test
+    void testSponsorshipSetLedgerEntryLookup() throws JsonRpcClientErrorException, JsonProcessingException {
+      KeyPair sponsorKeyPair = createRandomAccountEd25519();
+      KeyPair sponseeKeyPair = createRandomAccountEd25519();
+      Address sponsorAddress = sponsorKeyPair.publicKey().deriveAddress();
+      Address sponseeAddress = sponseeKeyPair.publicKey().deriveAddress();
+
+      FeeResult feeResult = xrplClient.fee();
+      AccountInfoResult sponsorAccountInfo = scanForResult(() -> getValidatedAccountInfo(sponsorAddress));
+
+      SponsorshipSet sponsorshipSet = SponsorshipSet.builder()
+        .account(sponsorAddress)
+        .fee(feeResult.drops().openLedgerFee())
+        .sequence(sponsorAccountInfo.accountData().sequence())
+        .sponsee(sponseeAddress)
+        .feeAmount(XrpCurrencyAmount.ofDrops(500000))
+        .signingPublicKey(sponsorKeyPair.publicKey())
+        .build();
+
+      SingleSignedTransaction<SponsorshipSet> signedTx = signatureService.sign(
+        sponsorKeyPair.privateKey(), sponsorshipSet
+      );
+      SubmitResult<SponsorshipSet> result = xrplClient.submit(signedTx);
+      assertThat(result.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+      scanForResult(() -> getValidatedTransaction(result.transactionResult().hash(), SponsorshipSet.class));
+
+      SponsorshipObject expectedSponsorship = getSponsorshipObject(sponsorAddress, sponseeAddress);
+
+      /////////////////////////
+      // Query the Sponsorship object via ledger_entry using SponsorshipLedgerEntryParams
+      LedgerEntryResult<SponsorshipObject> sponsorshipEntry = xrplClient.ledgerEntry(
+        LedgerEntryRequestParams.sponsorship(
+          SponsorshipLedgerEntryParams.builder()
+            .owner(sponsorAddress)
+            .sponsee(sponseeAddress)
+            .build(),
+          LedgerSpecifier.VALIDATED
+        )
+      );
+
+      assertThat(sponsorshipEntry.node()).isEqualTo(expectedSponsorship);
+      assertThat(sponsorshipEntry.node().owner()).isEqualTo(sponsorAddress);
+      assertThat(sponsorshipEntry.node().sponsee()).isEqualTo(sponseeAddress);
+
+      /////////////////////////
+      // Also query by index to verify both methods return the same object
+      LedgerEntryResult<SponsorshipObject> sponsorshipByIndex = xrplClient.ledgerEntry(
+        LedgerEntryRequestParams.index(expectedSponsorship.index(), SponsorshipObject.class, LedgerSpecifier.VALIDATED)
+      );
+
+      assertThat(sponsorshipByIndex.node()).isEqualTo(expectedSponsorship);
     }
 
     @Test

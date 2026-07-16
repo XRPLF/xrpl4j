@@ -110,6 +110,12 @@ public interface SponsorSignature {
    * that the fields are consistent with the chosen signature type, and normalizes the signer order by account address
    * if multi-signing.
    *
+   * <p>A {@link SponsorSignature} with neither {@link #transactionSignature()} nor {@link #signers()} present is
+   * also allowed, as long as {@link #signingPublicKey()} is likewise absent. This "empty" form is used when this
+   * {@link SponsorSignature} is embedded on an inner transaction of a {@link org.xrpl.xrpl4j.model.transactions.Batch}
+   * transaction (i.e. {@code tfInnerBatchTxn} is set) — rippled requires inner transactions to omit signature
+   * fields entirely, including on an embedded {@code SponsorSignature}.</p>
+   *
    * @return A normalized {@link SponsorSignature}.
    * @throws IllegalStateException if validation fails.
    */
@@ -124,7 +130,15 @@ public interface SponsorSignature {
     }
 
     if (!hasSingleSignature && !hasMultiSignature) {
-      throw new IllegalStateException("SponsorSignature must have either TxnSignature or Signers");
+      // Allowed only as the "empty" placeholder used on inner Batch transactions, which must also omit
+      // SigningPubKey. Whether this empty form is actually permitted in context (i.e. only on an inner Batch
+      // transaction) is enforced by Transaction#checkSponsorshipFields().
+      if (signingPublicKey().isPresent()) {
+        throw new IllegalStateException(
+          "SponsorSignature must have either TxnSignature or Signers when SigningPubKey is present"
+        );
+      }
+      return this;
     }
 
     // If using single signature, SigningPubKey must be non-empty

@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.model.ledger.OracleObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
+import org.xrpl.xrpl4j.model.ledger.SponsorshipObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -530,6 +531,25 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   }
 
   /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link SponsorshipObject} ledger entry.
+   *
+   * @param params          The {@link SponsorshipLedgerEntryParams} that uniquely identify the
+   *                        {@link SponsorshipObject} on ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link SponsorshipObject}.
+   */
+  static LedgerEntryRequestParams<SponsorshipObject> sponsorship(
+    SponsorshipLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<SponsorshipObject>builder()
+      .sponsorship(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
    * or a shortcut value.
    *
@@ -724,6 +744,13 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<LoanLedgerEntryParams> loan();
 
   /**
+   * Look up a {@link SponsorshipObject} by {@link SponsorshipLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link SponsorshipLedgerEntryParams}.
+   */
+  Optional<SponsorshipLedgerEntryParams> sponsorship();
+
+  /**
    * The {@link Class} of {@link T}. This field is helpful when telling Jackson how to deserialize rippled's response to
    * a {@link T}.
    *
@@ -814,6 +841,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (loan().isPresent()) {
       return (Class<T>) LoanObject.class;
+    }
+
+    if (sponsorship().isPresent()) {
+      return (Class<T>) SponsorshipObject.class;
     }
 
     return (Class<T>) LedgerObject.class;

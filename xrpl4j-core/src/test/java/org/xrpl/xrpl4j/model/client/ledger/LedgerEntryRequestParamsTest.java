@@ -37,6 +37,7 @@ import org.xrpl.xrpl4j.model.ledger.OracleObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
+import org.xrpl.xrpl4j.model.ledger.SponsorshipObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -976,6 +977,34 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
 
     String json = "{" +
       "  \"loan\" : " + objectMapper.writeValueAsString(loanParams) + "," +
+      "  \"binary\": false," +
+      "  \"ledger_index\": \"validated\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  void testSponsorshipParams() throws JSONException, JsonProcessingException {
+    SponsorshipLedgerEntryParams sponsorshipParams = SponsorshipLedgerEntryParams.builder()
+      .owner(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMgk5j"))
+      .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .build();
+    LedgerEntryRequestParams<SponsorshipObject> params = LedgerEntryRequestParams.sponsorship(
+      sponsorshipParams,
+      LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.ledgerObjectClass()).isEqualTo(SponsorshipObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.vault()).isEmpty();
+    assertThat(params.loan()).isEmpty();
+    assertThat(params.sponsorship()).isNotEmpty().get().isEqualTo(sponsorshipParams);
+
+    String json = "{" +
+      "  \"sponsorship\" : " + objectMapper.writeValueAsString(sponsorshipParams) + "," +
       "  \"binary\": false," +
       "  \"ledger_index\": \"validated\"" +
       "}";

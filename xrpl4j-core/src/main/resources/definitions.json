@@ -879,6 +879,56 @@
       }
     ],
     [
+      "SponsoredOwnerCount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 70,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "SponsoringOwnerCount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 71,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "SponsoringAccountCount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 72,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "RemainingOwnerCount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 73,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "SponsorFlags",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 74,
+        "type": "UInt32"
+      }
+    ],
+    [
       "IndexNext",
       {
         "isSerialized": true,
@@ -1175,6 +1225,16 @@
         "isSigningField": true,
         "isVLEncoded": false,
         "nth": 32,
+        "type": "UInt64"
+      }
+    ],
+    [
+      "SponseeNode",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 33,
         "type": "UInt64"
       }
     ],
@@ -1569,6 +1629,16 @@
       }
     ],
     [
+      "ObjectID",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 41,
+        "type": "Hash256"
+      }
+    ],
+    [
       "hash",
       {
         "isSerialized": false,
@@ -1855,6 +1925,26 @@
         "isSigningField": true,
         "isVLEncoded": false,
         "nth": 31,
+        "type": "Amount"
+      }
+    ],
+    [
+      "FeeAmount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 32,
+        "type": "Amount"
+      }
+    ],
+    [
+      "MaxFee",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 33,
         "type": "Amount"
       }
     ],
@@ -2519,6 +2609,56 @@
       }
     ],
     [
+      "Sponsor",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 27,
+        "type": "AccountID"
+      }
+    ],
+    [
+      "HighSponsor",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 28,
+        "type": "AccountID"
+      }
+    ],
+    [
+      "LowSponsor",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 29,
+        "type": "AccountID"
+      }
+    ],
+    [
+      "CounterpartySponsor",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 30,
+        "type": "AccountID"
+      }
+    ],
+    [
+      "Sponsee",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 31,
+        "type": "AccountID"
+      }
+    ],
+    [
       "Number",
       {
         "isSerialized": true,
@@ -3045,6 +3185,16 @@
         "isSigningField": false,
         "isVLEncoded": false,
         "nth": 37,
+        "type": "STObject"
+      }
+    ],
+    [
+      "SponsorSignature",
+      {
+        "isSerialized": true,
+        "isSigningField": false,
+        "isVLEncoded": false,
+        "nth": 38,
         "type": "STObject"
       }
     ],
@@ -3739,6 +3889,10 @@
     "SignerList": {
       "lsfOneOwnerCount": 65536
     },
+    "Sponsorship": {
+      "lsfSponsorshipRequireSignForFee": 65536,
+      "lsfSponsorshipRequireSignForReserve": 131072
+    },
     "Vault": {
       "lsfVaultPrivate": 65536
     }
@@ -3866,6 +4020,18 @@
       {
         "name": "FirstNFTokenSequence",
         "optionality": 1
+      },
+      {
+        "name": "SponsoredOwnerCount",
+        "optionality": 2
+      },
+      {
+        "name": "SponsoringOwnerCount",
+        "optionality": 2
+      },
+      {
+        "name": "SponsoringAccountCount",
+        "optionality": 2
       },
       {
         "name": "AMMID",
@@ -4904,6 +5070,14 @@
       {
         "name": "HighQualityOut",
         "optionality": 1
+      },
+      {
+        "name": "HighSponsor",
+        "optionality": 1
+      },
+      {
+        "name": "LowSponsor",
+        "optionality": 1
       }
     ],
     "SignerList": [
@@ -4933,6 +5107,44 @@
       },
       {
         "name": "PreviousTxnLgrSeq",
+        "optionality": 0
+      }
+    ],
+    "Sponsorship": [
+      {
+        "name": "PreviousTxnID",
+        "optionality": 0
+      },
+      {
+        "name": "PreviousTxnLgrSeq",
+        "optionality": 0
+      },
+      {
+        "name": "Owner",
+        "optionality": 0
+      },
+      {
+        "name": "Sponsee",
+        "optionality": 0
+      },
+      {
+        "name": "FeeAmount",
+        "optionality": 1
+      },
+      {
+        "name": "MaxFee",
+        "optionality": 1
+      },
+      {
+        "name": "RemainingOwnerCount",
+        "optionality": 2
+      },
+      {
+        "name": "OwnerNode",
+        "optionality": 0
+      },
+      {
+        "name": "SponseeNode",
         "optionality": 0
       }
     ],
@@ -5100,6 +5312,10 @@
       {
         "name": "Flags",
         "optionality": 0
+      },
+      {
+        "name": "Sponsor",
+        "optionality": 1
       }
     ]
   },
@@ -5131,6 +5347,7 @@
     "PermissionedDomain": 130,
     "RippleState": 114,
     "SignerList": 83,
+    "Sponsorship": 144,
     "Ticket": 84,
     "Vault": 132,
     "XChainOwnedClaimID": 113,
@@ -5223,11 +5440,24 @@
     "Payment": {
       "tfLimitQuality": 262144,
       "tfNoRippleDirect": 65536,
-      "tfPartialPayment": 131072
+      "tfPartialPayment": 131072,
+      "tfSponsorCreatedAccount": 524288
     },
     "PaymentChannelClaim": {
       "tfClose": 131072,
       "tfRenew": 65536
+    },
+    "SponsorshipSet": {
+      "tfDeleteObject": 1048576,
+      "tfSponsorshipClearRequireSignForFee": 131072,
+      "tfSponsorshipClearRequireSignForReserve": 524288,
+      "tfSponsorshipSetRequireSignForFee": 65536,
+      "tfSponsorshipSetRequireSignForReserve": 262144
+    },
+    "SponsorshipTransfer": {
+      "tfSponsorshipCreate": 131072,
+      "tfSponsorshipEnd": 65536,
+      "tfSponsorshipReassign": 262144
     },
     "TrustSet": {
       "tfClearDeepFreeze": 8388608,
@@ -6376,6 +6606,38 @@
         "optionality": 1
       }
     ],
+    "SponsorshipSet": [
+      {
+        "name": "CounterpartySponsor",
+        "optionality": 1
+      },
+      {
+        "name": "Sponsee",
+        "optionality": 1
+      },
+      {
+        "name": "FeeAmount",
+        "optionality": 1
+      },
+      {
+        "name": "MaxFee",
+        "optionality": 1
+      },
+      {
+        "name": "RemainingOwnerCount",
+        "optionality": 1
+      }
+    ],
+    "SponsorshipTransfer": [
+      {
+        "name": "ObjectID",
+        "optionality": 1
+      },
+      {
+        "name": "Sponsee",
+        "optionality": 1
+      }
+    ],
     "TicketCreate": [
       {
         "name": "TicketCount",
@@ -6766,6 +7028,18 @@
       {
         "name": "Delegate",
         "optionality": 1
+      },
+      {
+        "name": "Sponsor",
+        "optionality": 1
+      },
+      {
+        "name": "SponsorFlags",
+        "optionality": 1
+      },
+      {
+        "name": "SponsorSignature",
+        "optionality": 1
       }
     ]
   },
@@ -6819,6 +7093,7 @@
     "tecNO_LINE_REDUNDANT": 127,
     "tecNO_PERMISSION": 139,
     "tecNO_REGULAR_KEY": 131,
+    "tecNO_SPONSOR_PERMISSION": 200,
     "tecNO_SUITABLE_NFTOKEN_PAGE": 155,
     "tecNO_TARGET": 138,
     "tecOBJECT_NOT_FOUND": 160,
@@ -6956,6 +7231,7 @@
     "terNO_AUTH": -95,
     "terNO_DELEGATE_PERMISSION": -85,
     "terNO_LINE": -94,
+    "terNO_PERMISSION": -83,
     "terNO_RIPPLE": -90,
     "terOWNERS": -93,
     "terPRE_SEQ": -92,
@@ -7029,6 +7305,8 @@
     "SetFee": 101,
     "SetRegularKey": 5,
     "SignerListSet": 12,
+    "SponsorshipSet": 91,
+    "SponsorshipTransfer": 90,
     "TicketCreate": 10,
     "TrustSet": 20,
     "UNLModify": 102,
@@ -7080,5 +7358,5 @@
     "Vector256": 19,
     "XChainBridge": 25
   },
-  "hash": "B8D71E05792AE08998F375C630B52EA351F327AB29CC8E48B6F69B56D4DF8EEA"
+  "hash": "D5E349233598CAF872E94A0CE4FFEF6D41186EB2A486DAD53347428ECF5AEADE"
 }

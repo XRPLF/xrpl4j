@@ -75,7 +75,6 @@ import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvert;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvertBack;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptMergeInbox;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptSend;
-import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
@@ -107,7 +106,6 @@ import java.util.List;
 @DisabledIf(value = "shouldNotRun", disabledReason = "ConfidentialTransfersIT only runs on local rippled node.")
 public class ConfidentialTransfersIT extends AbstractIT {
 
-  // Upper bound for brute-force decryption search range
   private static final UnsignedLong DECRYPT_MAX = UnsignedLong.valueOf(1_000_000);
 
   private static ConfidentialMptConvertService convertService;
@@ -139,15 +137,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
   public void testEntireFlow() throws JsonRpcClientErrorException, JsonProcessingException {
     FeeResult feeResult = xrplClient.fee();
     XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
-    // Confidential MPT transactions carry a base-fee multiplier (kConfidentialFeeMultiplier = 9) in rippled,
-    // so they require a substantially higher fee than the standard recommended fee.
+    // Confidential MPT transactions carry a base-fee multiplier (kConfidentialFeeMultiplier = 9) in rippled.
     final XrpCurrencyAmount confidentialFee = FeeUtils
       .computeConfidentialMptNetworkFees(feeResult, UnsignedInteger.ZERO)
       .recommendedFee();
 
-    // =====================================================================
-    // 1. Create MPTokenIssuance with transfer, clawback, and privacy flags
-    // =====================================================================
+    // 1. Create MPTokenIssuance with transfer, clawback, and privacy flags.
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     AccountInfoResult issuerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
@@ -181,7 +176,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mpTokenIssuanceId()
       .orElseThrow(() -> new RuntimeException("Metadata did not contain issuance ID"));
 
-    // Verify the issuance was created with the correct flags
     MpTokenIssuanceObject issuance = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
     ).node();
@@ -189,13 +183,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     assertThat(issuance.flags().lsfMptCanClawback()).isTrue();
     assertThat(issuance.flags().lsfMptCanHoldConfidentialBalance()).isTrue();
 
-    // =====================================================================
-    // 2. Register the issuer's and auditor's ElGamal public keys via
-    //    MpTokenIssuanceSet. The issuer needs an ElGamal key pair so that
-    //    encrypted amounts can be created for the issuer's mirror balance
-    //    on each holder's MPToken. The auditor key enables a designated
-    //    auditor to decrypt confidential amounts for compliance.
-    // =====================================================================
+    // 2. Register the issuer's and auditor's ElGamal public keys via MpTokenIssuanceSet.
     KeyPair issuerElGamalKeyPair = Seed.elGamalSecp256k1Seed().deriveKeyPair();
     KeyPair auditorElGamalKeyPair = Seed.elGamalSecp256k1Seed().deriveKeyPair();
     issuerAccountInfo = this.scanForResult(
@@ -222,7 +210,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       () -> this.getValidatedTransaction(signedIssuanceSet.hash(), MpTokenIssuanceSet.class)
     );
 
-    // Verify that the issuance now has the encryption keys and confidential outstanding amount
     MpTokenIssuanceObject issuanceObject = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
     ).node();
@@ -235,9 +222,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     assertMpTokenIssuanceEntryEqualsObjectFromAccountObjects(issuanceObject, mpTokenIssuanceId);
 
-    // =====================================================================
-    // 3. Create Holder 1, authorize the MPToken, and transfer 1000 public MPTs
-    // =====================================================================
+    // 3. Create Holder 1, authorize the MPToken, and transfer 1000 public MPTs.
     KeyPair holderKeyPair = createRandomAccountEd25519();
     AccountInfoResult holderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
@@ -261,7 +246,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       () -> this.getValidatedTransaction(signedHolderAuthorize.hash(), MpTokenAuthorize.class)
     );
 
-    // Transfer 1000 public MPTs from issuer to Holder 1
     issuerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
@@ -288,18 +272,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
       () -> this.getValidatedTransaction(signedPaymentToHolder.hash(), Payment.class)
     );
 
-    // Verify Holder 1 has 1000 public MPTs
     MpTokenObject holderMpToken = getMpToken(holderKeyPair, mpTokenIssuanceId);
     assertThat(holderMpToken.mptAmount()).isEqualTo(MpTokenNumericAmount.of(1000L));
 
-    // =====================================================================
-    // 4. ConfidentialMptConvert: Convert 500 of Holder 1's public MPTs to
-    //    confidential balance. This also registers the holder's ElGamal key.
-    //    The amount is encrypted for both holder and issuer using the same
-    //    blinding factor, and a ZK proof of ElGamal key ownership is included.
-    //    IMPORTANT: Get account info BEFORE generating the ZK proof because
-    //    the context hash includes the sequence number.
-    // =====================================================================
+    // 4. ConfidentialMptConvert: convert 500 of Holder 1's public MPTs to confidential balance, registering the
+    //    holder's ElGamal key. Account info must be fetched before proof generation, as the context hash includes
+    //    the sequence number.
     KeyPair holderElGamalKeyPair = Seed.elGamalSecp256k1Seed().deriveKeyPair();
     UnsignedLong amountToConvert = UnsignedLong.valueOf(500);
 
@@ -349,16 +327,11 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
     assertThat(xrplClient.submit(signedConfidentialConvert).engineResult()).isEqualTo(SUCCESS_STATUS);
 
-    TransactionResult<ConfidentialMptConvert> convertResult = this.scanForResult(
+    this.scanForResult(
       () -> this.getValidatedTransaction(signedConfidentialConvert.hash(), ConfidentialMptConvert.class)
     );
-    final Hash256 convertHash = convertResult.hash();
 
-    // =====================================================================
-    // 5. MergeInbox: After ConfidentialMptConvert, tokens land in the
-    //    holder's inbox (CB_IN). MergeInbox moves them into the spending
-    //    balance (CB_S) so they can be used in ConfidentialMptSend.
-    // =====================================================================
+    // 5. MergeInbox: move converted tokens from the holder's inbox (CB_IN) into the spending balance (CB_S).
     holderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
     );
@@ -377,16 +350,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
     assertThat(xrplClient.submit(signedMergeInbox).engineResult()).isEqualTo(SUCCESS_STATUS);
 
-    TransactionResult<ConfidentialMptMergeInbox> mergeResult = this.scanForResult(
+    this.scanForResult(
       () -> this.getValidatedTransaction(signedMergeInbox.hash(), ConfidentialMptMergeInbox.class)
     );
-    final Hash256 mergeHash = mergeResult.hash();
 
-    // =====================================================================
-    // 6. Set up Holder 2: create account, authorize the MPToken, and register
-    //    their ElGamal key via a zero-amount ConfidentialMptConvert. A zero-amount
-    //    convert registers the key without moving any tokens.
-    // =====================================================================
+    // 6. Set up Holder 2: create account, authorize the MPToken, and register their ElGamal key via a zero-amount
+    //    ConfidentialMptConvert (registers the key without moving tokens).
     KeyPair holder2KeyPair = createRandomAccountEd25519();
     AccountInfoResult holder2AccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(holder2KeyPair.publicKey().deriveAddress())
@@ -410,7 +379,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       () -> this.getValidatedTransaction(signedHolder2Authorize.hash(), MpTokenAuthorize.class)
     );
 
-    // Register Holder 2's ElGamal key via zero-amount ConfidentialMptConvert
     KeyPair holder2ElGamalKeyPair = Seed.elGamalSecp256k1Seed().deriveKeyPair();
 
     holder2AccountInfo = this.scanForResult(
@@ -461,18 +429,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
     assertThat(xrplClient.submit(signedHolder2ConfidentialConvert).engineResult()).isEqualTo(SUCCESS_STATUS);
 
-    TransactionResult<ConfidentialMptConvert> holder2ConvertResult = this.scanForResult(
+    this.scanForResult(
       () -> this.getValidatedTransaction(signedHolder2ConfidentialConvert.hash(), ConfidentialMptConvert.class)
     );
-    final Hash256 holder2ConvertHash = holder2ConvertResult.hash();
 
-    // =====================================================================
-    // 7. ConfidentialMptSend: Holder 1 sends 100 confidential MPTs to Holder 2.
-    //    The send amount is encrypted for all four parties (sender, destination,
-    //    issuer, auditor) using the same blinding factor. Range proofs and
-    //    Pedersen commitments prove the amount is valid and the sender has
-    //    sufficient balance, without revealing the actual values.
-    // =====================================================================
+    // 7. ConfidentialMptSend: Holder 1 sends 100 confidential MPTs to Holder 2, encrypted for all four parties
+    //    (sender, destination, issuer, auditor) under a shared blinding factor.
     UnsignedLong sendAmount = UnsignedLong.valueOf(100);
 
     holderAccountInfo = this.scanForResult(
@@ -482,7 +444,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     holderMpToken = getMpToken(holderKeyPair, mpTokenIssuanceId);
     UnsignedInteger holder1Version = holderMpToken.confidentialBalanceVersion();
 
-    // Generate context hash incorporating sender, sequence, issuance, destination, and version
     ConfidentialMptSendContext sendContext = sendService.generateContext(
       holderKeyPair.publicKey().deriveAddress(),
       holderAccountInfo.accountData().sequence(),
@@ -491,7 +452,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holder1Version
     );
 
-    // Encrypt the send amount for all four parties using the same blinding factor
     BlindingFactor sendBlindingFactor = blindingFactorGenerator.generate();
     EncryptedAmount senderCiphertext = encryptor.encrypt(
       sendAmount, holderElGamalKeyPair.publicKey(), sendBlindingFactor
@@ -506,27 +466,21 @@ public class ConfidentialTransfersIT extends AbstractIT {
       sendAmount, auditorElGamalKeyPair.publicKey(), sendBlindingFactor
     );
 
-    // Decrypt the sender's current spending balance to use in Pedersen proof params
     EncryptedAmount senderBalanceCiphertext = holderMpToken.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Sender has no confidential balance"));
     UnsignedLong senderCurrentBalance = decryptor.decrypt(
       senderBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
     );
 
-    // Generate Pedersen commitment for the amount using txBlindingFactor as the blinding factor
-    // (per spec: pc_m = m*G + r*H where r is the shared ElGamal randomness)
     Commitment amountCommitment = sendService.generatePedersenCommitment(
       sendAmount, sendBlindingFactor
     );
 
-    // Generate Pedersen proof params for the sender's balance (full params needed)
     BlindingFactor balanceBlindingFactor = blindingFactorGenerator.generate();
     PedersenProofParams balanceParams = sendService.generatePedersenProofParams(
       senderCurrentBalance, senderBalanceCiphertext, balanceBlindingFactor
     );
 
-    // Generate the compact ZK proof with 4 participants (sender, dest, issuer, auditor)
-    // AND-composed sigma (192 bytes) + aggregated Bulletproof (754 bytes) = 946 bytes
     ConfidentialMptSendProof sendProof = sendService.generateProof(
       holderElGamalKeyPair,
       sendAmount,
@@ -577,10 +531,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
     assertThat(xrplClient.submit(signedConfidentialSend).engineResult()).isEqualTo(SUCCESS_STATUS);
 
-    TransactionResult<ConfidentialMptSend> sendResult = this.scanForResult(
+    this.scanForResult(
       () -> this.getValidatedTransaction(signedConfidentialSend.hash(), ConfidentialMptSend.class)
     );
-    final Hash256 sendHash = sendResult.hash();
 
     // Verify sender's confidential balance was reduced: 500 - 100 = 400
     MpTokenObject senderMpTokenAfterSend = getMpToken(holderKeyPair, mpTokenIssuanceId);
@@ -591,11 +544,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
     assertThat(senderBalanceAfterSend.longValue()).isEqualTo(400L);
 
-    // =====================================================================
-    // 8. ConfidentialMptConvertBack: Holder 1 converts 50 confidential MPTs
-    //    back to public balance. This subtracts from both the holder's and
-    //    issuer's encrypted balances.
-    // =====================================================================
+    // 8. ConfidentialMptConvertBack: Holder 1 converts 50 confidential MPTs back to public balance.
     UnsignedLong convertBackAmount = UnsignedLong.valueOf(50);
 
     holderAccountInfo = this.scanForResult(
@@ -606,7 +555,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     UnsignedInteger holderVersionForConvertBack = holderMpTokenForConvertBack
       .confidentialBalanceVersion();
 
-    // Encrypt the convert-back amount for holder, issuer, and auditor
     BlindingFactor convertBackBlindingFactor = blindingFactorGenerator.generate();
     EncryptedAmount holderEncryptedForConvertBack = encryptor.encrypt(
       convertBackAmount, holderElGamalKeyPair.publicKey(), convertBackBlindingFactor
@@ -618,7 +566,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       convertBackAmount, auditorElGamalKeyPair.publicKey(), convertBackBlindingFactor
     );
 
-    // Generate context hash for the convert-back transaction
     ConfidentialMptConvertBackContext convertBackContext = convertBackService.generateContext(
       holderKeyPair.publicKey().deriveAddress(),
       holderAccountInfo.accountData().sequence(),
@@ -626,7 +573,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holderVersionForConvertBack
     );
 
-    // Decrypt current spending balance to generate a Pedersen commitment proving sufficient funds
     EncryptedAmount currentBalanceForConvertBack = holderMpTokenForConvertBack.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Holder has no confidential balance"));
     UnsignedLong currentSpendingBalance = decryptor.decrypt(
@@ -675,10 +621,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
     assertThat(xrplClient.submit(signedConvertBack).engineResult()).isEqualTo(SUCCESS_STATUS);
 
-    TransactionResult<ConfidentialMptConvertBack> convertBackResult = this.scanForResult(
+    this.scanForResult(
       () -> this.getValidatedTransaction(signedConvertBack.hash(), ConfidentialMptConvertBack.class)
     );
-    final Hash256 convertBackHash = convertBackResult.hash();
 
     // Verify remaining confidential balance: 400 - 50 = 350
     MpTokenObject holderMpTokenAfterConvertBack = getMpToken(holderKeyPair, mpTokenIssuanceId);
@@ -689,20 +634,14 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
     assertThat(remainingConfidentialBalance.longValue()).isEqualTo(350L);
 
-    // =====================================================================
-    // 9. ConfidentialMptClawback: Issuer claws back 350 confidential MPTs
-    //    from Holder 1. The issuer decrypts their mirror of the holder's
-    //    balance (IssuerEncryptedBalance on the holder's MPToken) and
-    //    generates a proof that the clawback amount does not exceed it.
-    // =====================================================================
+    // 9. ConfidentialMptClawback: Issuer claws back 350 confidential MPTs from Holder 1, using the issuer's
+    //    encrypted mirror of the holder's balance (IssuerEncryptedBalance on the holder's MPToken).
     UnsignedLong clawbackAmount = UnsignedLong.valueOf(350);
 
-    // Read the issuer's encrypted mirror of the holder's balance from the ledger
     MpTokenObject holderMpTokenForClawback = getMpToken(holderKeyPair, mpTokenIssuanceId);
     EncryptedAmount issuerBalanceCiphertext = holderMpTokenForClawback.issuerEncryptedBalance()
       .orElseThrow(() -> new RuntimeException("No issuer encrypted balance found"));
 
-    // Verify issuer can decrypt and the balance is sufficient for the clawback
     UnsignedLong issuerDecryptedBalance = decryptor.decrypt(
       issuerBalanceCiphertext, issuerElGamalKeyPair.privateKey(), UnsignedLong.ZERO, DECRYPT_MAX
     );
@@ -712,7 +651,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
 
-    // Generate context hash and clawback proof
     ConfidentialMptClawbackContext clawbackContext = clawbackService.generateContext(
       issuerKeyPair.publicKey().deriveAddress(),
       issuerAccountInfo.accountData().sequence(),
@@ -752,26 +690,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
     assertThat(xrplClient.submit(signedClawback).engineResult()).isEqualTo(SUCCESS_STATUS);
 
-    TransactionResult<ConfidentialMptClawback> clawbackResult = this.scanForResult(
+    this.scanForResult(
       () -> this.getValidatedTransaction(signedClawback.hash(), ConfidentialMptClawback.class)
     );
-    final Hash256 clawbackHash = clawbackResult.hash();
 
-    // Verify the holder's MPToken still exists after clawback (balances zeroed out)
     MpTokenObject holderMpTokenAfterClawback = getMpToken(holderKeyPair, mpTokenIssuanceId);
     assertThat(holderMpTokenAfterClawback).isNotNull();
-
-    // =====================================================================
-    // Print all Confidential MPT transaction hashes for debugging
-    // =====================================================================
-    System.out.println("\n========== CONFIDENTIAL MPT TRANSACTION HASHES ==========");
-    System.out.println("ConfidentialMptConvert (Holder 1):     " + convertHash);
-    System.out.println("ConfidentialMptMergeInbox (Holder 1):  " + mergeHash);
-    System.out.println("ConfidentialMptConvert (Holder 2):     " + holder2ConvertHash);
-    System.out.println("ConfidentialMptSend:                   " + sendHash);
-    System.out.println("ConfidentialMptConvertBack:            " + convertBackHash);
-    System.out.println("ConfidentialMptClawback:               " + clawbackHash);
-    System.out.println("==========================================================\n");
   }
 
   private MpTokenObject getMpToken(

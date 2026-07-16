@@ -39,8 +39,6 @@ import java.util.Objects;
 public class JnaConfidentialMptConvertProofVerifier implements ConfidentialMptConvertProofVerifier {
 
   private static final int PUBKEY_SIZE = 33;
-  private static final int CONTEXT_HASH_SIZE = 32;
-  private static final int PROOF_SIZE = 64;
 
   private final MptCryptoLibrary lib;
 
@@ -78,13 +76,6 @@ public class JnaConfidentialMptConvertProofVerifier implements ConfidentialMptCo
       publicKey.keyType()
     );
 
-    byte[] proofBytes = proof.value().toByteArray();
-    Preconditions.checkArgument(
-      proofBytes.length == PROOF_SIZE,
-      "proof must be %s bytes, but was %s bytes",
-      PROOF_SIZE, proofBytes.length
-    );
-
     byte[] pubkeyBytes = publicKey.value().toByteArray();
     Preconditions.checkArgument(
       pubkeyBytes.length == PUBKEY_SIZE,
@@ -92,13 +83,8 @@ public class JnaConfidentialMptConvertProofVerifier implements ConfidentialMptCo
       PUBKEY_SIZE, pubkeyBytes.length
     );
 
-    byte[] ctxHash = context.value().toByteArray();
-    Preconditions.checkArgument(
-      ctxHash.length == CONTEXT_HASH_SIZE,
-      "context hash must be %s bytes, but was %s bytes",
-      CONTEXT_HASH_SIZE, ctxHash.length
-    );
-
-    return lib.mpt_verify_convert_proof(proofBytes, pubkeyBytes, ctxHash) == 0;
+    return lib.mpt_verify_convert_proof(
+      proof.value().toByteArray(), pubkeyBytes, context.value().toByteArray()
+    ) == 0;
   }
 }

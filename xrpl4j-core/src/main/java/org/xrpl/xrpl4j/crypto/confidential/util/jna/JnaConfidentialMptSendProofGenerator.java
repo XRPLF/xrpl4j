@@ -33,6 +33,7 @@ import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,7 +48,9 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
 
   private static final int PUBKEY_SIZE = 33;
   private static final int CIPHERTEXT_SIZE = 66;
-  private static final int MAX_PROOF_SIZE = 4096;
+  private static final int SEND_PROOF_SIZE = 946;
+  private static final int MIN_PARTICIPANTS = 3;
+  private static final int MAX_PARTICIPANTS = 4;
 
   private final MptCryptoLibrary lib;
 
@@ -73,7 +76,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
   public ConfidentialMptSendProof generateProof(
     final KeyPair senderKeyPair,
     final UnsignedLong amount,
-    final List<MptConfidentialParty> recipients,
+    final List<MptConfidentialParty> participants,
     final BlindingFactor txBlindingFactor,
     final ConfidentialMptSendContext context,
     final Commitment amountCommitment,
@@ -81,7 +84,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
   ) {
     Objects.requireNonNull(senderKeyPair, "senderKeyPair must not be null");
     Objects.requireNonNull(amount, "amount must not be null");
-    Objects.requireNonNull(recipients, "recipients must not be null");
+    Objects.requireNonNull(participants, "participants must not be null");
     Objects.requireNonNull(txBlindingFactor, "txBlindingFactor must not be null");
     Objects.requireNonNull(context, "context must not be null");
     Objects.requireNonNull(amountCommitment, "amountCommitment must not be null");
@@ -91,20 +94,24 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
       senderKeyPair.publicKey().keyType() == KeyType.SECP256K1,
       "senderKeyPair must be SECP256K1"
     );
-    Preconditions.checkArgument(!recipients.isEmpty(), "recipients must not be empty");
+    Preconditions.checkArgument(
+      participants.size() >= MIN_PARTICIPANTS && participants.size() <= MAX_PARTICIPANTS,
+      "participants must contain %s or %s entries (sender, destination, issuer, and optional auditor), but was %s",
+      MIN_PARTICIPANTS, MAX_PARTICIPANTS, participants.size()
+    );
 
-    int numRecipients = recipients.size();
+    int numParticipants = participants.size();
 
-    // Build the MptConfidentialRecipient struct array for the native library
-    MptCryptoLibrary.MptConfidentialRecipient firstRecipient = new MptCryptoLibrary.MptConfidentialRecipient();
-    MptCryptoLibrary.MptConfidentialRecipient[] recipientArray =
-      (MptCryptoLibrary.MptConfidentialRecipient[]) firstRecipient.toArray(numRecipients);
-    for (int i = 0; i < numRecipients; i++) {
-      MptConfidentialParty party = recipients.get(i);
-      System.arraycopy(party.publicKey().value().toByteArray(), 0, recipientArray[i].pubkey, 0, PUBKEY_SIZE);
+    // Build the MptConfidentialParticipant struct array for the native library
+    MptCryptoLibrary.MptConfidentialParticipant[] participantArray =
+      (MptCryptoLibrary.MptConfidentialParticipant[])
+        new MptCryptoLibrary.MptConfidentialParticipant().toArray(numParticipants);
+    for (int i = 0; i < numParticipants; i++) {
+      MptConfidentialParty party = participants.get(i);
+      System.arraycopy(party.publicKey().value().toByteArray(), 0, participantArray[i].pubkey, 0, PUBKEY_SIZE);
       System.arraycopy(
         party.encryptedAmount().value().toByteArray(), 0,
-        recipientArray[i].ciphertext, 0, CIPHERTEXT_SIZE
+        participantArray[i].ciphertext, 0, CIPHERTEXT_SIZE
       );
     }
 
@@ -121,30 +128,35 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
       balanceStruct.blindingFactor, 0, 32
     );
 
-    byte[] outProof = new byte[MAX_PROOF_SIZE];
-    long[] outLen = new long[]{MAX_PROOF_SIZE};
+    byte[] outProof = new byte[SEND_PROOF_SIZE];
+    long[] outLen = new long[]{SEND_PROOF_SIZE};
 
-    // Extract sender keys just before use
-    UnsignedByteArray naturalBytes = senderKeyPair.privateKey().naturalBytes();
-    byte[] privkey = naturalBytes.toByteArray();
+    // Extract sender keys just before use; zero the private key copy when done
+    byte[] privkey = senderKeyPair.privateKey().naturalBytes().toByteArray();
     byte[] pubkey = senderKeyPair.publicKey().value().toByteArray();
 
-    int result = lib.mpt_get_confidential_send_proof(
-      privkey, pubkey, amount.longValue(),
-      recipientArray[0], numRecipients,
-      txBlindingFactor.value().toByteArray(), context.value().toByteArray(),
-      amountCommitment.value().toByteArray(), balanceStruct,
-      outProof, outLen
-    );
-
-    naturalBytes.destroy();
+    int result;
+    try {
+      result = lib.mpt_get_confidential_send_proof(
+        privkey, pubkey, amount.longValue(),
+        participantArray, numParticipants,
+        txBlindingFactor.value().toByteArray(), context.value().toByteArray(),
+        amountCommitment.value().toByteArray(), balanceStruct,
+        outProof, outLen
+      );
+    } finally {
+      Arrays.fill(privkey, (byte) 0);
+    }
 
     if (result != 0) {
       throw new IllegalStateException("mpt_get_confidential_send_proof failed with error code: " + result);
     }
+    Preconditions.checkState(
+      outLen[0] == SEND_PROOF_SIZE,
+      "mpt_get_confidential_send_proof wrote %s bytes, but expected %s bytes",
+      outLen[0], SEND_PROOF_SIZE
+    );
 
-    byte[] proof = new byte[(int) outLen[0]];
-    System.arraycopy(outProof, 0, proof, 0, (int) outLen[0]);
-    return ConfidentialMptSendProof.of(UnsignedByteArray.of(proof));
+    return ConfidentialMptSendProof.of(UnsignedByteArray.of(outProof));
   }
 }

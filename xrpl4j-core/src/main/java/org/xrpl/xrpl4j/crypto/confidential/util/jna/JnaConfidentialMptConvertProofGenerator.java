@@ -28,6 +28,7 @@ import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertPro
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertProofGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -41,7 +42,6 @@ public class JnaConfidentialMptConvertProofGenerator implements ConfidentialMptC
 
   private static final int PUBKEY_SIZE = 33;
   private static final int PRIVKEY_SIZE = 32;
-  private static final int CONTEXT_HASH_SIZE = 32;
   private static final int PROOF_SIZE = 64;
 
   private final MptCryptoLibrary lib;
@@ -85,30 +85,26 @@ public class JnaConfidentialMptConvertProofGenerator implements ConfidentialMptC
       PUBKEY_SIZE, pubkeyBytes.length
     );
 
-    UnsignedByteArray naturalBytes = keyPair.privateKey().naturalBytes();
-    byte[] privkeyBytes = naturalBytes.toByteArray();
-    Preconditions.checkArgument(
-      privkeyBytes.length == PRIVKEY_SIZE,
-      "privateKey must be %s bytes, but was %s bytes",
-      PRIVKEY_SIZE, privkeyBytes.length
-    );
-
     byte[] ctxHash = context.value().toByteArray();
-    Preconditions.checkArgument(
-      ctxHash.length == CONTEXT_HASH_SIZE,
-      "context hash must be %s bytes, but was %s bytes",
-      CONTEXT_HASH_SIZE, ctxHash.length
-    );
 
-    byte[] outProof = new byte[PROOF_SIZE];
-    int result = lib.mpt_get_convert_proof(pubkeyBytes, privkeyBytes, ctxHash, outProof);
+    // Extract the private key just before use; zero the copy when done
+    byte[] privkeyBytes = keyPair.privateKey().naturalBytes().toByteArray();
+    try {
+      Preconditions.checkArgument(
+        privkeyBytes.length == PRIVKEY_SIZE,
+        "privateKey must be %s bytes, but was %s bytes",
+        PRIVKEY_SIZE, privkeyBytes.length
+      );
 
-    naturalBytes.destroy();
+      byte[] outProof = new byte[PROOF_SIZE];
+      int result = lib.mpt_get_convert_proof(pubkeyBytes, privkeyBytes, ctxHash, outProof);
+      if (result != 0) {
+        throw new IllegalStateException("mpt_get_convert_proof failed with error code: " + result);
+      }
 
-    if (result != 0) {
-      throw new IllegalStateException("mpt_get_convert_proof failed with error code: " + result);
+      return ConfidentialMptConvertProof.of(UnsignedByteArray.of(outProof));
+    } finally {
+      Arrays.fill(privkeyBytes, (byte) 0);
     }
-
-    return ConfidentialMptConvertProof.of(UnsignedByteArray.of(outProof));
   }
 }

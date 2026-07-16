@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptClawbackProofGene
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -83,18 +84,22 @@ public class JnaConfidentialMptClawbackProofGenerator implements ConfidentialMpt
       "issuerPublicKey must be SECP256K1"
     );
 
-    UnsignedByteArray naturalBytes = issuerPrivateKey.naturalBytes();
-    byte[] privkey = naturalBytes.toByteArray();
     byte[] pubkey = issuerPublicKey.value().toByteArray();
     byte[] ctxHash = context.value().toByteArray();
     byte[] encryptedAmount = issuerEncryptedBalance.value().toByteArray();
 
-    byte[] outProof = new byte[PROOF_SIZE];
-    int result = lib.mpt_get_clawback_proof(
-      privkey, pubkey, ctxHash, amount.longValue(), encryptedAmount, outProof
-    );
+    // Extract the private key just before use; zero the copy when done
+    byte[] privkey = issuerPrivateKey.naturalBytes().toByteArray();
 
-    naturalBytes.destroy();
+    byte[] outProof = new byte[PROOF_SIZE];
+    int result;
+    try {
+      result = lib.mpt_get_clawback_proof(
+        privkey, pubkey, ctxHash, amount.longValue(), encryptedAmount, outProof
+      );
+    } finally {
+      Arrays.fill(privkey, (byte) 0);
+    }
 
     if (result != 0) {
       throw new IllegalStateException("mpt_get_clawback_proof failed with error code: " + result);

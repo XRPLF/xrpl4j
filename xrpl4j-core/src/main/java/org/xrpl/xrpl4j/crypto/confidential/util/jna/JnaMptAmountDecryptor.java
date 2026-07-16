@@ -28,6 +28,7 @@ import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.util.MptAmountDecryptor;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -79,6 +80,11 @@ public class JnaMptAmountDecryptor implements MptAmountDecryptor {
       "privateKey must be a SECP256K1 key, but was %s",
       privateKey.keyType()
     );
+    Preconditions.checkArgument(
+      minAmount.compareTo(maxAmount) <= 0,
+      "minAmount must be less than or equal to maxAmount, but was minAmount=%s maxAmount=%s",
+      minAmount, maxAmount
+    );
 
     byte[] ciphertextBytes = ciphertext.value().toByteArray();
     Preconditions.checkArgument(
@@ -87,25 +93,26 @@ public class JnaMptAmountDecryptor implements MptAmountDecryptor {
       CIPHERTEXT_SIZE, ciphertextBytes.length
     );
 
-    UnsignedByteArray naturalBytes = privateKey.naturalBytes();
-    byte[] privkeyBytes = naturalBytes.toByteArray();
-    Preconditions.checkArgument(
-      privkeyBytes.length == PRIVKEY_SIZE,
-      "privateKey must be %s bytes, but was %s bytes",
-      PRIVKEY_SIZE, privkeyBytes.length
-    );
+    // Extract the private key just before use; zero the copy when done
+    byte[] privkeyBytes = privateKey.naturalBytes().toByteArray();
+    try {
+      Preconditions.checkArgument(
+        privkeyBytes.length == PRIVKEY_SIZE,
+        "privateKey must be %s bytes, but was %s bytes",
+        PRIVKEY_SIZE, privkeyBytes.length
+      );
 
-    long[] outAmount = new long[1];
-    int result = lib.mpt_decrypt_amount(
-      ciphertextBytes, privkeyBytes, outAmount, minAmount.longValue(), maxAmount.longValue()
-    );
+      long[] outAmount = new long[1];
+      int result = lib.mpt_decrypt_amount(
+        ciphertextBytes, privkeyBytes, outAmount, minAmount.longValue(), maxAmount.longValue()
+      );
+      if (result != 0) {
+        throw new IllegalStateException("mpt_decrypt_amount failed with error code: " + result);
+      }
 
-    naturalBytes.destroy();
-
-    if (result != 0) {
-      throw new IllegalStateException("mpt_decrypt_amount failed with error code: " + result);
+      return UnsignedLong.fromLongBits(outAmount[0]);
+    } finally {
+      Arrays.fill(privkeyBytes, (byte) 0);
     }
-
-    return UnsignedLong.fromLongBits(outAmount[0]);
   }
 }

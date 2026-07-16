@@ -73,7 +73,7 @@ public interface MptCryptoLibrary extends Library {
 
   int mpt_get_confidential_send_proof(
     byte[] priv, byte[] pub, long amount,
-    MptConfidentialRecipient recipients, long numRecipients,
+    MptConfidentialParticipant[] participants, long numParticipants,
     byte[] txBlindingFactor, byte[] contextHash,
     byte[] amountCommitment, MptPedersenProofParams balanceParams,
     byte[] outProof, long[] outLen
@@ -92,7 +92,7 @@ public interface MptCryptoLibrary extends Library {
 
   int mpt_verify_send_proof(
     byte[] proof,
-    MptConfidentialRecipient participants, byte numParticipants,
+    MptConfidentialParticipant[] participants, byte numParticipants,
     byte[] senderSpendingCiphertext, byte[] amountCommitment,
     byte[] balanceCommitment, byte[] contextHash
   );
@@ -136,7 +136,7 @@ public interface MptCryptoLibrary extends Library {
   }
 
   @Structure.FieldOrder({"pubkey", "ciphertext"})
-  class MptConfidentialRecipient extends Structure {
+  class MptConfidentialParticipant extends Structure {
     public byte[] pubkey = new byte[33];
     public byte[] ciphertext = new byte[66];
   }
@@ -149,6 +149,20 @@ public interface MptCryptoLibrary extends Library {
    * Holder class for lazy initialization of the native library singleton.
    */
   final class Holder {
-    private static final MptCryptoLibrary INSTANCE = Native.load("mpt-crypto", MptCryptoLibrary.class);
+    private static final MptCryptoLibrary INSTANCE = loadLibrary();
+
+    private static MptCryptoLibrary loadLibrary() {
+      try {
+        return Native.load("mpt-crypto", MptCryptoLibrary.class);
+      } catch (UnsatisfiedLinkError e) {
+        UnsatisfiedLinkError error = new UnsatisfiedLinkError(
+          "Unable to load the native 'mpt-crypto' library. Ensure it is installed and discoverable, "
+            + "e.g. via the 'jna.library.path' system property or the system library path. "
+            + "Original error: " + e.getMessage()
+        );
+        error.initCause(e);
+        throw error;
+      }
+    }
   }
 }

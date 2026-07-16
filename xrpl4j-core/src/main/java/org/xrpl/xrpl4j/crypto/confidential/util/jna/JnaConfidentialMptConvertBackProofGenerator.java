@@ -30,6 +30,7 @@ import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBac
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertBackProofGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -95,18 +96,20 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
 
     byte[] outProof = new byte[PROOF_SIZE];
 
-    // Extract keys and context just before use
-    UnsignedByteArray naturalBytes = senderKeyPair.privateKey().naturalBytes();
-    byte[] privkey = naturalBytes.toByteArray();
+    // Extract keys and context just before use; zero the private key copy when done
+    byte[] privkey = senderKeyPair.privateKey().naturalBytes().toByteArray();
     byte[] pubkey = senderKeyPair.publicKey().value().toByteArray();
     byte[] ctxHash = context.value().toByteArray();
 
-    int result = lib.mpt_get_convert_back_proof(
-      privkey, pubkey, ctxHash, amount.longValue(),
-      params, outProof
-    );
-
-    naturalBytes.destroy();
+    int result;
+    try {
+      result = lib.mpt_get_convert_back_proof(
+        privkey, pubkey, ctxHash, amount.longValue(),
+        params, outProof
+      );
+    } finally {
+      Arrays.fill(privkey, (byte) 0);
+    }
 
     if (result != 0) {
       throw new IllegalStateException("mpt_get_convert_back_proof failed with error code: " + result);

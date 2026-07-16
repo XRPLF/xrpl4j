@@ -42,6 +42,8 @@ public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendP
 
   private static final int PUBKEY_SIZE = 33;
   private static final int CIPHERTEXT_SIZE = 66;
+  private static final int MIN_PARTICIPANTS = 3;
+  private static final int MAX_PARTICIPANTS = 4;
 
   private final MptCryptoLibrary lib;
 
@@ -66,40 +68,45 @@ public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendP
   @Override
   public boolean verifyProof(
     final ConfidentialMptSendProof proof,
-    final List<MptConfidentialParty> recipients,
+    final List<MptConfidentialParty> participants,
     final EncryptedAmount senderSpendingCiphertext,
     final ConfidentialMptSendContext context,
     final Commitment amountCommitment,
     final Commitment balanceCommitment
   ) {
     Objects.requireNonNull(proof, "proof must not be null");
-    Objects.requireNonNull(recipients, "recipients must not be null");
+    Objects.requireNonNull(participants, "participants must not be null");
+    Objects.requireNonNull(senderSpendingCiphertext, "senderSpendingCiphertext must not be null");
     Objects.requireNonNull(context, "context must not be null");
     Objects.requireNonNull(amountCommitment, "amountCommitment must not be null");
     Objects.requireNonNull(balanceCommitment, "balanceCommitment must not be null");
-    Preconditions.checkArgument(!recipients.isEmpty(), "recipients must not be empty");
+    Preconditions.checkArgument(
+      participants.size() >= MIN_PARTICIPANTS && participants.size() <= MAX_PARTICIPANTS,
+      "participants must contain %s or %s entries (sender, destination, issuer, and optional auditor), but was %s",
+      MIN_PARTICIPANTS, MAX_PARTICIPANTS, participants.size()
+    );
 
-    int numRecipients = recipients.size();
+    int numParticipants = participants.size();
 
-    // Build the MptConfidentialRecipient struct array for the native library
-    MptCryptoLibrary.MptConfidentialRecipient firstRecipient = new MptCryptoLibrary.MptConfidentialRecipient();
-    MptCryptoLibrary.MptConfidentialRecipient[] recipientArray =
-      (MptCryptoLibrary.MptConfidentialRecipient[]) firstRecipient.toArray(numRecipients);
-    for (int i = 0; i < numRecipients; i++) {
-      MptConfidentialParty party = recipients.get(i);
+    // Build the MptConfidentialParticipant struct array for the native library
+    MptCryptoLibrary.MptConfidentialParticipant[] participantArray =
+      (MptCryptoLibrary.MptConfidentialParticipant[])
+        new MptCryptoLibrary.MptConfidentialParticipant().toArray(numParticipants);
+    for (int i = 0; i < numParticipants; i++) {
+      MptConfidentialParty party = participants.get(i);
       System.arraycopy(
-        party.publicKey().value().toByteArray(), 0, recipientArray[i].pubkey, 0, PUBKEY_SIZE
+        party.publicKey().value().toByteArray(), 0, participantArray[i].pubkey, 0, PUBKEY_SIZE
       );
       System.arraycopy(
         party.encryptedAmount().value().toByteArray(), 0,
-        recipientArray[i].ciphertext, 0, CIPHERTEXT_SIZE
+        participantArray[i].ciphertext, 0, CIPHERTEXT_SIZE
       );
     }
 
     byte[] proofBytes = proof.value().toByteArray();
     return lib.mpt_verify_send_proof(
       proofBytes,
-      recipientArray[0], (byte) numRecipients,
+      participantArray, (byte) numParticipants,
       senderSpendingCiphertext.value().toByteArray(),
       amountCommitment.value().toByteArray(),
       balanceCommitment.value().toByteArray(),

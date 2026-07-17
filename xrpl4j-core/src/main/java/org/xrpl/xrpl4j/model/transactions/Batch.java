@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A Batch transaction allows multiple transactions to be grouped together and executed atomically according to the
@@ -306,12 +307,24 @@ public interface Batch extends Transaction {
       firstSignerMatchingOuterAccount.orElse(null)
     );
 
-    // Check 4: When BatchSigners is non-empty, every inner-transaction account (excluding the outer account)
-    // must have a corresponding BatchSigner entry.
+    // Check 4: When BatchSigners is non-empty, every account required to sign an inner transaction (excluding
+    // the outer account) must have a corresponding BatchSigner entry.
     if (!this.batchSigners().isEmpty()) {
-      // Compute the set of accounts that require signatures (all inner transaction accounts except outer account)
+      // Compute the set of accounts that require signatures (excluding the outer account, which signs the Batch
+      // itself). For each inner transaction, the required signer is its Delegate if present (the delegate signs
+      // on behalf of the account holder), otherwise the transaction's Account. A LoanSet's Counterparty must also
+      // sign, if present. Note: rippled also requires a Sponsor to sign when SponsorSignature is present, but
+      // xrpl4j does not yet model sfSponsor/sfSponsorSignature, so that case cannot be checked here.
       final Set<Address> requiredSignerAccounts = this.rawTransactions().stream()
-        .map(wrapper -> wrapper.rawTransaction().account())
+        .flatMap(wrapper -> {
+          final Transaction innerTransaction = wrapper.rawTransaction();
+          final Stream.Builder<Address> requiredSigners = Stream.builder();
+          requiredSigners.add(innerTransaction.delegate().orElseGet(innerTransaction::account));
+          if (innerTransaction instanceof LoanSet) {
+            ((LoanSet) innerTransaction).counterparty().ifPresent(requiredSigners::add);
+          }
+          return requiredSigners.build();
+        })
         .filter(account -> !account.equals(this.account()))
         .collect(Collectors.toSet());
 

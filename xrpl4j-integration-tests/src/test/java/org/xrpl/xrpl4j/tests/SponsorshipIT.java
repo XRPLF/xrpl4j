@@ -918,7 +918,7 @@ public class SponsorshipIT extends AbstractIT {
       LedgerEntryResult<SponsorshipObject> sponsorshipEntry = xrplClient.ledgerEntry(
         LedgerEntryRequestParams.sponsorship(
           SponsorshipLedgerEntryParams.builder()
-            .owner(sponsorAddress)
+            .sponsor(sponsorAddress)
             .sponsee(sponseeAddress)
             .build(),
           LedgerSpecifier.VALIDATED

@@ -35,7 +35,7 @@ public interface SponsorshipLedgerEntryParams {
    *
    * @return An {@link Address}.
    */
-  Address owner();
+  Address sponsor();
 
   /**
    * The {@link Address} of the account being sponsored (the sponsee).

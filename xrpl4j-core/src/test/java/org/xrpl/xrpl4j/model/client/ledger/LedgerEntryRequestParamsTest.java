@@ -987,7 +987,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
   @Test
   void testSponsorshipParams() throws JSONException, JsonProcessingException {
     SponsorshipLedgerEntryParams sponsorshipParams = SponsorshipLedgerEntryParams.builder()
-      .owner(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMgk5j"))
+      .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMgk5j"))
       .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
       .build();
     LedgerEntryRequestParams<SponsorshipObject> params = LedgerEntryRequestParams.sponsorship(

@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.signing;
+package org.xrpl.xrpl4j.model.transactions;
 
 /*-
  * ========================LICENSE_START=================================
@@ -29,7 +29,7 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 
 import java.math.BigInteger;
 import java.util.Comparator;
@@ -83,11 +83,11 @@ public interface SponsorSignature {
   Optional<Signature> transactionSignature();
 
   /**
-   * An array of {@link org.xrpl.xrpl4j.model.transactions.Signer} objects representing the sponsor's
+   * An array of {@link Signer} objects representing the sponsor's
    * multi-signature. This field is used for multi-signature sponsorship. If this field is present,
    * {@link #signingPublicKey()} and {@link #transactionSignature()} must not be present.
    *
-   * @return An {@link Optional} {@link List} of {@link org.xrpl.xrpl4j.model.transactions.Signer} objects,
+   * @return An {@link Optional} {@link List} of {@link Signer} objects,
    *         sorted by account address.
    */
   @JsonProperty("Signers")
@@ -112,7 +112,7 @@ public interface SponsorSignature {
    *
    * <p>A {@link SponsorSignature} with neither {@link #transactionSignature()} nor {@link #signers()} present is
    * also allowed, as long as {@link #signingPublicKey()} is likewise absent. This "empty" form is used when this
-   * {@link SponsorSignature} is embedded on an inner transaction of a {@link org.xrpl.xrpl4j.model.transactions.Batch}
+   * {@link SponsorSignature} is embedded on an inner transaction of a {@link Batch}
    * transaction (i.e. {@code tfInnerBatchTxn} is set) — rippled requires inner transactions to omit signature
    * fields entirely, including on an embedded {@code SponsorSignature}.</p>
    *

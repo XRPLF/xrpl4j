@@ -248,19 +248,6 @@ public interface AccountRootObject extends LedgerObject {
   Optional<String> walletLocator();
 
   /**
-   * The account that is sponsoring the reserve for this account. If present, the sponsor is responsible for
-   * the base reserve requirement of this account.
-   *
-   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
-   * is enabled on mainnet. Its API is subject to change.</p>
-   *
-   * @return An optionally-present {@link Address} of the sponsoring account.
-   */
-  @Beta
-  @JsonProperty("Sponsor")
-  Optional<Address> sponsor();
-
-  /**
    * The number of objects this account owns that are sponsored by another account. This count contributes to
    * the sponsor's reserve requirement instead of this account's.
    *

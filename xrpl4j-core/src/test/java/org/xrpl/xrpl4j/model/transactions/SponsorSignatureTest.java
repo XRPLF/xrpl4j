@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.signing;
+package org.xrpl.xrpl4j.model.transactions;
 
 /*-
  * ========================LICENSE_START=================================
@@ -25,9 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.Signer;
-import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 
 import java.util.Collections;
 
@@ -143,6 +141,17 @@ public class SponsorSignatureTest {
         .build()
     ).isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("SigningPubKey must be non-empty when using TxnSignature");
+  }
+
+  @Test
+  public void buildEmptyPlaceholderSucceeds() {
+    // Neither TxnSignature, Signers, nor SigningPubKey present - allowed as the placeholder form used on
+    // inner Batch transactions.
+    SponsorSignature sponsorSignature = SponsorSignature.builder().build();
+
+    assertThat(sponsorSignature.signingPublicKey()).isEmpty();
+    assertThat(sponsorSignature.transactionSignature()).isEmpty();
+    assertThat(sponsorSignature.signers()).isEmpty();
   }
 
   @Test

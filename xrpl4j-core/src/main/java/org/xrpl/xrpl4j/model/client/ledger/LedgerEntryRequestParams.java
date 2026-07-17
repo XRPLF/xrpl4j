@@ -744,7 +744,7 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<LoanLedgerEntryParams> loan();
 
   /**
-   * Look up a {@link SponsorshipObject} by {@link SponsorshipLedgerEntryParams}.
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.SponsorshipObject} by {@link SponsorshipLedgerEntryParams}.
    *
    * @return An {@link Optional} {@link SponsorshipLedgerEntryParams}.
    */

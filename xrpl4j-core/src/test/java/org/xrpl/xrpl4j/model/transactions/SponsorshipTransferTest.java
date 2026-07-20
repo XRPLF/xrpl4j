@@ -68,6 +68,77 @@ public class SponsorshipTransferTest {
   }
 
   @Test
+  public void endSponsorshipWithSponsorPresentFails() {
+    assertThatThrownBy(() -> SponsorshipTransfer.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
+      .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .flags(SponsorshipTransferFlags.builder().tfSponsorshipEnd(true).build())
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Sponsor must not be present when tfSponsorshipEnd is set");
+  }
+
+  @Test
+  public void endSponsorshipWithReserveFlagFails() {
+    assertThatThrownBy(() -> SponsorshipTransfer.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
+      .flags(SponsorshipTransferFlags.builder().tfSponsorshipEnd(true).build())
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("SponsorFlags must not include spfSponsorReserve when tfSponsorshipEnd is set");
+  }
+
+  @Test
+  public void endSponsorshipWithFeeFlagSucceeds() {
+    // tfSponsorshipEnd permits SponsorFlags that do not include spfSponsorReserve (e.g. spfSponsorFee).
+    SponsorshipTransfer transfer = SponsorshipTransfer.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
+      .sponsorFlags(SponsorFlags.SPONSOR_FEE)
+      .flags(SponsorshipTransferFlags.builder().tfSponsorshipEnd(true).build())
+      .build();
+
+    assertThat(transfer.sponsorFlags()).isPresent().get().isEqualTo(SponsorFlags.SPONSOR_FEE);
+  }
+
+  @Test
+  public void createSponsorshipWithoutSponsorFails() {
+    assertThatThrownBy(() -> SponsorshipTransfer.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
+      .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Sponsor and SponsorFlags are both required");
+  }
+
+  @Test
+  public void createSponsorshipWithoutSponsorFlagsFails() {
+    assertThatThrownBy(() -> SponsorshipTransfer.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
+      .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Sponsor and SponsorFlags are both required");
+  }
+
+  @Test
   public void transactionType() {
     SponsorshipTransfer transfer = SponsorshipTransfer.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))

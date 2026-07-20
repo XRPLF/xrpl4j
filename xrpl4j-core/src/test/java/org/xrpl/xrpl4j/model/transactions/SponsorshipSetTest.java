@@ -167,6 +167,106 @@ public class SponsorshipSetTest {
   }
 
   @Test
+  public void requireSignForFeeOnlySucceeds() {
+    SponsorshipSet set = SponsorshipSet.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .flags(SponsorshipSetFlags.builder().tfRequireSignForFee().build())
+      .build();
+
+    assertThat(set.flags().tfRequireSignForFee()).isTrue();
+    assertThat(set.flags().tfClearRequireSignForFee()).isFalse();
+  }
+
+  @Test
+  public void requireSignForReserveOnlySucceeds() {
+    SponsorshipSet set = SponsorshipSet.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .flags(SponsorshipSetFlags.builder().tfRequireSignForReserve().build())
+      .build();
+
+    assertThat(set.flags().tfRequireSignForReserve()).isTrue();
+    assertThat(set.flags().tfClearRequireSignForReserve()).isFalse();
+  }
+
+  @Test
+  public void deleteObjectWithRequireSignForReserveFlagFails() {
+    assertThatThrownBy(() ->
+      SponsorshipSet.builder()
+        .account(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .sequence(UnsignedInteger.ONE)
+        .counterpartySponsor(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+        .flags(SponsorshipSetFlags.builder().tfDeleteObject().tfRequireSignForReserve().build())
+        .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("must not set any RequireSignFor*/ClearRequireSignFor* flags");
+  }
+
+  @Test
+  public void deleteObjectWithClearRequireSignForFeeFlagFails() {
+    assertThatThrownBy(() ->
+      SponsorshipSet.builder()
+        .account(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .sequence(UnsignedInteger.ONE)
+        .counterpartySponsor(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+        .flags(SponsorshipSetFlags.builder().tfDeleteObject().tfClearRequireSignForFee().build())
+        .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("must not set any RequireSignFor*/ClearRequireSignFor* flags");
+  }
+
+  @Test
+  public void deleteObjectWithClearRequireSignForReserveFlagFails() {
+    assertThatThrownBy(() ->
+      SponsorshipSet.builder()
+        .account(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .sequence(UnsignedInteger.ONE)
+        .counterpartySponsor(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+        .flags(SponsorshipSetFlags.builder().tfDeleteObject().tfClearRequireSignForReserve().build())
+        .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("must not set any RequireSignFor*/ClearRequireSignFor* flags");
+  }
+
+  @Test
+  public void deleteObjectWithMaxFeeFails() {
+    assertThatThrownBy(() ->
+      SponsorshipSet.builder()
+        .account(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .sequence(UnsignedInteger.ONE)
+        .counterpartySponsor(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+        .maxFee(XrpCurrencyAmount.ofDrops(100))
+        .flags(SponsorshipSetFlags.builder().tfDeleteObject().build())
+        .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("must not include FeeAmount, MaxFee, or RemainingOwnerCount");
+  }
+
+  @Test
+  public void deleteObjectWithRemainingOwnerCountFails() {
+    assertThatThrownBy(() ->
+      SponsorshipSet.builder()
+        .account(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .sequence(UnsignedInteger.ONE)
+        .counterpartySponsor(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+        .remainingOwnerCount(UnsignedInteger.valueOf(5))
+        .flags(SponsorshipSetFlags.builder().tfDeleteObject().build())
+        .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("must not include FeeAmount, MaxFee, or RemainingOwnerCount");
+  }
+
+  @Test
   public void negativeFeeAmountFails() {
     assertThatThrownBy(() ->
       SponsorshipSet.builder()

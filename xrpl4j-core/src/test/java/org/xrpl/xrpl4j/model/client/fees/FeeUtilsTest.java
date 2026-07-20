@@ -27,6 +27,7 @@ import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeBatchFee;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeLoanSetNetworkFees;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeMultisigNetworkFees;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeNetworkFees;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeSponsorshipTransferNetworkFees;
 import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP;
 import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP_IN_DROPS;
 
@@ -863,6 +864,79 @@ public class FeeUtilsTest {
     assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(2000));
     assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(10016));
     assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(20000));
+  }
+
+  // /////////////////
+  // computeSponsorshipTransferNetworkFees
+  // /////////////////
+
+  @Test
+  void testComputeSponsorshipTransferNetworkFeesNullInputs() {
+    assertThrows(NullPointerException.class,
+      () -> computeSponsorshipTransferNetworkFees(null, UnsignedInteger.ZERO, UnsignedInteger.ZERO));
+    assertThrows(NullPointerException.class,
+      () -> computeSponsorshipTransferNetworkFees(mock(FeeResult.class), null, UnsignedInteger.ZERO));
+    assertThrows(NullPointerException.class,
+      () -> computeSponsorshipTransferNetworkFees(mock(FeeResult.class), UnsignedInteger.ZERO, null));
+  }
+
+  @Test
+  void testComputeSponsorshipTransferNetworkFeesSponseeSignersExceedsLimit() {
+    FeeResult feeResult = feeResultBuilder().build();
+    assertThrows(IllegalArgumentException.class,
+      () -> computeSponsorshipTransferNetworkFees(feeResult, UnsignedInteger.valueOf(33), UnsignedInteger.ZERO));
+  }
+
+  @Test
+  void testComputeSponsorshipTransferNetworkFeesSponsorSignersExceedsLimit() {
+    FeeResult feeResult = feeResultBuilder().build();
+    assertThrows(IllegalArgumentException.class,
+      () -> computeSponsorshipTransferNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.valueOf(33)));
+  }
+
+  @Test
+  void testComputeSponsorshipTransferNetworkFeesAtSignerLimit() {
+    FeeResult feeResult = feeResultBuilder().build();
+    // 32 is the max for each party — should not throw
+    assertThat(
+      computeSponsorshipTransferNetworkFees(feeResult, UnsignedInteger.valueOf(32), UnsignedInteger.valueOf(32))
+    ).isNotNull();
+  }
+
+  @Test
+  void testComputeSponsorshipTransferNetworkFeesSingleSignBothParties() {
+    // Multiplier: (1 + 0 + 0) = 1
+    FeeResult feeResult = feeResultBuilder().build();
+    ComputedNetworkFees result = computeSponsorshipTransferNetworkFees(
+      feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO
+    );
+    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(1000));
+    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
+    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
+  }
+
+  @Test
+  void testComputeSponsorshipTransferNetworkFeesMultiSignSponsee() {
+    // Multiplier: (1 + 2 + 0) = 3
+    FeeResult feeResult = feeResultBuilder().build();
+    ComputedNetworkFees result = computeSponsorshipTransferNetworkFees(
+      feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.ZERO
+    );
+    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(3000));
+    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(15024));
+    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(30000));
+  }
+
+  @Test
+  void testComputeSponsorshipTransferNetworkFeesMultiSignBothParties() {
+    // Multiplier: (1 + 2 + 2) = 5
+    FeeResult feeResult = feeResultBuilder().build();
+    ComputedNetworkFees result = computeSponsorshipTransferNetworkFees(
+      feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.valueOf(2)
+    );
+    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(5000));
+    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(25040));
+    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(50000));
   }
 
   private ImmutableFeeResult.Builder feeResultBuilder() {

@@ -24,10 +24,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 
+import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Unit tests for {@link SponsorSignature}.
@@ -74,6 +78,36 @@ public class SponsorSignatureTest {
     assertThat(signature.transactionSignature()).isEmpty();
     assertThat(signature.signers()).isPresent();
     assertThat(signature.signers().get()).hasSize(1);
+  }
+
+  @Test
+  public void buildWithMultipleSignersSortsByAccountId() {
+    Signer signerA = Signer.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(TEST_PUBLIC_KEY))
+      .transactionSignature(Signature.fromBase16(TEST_SIGNATURE))
+      .build();
+    Signer signerB = Signer.builder()
+      .account(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(TEST_PUBLIC_KEY))
+      .transactionSignature(Signature.fromBase16(TEST_SIGNATURE))
+      .build();
+
+    SponsorSignature signature = SponsorSignature.builder()
+      .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
+      .signers(Arrays.asList(SignerWrapper.of(signerA), SignerWrapper.of(signerB)))
+      .build();
+
+    assertThat(signature.signers()).isPresent();
+    List<SignerWrapper> signers = signature.signers().get();
+    assertThat(signers).hasSize(2);
+
+    // checkAndNormalize() must sort the signers ascending by decoded AccountID.
+    BigInteger first = new BigInteger(
+      AddressCodec.getInstance().decodeAccountId(signers.get(0).signer().account()).hexValue(), 16);
+    BigInteger second = new BigInteger(
+      AddressCodec.getInstance().decodeAccountId(signers.get(1).signer().account()).hexValue(), 16);
+    assertThat(first).isLessThan(second);
   }
 
   @Test

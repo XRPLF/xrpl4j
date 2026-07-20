@@ -25,7 +25,9 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.BatchSigner;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -86,19 +88,24 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   /**
    * Get a signature for a batch transaction using the supplied {@link P}.
    *
-   * <p>Per XLS-0056, BatchSigners sign a specific format: HashPrefix::batch + flags + count + inner tx IDs.
-   * This differs from both single-signing and multi-signing.</p>
+   * <p>Per XLS-0056 V1_1, the payload is: {@code HashPrefix::Batch} + outer {@code Account} + sequence +
+   * {@code Flags} + count + inner tx IDs, followed by {@code batchSignerAddress} (the {@link BatchSigner}'s own
+   * account) as a per-signer suffix. Note that {@code batchSignerAddress} is <b>not</b> necessarily the address derived
+   * from {@code privateKeyable} — e.g. when a {@link BatchSigner} is authorized via a regular key, the signing key
+   * derives to the regular key's own address, but {@code batchSignerAddress} must be the underlying account's master
+   * address.</p>
    *
    * <p>This method will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet.
    * Its API is subject to change.</p>
    *
-   * @param privateKeyable   The {@link P} used to sign {@code batchTransaction}.
-   * @param batchTransaction The {@link Batch} transaction to sign.
+   * @param privateKeyable     The {@link P} used to sign {@code batchTransaction}.
+   * @param batchTransaction   The {@link Batch} transaction to sign.
+   * @param batchSignerAddress The {@link Address} of the {@link BatchSigner} entry that this signature is for.
    *
    * @return A {@link Signature} for the batch transaction.
    */
   @Beta
-  Signature signInner(P privateKeyable, Batch batchTransaction);
+  Signature signInner(P privateKeyable, Batch batchTransaction, Address batchSignerAddress);
 
   /**
    * Get a signature for the supplied unsigned transaction using the supplied {@link P}. The primary reason this
@@ -120,25 +127,28 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   /**
    * Obtain a multi-signature for a batch transaction using the supplied {@link P}.
    *
-   * <p>This is used when a multi-sig account acts as a BatchSigner with nested Signers.
-   * Per rippled's checkBatchMultiSign, this uses batch serialization (HashPrefix::batch + flags + count + tx IDs)
-   * followed by appending the signer's account ID.</p>
+   * <p>This is used when a multi-sig account acts as a BatchSigner with nested Signers. Per XLS-0056 V1_1 /
+   * rippled's {@code checkBatchMultiSign}, the payload is the base batch serialization followed by
+   * {@code batchSignerAddress} (the outer multi-sig account) then the address derived from {@code privateKeyable} (the
+   * individual nested signer).</p>
    *
    * <p>This method will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet.
    * Its API is subject to change.</p>
    *
-   * @param privateKeyable   The {@link P} used to sign {@code batchTransaction}.
-   * @param batchTransaction The {@link Batch} transaction to sign.
+   * @param privateKeyable     The {@link P} used to sign {@code batchTransaction}.
+   * @param batchTransaction   The {@link Batch} transaction to sign.
+   * @param batchSignerAddress The {@link Address} of the BatchSigner entry (the outer multi-sig account that contains
+   *                           the individual signer in its Signers list).
    *
    * @return A {@link Signature} for the batch transaction with multi-sig format.
    */
-  Signature multiSignInner(P privateKeyable, Batch batchTransaction);
+  Signature multiSignInner(P privateKeyable, Batch batchTransaction, Address batchSignerAddress);
 
   /**
    * Obtain a counterparty single-signature for the supplied {@link LoanSet} transaction. The counterparty signs the
-   * same bytes as the first-party signer, but this method returns only the raw
-   * {@link Signature} rather than a {@link SingleSignedTransaction} wrapper, since the counterparty's signature is
-   * placed into the {@link org.xrpl.xrpl4j.model.transactions.CounterpartySignature} field, not the transaction's
+   * same bytes as the first-party signer, but this method returns only the raw {@link Signature} rather than a
+   * {@link SingleSignedTransaction} wrapper, since the counterparty's signature is placed into the
+   * {@link org.xrpl.xrpl4j.model.transactions.CounterpartySignature} field, not the transaction's
    * {@code TxnSignature}.
    *
    * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
@@ -154,9 +164,9 @@ public interface TransactionSigner<P extends PrivateKeyable> {
 
   /**
    * Obtain a counterparty multi-signature for the supplied {@link LoanSet} transaction. Unlike
-   * {@link #multiSign(PrivateKeyable, Transaction)}, this method does <b>not</b> clear the {@code SigningPubKey}
-   * field, preserving the first-party signer's public key in the signed data. The resulting bytes use the same
-   * multi-signing prefix ({@code SMT\0}) and the counterparty signer's account ID suffix.
+   * {@link #multiSign(PrivateKeyable, Transaction)}, this method does <b>not</b> clear the {@code SigningPubKey} field,
+   * preserving the first-party signer's public key in the signed data. The resulting bytes use the same multi-signing
+   * prefix ({@code SMT\0}) and the counterparty signer's account ID suffix.
    *
    * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
    * is subject to change.</p>

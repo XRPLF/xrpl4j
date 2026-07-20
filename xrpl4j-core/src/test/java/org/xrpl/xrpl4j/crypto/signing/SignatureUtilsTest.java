@@ -436,19 +436,20 @@ public class SignatureUtilsTest {
     Payment payment2 = createPayment2();
 
     Batch batch = createBatchTransaction(payment1, payment2);
+    Address batchSignerAddress = sourcePublicKey.deriveAddress();
 
-    when(xrplBinaryCodecMock.encodeForBatchInnerSigning(any(Batch.class))).thenReturn(
+    when(xrplBinaryCodecMock.encodeForBatchInnerSigning(any(Batch.class), any(Address.class))).thenReturn(
       UnsignedByteArray.fromHex("ABCD1234"));
 
     when(xrplBinaryCodecMock.encodeForSigning(anyString())).thenReturn("4321DCBA");
 
-    UnsignedByteArray innerBytes = signatureUtils.toSignableInnerBytes(batch);
+    UnsignedByteArray innerBytes = signatureUtils.toSignableInnerBytes(batch, batchSignerAddress);
     assertThat(innerBytes.hexValue()).isEqualTo("ABCD1234");
 
     UnsignedByteArray outerBytes = signatureUtils.toSignableBytes(batch);
     assertThat(outerBytes.hexValue()).isEqualTo("4321DCBA");
 
-    verify(xrplBinaryCodecMock).encodeForBatchInnerSigning(batch);
+    verify(xrplBinaryCodecMock).encodeForBatchInnerSigning(batch, batchSignerAddress);
     verify(xrplBinaryCodecMock).encodeForSigning(anyString());
     verifyNoMoreInteractions(xrplBinaryCodecMock);
     verify(objectMapperMock).writeValueAsString(batch);
@@ -456,41 +457,56 @@ public class SignatureUtilsTest {
   }
 
   @Test
-  void batchToSignableBytesWithJsonException() throws JsonProcessingException {
+  void batchToSignableBytesWithRuntimeException() {
     Payment payment1 = createPayment1();
     Payment payment2 = createPayment2();
 
     Batch batch = createBatchTransaction(payment1, payment2);
+    Address batchSignerAddress = sourcePublicKey.deriveAddress();
+    final Address nestedSignerAddress = Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw");
 
-    when(xrplBinaryCodecMock.encodeForBatchInnerSigning(any(Batch.class))).thenThrow(
-      new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)));
-    assertThrows(RuntimeException.class, () -> signatureUtils.toSignableInnerBytes(batch));
+    when(xrplBinaryCodecMock.encodeForBatchInnerSigning(any(Batch.class), any(Address.class))).thenThrow(
+      new RuntimeException("codec error"));
+    assertThrows(RuntimeException.class, () -> signatureUtils.toSignableInnerBytes(batch, batchSignerAddress));
 
-    when(xrplBinaryCodecMock.encodeForBatchInnerMultiSigning(any(Batch.class), any(Address.class))).thenThrow(
-      new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)));
+    when(xrplBinaryCodecMock.encodeForBatchInnerMultiSigning(any(Batch.class), any(Address.class), any(Address.class)))
+      .thenThrow(new RuntimeException("codec error"));
     assertThrows(RuntimeException.class,
-      () -> signatureUtils.toMultiSignableInnerBytes(batch, sourcePublicKey.deriveAddress()));
-
-    when(xrplBinaryCodecMock.encodeForSigning(anyString())).thenThrow(
-      new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)));
-    assertThrows(RuntimeException.class, () -> signatureUtils.toSignableBytes(batch));
+      () -> signatureUtils.toMultiSignableInnerBytes(batch, batchSignerAddress, nestedSignerAddress));
   }
 
   @Test
   void toSignableInnerBytesWithNullBatch() {
-    assertThrows(NullPointerException.class, () -> signatureUtils.toSignableInnerBytes((Batch) null));
+    assertThrows(NullPointerException.class,
+      () -> signatureUtils.toSignableInnerBytes((Batch) null, sourcePublicKey.deriveAddress()));
+  }
+
+  @Test
+  void toSignableInnerBytesWithNullBatchSignerAddress() {
+    Batch batch = createBatchTransaction(createPayment1(), createPayment2());
+    assertThrows(NullPointerException.class, () -> signatureUtils.toSignableInnerBytes(batch, null));
   }
 
   @Test
   void toMultiSignableInnerBytesWithNullBatch() {
+    Address nestedSignerAddress = sourcePublicKey.deriveAddress();
     assertThrows(NullPointerException.class,
-      () -> signatureUtils.toMultiSignableInnerBytes(null, sourcePublicKey.deriveAddress()));
+      () -> signatureUtils.toMultiSignableInnerBytes(null, sourcePublicKey.deriveAddress(), nestedSignerAddress));
   }
 
   @Test
-  void toMultiSignableInnerBytesWithNullAddress() {
+  void toMultiSignableInnerBytesWithNullBatchSignerAddress() {
     Batch batch = createBatchTransaction(createPayment1(), createPayment2());
-    assertThrows(NullPointerException.class, () -> signatureUtils.toMultiSignableInnerBytes(batch, null));
+    Address nestedSignerAddress = sourcePublicKey.deriveAddress();
+    assertThrows(NullPointerException.class,
+      () -> signatureUtils.toMultiSignableInnerBytes(batch, null, nestedSignerAddress));
+  }
+
+  @Test
+  void toMultiSignableInnerBytesWithNullNestedSignerAddress() {
+    Batch batch = createBatchTransaction(createPayment1(), createPayment2());
+    assertThrows(NullPointerException.class,
+      () -> signatureUtils.toMultiSignableInnerBytes(batch, sourcePublicKey.deriveAddress(), null));
   }
 
   @Test
@@ -499,14 +515,18 @@ public class SignatureUtilsTest {
     Payment payment2 = createPayment2();
 
     Batch batch = createBatchTransaction(payment1, payment2);
+    Address batchSignerAddress = sourcePublicKey.deriveAddress();
+    Address nestedSignerAddress = Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw");
 
-    when(xrplBinaryCodecMock.encodeForBatchInnerMultiSigning(any(Batch.class), any(Address.class))).thenReturn(
+    when(xrplBinaryCodecMock.encodeForBatchInnerMultiSigning(
+      any(Batch.class), any(Address.class), any(Address.class))).thenReturn(
       UnsignedByteArray.fromHex("DEADBEEF"));
 
-    UnsignedByteArray innerBytes = signatureUtils.toMultiSignableInnerBytes(batch, sourcePublicKey.deriveAddress());
+    UnsignedByteArray innerBytes = signatureUtils.toMultiSignableInnerBytes(batch, batchSignerAddress,
+      nestedSignerAddress);
     assertThat(innerBytes.hexValue()).isEqualTo("DEADBEEF");
 
-    verify(xrplBinaryCodecMock).encodeForBatchInnerMultiSigning(batch, sourcePublicKey.deriveAddress());
+    verify(xrplBinaryCodecMock).encodeForBatchInnerMultiSigning(batch, batchSignerAddress, nestedSignerAddress);
     verifyNoMoreInteractions(xrplBinaryCodecMock);
   }
 
@@ -534,7 +554,8 @@ public class SignatureUtilsTest {
   @Test
   void batchToSignableInnerBytesActual() {
     Batch batch = createBatchTransaction(createPayment1(), createPayment2());
-    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch,
+      sourcePublicKey.deriveAddress());
     assertThat(bytes).isNotNull();
     assertThat(bytes.hexValue()).isNotEmpty();
   }
@@ -542,8 +563,10 @@ public class SignatureUtilsTest {
   @Test
   void batchToMultiSignableInnerBytesActual() {
     Batch batch = createBatchTransaction(createPayment1(), createPayment2());
+    Address batchSignerAddress = sourcePublicKey.deriveAddress();
+    Address nestedSignerAddress = Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw");
     UnsignedByteArray bytes = SignatureUtils.getInstance()
-      .toMultiSignableInnerBytes(batch, sourcePublicKey.deriveAddress());
+      .toMultiSignableInnerBytes(batch, batchSignerAddress, nestedSignerAddress);
     assertThat(bytes).isNotNull();
     assertThat(bytes.hexValue()).isNotEmpty();
   }
@@ -705,19 +728,22 @@ public class SignatureUtilsTest {
     }
 
     Batch batch = batchBuilder.signingPublicKey(sourcePublicKey).build();
-    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
+    Address batchSignerAddress = sourcePublicKey.deriveAddress();
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch, batchSignerAddress);
     assertThat(bytes).isNotNull();
     assertThat(bytes.hexValue()).isNotEmpty();
 
     // Regression Guard: This value reflects current stable behavior captured from a known-good run. It ensures that
     // future refactors do not inadvertently change the output of this established implementation.
+    // Note: the last 40 hex chars are the batchSignerAddress account ID (sourcePublicKey.deriveAddress()).
     assertThat(bytes.hexValue()).isEqualTo(
-      "4243480000010000000000086AE6957F40DE369AD007F1C7DCABE1B80E415857E317990E0116A9381649E91BC05EF8A5D" +
-        "B6C5767176E74B2436782FE806CF27BA5889BE8885964EC53DC5EA4CA771E2F9EC90459E4FD192069270CF1CA111CECB2E576BC51" +
-        "EA9BE8DEEF21F68877A84706E711E8929EE53008E7A684BB94FAF4038179375DF7DA2800465671E00067040F059E0ED0260A27350" +
-        "5948A101188DD35DEABC476A7ED403B5DE587649A49BAAC5A101938AB3AF6546C0BBF65AA9EC33EF30E4EF9B5D116568077407E10" +
-        "EFAC96EABBC2ED1A14759617E6881942EC8C137B4974B1D83E07B47C2EB82358840E4B6B237493029D7297933216EA16BC3EDEF3F" +
-        "10478577A1BE98055BE");
+      "424348008C51B130E125AC3269E279D675691B09E57C7CED0000000600010000000000086AE6957F40DE369AD007F1C7D" +
+        "CABE1B80E415857E317990E0116A9381649E91BC05EF8A5DB6C5767176E74B2436782FE806CF27BA5889BE8885964EC53DC5EA4C" +
+        "A771E2F9EC90459E4FD192069270CF1CA111CECB2E576BC51EA9BE8DEEF21F68877A84706E711E8929EE53008E7A684BB94FAF40" +
+        "38179375DF7DA2800465671E00067040F059E0ED0260A273505948A101188DD35DEABC476A7ED403B5DE587649A49BAAC5A101938" +
+        "AB3AF6546C0BBF65AA9EC33EF30E4EF9B5D116568077407E10EFAC96EABBC2ED1A14759617E6881942EC8C137B4974B1D83E07B4" +
+        "7C2EB82358840E4B6B237493029D7297933216EA16BC3EDEF3F10478577A1BE98055BE8C51B130E1" +
+        "25AC3269E279D675691B09E57C7CED");
   }
 
   @Test
@@ -733,7 +759,8 @@ public class SignatureUtilsTest {
     }
 
     Batch batch = batchBuilder.signingPublicKey(sourcePublicKey).build();
-    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch,
+      sourcePublicKey.deriveAddress());
     assertThat(bytes).isNotNull();
     assertThat(bytes.hexValue()).isNotEmpty();
   }
@@ -756,13 +783,16 @@ public class SignatureUtilsTest {
       .addRawTransactions(RawTransactionWrapper.of(payment), RawTransactionWrapper.of(accountSet))
       .signingPublicKey(sourcePublicKey).build();
 
-    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch,
+      sourcePublicKey.deriveAddress());
 
     assertThat(bytes).isNotNull();
     assertThat(bytes.hexValue()).isNotEmpty();
+    // Note: the last 40 hex chars are the batchSignerAddress account ID (sourcePublicKey.deriveAddress()).
     assertThat(bytes.hexValue()).isEqualTo(
-      "4243480000010000000000022ECA1C69512AB1846736340F2622CF324660B09F3D6C1724B74326E917C7207F2E0010DA9D" +
-        "B4F815BC8743C63D3B9BFC0A1E548B08A624B617A22B1B39112ABB");
+      "424348006AEFACB89787F7E3B6B3CB68FBDBF9F1658DE8E20000000600010000000000022ECA1C69512AB1846736340F2" +
+        "622CF324660B09F3D6C1724B74326E917C7207F2E0010DA9DB4F815BC8743C63D3B9BFC0A1E548B08A624B617A22B1B39112ABB" +
+        "8C51B130E125AC3269E279D675691B09E57C7CED");
   }
 
   @Test
@@ -776,7 +806,9 @@ public class SignatureUtilsTest {
       .sequence(UnsignedInteger.valueOf(6)).flags(BatchFlags.ALL_OR_NOTHING)
       .addRawTransactions(RawTransactionWrapper.of(payment), RawTransactionWrapper.of(accountSet))
       .signingPublicKey(sourcePublicKey).build();
-    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(
+      batch, sourcePublicKey.deriveAddress()
+    );
     assertThat(bytes).isNotNull();
     assertThat(bytes.hexValue()).isNotEmpty();
   }

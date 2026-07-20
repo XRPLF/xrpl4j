@@ -851,6 +851,111 @@ public class BatchTest {
   }
 
   @Test
+  void testBatchSignersSortOrderMatchesIndependentlyComputedOrder() {
+    // Regression guard against a subtly-wrong comparator (e.g. a reversed or non-transitive sort) in
+    // Batch#checkBatchSigners. The expected order below reuses the same AccountID decoding as production but
+    // compares the resulting hex strings directly (String#compareTo) rather than parsing them into a BigInteger,
+    // so this test does not just re-assert whatever the production comparator happens to compute. Note this does
+    // not independently verify that xrpl4j's canonical AccountID matches what rippled expects to sort by -- that
+    // is a concern for a batch-acceptance integration test, not this unit test.
+    List<Address> accounts = Lists.newArrayList(
+      Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress(),
+      Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress(),
+      Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress()
+    );
+
+    List<Address> expectedOrder = accounts.stream()
+      .sorted((addressA, addressB) -> {
+        String hexA = AddressCodec.getInstance().decodeAccountId(addressA).hexValue();
+        String hexB = AddressCodec.getInstance().decodeAccountId(addressB).hexValue();
+        // AccountID hex strings are a fixed 40 uppercase hex characters, so plain lexicographic String comparison
+        // is equivalent to a numeric comparison, without going through BigInteger parsing at all.
+        return hexA.compareTo(hexB);
+      })
+      .collect(Collectors.toList());
+
+    List<RawTransactionWrapper> transactions = accounts.stream()
+      .map(account -> RawTransactionWrapper.of(createInnerPayment(account, UnsignedInteger.ONE)))
+      .collect(Collectors.toList());
+
+    // Intentionally provide signers in an order unrelated to the expected sort order.
+    List<BatchSignerWrapper> unsortedSigners = accounts.stream()
+      .map(account -> BatchSignerWrapper.of(BatchSigner.builder()
+        .account(account)
+        .signingPublicKey(Seed.ed25519Seed().deriveKeyPair().publicKey())
+        .transactionSignature(Signature.fromBase16("00112233"))
+        .build()))
+      .collect(Collectors.toList());
+
+    Batch batch = Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .batchSigners(unsortedSigners)
+      .build();
+
+    List<Address> actualOrder = batch.batchSigners().stream()
+      .map(wrapper -> wrapper.batchSigner().account())
+      .collect(Collectors.toList());
+
+    assertThat(actualOrder).isEqualTo(expectedOrder);
+    assertThat(batch.sortedBatchSigners()).isTrue();
+  }
+
+  @Test
+  void testSortedBatchSignersFlagIsTrustedNotVerified() {
+    // sortedBatchSigners is an internal, @JsonIgnore-marked bookkeeping flag used solely to prevent infinite
+    // recursion in checkBatchSigners's normalizing @Value.Check. Because the check only sorts when the flag is
+    // false, a caller that sets the flag to true directly via the builder can bypass sorting entirely. This
+    // documents that "sortedBatchSigners() == true" is only guaranteed to mean "actually sorted" when Batch is
+    // constructed the normal way (without ever calling builder().sortedBatchSigners(true) directly); it is not an
+    // invariant enforced by validation.
+    Address innerAccount1 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address innerAccount2 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+
+    BigInteger id1 = new BigInteger(AddressCodec.getInstance().decodeAccountId(innerAccount1).hexValue(), 16);
+    BigInteger id2 = new BigInteger(AddressCodec.getInstance().decodeAccountId(innerAccount2).hexValue(), 16);
+    Address first = id1.compareTo(id2) < 0 ? innerAccount1 : innerAccount2;
+    Address second = first == innerAccount1 ? innerAccount2 : innerAccount1;
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(createInnerPayment(innerAccount1, UnsignedInteger.ONE)),
+      RawTransactionWrapper.of(createInnerPayment(innerAccount2, UnsignedInteger.valueOf(2)))
+    );
+
+    // Provide signers in reverse (descending, i.e. deliberately unsorted) order, but claim they are already sorted.
+    List<BatchSignerWrapper> unsortedSigners = Lists.newArrayList(
+      BatchSignerWrapper.of(BatchSigner.builder()
+        .account(second)
+        .signingPublicKey(Seed.ed25519Seed().deriveKeyPair().publicKey())
+        .transactionSignature(Signature.fromBase16("44556677"))
+        .build()),
+      BatchSignerWrapper.of(BatchSigner.builder()
+        .account(first)
+        .signingPublicKey(Seed.ed25519Seed().deriveKeyPair().publicKey())
+        .transactionSignature(Signature.fromBase16("00112233"))
+        .build())
+    );
+
+    Batch batch = Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .batchSigners(unsortedSigners)
+      .sortedBatchSigners(true)
+      .build();
+
+    // The flag is honored as-is and no sorting is performed, even though the data is not actually sorted.
+    assertThat(batch.sortedBatchSigners()).isTrue();
+    assertThat(batch.batchSigners().get(0).batchSigner().account()).isEqualTo(second);
+    assertThat(batch.batchSigners().get(1).batchSigner().account()).isEqualTo(first);
+  }
+
+  @Test
   void testBatchSignersMayIncludeAccountWithoutInnerTransaction() {
     // V1_1: a BatchSigner may be a co-signer or delegate for an inner transaction even if that
     // account has no inner transaction of its own. Previously this was rejected; it is now allowed.

@@ -508,6 +508,7 @@ class XrplBinaryCodecTest {
   }
 
   private static final Address BATCH_ACCOUNT = Address.of("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK");
+  private static final Address BATCH_SIGNER_ADDRESS = Address.of("rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN");
   private static final PublicKey BATCH_ACCOUNT_SIGNING_PUB_KEY =
     PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020");
 
@@ -530,22 +531,26 @@ class XrplBinaryCodecTest {
       )
       .build();
 
-    UnsignedByteArray result = encoder.encodeForBatchInnerSigning(batch);
+    UnsignedByteArray result = encoder.encodeForBatchInnerSigning(batch, BATCH_SIGNER_ADDRESS);
 
     // Verify the result starts with the batch signature prefix "BCH\0" = 0x42434800
     assertThat(result.hexValue()).startsWith("42434800");
 
-    // Verify the structure: prefix (4 bytes) + flags (4 bytes) + count (4 bytes) + tx IDs (32 bytes each)
-    // Total: 4 + 4 + 4 + (32 * 2) = 76 bytes = 152 hex chars
-    assertThat(result.hexValue()).hasSize(152);
+    // Verify the structure: prefix (4 bytes) + account (20 bytes) + sequence (4 bytes) + flags (4 bytes) +
+    //   count (4 bytes) + tx IDs (32 bytes each) + batchSignerAddress (20 bytes)
+    // Total: 4 + 20 + 4 + 4 + 4 + (32 * 2) + 20 = 120 bytes = 240 hex chars
+    assertThat(result.hexValue()).hasSize(240);
 
     // Verify flags are encoded correctly (ALL_OR_NOTHING = 0x00010000)
-    String flagsHex = result.hexValue().substring(8, 16);
+    String flagsHex = result.hexValue().substring(56, 64);
     assertThat(flagsHex).isEqualTo("00010000");
 
     // Verify count is 2
-    String countHex = result.hexValue().substring(16, 24);
+    String countHex = result.hexValue().substring(64, 72);
     assertThat(countHex).isEqualTo("00000002");
+
+    // Verify batchSignerAddress suffix is appended (last 40 hex chars = 20 bytes)
+    assertThat(result.hexValue().substring(200)).hasSize(40);
   }
 
   @Test
@@ -554,14 +559,15 @@ class XrplBinaryCodecTest {
     List<RawTransactionWrapper> innerTransactions = createInnerPayments(8);
 
     Batch batch = createBatch(BatchFlags.ALL_OR_NOTHING, innerTransactions);
-    UnsignedByteArray result = encoder.encodeForBatchInnerSigning(batch);
+    UnsignedByteArray result = encoder.encodeForBatchInnerSigning(batch, BATCH_SIGNER_ADDRESS);
 
-    // Verify the structure: prefix (4 bytes) + flags (4 bytes) + count (4 bytes) + tx IDs (32 bytes * 8)
-    // Total: 4 + 4 + 4 + (32 * 8) = 268 bytes = 536 hex chars
-    assertThat(result.hexValue()).hasSize(536);
+    // Verify the structure: prefix (4 bytes) + account (20 bytes) + sequence (4 bytes) + flags (4 bytes) +
+    //   count (4 bytes) + tx IDs (32 bytes * 8) + batchSignerAddress (20 bytes)
+    // Total: 4 + 20 + 4 + 4 + 4 + (32 * 8) + 20 = 312 bytes = 624 hex chars
+    assertThat(result.hexValue()).hasSize(624);
 
     // Verify count is 8
-    String countHex = result.hexValue().substring(16, 24);
+    String countHex = result.hexValue().substring(64, 72);
     assertThat(countHex).isEqualTo("00000008");
   }
 
@@ -571,23 +577,23 @@ class XrplBinaryCodecTest {
 
     // Test ALL_OR_NOTHING flag (0x00010000)
     Batch batchAllOrNothing = createBatch(BatchFlags.ALL_OR_NOTHING, innerTransactions);
-    UnsignedByteArray resultAllOrNothing = encoder.encodeForBatchInnerSigning(batchAllOrNothing);
-    assertThat(resultAllOrNothing.hexValue().substring(8, 16)).isEqualTo("00010000");
+    UnsignedByteArray resultAllOrNothing = encoder.encodeForBatchInnerSigning(batchAllOrNothing, BATCH_SIGNER_ADDRESS);
+    assertThat(resultAllOrNothing.hexValue().substring(56, 64)).isEqualTo("00010000");
 
     // Test ONLY_ONE flag (0x00020000)
     Batch batchOnlyOne = createBatch(BatchFlags.ONLY_ONE, innerTransactions);
-    UnsignedByteArray resultOnlyOne = encoder.encodeForBatchInnerSigning(batchOnlyOne);
-    assertThat(resultOnlyOne.hexValue().substring(8, 16)).isEqualTo("00020000");
+    UnsignedByteArray resultOnlyOne = encoder.encodeForBatchInnerSigning(batchOnlyOne, BATCH_SIGNER_ADDRESS);
+    assertThat(resultOnlyOne.hexValue().substring(56, 64)).isEqualTo("00020000");
 
     // Test UNTIL_FAILURE flag (0x00040000)
     Batch batchUntilFailure = createBatch(BatchFlags.UNTIL_FAILURE, innerTransactions);
-    UnsignedByteArray resultUntilFailure = encoder.encodeForBatchInnerSigning(batchUntilFailure);
-    assertThat(resultUntilFailure.hexValue().substring(8, 16)).isEqualTo("00040000");
+    UnsignedByteArray resultUntilFailure = encoder.encodeForBatchInnerSigning(batchUntilFailure, BATCH_SIGNER_ADDRESS);
+    assertThat(resultUntilFailure.hexValue().substring(56, 64)).isEqualTo("00040000");
 
     // Test INDEPENDENT flag (0x00080000)
     Batch batchIndependent = createBatch(BatchFlags.INDEPENDENT, innerTransactions);
-    UnsignedByteArray resultIndependent = encoder.encodeForBatchInnerSigning(batchIndependent);
-    assertThat(resultIndependent.hexValue().substring(8, 16)).isEqualTo("00080000");
+    UnsignedByteArray resultIndependent = encoder.encodeForBatchInnerSigning(batchIndependent, BATCH_SIGNER_ADDRESS);
+    assertThat(resultIndependent.hexValue().substring(56, 64)).isEqualTo("00080000");
   }
 
   @Test
@@ -606,13 +612,13 @@ class XrplBinaryCodecTest {
       .addRawTransactions(RawTransactionWrapper.of(innerPayment2))
       .build();
 
-    UnsignedByteArray result = encoder.encodeForBatchInnerSigning(batch);
+    UnsignedByteArray result = encoder.encodeForBatchInnerSigning(batch, BATCH_SIGNER_ADDRESS);
 
     // Extract the two transaction IDs (each is 32 bytes = 64 hex chars)
     // TODO: Once https://github.com/XRPLF/xrpl4j/issues/692 is merged, use the new method to compute the transaction
     //  id and assert against these byte indexed values.
-    String txId1 = result.hexValue().substring(24, 88);
-    String txId2 = result.hexValue().substring(88, 152);
+    String txId1 = result.hexValue().substring(72, 136);
+    String txId2 = result.hexValue().substring(136, 200);
 
     // Since both inner transactions are identical, their IDs should be the same
     assertThat(txId1).isNotEqualTo(txId2);
@@ -624,7 +630,15 @@ class XrplBinaryCodecTest {
 
   @Test
   void encodeForBatchSigningNullBatchInnerThrowsException() {
-    Assertions.assertThatThrownBy(() -> encoder.encodeForBatchInnerSigning(null))
+    Assertions.assertThatThrownBy(() -> encoder.encodeForBatchInnerSigning(null, BATCH_SIGNER_ADDRESS))
+      .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  void encodeForBatchSigningNullBatchSignerAddressThrowsException() {
+    List<RawTransactionWrapper> innerTransactions = createInnerPayments(2);
+    Batch batch = createBatch(BatchFlags.ALL_OR_NOTHING, innerTransactions);
+    Assertions.assertThatThrownBy(() -> encoder.encodeForBatchInnerSigning(batch, null))
       .isInstanceOf(NullPointerException.class);
   }
 
@@ -634,17 +648,29 @@ class XrplBinaryCodecTest {
 
   @Test
   void encodeForBatchInnerMultiSigningWithNullBatch() {
-    Address signerAddress = Address.of("rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN");
-    Assertions.assertThatThrownBy(() -> encoder.encodeForBatchInnerMultiSigning(null, signerAddress))
+    Address batchSignerAddress = Address.of("rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN");
+    Address nestedSignerAddress = Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw");
+    Assertions.assertThatThrownBy(
+        () -> encoder.encodeForBatchInnerMultiSigning(null, batchSignerAddress, nestedSignerAddress))
       .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  void encodeForBatchInnerMultiSigningWithNullSignerAddress() throws JsonProcessingException {
+  void encodeForBatchInnerMultiSigningWithNullBatchSignerAddress() throws JsonProcessingException {
+    List<RawTransactionWrapper> innerTransactions = createInnerPayments(2);
+    Batch batch = createBatch(BatchFlags.ALL_OR_NOTHING, innerTransactions);
+    Address nestedSignerAddress = Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw");
+
+    Assertions.assertThatThrownBy(() -> encoder.encodeForBatchInnerMultiSigning(batch, null, nestedSignerAddress))
+      .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  void encodeForBatchInnerMultiSigningWithNullNestedSignerAddress() throws JsonProcessingException {
     List<RawTransactionWrapper> innerTransactions = createInnerPayments(2);
     Batch batch = createBatch(BatchFlags.ALL_OR_NOTHING, innerTransactions);
 
-    Assertions.assertThatThrownBy(() -> encoder.encodeForBatchInnerMultiSigning(batch, null))
+    Assertions.assertThatThrownBy(() -> encoder.encodeForBatchInnerMultiSigning(batch, BATCH_SIGNER_ADDRESS, null))
       .isInstanceOf(NullPointerException.class);
   }
 
@@ -667,28 +693,37 @@ class XrplBinaryCodecTest {
       )
       .build();
 
-    Address signerAddress = Address.of("rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN");
-    UnsignedByteArray result = encoder.encodeForBatchInnerMultiSigning(batch, signerAddress);
+    Address nestedSignerAddress = Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw");
+    UnsignedByteArray result = encoder.encodeForBatchInnerMultiSigning(batch, BATCH_SIGNER_ADDRESS,
+      nestedSignerAddress);
 
     // Verify the result starts with the batch signature prefix "BCH\0" = 0x42434800
     assertThat(result.hexValue()).startsWith("42434800");
 
     // Verify the structure:
-    //    prefix (4 bytes) + flags (4 bytes) + count (4 bytes) + tx IDs (32 bytes * 2) + account ID (20 bytes)
-    // Total: 4 + 4 + 4 + (32 * 2) + 20 = 96 bytes = 192 hex chars
-    assertThat(result.hexValue()).hasSize(192);
+    //    prefix (4 bytes) + account (20 bytes) + sequence (4 bytes) + flags (4 bytes) +
+    //    count (4 bytes) + tx IDs (32 bytes * 2) + batchSignerAddress (20 bytes) + nestedSignerAddress (20 bytes)
+    // Total: 4 + 20 + 4 + 4 + 4 + (32 * 2) + 20 + 20 = 140 bytes = 280 hex chars
+    assertThat(result.hexValue()).hasSize(280);
 
     // Verify flags are encoded correctly (ALL_OR_NOTHING = 0x00010000)
-    String flagsHex = result.hexValue().substring(8, 16);
+    String flagsHex = result.hexValue().substring(56, 64);
     assertThat(flagsHex).isEqualTo("00010000");
 
     // Verify count is 2
-    String countHex = result.hexValue().substring(16, 24);
+    String countHex = result.hexValue().substring(64, 72);
     assertThat(countHex).isEqualTo("00000002");
 
-    // Verify the account ID suffix is appended (last 40 hex chars = 20 bytes)
-    String accountIdSuffix = result.hexValue().substring(152, 192);
-    assertThat(accountIdSuffix).hasSize(40);
+    // Verify batchSignerAddress is at bytes 100-120 (hex 200-240)
+    String batchSignerHex = result.hexValue().substring(200, 240);
+    assertThat(batchSignerHex).hasSize(40);
+
+    // Verify nestedSignerAddress is appended last (hex 240-280)
+    String nestedSignerHex = result.hexValue().substring(240, 280);
+    assertThat(nestedSignerHex).hasSize(40);
+
+    // The two suffixes should be different (different accounts)
+    assertThat(batchSignerHex).isNotEqualTo(nestedSignerHex);
   }
 
   @Test
@@ -696,17 +731,21 @@ class XrplBinaryCodecTest {
     List<RawTransactionWrapper> innerTransactions = createInnerPayments(2);
     Batch batch = createBatch(BatchFlags.ALL_OR_NOTHING, innerTransactions);
 
-    Address signer1 = Address.of("rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN");
-    Address signer2 = Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw");
+    Address batchSigner1 = Address.of("rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN");
+    Address batchSigner2 = Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw");
+    Address nestedSigner = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
 
-    UnsignedByteArray result1 = encoder.encodeForBatchInnerMultiSigning(batch, signer1);
-    UnsignedByteArray result2 = encoder.encodeForBatchInnerMultiSigning(batch, signer2);
+    UnsignedByteArray result1 = encoder.encodeForBatchInnerMultiSigning(batch, batchSigner1, nestedSigner);
+    UnsignedByteArray result2 = encoder.encodeForBatchInnerMultiSigning(batch, batchSigner2, nestedSigner);
 
-    // The batch serialization part should be the same (first 152 hex chars)
-    assertThat(result1.hexValue().substring(0, 152)).isEqualTo(result2.hexValue().substring(0, 152));
+    // The base batch payload should be the same (first 200 hex chars)
+    assertThat(result1.hexValue().substring(0, 200)).isEqualTo(result2.hexValue().substring(0, 200));
 
-    // But the account ID suffix should be different (last 40 hex chars)
-    assertThat(result1.hexValue().substring(152)).isNotEqualTo(result2.hexValue().substring(152));
+    // But the batchSigner suffix differs (hex 200-240)
+    assertThat(result1.hexValue().substring(200, 240)).isNotEqualTo(result2.hexValue().substring(200, 240));
+
+    // The nestedSigner suffix is the same for both (hex 240-280)
+    assertThat(result1.hexValue().substring(240)).isEqualTo(result2.hexValue().substring(240));
   }
 
   // /////////////////

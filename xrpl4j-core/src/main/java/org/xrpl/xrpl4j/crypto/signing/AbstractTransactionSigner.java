@@ -87,10 +87,14 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   }
 
   @Override
-  public Signature signInner(final P privateKeyable, final Batch batchTransaction) {
+  public Signature signInner(
+    final P privateKeyable, final Batch batchTransaction, final Address batchSignerAddress
+  ) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(batchTransaction);
-    final UnsignedByteArray signableBytes = this.signatureUtils.toSignableInnerBytes(batchTransaction);
+    Objects.requireNonNull(batchSignerAddress);
+    final UnsignedByteArray signableBytes = this.signatureUtils.toSignableInnerBytes(batchTransaction,
+      batchSignerAddress);
     return this.signatureHelper(privateKeyable, signableBytes);
   }
 
@@ -105,12 +109,16 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   }
 
   @Override
-  public Signature multiSignInner(final P privateKeyable, final Batch batchTransaction) {
+  public Signature multiSignInner(final P privateKeyable, final Batch batchTransaction,
+    final Address batchSignerAddress) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(batchTransaction);
+    Objects.requireNonNull(batchSignerAddress);
 
-    final Address address = derivePublicKey(privateKeyable).deriveAddress();
-    final UnsignedByteArray signableBytes = this.signatureUtils.toMultiSignableInnerBytes(batchTransaction, address);
+    final Address nestedSignerAddress = derivePublicKey(privateKeyable).deriveAddress();
+    final UnsignedByteArray signableBytes = this.signatureUtils.toMultiSignableInnerBytes(
+      batchTransaction, batchSignerAddress, nestedSignerAddress
+    );
 
     return this.signatureHelper(privateKeyable, signableBytes);
   }

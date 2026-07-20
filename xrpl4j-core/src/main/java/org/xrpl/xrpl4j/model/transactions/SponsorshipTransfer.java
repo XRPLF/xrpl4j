@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.SponsorFlags;
 import org.xrpl.xrpl4j.model.flags.SponsorshipTransferFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
@@ -160,7 +159,7 @@ public interface SponsorshipTransfer extends Transaction {
         "Sponsor must not be present when tfSponsorshipEnd is set"
       );
       Preconditions.checkState(
-        !sponsorFlags().isPresent() || !SponsorFlags.of(sponsorFlags().get().longValue()).spfSponsorReserve(),
+        !sponsorFlags().isPresent() || !sponsorFlags().get().spfSponsorReserve(),
         "SponsorFlags must not include spfSponsorReserve when tfSponsorshipEnd is set"
       );
     } else {
@@ -169,7 +168,7 @@ public interface SponsorshipTransfer extends Transaction {
         "Sponsor and SponsorFlags are both required when tfSponsorshipCreate or tfSponsorshipReassign is set"
       );
       Preconditions.checkState(
-        SponsorFlags.of(sponsorFlags().get().longValue()).spfSponsorReserve(),
+        sponsorFlags().get().spfSponsorReserve(),
         "SponsorFlags must include spfSponsorReserve when tfSponsorshipCreate or tfSponsorshipReassign is set"
       );
     }

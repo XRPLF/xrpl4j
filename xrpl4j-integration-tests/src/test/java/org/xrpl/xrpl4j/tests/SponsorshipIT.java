@@ -177,7 +177,7 @@ public class SponsorshipIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .sequence(bobAccountInfo.accountData().sequence())
         .sponsor(aliceAddress)
-        .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_FEE.getValue()))
+        .sponsorFlags(SponsorFlags.SPONSOR_FEE)
         .signingPublicKey(bobKeyPair.publicKey())
         .build();
 
@@ -280,7 +280,7 @@ public class SponsorshipIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .sequence(sponseeAccountInfo.accountData().sequence())
         .sponsor(sponsorAddress)
-        .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_FEE.getValue()))
+        .sponsorFlags(SponsorFlags.SPONSOR_FEE)
         .signingPublicKey(sponseeKeyPair.publicKey())
         .build();
 
@@ -359,7 +359,7 @@ public class SponsorshipIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .sequence(bobAccountInfo.accountData().sequence())
         .sponsor(aliceAddress)
-        .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
+        .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
         .signingPublicKey(bobKeyPair.publicKey())
         .build();
 
@@ -520,7 +520,7 @@ public class SponsorshipIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .sequence(bobAccountInfo.accountData().sequence())
         .sponsor(aliceAddress)
-        .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
+        .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
         .signingPublicKey(bobKeyPair.publicKey())
         .build();
 
@@ -582,7 +582,7 @@ public class SponsorshipIT extends AbstractIT {
         .flags(SponsorshipTransferFlags.builder().tfSponsorshipReassign(true).build())
         .objectId(checkObjectId)
         .sponsor(charlieAddress)
-        .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
+        .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
         .signingPublicKey(bobKeyPair.publicKey())
         .build();
 
@@ -653,7 +653,7 @@ public class SponsorshipIT extends AbstractIT {
         .sequence(sponseeAccountInfo.accountData().sequence())
         .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
         .sponsor(newSponsorAddress)
-        .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
+        .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
         .signingPublicKey(sponseeKeyPair.publicKey())
         .build();
 
@@ -790,7 +790,7 @@ public class SponsorshipIT extends AbstractIT {
         .sequence(updatedSponseeInfo.accountData().sequence())
         .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
         .sponsor(sponsorAddress)
-        .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
+        .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
         .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
         .build();
 

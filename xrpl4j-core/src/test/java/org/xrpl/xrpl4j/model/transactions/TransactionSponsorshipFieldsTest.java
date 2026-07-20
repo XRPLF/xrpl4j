@@ -73,7 +73,7 @@ public class TransactionSponsorshipFieldsTest {
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
       .sponsor(SPONSOR)
-      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_FEE.getValue()))
+      .sponsorFlags(SponsorFlags.SPONSOR_FEE)
       .build();
 
     assertThat(payment.sponsor()).isPresent().get().isEqualTo(SPONSOR);
@@ -90,10 +90,10 @@ public class TransactionSponsorshipFieldsTest {
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
       .sponsor(SPONSOR)
-      .sponsorFlags(UnsignedInteger.valueOf(bothFlags))
+      .sponsorFlags(SponsorFlags.of(bothFlags))
       .build();
 
-    assertThat(payment.sponsorFlags()).isPresent().get().isEqualTo(UnsignedInteger.valueOf(bothFlags));
+    assertThat(payment.sponsorFlags()).isPresent().get().isEqualTo(SponsorFlags.of(bothFlags));
   }
 
   @Test
@@ -122,7 +122,7 @@ public class TransactionSponsorshipFieldsTest {
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
       // No sponsor
-      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_FEE.getValue()))
+      .sponsorFlags(SponsorFlags.SPONSOR_FEE)
       .build())
       .isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("SponsorFlags must not be present without Sponsor field");
@@ -138,7 +138,7 @@ public class TransactionSponsorshipFieldsTest {
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
       .sponsor(SPONSOR)
-      .sponsorFlags(UnsignedInteger.ZERO)  // No flags set
+      .sponsorFlags(SponsorFlags.UNSET)  // No flags set
       .build())
       .isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("SponsorFlags must have at least one flag set");
@@ -169,7 +169,7 @@ public class TransactionSponsorshipFieldsTest {
       .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .flags(SponsorshipTransferFlags.builder().tfSponsorshipReassign(true).build())
       .sponsor(SPONSOR)
-      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
       .build();
 
     assertThat(sponsorshipTransfer.sponsor()).isPresent().get().isEqualTo(SPONSOR);
@@ -185,7 +185,7 @@ public class TransactionSponsorshipFieldsTest {
       .sequence(UnsignedInteger.ONE)
       .flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
       .sponsor(SPONSOR)
-      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_FEE.getValue()))
+      .sponsorFlags(SponsorFlags.SPONSOR_FEE)
       .build())
       .isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("Fee sponsorship (spfSponsorFee) is not allowed on an inner Batch transaction");
@@ -201,7 +201,7 @@ public class TransactionSponsorshipFieldsTest {
       .sequence(UnsignedInteger.ONE)
       .flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
       .sponsor(SPONSOR)
-      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
       .build();
 
     assertThat(payment.sponsor()).isPresent().get().isEqualTo(SPONSOR);

@@ -283,11 +283,11 @@ public interface Transaction {
    * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
    * is enabled on mainnet. Its API is subject to change.</p>
    *
-   * @return An {@link Optional} {@link UnsignedInteger} containing the sponsor flags.
+   * @return An {@link Optional} {@link SponsorFlags} containing the sponsor flags.
    */
   @Beta
   @JsonProperty("SponsorFlags")
-  Optional<UnsignedInteger> sponsorFlags();
+  Optional<SponsorFlags> sponsorFlags();
 
   /**
    * Contains the signing information for the sponsor. This field is required if the transaction is sponsored
@@ -339,7 +339,7 @@ public interface Transaction {
     }
 
     Optional<Address> sponsor = sponsor();
-    Optional<UnsignedInteger> sponsorFlags = sponsorFlags();
+    Optional<SponsorFlags> sponsorFlags = sponsorFlags();
     boolean isInnerBatchTxn = transactionFlags().tfInnerBatchTxn();
 
     if (sponsorFlags.isPresent() && !sponsor.isPresent()) {
@@ -357,12 +357,12 @@ public interface Transaction {
     }
 
     if (sponsorFlags.isPresent()) {
-      SponsorFlags flags = SponsorFlags.of(sponsorFlags.get().longValue());
+      SponsorFlags flags = sponsorFlags.get();
       if (!flags.isValid()) {
         throw new IllegalStateException(
           "SponsorFlags must have at least one flag set (spfSponsorFee=0x01 or spfSponsorReserve=0x02). " +
             "Per XLS-0068, at least one sponsorship type must be specified. Current value: " +
-            sponsorFlags.get()
+            flags.getValue()
         );
       }
 

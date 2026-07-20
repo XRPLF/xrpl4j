@@ -49,7 +49,7 @@ public class SponsorshipTransferJsonTest extends AbstractJsonTest {
       .sequence(UnsignedInteger.ONE)
       .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
-      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
       .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
@@ -79,7 +79,7 @@ public class SponsorshipTransferJsonTest extends AbstractJsonTest {
       .sequence(UnsignedInteger.ONE)
       .objectId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
       .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
-      .sponsorFlags(UnsignedInteger.valueOf(SponsorFlags.SPONSOR_RESERVE.getValue()))
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
       .flags(SponsorshipTransferFlags.builder().tfSponsorshipReassign(true).build())
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")

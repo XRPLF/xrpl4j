@@ -163,5 +163,35 @@ public class SponsorshipObjectJsonTests extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(object, json);
   }
 
+  @Test
+  public void testSponsorshipObjectWithSponsorJson() throws JsonProcessingException, JSONException {
+    SponsorshipObject object = SponsorshipObject.builder()
+      .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .ownerNode("0")
+      .sponseeNode("0")
+      .previousTransactionId(Hash256.of("E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321"))
+      .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14091160))
+      .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk"))
+      .index(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
+      .build();
+
+    String json = "{\n" +
+      "  \"LedgerEntryType\": \"Sponsorship\",\n" +
+      "  \"Flags\": 0,\n" +
+      "  \"Owner\": \"rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH\",\n" +
+      "  \"Sponsee\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\",\n" +
+      "  \"RemainingOwnerCount\": 0,\n" +
+      "  \"OwnerNode\": \"0\",\n" +
+      "  \"SponseeNode\": \"0\",\n" +
+      "  \"PreviousTxnID\": \"E6DBAFC99223B42257915A63DFC6B0C032D4070F9A574B255AD97466726FC321\",\n" +
+      "  \"PreviousTxnLgrSeq\": 14091160,\n" +
+      "  \"Sponsor\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk\",\n" +
+      "  \"index\": \"49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(object, json);
+  }
+
 }
 

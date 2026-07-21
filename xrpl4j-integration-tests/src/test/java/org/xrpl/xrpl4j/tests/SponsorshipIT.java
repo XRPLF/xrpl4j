@@ -31,6 +31,7 @@ import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -47,9 +48,11 @@ import org.xrpl.xrpl4j.model.client.ledger.SponsorshipLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.SponsorFlags;
 import org.xrpl.xrpl4j.model.flags.SponsorshipSetFlags;
 import org.xrpl.xrpl4j.model.flags.SponsorshipTransferFlags;
+import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
@@ -252,13 +255,14 @@ public class SponsorshipIT extends AbstractIT {
 
       // Sponsor creates SponsorshipSet without RequireSignForFee flag
       AccountInfoResult sponsorAccountInfo = scanForResult(() -> getValidatedAccountInfo(sponsorAddress));
+      XrpCurrencyAmount feeAmount = XrpCurrencyAmount.ofDrops(500000);
 
       SponsorshipSet sponsorshipSet = SponsorshipSet.builder()
         .account(sponsorAddress)
         .fee(feeResult.drops().openLedgerFee())
         .sequence(sponsorAccountInfo.accountData().sequence())
         .sponsee(sponseeAddress)
-        .feeAmount(XrpCurrencyAmount.ofDrops(500000))
+        .feeAmount(feeAmount)
         .signingPublicKey(sponsorKeyPair.publicKey())
         .build();
 
@@ -272,11 +276,13 @@ public class SponsorshipIT extends AbstractIT {
 
       // Sponsee submits payment using pre-funded fee (no sponsor signature needed)
       AccountInfoResult sponseeAccountInfo = scanForResult(() -> getValidatedAccountInfo(sponseeAddress));
+      XrpCurrencyAmount sponseeInitialBalance = sponseeAccountInfo.accountData().balance();
+      XrpCurrencyAmount paymentAmount = XrpCurrencyAmount.ofDrops(50000);
 
       Payment payment = Payment.builder()
         .account(sponseeAddress)
         .destination(destAddress)
-        .amount(XrpCurrencyAmount.ofDrops(50000))
+        .amount(paymentAmount)
         .fee(feeResult.drops().openLedgerFee())
         .sequence(sponseeAccountInfo.accountData().sequence())
         .sponsor(sponsorAddress)
@@ -290,6 +296,72 @@ public class SponsorshipIT extends AbstractIT {
 
       SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
       assertThat(paymentResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+      scanForResult(() -> getValidatedTransaction(paymentResult.transactionResult().hash(), Payment.class));
+
+      // Assert the fee was paid from the pre-funded Sponsorship object, not the sponsee's own balance:
+      // the sponsee's balance drops only by the payment amount, and the Sponsorship's FeeAmount decreases
+      // by the network fee.
+      XrpCurrencyAmount sponseeFinalBalance = scanForResult(
+        () -> getValidatedAccountInfo(sponseeAddress)
+      ).accountData().balance();
+      XrpCurrencyAmount expectedSponseeBalance = XrpCurrencyAmount.ofDrops(
+        sponseeInitialBalance.value().longValue() - paymentAmount.value().longValue()
+      );
+      assertThat(sponseeFinalBalance).isEqualTo(expectedSponseeBalance);
+
+      SponsorshipObject updatedSponsorship = getSponsorshipObject(sponsorAddress, sponseeAddress);
+      XrpCurrencyAmount expectedFeeAmount = XrpCurrencyAmount.ofDrops(
+        feeAmount.value().longValue() - feeResult.drops().openLedgerFee().value().longValue()
+      );
+      assertThat(updatedSponsorship.feeAmount()).hasValue(expectedFeeAmount);
+    }
+
+    /**
+     * Test: {@code Payment.tfSponsorCreatedAccount} sponsors a brand-new destination account.
+     *
+     * <ol>
+     *   <li>Alice sends a Payment with {@code tfSponsorCreatedAccount} set to a fresh, never-before-seen
+     *       destination address, with an {@code Amount} below the normal account reserve requirement
+     *       (allowed per spec section 11.3 when this flag is enabled).</li>
+     *   <li>Assert the new account was created and its {@code AccountRoot.Sponsor} field points to Alice.</li>
+     * </ol>
+     */
+    @Test
+    void testSponsorCreatedAccountPayment() throws JsonRpcClientErrorException, JsonProcessingException {
+      KeyPair aliceKeyPair = createRandomAccountEd25519();
+      Address aliceAddress = aliceKeyPair.publicKey().deriveAddress();
+
+      // A fresh, never-funded keypair. This account does not yet exist on the ledger.
+      KeyPair newAccountKeyPair = Seed.ed25519Seed().deriveKeyPair();
+      Address newAccountAddress = newAccountKeyPair.publicKey().deriveAddress();
+
+      FeeResult feeResult = xrplClient.fee();
+      AccountInfoResult aliceAccountInfo = scanForResult(() -> getValidatedAccountInfo(aliceAddress));
+
+      Payment sponsoredAccountCreate = Payment.builder()
+        .account(aliceAddress)
+        .destination(newAccountAddress)
+        .amount(XrpCurrencyAmount.ofDrops(1)) // Below the normal reserve; allowed with this flag.
+        .fee(feeResult.drops().openLedgerFee())
+        .sequence(aliceAccountInfo.accountData().sequence())
+        .flags(PaymentFlags.builder().tfSponsorCreatedAccount(true).build())
+        .signingPublicKey(aliceKeyPair.publicKey())
+        .build();
+
+      SingleSignedTransaction<Payment> signedPayment = signatureService.sign(
+        aliceKeyPair.privateKey(), sponsoredAccountCreate
+      );
+      SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
+      assertThat(paymentResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+      logInfo(sponsoredAccountCreate.transactionType(), paymentResult.transactionResult().hash());
+
+      scanForResult(() -> getValidatedTransaction(paymentResult.transactionResult().hash(), Payment.class));
+
+      // Assert the new account exists and is sponsored by Alice.
+      AccountRootObject newAccountData = scanForResult(
+        () -> getValidatedAccountInfo(newAccountAddress)
+      ).accountData();
+      assertThat(newAccountData.sponsor()).hasValue(aliceAddress);
     }
   }
 
@@ -694,6 +766,19 @@ public class SponsorshipIT extends AbstractIT {
         () -> getValidatedTransaction(finalTx.hash(), SponsorshipTransfer.class)
       );
       assertThat(validatedTx.metadata().get().transactionResult()).isEqualTo(SUCCESS_STATUS);
+
+      // Assert the account-level reserve sponsorship was actually established on-ledger: the
+      // sponsee's AccountRoot now names the new sponsor, and the new sponsor's SponsoringAccountCount
+      // increased.
+      AccountRootObject sponseeAccountData = scanForResult(
+        () -> getValidatedAccountInfo(sponseeAddress)
+      ).accountData();
+      assertThat(sponseeAccountData.sponsor()).hasValue(newSponsorAddress);
+
+      AccountRootObject newSponsorAccountData = scanForResult(
+        () -> getValidatedAccountInfo(newSponsorAddress)
+      ).accountData();
+      assertThat(newSponsorAccountData.sponsoringAccountCount()).hasValue(UnsignedInteger.ONE);
     }
 
     /**
@@ -835,6 +920,19 @@ public class SponsorshipIT extends AbstractIT {
         () -> getValidatedTransaction(finalTx.hash(), SponsorshipTransfer.class)
       );
       assertThat(validatedTx.metadata().get().transactionResult()).isEqualTo(SUCCESS_STATUS);
+
+      // Assert the account-level reserve sponsorship was actually established on-ledger: the
+      // sponsee's AccountRoot now names the sponsor account, and the sponsor's SponsoringAccountCount
+      // increased.
+      AccountRootObject sponseeAccountData = scanForResult(
+        () -> getValidatedAccountInfo(sponseeAddress)
+      ).accountData();
+      assertThat(sponseeAccountData.sponsor()).hasValue(sponsorAddress);
+
+      AccountRootObject sponsorAccountData = scanForResult(
+        () -> getValidatedAccountInfo(sponsorAddress)
+      ).accountData();
+      assertThat(sponsorAccountData.sponsoringAccountCount()).hasValue(UnsignedInteger.ONE);
     }
   }
 

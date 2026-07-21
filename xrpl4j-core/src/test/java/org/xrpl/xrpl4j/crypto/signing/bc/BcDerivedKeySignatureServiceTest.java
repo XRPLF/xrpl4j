@@ -1096,7 +1096,10 @@ class BcDerivedKeySignatureServiceTest {
     final Callable<Boolean> signedCallable = () -> {
       Signature signature = this.derivedKeySignatureService.sponsorSign(privateKeyReference, paymentTransaction);
       assertThat(signature).isNotNull();
-      assertThat(signature.base16Value()).isNotEmpty();
+      assertThat(signature.base16Value()).isEqualTo(
+        "F0968CC4FC05040788E3F5E28D8BFE21F34B059143D769B54F8668CBD805BDE5C7AAF748EC60DD877B193FD16CB32A91D9539" +
+          "C4C04851099C4B45E5FD1566401"
+      );
       // Verify signature is deterministic
       Signature signature2 = this.derivedKeySignatureService.sponsorSign(privateKeyReference, paymentTransaction);
       assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
@@ -1137,7 +1140,10 @@ class BcDerivedKeySignatureServiceTest {
     final Callable<Boolean> signedCallable = () -> {
       Signature signature = this.derivedKeySignatureService.sponsorSign(privateKeyReference, paymentTransaction);
       assertThat(signature).isNotNull();
-      assertThat(signature.base16Value()).isNotEmpty();
+      assertThat(signature.base16Value()).isEqualTo(
+        "3045022100CA3EE6AF48AA49EEF7964E4BF5E3FA879476FFE836F91740344415CD3B34A25B02205DCFC440B19BECBE3C5FF29F" +
+          "F0C662C33AE2DDD10AC4B1859C419D0BB32B8AC6"
+      );
       // Verify signature is deterministic for SECP256K1
       Signature signature2 = this.derivedKeySignatureService.sponsorSign(privateKeyReference, paymentTransaction);
       assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
@@ -1178,7 +1184,10 @@ class BcDerivedKeySignatureServiceTest {
     final Callable<Boolean> signedCallable = () -> {
       Signature signature = this.derivedKeySignatureService.sponsorMultiSign(privateKeyReference, paymentTransaction);
       assertThat(signature).isNotNull();
-      assertThat(signature.base16Value()).isNotEmpty();
+      assertThat(signature.base16Value()).isEqualTo(
+        "8DFF4D545A289D7F0659DB61759C1EFDA36093432F1B2B6E99BA3B8A5EF4343125B6470441CE7579F42FD9B29BAC728E087BA" +
+          "8260E911583B3B3B6038FF5740D"
+      );
       // Verify signature is deterministic
       Signature signature2 = this.derivedKeySignatureService.sponsorMultiSign(privateKeyReference, paymentTransaction);
       assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
@@ -1219,7 +1228,10 @@ class BcDerivedKeySignatureServiceTest {
     final Callable<Boolean> signedCallable = () -> {
       Signature signature = this.derivedKeySignatureService.sponsorMultiSign(privateKeyReference, paymentTransaction);
       assertThat(signature).isNotNull();
-      assertThat(signature.base16Value()).isNotEmpty();
+      assertThat(signature.base16Value()).isEqualTo(
+        "304502210088CBBE3DE6CCA7306072B28DF8785157E9D6A4037E6F895B7D93C4106C208EFF02204CE2EB8A9A1077358408201" +
+          "052D46EC7AB4BEA09CB981E2FEAB17812BBC52E96"
+      );
       // Verify signature is deterministic for SECP256K1
       Signature signature2 = this.derivedKeySignatureService.sponsorMultiSign(privateKeyReference, paymentTransaction);
       assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());

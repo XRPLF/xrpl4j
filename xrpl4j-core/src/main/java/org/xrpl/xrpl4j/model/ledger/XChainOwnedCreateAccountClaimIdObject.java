@@ -14,6 +14,7 @@ import org.xrpl.xrpl4j.model.transactions.XChainBridge;
 import org.xrpl.xrpl4j.model.transactions.XChainCount;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The {@code XChainOwnedCreateAccountClaimID} ledger object is used to collect attestations for creating an account via
@@ -139,4 +140,18 @@ public interface XChainOwnedCreateAccountClaimIdObject extends LedgerObject {
    * @return A {@link Hash256} containing the ID.
    */
   Hash256 index();
+
+  /**
+   * The account that is sponsoring the reserve for this ledger object. If present, the sponsor is responsible
+   * for the reserve requirement of this object instead of the owner.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An optionally-present {@link Address} of the sponsoring account.
+   */
+  @Beta
+  @JsonProperty("Sponsor")
+  Optional<Address> sponsor();
+
 }

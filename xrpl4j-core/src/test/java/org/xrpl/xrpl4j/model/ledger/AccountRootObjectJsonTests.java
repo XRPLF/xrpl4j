@@ -132,6 +132,9 @@ public class AccountRootObjectJsonTests extends AbstractJsonTest {
       .sequence(UnsignedInteger.valueOf(336))
       .transferRate(UnsignedInteger.valueOf(1004999999))
       .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk"))
+      .sponsoredOwnerCount(UnsignedInteger.valueOf(2))
+      .sponsoringOwnerCount(UnsignedInteger.valueOf(4))
+      .sponsoringAccountCount(UnsignedInteger.valueOf(1))
       .index(Hash256.of("13F1A95D7AAB7108D5CE7EEAF504B2894B8C674E6D68499076441C4837282BF8"))
       .build();
 
@@ -150,6 +153,9 @@ public class AccountRootObjectJsonTests extends AbstractJsonTest {
       "    \"Sequence\": 336,\n" +
       "    \"TransferRate\": 1004999999,\n" +
       "    \"Sponsor\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk\",\n" +
+      "    \"SponsoredOwnerCount\": 2,\n" +
+      "    \"SponsoringOwnerCount\": 4,\n" +
+      "    \"SponsoringAccountCount\": 1,\n" +
       "    \"index\": \"13F1A95D7AAB7108D5CE7EEAF504B2894B8C674E6D68499076441C4837282BF8\"\n" +
       "}";
 

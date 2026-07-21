@@ -45,6 +45,7 @@ public class NfTokenOfferObjectJsonTests extends AbstractJsonTest {
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14090896))
       .nfTokenId(NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65"))
       .flags(NfTokenOfferFlags.BUY_TOKEN)
+      .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk"))
       .index(Hash256.of("AEBABA4FAC212BF28E0F9A9C3788A47B085557EC5D1429E7A8266FB859C863B3"))
       .build();
 
@@ -56,6 +57,7 @@ public class NfTokenOfferObjectJsonTests extends AbstractJsonTest {
       "    \"Destination\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"PreviousTxnID\": \"E3FE6EA3D48F0C2B639448020EA4F03D4F4F8FFDB243A852A0F59177921B4879\",\n" +
       "    \"PreviousTxnLgrSeq\": 14090896,\n" +
+      "    \"Sponsor\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk\",\n" +
       "    \"index\": \"AEBABA4FAC212BF28E0F9A9C3788A47B085557EC5D1429E7A8266FB859C863B3\",\n" +
       "    \"LedgerEntryType\": \"NFTokenOffer\"\n" +
       "}";

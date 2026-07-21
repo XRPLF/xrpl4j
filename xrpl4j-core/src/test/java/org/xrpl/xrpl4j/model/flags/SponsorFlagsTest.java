@@ -79,6 +79,19 @@ public class SponsorFlagsTest extends AbstractFlagsTest {
   }
 
   @Test
+  void isValidRejectsUnknownFlagBits() {
+    // Per XLS-0068 section 8.3.1, a transaction fails if SponsorFlags includes any flag other than
+    // spfSponsorFee (0x01) or spfSponsorReserve (0x02) — i.e. the only valid values are 1, 2, and 3.
+    // isValid() must therefore reject any value with unknown bits set, even when a known flag is also present.
+    assertThat(SponsorFlags.of(0x00000004L).isValid()).isFalse();
+    assertThat(SponsorFlags.of(0x00000005L).isValid()).isFalse();
+    assertThat(SponsorFlags.of(0x00000006L).isValid()).isFalse();
+    assertThat(SponsorFlags.of(0x00000007L).isValid()).isFalse();
+    // High unknown bit plus spfSponsorFee.
+    assertThat(SponsorFlags.of(0x80000001L).isValid()).isFalse();
+  }
+
+  @Test
   void testSponsorFeeJson() throws JSONException, JsonProcessingException {
     FlagsWrapper wrapper = FlagsWrapper.of(SponsorFlags.SPONSOR_FEE);
     String json = String.format("{" +

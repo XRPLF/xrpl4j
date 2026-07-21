@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
@@ -24,6 +25,7 @@ class NfTokenPageObjectJsonTests extends AbstractJsonTest {
       "    \"95C8761B22894E328646F7A70035E9DFBECC90EDD83E43B7B973F626D21A0822\",\n" +
       "  \"PreviousTxnLgrSeq\":\n" +
       "    42891441,\n" +
+      "  \"Sponsor\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk\",\n" +
       "  \"NFTokens\": [\n" +
       "    {\n" +
       "      \"NFToken\": {\n" +
@@ -48,6 +50,7 @@ class NfTokenPageObjectJsonTests extends AbstractJsonTest {
       .nextPageMin(Hash256.of("8A244DD75DAF4AC1EEF7D99253A7B83D2297818B2297818BE223B0AE0000010B"))
       .previousTransactionId(Hash256.of("95C8761B22894E328646F7A70035E9DFBECC90EDD83E43B7B973F626D21A0822"))
       .previousTransactionLedgerSequence(LedgerIndex.of(UnsignedInteger.valueOf(42891441)))
+      .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk"))
       .addNfTokens(
         NfTokenWrapper.of(
           NfToken.builder()

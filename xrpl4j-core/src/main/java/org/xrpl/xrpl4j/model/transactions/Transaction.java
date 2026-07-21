@@ -360,9 +360,9 @@ public interface Transaction {
       SponsorFlags flags = sponsorFlags.get();
       if (!flags.isValid()) {
         throw new IllegalStateException(
-          "SponsorFlags must have at least one flag set (spfSponsorFee=0x01 or spfSponsorReserve=0x02). " +
-            "Per XLS-0068, at least one sponsorship type must be specified. Current value: " +
-            flags.getValue()
+          "SponsorFlags must have at least one flag set (spfSponsorFee=0x01 or spfSponsorReserve=0x02) and " +
+            "no other flags. Per XLS-0068, at least one sponsorship type must be specified and any other flag is " +
+            "invalid. Current value: " + flags.getValue()
         );
       }
 
@@ -386,6 +386,15 @@ public interface Transaction {
         throw new IllegalStateException(
           "SponsorSignature must include either TxnSignature or Signers unless this is an inner Batch " +
             "transaction (tfInnerBatchTxn)."
+        );
+      } else if (!sponsor.isPresent()) {
+        // Per XLS-0068 section 8.3.1, a real (non-placeholder) SponsorSignature may only be present when the
+        // transaction is sponsored, i.e. Sponsor (and therefore SponsorFlags) must also be present. It is never
+        // valid to supply a SponsorSignature on its own.
+        throw new IllegalStateException(
+          "SponsorSignature must not be present without Sponsor and SponsorFlags. " +
+            "Per XLS-0068, a sponsored transaction must include Sponsor and SponsorFlags alongside " +
+            "SponsorSignature (SponsorSignature may only be omitted when using a pre-funded Sponsorship object)."
         );
       }
     });

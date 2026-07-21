@@ -94,15 +94,17 @@ public class SponsorFlags extends Flags {
   }
 
   /**
-   * Validates that at least one of the sponsor flags is set.
+   * Validates that at least one of the sponsor flags is set and that no unknown flag bits are set.
    *
    * <p>Per XLS-0068, at least one of {@code spfSponsorFee} or {@code spfSponsorReserve} must be set
-   * when sponsorship is used.</p>
+   * when sponsorship is used, and any flag other than these two is invalid. The only valid values are
+   * therefore 1, 2, and 3.</p>
    *
-   * @return {@code true} if at least one flag is set, otherwise {@code false}.
+   * @return {@code true} if at least one known flag is set and no unknown flags are set, otherwise {@code false}.
    */
   public boolean isValid() {
-    return spfSponsorFee() || spfSponsorReserve();
+    long knownFlagsMask = SPONSOR_FEE.getValue() | SPONSOR_RESERVE.getValue();
+    return this.getValue() != 0 && (this.getValue() & ~knownFlagsMask) == 0;
   }
 
 }

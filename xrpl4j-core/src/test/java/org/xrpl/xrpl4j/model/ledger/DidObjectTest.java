@@ -23,11 +23,13 @@ class DidObjectTest extends AbstractJsonTest {
       .previousTransactionId(Hash256.of("A4C15DA185E6092DF5954FF62A1446220C61A5F60F0D93B4B09F708778E41120"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(4))
       .uri(DidUri.of("6469645F6578616D706C65"))
+      .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk"))
       .index(Hash256.of("46813BE38B798B3752CA590D44E7FEADB17485649074403AD1761A2835CE91FF"))
       .build();
 
     String json = "{\n" +
       "    \"Account\": \"rpfqJrXg5uidNo2ZsRhRY6TiF1cvYmV9Fg\",\n" +
+      "    \"Sponsor\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk\",\n" +
       "    \"DIDDocument\": \"646F63\",\n" +
       "    \"Data\": \"617474657374\",\n" +
       "    \"Flags\": 0,\n" +

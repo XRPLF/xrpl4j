@@ -53,6 +53,7 @@ public class OfferObjectJsonTests extends AbstractJsonTest {
         .value("37")
         .build())
       .takerPays(XrpCurrencyAmount.ofDrops(79550000000L))
+      .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk"))
       .index(Hash256.of("96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797"))
       .build();
 
@@ -66,6 +67,7 @@ public class OfferObjectJsonTests extends AbstractJsonTest {
       "  \"PreviousTxnID\": \"F0AB71E777B2DA54B86231E19B82554EF1F8211F92ECA473121C655BFC5329BF\"," +
       "  \"PreviousTxnLgrSeq\": 14524914," +
       "  \"Sequence\": 866," +
+      "  \"Sponsor\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk\"," +
       "  \"TakerGets\": {" +
       "    \"currency\": \"XAG\"," +
       "    \"issuer\": \"r9Dr5xwkeLegBeXq6ujinjSBLQzQ1zQGjH\"," +

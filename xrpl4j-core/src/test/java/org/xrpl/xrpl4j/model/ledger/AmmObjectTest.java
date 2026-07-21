@@ -103,6 +103,7 @@ class AmmObjectTest extends AbstractJsonTest {
       )
       .index(HASH_256)
       .ownerNode("0")
+      .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk"))
       .build();
 
     String json = String.format("{\n" +
@@ -114,6 +115,7 @@ class AmmObjectTest extends AbstractJsonTest {
       "    \"Flags\" : 0,\n" +
       "    \"LPTokenBalance\" : " + objectMapper.writeValueAsString(ammObject.lpTokenBalance()) + "," +
       "    \"TradingFee\" : 600,\n" +
+      "    \"Sponsor\" : \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk\",\n" +
       "    \"index\" : %s,\n" +
       "    \"OwnerNode\" : \"0\",\n" +
       "    \"VoteSlots\" : [\n" +

@@ -65,12 +65,14 @@ class XChainOwnedClaimIdObjectTest extends AbstractJsonTest {
         )
       )
       .xChainClaimId(XChainClaimId.of(UnsignedLong.valueOf("b5", 16)))
+      .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk"))
       .index(Hash256.of("20B136D7BF6D2E3D610E28E3E6BE09F5C8F4F0241BBF6E2D072AE1BACB1388F5"))
       .build();
 
     String json = "\n" +
       "{\n" +
       "  \"Account\": \"rBW1U7J9mEhEdk6dMHEFUjqQ7HW7WpaEMi\",\n" +
+      "  \"Sponsor\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk\",\n" +
       "  \"Flags\": 0,\n" +
       "  \"OtherChainSource\": \"r9oXrvBX5aDoyMGkoYvzazxDhYoWFUjz8p\",\n" +
       "  \"OwnerNode\": \"0\",\n" +

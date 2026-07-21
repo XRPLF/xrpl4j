@@ -269,15 +269,54 @@ public class TransactionSponsorshipFieldsTest {
       .transactionSignature(Signature.fromBase16(TEST_SIGNATURE))
       .build();
 
+    // A real SponsorSignature is only valid on a fully sponsored transaction (Sponsor + SponsorFlags present).
     Payment payment = Payment.builder()
       .account(ACCOUNT)
       .destination(DESTINATION)
       .amount(AMOUNT)
       .fee(FEE)
       .sequence(UnsignedInteger.ONE)
+      .sponsor(SPONSOR)
+      .sponsorFlags(SponsorFlags.SPONSOR_FEE)
       .sponsorSignature(realSponsorSignature)
       .build();
 
     assertThat(payment.sponsorSignature()).isPresent().get().isEqualTo(realSponsorSignature);
+  }
+
+  @Test
+  void nonBatchTxnWithRealSponsorSignatureButNoSponsorFails() {
+    // Per XLS-0068 section 8.3.1, a SponsorSignature must not appear without Sponsor and SponsorFlags.
+    SponsorSignature realSponsorSignature = SponsorSignature.builder()
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(TEST_PUBLIC_KEY))
+      .transactionSignature(Signature.fromBase16(TEST_SIGNATURE))
+      .build();
+
+    assertThatThrownBy(() -> Payment.builder()
+      .account(ACCOUNT)
+      .destination(DESTINATION)
+      .amount(AMOUNT)
+      .fee(FEE)
+      .sequence(UnsignedInteger.ONE)
+      .sponsorSignature(realSponsorSignature)
+      .build())
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("SponsorSignature must not be present without Sponsor and SponsorFlags");
+  }
+
+  @Test
+  void sponsorFlagsWithUnknownBitsFails() {
+    // Per XLS-0068 section 8.3.1, SponsorFlags with any bit other than spfSponsorFee/spfSponsorReserve is invalid.
+    assertThatThrownBy(() -> Payment.builder()
+      .account(ACCOUNT)
+      .destination(DESTINATION)
+      .amount(AMOUNT)
+      .fee(FEE)
+      .sequence(UnsignedInteger.ONE)
+      .sponsor(SPONSOR)
+      .sponsorFlags(SponsorFlags.of(0x00000004L))
+      .build())
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("SponsorFlags must have at least one flag set");
   }
 }

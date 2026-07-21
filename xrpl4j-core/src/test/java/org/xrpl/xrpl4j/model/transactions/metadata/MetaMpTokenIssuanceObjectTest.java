@@ -58,7 +58,7 @@ class MetaMpTokenIssuanceObjectTest extends AbstractJsonTest {
   @Test
   void testJsonWithMutableFlags() throws JsonProcessingException, JSONException {
     MpTokenIssuanceMutableFlags lsmf = MpTokenIssuanceMutableFlags.builder()
-      .lsmfMptCanMutateCanLock(true)
+      .lsmfMptCanEnableCanLock(true)
       .lsmfMptCanMutateMetadata(true)
       .build();
 

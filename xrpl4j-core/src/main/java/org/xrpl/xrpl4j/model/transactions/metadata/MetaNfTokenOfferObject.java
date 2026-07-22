@@ -130,4 +130,5 @@ public interface MetaNfTokenOfferObject extends MetaLedgerObject {
    */
   @JsonProperty("Flags")
   Optional<NfTokenOfferFlags> flags();
+
 }

@@ -516,6 +516,98 @@ public class AbstractTransactionSignerTest {
   }
 
   // /////////////////
+  // SponsorSign
+  // /////////////////
+
+  @Test
+  void sponsorSignWithNullMetadata() {
+    assertThrows(NullPointerException.class, () -> transactionSigner.sponsorSign(null, transactionMock));
+  }
+
+  @Test
+  void sponsorSignWithNullTransaction() {
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.sponsorSign(privateKeyableMock, null));
+  }
+
+  @Test
+  void sponsorSignEd25519() {
+    final Payment payment = Payment.builder()
+      .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(ED_PUBLIC_KEY)
+      .build();
+
+    keyType = KeyType.ED25519;
+
+    Signature signature = transactionSigner.sponsorSign(privateKeyableMock, payment);
+    assertThat(signature).isEqualTo(fauxEd25519Signature);
+
+    verify(signatureUtilsMock).toSignableBytes(payment);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  @Test
+  void sponsorSignSecp256k1() {
+    final Payment payment = Payment.builder()
+      .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(EC_PUBLIC_KEY)
+      .build();
+
+    keyType = KeyType.SECP256K1;
+
+    Signature signature = transactionSigner.sponsorSign(privateKeyableMock, payment);
+    assertThat(signature).isEqualTo(fauxSecp256k1Signature);
+
+    verify(signatureUtilsMock).toSignableBytes(payment);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  // /////////////////
+  // SponsorMultiSign
+  // /////////////////
+
+  @Test
+  void sponsorMultiSignWithNullMetadata() {
+    assertThrows(NullPointerException.class, () -> transactionSigner.sponsorMultiSign(null, transactionMock));
+  }
+
+  @Test
+  void sponsorMultiSignWithNullTransaction() {
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.sponsorMultiSign(privateKeyableMock, null));
+  }
+
+  @Test
+  void sponsorMultiSignEd25519() {
+    keyType = KeyType.ED25519;
+    when(signatureUtilsMock.toSponsorMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+
+    Signature signature = transactionSigner.sponsorMultiSign(privateKeyableMock, transactionMock);
+    assertThat(signature).isEqualTo(fauxEd25519Signature);
+
+    verify(signatureUtilsMock).toSponsorMultiSignableBytes(transactionMock, TestConstants.ED_ADDRESS);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  @Test
+  void sponsorMultiSignSecp256k1() {
+    keyType = KeyType.SECP256K1;
+    when(signatureUtilsMock.toSponsorMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+
+    Signature signature = transactionSigner.sponsorMultiSign(privateKeyableMock, transactionMock);
+    assertThat(signature).isEqualTo(fauxSecp256k1Signature);
+
+    verify(signatureUtilsMock).toSponsorMultiSignableBytes(transactionMock, TestConstants.EC_ADDRESS);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  // /////////////////
   // EdDsaSign
   // /////////////////
 

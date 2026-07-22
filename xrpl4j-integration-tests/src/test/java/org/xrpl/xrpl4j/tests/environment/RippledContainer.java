@@ -237,7 +237,7 @@ public class RippledContainer {
   /**
    * Stops the automated Ledger Acceptor, for example to control an integration test more finely.
    */
-  @SuppressWarnings( {"all"})
+  @SuppressWarnings({"all"})
   public void stopLedgerAcceptor() {
     try {
       ledgerAcceptor.shutdown();

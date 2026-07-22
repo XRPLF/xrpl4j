@@ -40,7 +40,6 @@ class TicketObjectJsonTests extends AbstractJsonTest {
       .previousTransactionId(Hash256.of("F19AD4577212D3BEACA0F75FE1BA1644F2E854D46E8D62E9C95D18E9708CBFB1"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(4))
       .ticketSequence(UnsignedInteger.valueOf(3))
-      .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk"))
       .index(HASH_256)
       .build();
 
@@ -51,7 +50,6 @@ class TicketObjectJsonTests extends AbstractJsonTest {
       "  \"OwnerNode\" : \"0000000000000000\",\n" +
       "  \"PreviousTxnID\" : \"F19AD4577212D3BEACA0F75FE1BA1644F2E854D46E8D62E9C95D18E9708CBFB1\",\n" +
       "  \"PreviousTxnLgrSeq\" : 4,\n" +
-      "  \"Sponsor\" : \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk\",\n" +
       "  \"index\" : %s,\n" +
       "  \"TicketSequence\" : 3\n" +
       "}", HASH_256);

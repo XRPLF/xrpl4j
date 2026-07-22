@@ -20,7 +20,6 @@ class BridgeObjectTest extends AbstractJsonTest {
     BridgeObject bridge = BridgeObject.builder()
       .account(Address.of("r3nCVTbZGGYoWvZ58BcxDmiMUU7ChMa1eC"))
       .minAccountCreateAmount(XrpCurrencyAmount.ofDrops(2000000000))
-      .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk"))
       .ownerNode("0")
       .previousTransactionId(Hash256.of("67A8A1B36C1B97BE3AAB6B19CB3A3069034877DE917FD1A71919EAE7548E5636"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(102))
@@ -45,7 +44,6 @@ class BridgeObjectTest extends AbstractJsonTest {
       "  \"Flags\": 0,\n" +
       "  \"LedgerEntryType\": \"Bridge\",\n" +
       "  \"MinAccountCreateAmount\": \"2000000000\",\n" +
-      "  \"Sponsor\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk\",\n" +
       "  \"OwnerNode\": \"0\",\n" +
       "  \"PreviousTxnID\": \"67A8A1B36C1B97BE3AAB6B19CB3A3069034877DE917FD1A71919EAE7548E5636\",\n" +
       "  \"PreviousTxnLgrSeq\": 102,\n" +

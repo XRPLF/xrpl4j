@@ -22,16 +22,24 @@ package org.xrpl.xrpl4j.crypto.keys;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
+import org.xrpl.xrpl4j.crypto.HashingUtils;
 import org.xrpl.xrpl4j.crypto.keys.Seed.DefaultSeed;
 
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.List;
 import javax.security.auth.DestroyFailedException;
 
 /**
@@ -363,5 +371,51 @@ public class SeedTest {
     assertThat(seed.deriveKeyPair().publicKey().deriveAddress().value()).isEqualTo(
       "rByLcEZ7iwTBAK8FfjtpFuT7fCzt4kF4r2"
     );
+  }
+
+  @Test
+  void deriveScalarDoesNotAccumulateBytesAcrossIterations() {
+    // Force deriveScalar's loop to iterate twice by making the first sha512Half call return a value
+    // >= N (an invalid scalar). The second call's argument reveals whether seedCopy was re-created
+    // inside the loop (correct: seed + [i=1] = 20 bytes) or accumulated outside it
+    // (broken: seed + [i=0] + [i=1] = 24 bytes).
+    //
+    // Rarely loops (secp256k1 order ≈ 2^256, so iteration is needed with negligible probability),
+    // but seedCopy must be recreated each iteration to avoid accumulating bytes across retries.
+
+    // All-0xFF as a BigInteger is >> N, so the loop rejects it and advances to i=1.
+    byte[] aboveN = new byte[32];
+    Arrays.fill(aboveN, (byte) 0xFF);
+    UnsignedByteArray invalidScalar = UnsignedByteArray.of(aboveN);
+
+    // BigInteger(1) is a valid scalar (> 0 and < N).
+    byte[] belowN = new byte[32];
+    belowN[31] = 1;
+    UnsignedByteArray validScalar = UnsignedByteArray.of(belowN);
+
+    ArgumentCaptor<UnsignedByteArray> captor = ArgumentCaptor.forClass(UnsignedByteArray.class);
+
+    Entropy entropy = Entropy.of(BaseEncoding.base16().decode("CC4E55BC556DD561CBE990E3D4EF7069"));
+    Seed ecSeed = Seed.secp256k1SeedFromEntropy(entropy);
+
+    try (MockedStatic<HashingUtils> mocked = mockStatic(HashingUtils.class)) {
+      mocked.when(() -> HashingUtils.addUInt32(any(), any())).thenCallRealMethod();
+      // Call 1: deriveScalar(seed), i=0 → rejected (>= N), forces loop to i=1
+      // Call 2: deriveScalar(seed), i=1 → accepted
+      // Call 3: deriveScalar(publicGen, accountIndex=0), i=0 → accepted
+      mocked.when(() -> HashingUtils.sha512Half(any(UnsignedByteArray.class)))
+        .thenReturn(invalidScalar)
+        .thenReturn(validScalar)
+        .thenReturn(validScalar);
+
+      ecSeed.deriveKeyPair();
+
+      mocked.verify(() -> HashingUtils.sha512Half(captor.capture()), times(3));
+    }
+
+    List<UnsignedByteArray> args = captor.getAllValues();
+    // The seed entropy is 16 bytes. With correct code, the second sha512Half call receives
+    // seed + [0,0,0,1] = 20 bytes. With broken code it would receive seed + [0,0,0,0] + [0,0,0,1] = 24 bytes.
+    assertThat(args.get(1).length()).isEqualTo(16 + 4);
   }
 }

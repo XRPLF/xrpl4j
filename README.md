@@ -259,6 +259,27 @@ To build the project while skipping Unit and Integration tests, use the followin
 mvn clean install -DskipITs -DskipTests
 ```
 
+### Running integration tests against a private xrpld image
+
+By default the local integration tests start an `xrpld` node via Testcontainers using the public image
+`rippleci/xrpld:develop`. To run them against a private xrpld image, set the `XRPLD_DOCKER_IMAGE` environment variable
+before invoking Maven:
+
+```
+XRPLD_DOCKER_IMAGE=registry.gitlab.com/ripple/xrpledger/xrpld_package_deploy/xrpld-private:private-3.3.0-rc2 mvn clean install
+```
+
+`RippledContainer` reads `XRPLD_DOCKER_IMAGE` (falling back to the public image when it is unset). For a private
+registry, run `docker login` first so Testcontainers can reuse the credentials when pulling.
+
+In CI the image is selected from a committed config file, `.github/xrpld-image.env`. Set `XRPLD_PRIVATE_VERSION` to a
+version (without the `private-` prefix, for example `XRPLD_PRIVATE_VERSION=3.3.0-rc2`) and every workflow run — including
+pull request runs — resolves the private image, logs into the GitLab registry, and exports `XRPLD_DOCKER_IMAGE` to the
+local-integration-test jobs. Leave it empty to use the default public image. Private pulls require the repository
+variable `GITLAB_REGISTRY_USERNAME` and repository secret `GITLAB_REGISTRY_TOKEN` (a GitLab deploy token with
+`read_registry` access); these are not exposed to fork pull requests, so a private version must be tested from a branch
+in this repository.
+
 [codecov-image]: https://codecov.io/gh/XRPLF/xrpl4j/branch/main/graph/badge.svg
 
 [codecov-url]: https://codecov.io/gh/XRPLF/xrpl4j

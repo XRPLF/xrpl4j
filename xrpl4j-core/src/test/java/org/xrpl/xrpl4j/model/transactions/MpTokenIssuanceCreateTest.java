@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateMutableFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 
 class MpTokenIssuanceCreateTest extends AbstractJsonTest {
 
@@ -91,7 +91,7 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
   }
 
   @Test
-  void testJsonWithMutableFlags() throws JSONException, JsonProcessingException {
+  void testJsonWithImmutableFlags() throws JSONException, JsonProcessingException {
     MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
       .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
       .fee(XrpCurrencyAmount.ofDrops(15))
@@ -103,16 +103,16 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
         .tfMptCanTransfer(true)
         .build()
       )
-      .mutableFlags(MpTokenIssuanceCreateMutableFlags.builder()
-        .tmfMptCanMutateMetadata(true)
-        .tmfMptCanMutateTransferFee(true)
+      .immutableFlags(MpTokenIssuanceImmutableFlags.builder()
+        .lsifMptMetadata(true)
+        .lsifMptTransferFee(true)
         .build()
       )
       .mpTokenMetadata(MpTokenMetadata.of("464F4F"))
       .transferFee(TransferFee.of(UnsignedInteger.valueOf(100)))
       .build();
 
-    // tmfMPTCanMutateMetadata (0x00010000) | tmfMPTCanMutateTransferFee (0x00020000) = 0x00030000 = 196608
+    // lsifMPTMetadata (0x00010000) | lsifMPTTransferFee (0x00020000) = 0x00030000 = 196608
     String json =
       "{\n" +
       "  \"Account\" : \"rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ\",\n" +
@@ -121,7 +121,7 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       "  \"Sequence\" : 321,\n" +
       "  \"SigningPubKey\" : \"EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710\",\n" +
       "  \"Flags\" : 2147483680,\n" +
-      "  \"MutableFlags\" : 196608,\n" +
+      "  \"ImmutableFlags\" : 196608,\n" +
       "  \"MPTokenMetadata\" : \"464F4F\",\n" +
       "  \"TransferFee\" : 100\n" +
       "}";
@@ -130,38 +130,40 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
   }
 
   @Test
-  void mutableFlagsBuilderSetsCorrectBits() {
-    MpTokenIssuanceCreateMutableFlags flags = MpTokenIssuanceCreateMutableFlags.builder()
-      .tmfMptCanEnableCanLock(true)
-      .tmfMptCanEnableRequireAuth(true)
-      .tmfMptCanEnableCanEscrow(true)
-      .tmfMptCanEnableCanTrade(true)
-      .tmfMptCanEnableCanTransfer(true)
-      .tmfMptCanEnableCanClawback(true)
-      .tmfMptCanMutateMetadata(true)
-      .tmfMptCanMutateTransferFee(true)
+  void immutableFlagsBuilderSetsCorrectBits() {
+    MpTokenIssuanceImmutableFlags flags = MpTokenIssuanceImmutableFlags.builder()
+      .lsifMptCanLock(true)
+      .lsifMptRequireAuth(true)
+      .lsifMptCanEscrow(true)
+      .lsifMptCanTrade(true)
+      .lsifMptCanTransfer(true)
+      .lsifMptCanClawback(true)
+      .lsifMptCanHoldConfidentialBalance(true)
+      .lsifMptMetadata(true)
+      .lsifMptTransferFee(true)
       .build();
 
-    assertThat(flags.tmfMptCanEnableCanLock()).isTrue();
-    assertThat(flags.tmfMptCanEnableRequireAuth()).isTrue();
-    assertThat(flags.tmfMptCanEnableCanEscrow()).isTrue();
-    assertThat(flags.tmfMptCanEnableCanTrade()).isTrue();
-    assertThat(flags.tmfMptCanEnableCanTransfer()).isTrue();
-    assertThat(flags.tmfMptCanEnableCanClawback()).isTrue();
-    assertThat(flags.tmfMptCanMutateMetadata()).isTrue();
-    assertThat(flags.tmfMptCanMutateTransferFee()).isTrue();
+    assertThat(flags.lsifMptCanLock()).isTrue();
+    assertThat(flags.lsifMptRequireAuth()).isTrue();
+    assertThat(flags.lsifMptCanEscrow()).isTrue();
+    assertThat(flags.lsifMptCanTrade()).isTrue();
+    assertThat(flags.lsifMptCanTransfer()).isTrue();
+    assertThat(flags.lsifMptCanClawback()).isTrue();
+    assertThat(flags.lsifMptCanHoldConfidentialBalance()).isTrue();
+    assertThat(flags.lsifMptMetadata()).isTrue();
+    assertThat(flags.lsifMptTransferFee()).isTrue();
 
-    // 0x2 | 0x4 | 0x8 | 0x10 | 0x20 | 0x40 | 0x10000 | 0x20000 = 0x3007E = 196734
-    assertThat(flags.getValue()).isEqualTo(196734L);
+    // 0x2 | 0x4 | 0x8 | 0x10 | 0x20 | 0x40 | 0x80 | 0x10000 | 0x20000 = 0x300FE = 196862
+    assertThat(flags.getValue()).isEqualTo(196862L);
   }
 
   @Test
-  void mutableFlagsOfParsesCorrectly() {
-    // tmfMPTCanMutateMetadata = 0x00010000 = 65536
-    MpTokenIssuanceCreateMutableFlags flags = MpTokenIssuanceCreateMutableFlags.of(65536L);
-    assertThat(flags.tmfMptCanMutateMetadata()).isTrue();
-    assertThat(flags.tmfMptCanMutateTransferFee()).isFalse();
-    assertThat(flags.tmfMptCanEnableCanLock()).isFalse();
+  void immutableFlagsOfParsesCorrectly() {
+    // lsifMPTMetadata = 0x00010000 = 65536
+    MpTokenIssuanceImmutableFlags flags = MpTokenIssuanceImmutableFlags.of(65536L);
+    assertThat(flags.lsifMptMetadata()).isTrue();
+    assertThat(flags.lsifMptTransferFee()).isFalse();
+    assertThat(flags.lsifMptCanLock()).isFalse();
   }
 
   @Test
@@ -195,8 +197,8 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
   }
 
   @Test
-  void mutableFlagsRejectsReservedBitOne() {
-    // bit 0x1 is reserved for lsfMPTLocked and must not appear in MutableFlags
+  void immutableFlagsRejectsReservedBitOne() {
+    // bit 0x1 is reserved for lsfMPTLocked and must not appear in ImmutableFlags
     assertThatThrownBy(() -> MpTokenIssuanceCreate.builder()
       .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
       .fee(XrpCurrencyAmount.ofDrops(15))
@@ -204,15 +206,15 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
       )
-      .mutableFlags(MpTokenIssuanceCreateMutableFlags.of(0x1L))
+      .immutableFlags(MpTokenIssuanceImmutableFlags.of(0x1L))
       .build()
     ).isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("reserved");
   }
 
   @Test
-  void mutableFlagsRejectsUnknownBits() {
-    // bit 0x80 is not a valid MutableFlags bit for MPTokenIssuanceCreate
+  void immutableFlagsRejectsUnknownBits() {
+    // bit 0x100 is not a valid ImmutableFlags bit for MPTokenIssuanceCreate
     assertThatThrownBy(() -> MpTokenIssuanceCreate.builder()
       .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
       .fee(XrpCurrencyAmount.ofDrops(15))
@@ -220,7 +222,7 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
       )
-      .mutableFlags(MpTokenIssuanceCreateMutableFlags.of(0x80L))
+      .immutableFlags(MpTokenIssuanceImmutableFlags.of(0x100L))
       .build()
     ).isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("invalid or reserved bits");

@@ -26,10 +26,8 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.MpTokenAuthorizeFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateMutableFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceMutableFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetMutableFlags;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
@@ -407,7 +405,8 @@ public class MpTokenIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
 
-    // Create an issuance declaring MPTokenMetadata and TransferFee as mutable
+    // Fields and flags are mutable by default under the opt-in-immutable model, so no declaration is
+    // needed at creation time for MPTokenMetadata, TransferFee, or lsfMPTCanLock to remain mutable.
     MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())
       .sequence(issuerAccountInfo.accountData().sequence())
@@ -416,12 +415,6 @@ public class MpTokenIT extends AbstractIT {
       .signingPublicKey(issuerKeyPair.publicKey())
       .flags(MpTokenIssuanceCreateFlags.builder()
         .tfMptCanTransfer(true)
-        .build()
-      )
-      .mutableFlags(MpTokenIssuanceCreateMutableFlags.builder()
-        .tmfMptCanMutateMetadata(true)
-        .tmfMptCanMutateTransferFee(true)
-        .tmfMptCanEnableCanLock(true)
         .build()
       )
       .mpTokenMetadata(MpTokenMetadata.of("464F4F"))
@@ -457,17 +450,11 @@ public class MpTokenIT extends AbstractIT {
       .mpTokenIssuanceId()
       .orElseThrow(() -> new RuntimeException("missing issuance ID in metadata"));
 
-    // Verify on-ledger MutableFlags reflect the declared mutability
+    // Nothing was locked at creation, so ImmutableFlags is absent.
     MpTokenIssuanceObject issuanceObject = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
     ).node();
-    assertThat(issuanceObject.mutableFlags()).isPresent();
-    MpTokenIssuanceMutableFlags lsmf = issuanceObject.mutableFlags()
-      .orElseThrow(RuntimeException::new);
-    assertThat(lsmf.lsmfMptCanMutateMetadata()).isTrue();
-    assertThat(lsmf.lsmfMptCanMutateTransferFee()).isTrue();
-    assertThat(lsmf.lsmfMptCanEnableCanLock()).isTrue();
-    assertThat(lsmf.lsmfMptCanEnableCanTransfer()).isFalse();
+    assertThat(issuanceObject.immutableFlags()).isEmpty();
     assertThat(issuanceObject.mpTokenMetadata()).contains(MpTokenMetadata.of("464F4F"));
 
     // Mutate MPTokenMetadata via MPTokenIssuanceSet
@@ -527,10 +514,6 @@ public class MpTokenIT extends AbstractIT {
       .signingPublicKey(issuerKeyPair.publicKey())
       .flags(MpTokenIssuanceCreateFlags.builder()
         .tfMptCanTransfer(true)
-        .build()
-      )
-      .mutableFlags(MpTokenIssuanceCreateMutableFlags.builder()
-        .tmfMptCanMutateTransferFee(true)
         .build()
       )
       .transferFee(TransferFee.ofPercent(BigDecimal.valueOf(0.01)))
@@ -606,7 +589,7 @@ public class MpTokenIT extends AbstractIT {
   }
 
   @Test
-  void createDynamicIssuanceThenToggleFlagViaMutableFlags()
+  void createDynamicIssuanceThenEnableCanLockViaSetFlags()
     throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
 
@@ -615,17 +598,13 @@ public class MpTokenIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
 
-    // Create issuance with lsfMPTCanLock declared mutable but NOT initially set
+    // lsfMPTCanLock is mutable by default; it does not need to be declared at creation time.
     MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())
       .sequence(issuerAccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
       .signingPublicKey(issuerKeyPair.publicKey())
-      .mutableFlags(MpTokenIssuanceCreateMutableFlags.builder()
-        .tmfMptCanEnableCanLock(true)
-        .build()
-      )
       .build();
 
     SingleSignedTransaction<MpTokenIssuanceCreate> signedCreate = signatureService.sign(
@@ -662,7 +641,7 @@ public class MpTokenIT extends AbstractIT {
     ).node();
     assertThat(beforeSet.flags().lsfMptCanLock()).isFalse();
 
-    // Set lsfMPTCanLock via MPTokenIssuanceSet.MutableFlags
+    // Enable lsfMPTCanLock via MPTokenIssuanceSet's standard Flags field.
     AccountInfoResult issuerInfoAfterCreate = this.scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
@@ -675,8 +654,8 @@ public class MpTokenIT extends AbstractIT {
       )
       .signingPublicKey(issuerKeyPair.publicKey())
       .mpTokenIssuanceId(mpTokenIssuanceId)
-      .mutableFlags(MpTokenIssuanceSetMutableFlags.builder()
-        .tmfMptSetCanLock(true)
+      .flags(MpTokenIssuanceSetFlags.builder()
+        .tfMptSetCanLock(true)
         .build()
       )
       .build();
@@ -705,10 +684,10 @@ public class MpTokenIT extends AbstractIT {
   }
 
   /**
-   * Verifies the one-way "enable-once" semantic introduced by rippled #7439 / XLS-94: a capability declared mutable at
-   * creation (here {@code CanTransfer}) starts disabled, can be enabled via {@code MPTokenIssuanceSet.MutableFlags},
-   * and stays enabled afterward. There is no corresponding "clear" flag in the protocol, so once enabled the capability
-   * cannot be disabled; the {@code CanEnable} declaration is not consumed and remains set on the issuance object.
+   * Verifies the one-way "enable-once" semantic on {@code MPTokenIssuanceSet}: a capability (here
+   * {@code CanTransfer}) starts disabled by default, can be enabled via the standard {@code Flags} field, and stays
+   * enabled afterward. There is no corresponding "clear" flag in the protocol, so once enabled the capability cannot
+   * be disabled; re-submitting the same enable flag is a harmless no-op.
    */
   @Test
   void createDynamicIssuanceThenEnableCanTransferIsOneWay()
@@ -720,17 +699,13 @@ public class MpTokenIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
 
-    // Create issuance with lsfMPTCanTransfer declared mutable but NOT initially set.
+    // lsfMPTCanTransfer is mutable by default; it does not need to be declared at creation time.
     MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())
       .sequence(issuerAccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
       .signingPublicKey(issuerKeyPair.publicKey())
-      .mutableFlags(MpTokenIssuanceCreateMutableFlags.builder()
-        .tmfMptCanEnableCanTransfer(true)
-        .build()
-      )
       .build();
 
     SingleSignedTransaction<MpTokenIssuanceCreate> signedCreate = signatureService.sign(
@@ -762,15 +737,14 @@ public class MpTokenIT extends AbstractIT {
       .mpTokenIssuanceId()
       .orElseThrow(() -> new RuntimeException("missing issuance ID"));
 
-    // Before the set: CanTransfer is disabled, but declared enable-able.
+    // Before the set: CanTransfer is disabled, and nothing has been locked.
     MpTokenIssuanceObject beforeSet = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
     ).node();
     assertThat(beforeSet.flags().lsfMptCanTransfer()).isFalse();
-    MpTokenIssuanceMutableFlags lsmfBefore = beforeSet.mutableFlags().orElseThrow(RuntimeException::new);
-    assertThat(lsmfBefore.lsmfMptCanEnableCanTransfer()).isTrue();
+    assertThat(beforeSet.immutableFlags()).isEmpty();
 
-    // Enable lsfMPTCanTransfer via MPTokenIssuanceSet.MutableFlags.
+    // Enable lsfMPTCanTransfer via MPTokenIssuanceSet's standard Flags field.
     AccountInfoResult issuerInfoAfterCreate = this.scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
@@ -783,8 +757,8 @@ public class MpTokenIT extends AbstractIT {
       )
       .signingPublicKey(issuerKeyPair.publicKey())
       .mpTokenIssuanceId(mpTokenIssuanceId)
-      .mutableFlags(MpTokenIssuanceSetMutableFlags.builder()
-        .tmfMptSetCanTransfer(true)
+      .flags(MpTokenIssuanceSetFlags.builder()
+        .tfMptSetCanTransfer(true)
         .build()
       )
       .build();
@@ -806,14 +780,202 @@ public class MpTokenIT extends AbstractIT {
       result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
     );
 
-    // After the set: CanTransfer is enabled, and the CanEnable declaration persists (the capability is now one-way;
-    // there is no protocol flag to clear it).
+    // After the set: CanTransfer is enabled.
     MpTokenIssuanceObject afterSet = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
     ).node();
     assertThat(afterSet.flags().lsfMptCanTransfer()).isTrue();
-    MpTokenIssuanceMutableFlags lsmfAfter = afterSet.mutableFlags().orElseThrow(RuntimeException::new);
-    assertThat(lsmfAfter.lsmfMptCanEnableCanTransfer()).isTrue();
+
+    // Re-submitting the same enable flag is a harmless no-op (there is no "clear" flag to disable it again).
+    AccountInfoResult issuerInfoAfterEnable = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenIssuanceSet reEnableTransfer = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterEnable.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterEnable.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .flags(MpTokenIssuanceSetFlags.builder()
+        .tfMptSetCanTransfer(true)
+        .build()
+      )
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedReEnable = signatureService.sign(
+      issuerKeyPair.privateKey(), reEnableTransfer
+    );
+    SubmitResult<MpTokenIssuanceSet> reEnableResult = xrplClient.submit(signedReEnable);
+    assertThat(reEnableResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+  }
+
+  /**
+   * Verifies the core new behavior introduced by the opt-in-immutable model: setting a bit in
+   * {@code MPTokenIssuanceSet.ImmutableFlags} permanently locks the corresponding capability, so that a subsequent
+   * attempt to enable it via the standard {@code Flags} field fails with {@code tecNO_PERMISSION}. Also verifies that
+   * bits set across multiple {@code MPTokenIssuanceSet} transactions merge together on the ledger object rather than
+   * overwriting one another.
+   */
+  @Test
+  void createDynamicIssuanceThenLockCapabilityViaImmutableFlags()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedCreate = signatureService.sign(
+      issuerKeyPair.privateKey(), issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> createResult = xrplClient.submit(signedCreate);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(createResult.engineResult()),
+      "Skipping: DynamicMPT amendment not enabled on this node"
+    );
+    assertThat(createResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedCreate.hash(),
+        createResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("missing issuance ID"));
+
+    // Lock lsfMPTCanClawback via MPTokenIssuanceSet.ImmutableFlags.
+    AccountInfoResult issuerInfoAfterCreate = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenIssuanceSet lockCanClawback = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterCreate.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterCreate.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .immutableFlags(MpTokenIssuanceImmutableFlags.builder()
+        .lsifMptCanClawback(true)
+        .build()
+      )
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedLock = signatureService.sign(
+      issuerKeyPair.privateKey(), lockCanClawback
+    );
+    SubmitResult<MpTokenIssuanceSet> lockResult = xrplClient.submit(signedLock);
+    assertThat(lockResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedLock.hash(),
+        lockResult.validatedLedgerIndex(),
+        lockCanClawback.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        lockCanClawback.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceObject afterLock = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    assertThat(afterLock.immutableFlags()).isPresent();
+    assertThat(afterLock.immutableFlags().orElseThrow(RuntimeException::new).lsifMptCanClawback()).isTrue();
+
+    // Attempting to enable lsfMPTCanClawback now fails, since it has been permanently locked.
+    AccountInfoResult issuerInfoAfterLock = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenIssuanceSet enableCanClawback = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterLock.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterLock.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .flags(MpTokenIssuanceSetFlags.builder()
+        .tfMptSetCanClawback(true)
+        .build()
+      )
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedEnable = signatureService.sign(
+      issuerKeyPair.privateKey(), enableCanClawback
+    );
+    SubmitResult<MpTokenIssuanceSet> enableResult = xrplClient.submit(signedEnable);
+    assertThat(enableResult.engineResult()).isEqualTo("tecNO_PERMISSION");
+
+    // Locking a second, distinct capability merges with (rather than overwrites) the first.
+    AccountInfoResult issuerInfoAfterFailedEnable = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenIssuanceSet lockCanTrade = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterFailedEnable.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterFailedEnable.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .immutableFlags(MpTokenIssuanceImmutableFlags.builder()
+        .lsifMptCanTrade(true)
+        .build()
+      )
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedLockCanTrade = signatureService.sign(
+      issuerKeyPair.privateKey(), lockCanTrade
+    );
+    SubmitResult<MpTokenIssuanceSet> lockCanTradeResult = xrplClient.submit(signedLockCanTrade);
+    assertThat(lockCanTradeResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedLockCanTrade.hash(),
+        lockCanTradeResult.validatedLedgerIndex(),
+        lockCanTrade.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        lockCanTrade.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceObject afterSecondLock = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    MpTokenIssuanceImmutableFlags mergedFlags = afterSecondLock.immutableFlags()
+      .orElseThrow(RuntimeException::new);
+    assertThat(mergedFlags.lsifMptCanClawback()).isTrue();
+    assertThat(mergedFlags.lsifMptCanTrade()).isTrue();
   }
 
   @Test

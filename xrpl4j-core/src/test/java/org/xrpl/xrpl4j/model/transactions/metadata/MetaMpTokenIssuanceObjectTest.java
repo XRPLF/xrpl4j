@@ -8,7 +8,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceMutableFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -56,10 +56,10 @@ class MetaMpTokenIssuanceObjectTest extends AbstractJsonTest {
   }
 
   @Test
-  void testJsonWithMutableFlags() throws JsonProcessingException, JSONException {
-    MpTokenIssuanceMutableFlags lsmf = MpTokenIssuanceMutableFlags.builder()
-      .lsmfMptCanEnableCanLock(true)
-      .lsmfMptCanMutateMetadata(true)
+  void testJsonWithImmutableFlags() throws JsonProcessingException, JSONException {
+    MpTokenIssuanceImmutableFlags lsif = MpTokenIssuanceImmutableFlags.builder()
+      .lsifMptCanLock(true)
+      .lsifMptMetadata(true)
       .build();
 
     MetaMpTokenIssuanceObject object = ImmutableMetaMpTokenIssuanceObject.builder()
@@ -69,7 +69,7 @@ class MetaMpTokenIssuanceObjectTest extends AbstractJsonTest {
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(420))
       .sequence(UnsignedInteger.valueOf(7))
       .ownerNode("0")
-      .mutableFlags(lsmf)
+      .immutableFlags(lsif)
       .build();
 
     String json = "{\n" +
@@ -79,15 +79,15 @@ class MetaMpTokenIssuanceObjectTest extends AbstractJsonTest {
       "  \"PreviousTxnLgrSeq\": 420,\n" +
       "  \"Sequence\": 7,\n" +
       "  \"OwnerNode\": \"0\",\n" +
-      "  \"MutableFlags\": " + lsmf.getValue() + "\n" +
+      "  \"ImmutableFlags\": " + lsif.getValue() + "\n" +
       "}";
 
     assertCanSerializeAndDeserialize(object, json, MetaMpTokenIssuanceObject.class);
-    assertThat(object.mutableFlags()).isPresent().get().isEqualTo(lsmf);
+    assertThat(object.immutableFlags()).isPresent().get().isEqualTo(lsif);
   }
 
   @Test
-  void testMutableFlagsIsOptional() {
+  void testImmutableFlagsIsOptional() {
     MetaMpTokenIssuanceObject object = ImmutableMetaMpTokenIssuanceObject.builder()
       .flags(MpTokenIssuanceFlags.of(0))
       .issuer(Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c"))
@@ -97,6 +97,6 @@ class MetaMpTokenIssuanceObjectTest extends AbstractJsonTest {
       .ownerNode("0")
       .build();
 
-    assertThat(object.mutableFlags()).isEmpty();
+    assertThat(object.immutableFlags()).isEmpty();
   }
 }

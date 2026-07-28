@@ -75,15 +75,12 @@ jobs:
           distribution: 'temurin'
           java-version: '8'
           cache: 'maven'
-      - name: Log in to the private GitLab registry
-        if: ${{ needs.resolve_xrpld_image.outputs.is_private == 'true' }}
-        env:
-          GITLAB_REGISTRY_USERNAME: ${{ vars.GITLAB_REGISTRY_USERNAME }}
-          GITLAB_REGISTRY_TOKEN: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
-        run: |
-          printf '%s' "${GITLAB_REGISTRY_TOKEN}" | docker login registry.gitlab.com \
-            --username "${GITLAB_REGISTRY_USERNAME}" \
-            --password-stdin
+      - name: Log in to private registry
+        uses: ./.github/actions/xrpld-login
+        with:
+          is_private: ${{ needs.resolve_xrpld_image.outputs.is_private }}
+          username: ${{ vars.GITLAB_REGISTRY_USERNAME }}
+          token: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
       - name: Build
         run: mvn clean install
       - name: Upload to Codecov
@@ -107,15 +104,12 @@ jobs:
           distribution: 'semeru'
           java-version: '8'
           cache: 'maven'
-      - name: Log in to the private GitLab registry
-        if: ${{ needs.resolve_xrpld_image.outputs.is_private == 'true' }}
-        env:
-          GITLAB_REGISTRY_USERNAME: ${{ vars.GITLAB_REGISTRY_USERNAME }}
-          GITLAB_REGISTRY_TOKEN: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
-        run: |
-          printf '%s' "${GITLAB_REGISTRY_TOKEN}" | docker login registry.gitlab.com \
-            --username "${GITLAB_REGISTRY_USERNAME}" \
-            --password-stdin
+      - name: Log in to private registry
+        uses: ./.github/actions/xrpld-login
+        with:
+          is_private: ${{ needs.resolve_xrpld_image.outputs.is_private }}
+          username: ${{ vars.GITLAB_REGISTRY_USERNAME }}
+          token: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
       - name: Build
         run: mvn clean install
 
@@ -134,15 +128,12 @@ jobs:
           distribution: 'zulu'
           java-version: '8'
           cache: 'maven'
-      - name: Log in to the private GitLab registry
-        if: ${{ needs.resolve_xrpld_image.outputs.is_private == 'true' }}
-        env:
-          GITLAB_REGISTRY_USERNAME: ${{ vars.GITLAB_REGISTRY_USERNAME }}
-          GITLAB_REGISTRY_TOKEN: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
-        run: |
-          printf '%s' "${GITLAB_REGISTRY_TOKEN}" | docker login registry.gitlab.com \
-            --username "${GITLAB_REGISTRY_USERNAME}" \
-            --password-stdin
+      - name: Log in to private registry
+        uses: ./.github/actions/xrpld-login
+        with:
+          is_private: ${{ needs.resolve_xrpld_image.outputs.is_private }}
+          username: ${{ vars.GITLAB_REGISTRY_USERNAME }}
+          token: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
       - name: Build
         run: mvn clean install
 
@@ -165,15 +156,12 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
           cache: 'maven'
-      - name: Log in to the private GitLab registry
-        if: ${{ needs.resolve_xrpld_image.outputs.is_private == 'true' }}
-        env:
-          GITLAB_REGISTRY_USERNAME: ${{ vars.GITLAB_REGISTRY_USERNAME }}
-          GITLAB_REGISTRY_TOKEN: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
-        run: |
-          printf '%s' "${GITLAB_REGISTRY_TOKEN}" | docker login registry.gitlab.com \
-            --username "${GITLAB_REGISTRY_USERNAME}" \
-            --password-stdin
+      - name: Log in to private registry
+        uses: ./.github/actions/xrpld-login
+        with:
+          is_private: ${{ needs.resolve_xrpld_image.outputs.is_private }}
+          username: ${{ vars.GITLAB_REGISTRY_USERNAME }}
+          token: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
       - name: Build
         run: mvn clean install -Dmaven.javadoc.skip=true
 
@@ -191,15 +179,12 @@ jobs:
           distribution: 'temurin'
           java-version: 21
           cache: 'maven'
-      - name: Log in to the private GitLab registry
-        if: ${{ needs.resolve_xrpld_image.outputs.is_private == 'true' }}
-        env:
-          GITLAB_REGISTRY_USERNAME: ${{ vars.GITLAB_REGISTRY_USERNAME }}
-          GITLAB_REGISTRY_TOKEN: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
-        run: |
-          printf '%s' "${GITLAB_REGISTRY_TOKEN}" | docker login registry.gitlab.com \
-            --username "${GITLAB_REGISTRY_USERNAME}" \
-            --password-stdin
+      - name: Log in to private registry
+        uses: ./.github/actions/xrpld-login
+        with:
+          is_private: ${{ needs.resolve_xrpld_image.outputs.is_private }}
+          username: ${{ vars.GITLAB_REGISTRY_USERNAME }}
+          token: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
       # Maven install with JVM locale = de_DE
       - name: Build
         run: mvn clean install -Dmaven.javadoc.skip=true -DargLine="-Duser.language=de -Duser.country=DE"
@@ -222,15 +207,12 @@ jobs:
       # Set up Android
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
-      - name: Log in to the private GitLab registry
-        if: ${{ needs.resolve_xrpld_image.outputs.is_private == 'true' }}
-        env:
-          GITLAB_REGISTRY_USERNAME: ${{ vars.GITLAB_REGISTRY_USERNAME }}
-          GITLAB_REGISTRY_TOKEN: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
-        run: |
-          printf '%s' "${GITLAB_REGISTRY_TOKEN}" | docker login registry.gitlab.com \
-            --username "${GITLAB_REGISTRY_USERNAME}" \
-            --password-stdin
+      - name: Log in to private registry
+        uses: ./.github/actions/xrpld-login
+        with:
+          is_private: ${{ needs.resolve_xrpld_image.outputs.is_private }}
+          username: ${{ vars.GITLAB_REGISTRY_USERNAME }}
+          token: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
       - name: Build
         run: mvn clean install -Dmaven.javadoc.skip=true -Pandroid
 

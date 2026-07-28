@@ -274,7 +274,8 @@ registry, run `docker login` first so Testcontainers can reuse the credentials w
 
 In CI the image is selected from a committed config file, `.github/xrpld-image.env`. Set `XRPLD_PRIVATE_VERSION` to a
 version (without the `private-` prefix, for example `XRPLD_PRIVATE_VERSION=3.3.0-rc2`) and every workflow run — including
-pull request runs — resolves the private image, logs into the GitLab registry, and exports `XRPLD_DOCKER_IMAGE` to the
+pull request runs — resolves the private image, logs into the GitLab registry (via the `.github/actions/xrpld-login`
+composite action, shared by all of those jobs), and exports `XRPLD_DOCKER_IMAGE` to the
 local-integration-test jobs. Leave it empty to use the default public image. Private pulls require the repository
 variable `GITLAB_REGISTRY_USERNAME` and repository secret `GITLAB_REGISTRY_TOKEN` (a GitLab deploy token with
 `read_registry` access); these are not exposed to fork pull requests, so a private version must be tested from a branch

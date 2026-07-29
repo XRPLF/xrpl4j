@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.SponsorshipSetFlags;
 
@@ -42,7 +43,8 @@ import java.util.Optional;
  *
  * <p>The sponsor can specify:</p>
  * <ul>
- *   <li>{@link #feeAmount()} - Total amount of XRP allocated for transaction fees</li>
+ *   <li>{@link #feeAmountDelta()} - Signed delta (in drops) to apply to the sponsorship's fee
+ *       allocation; positive to top up, negative to draw down</li>
  *   <li>{@link #maxFee()} - Maximum fee per transaction that can be drawn from the allocation</li>
  *   <li>{@link #remainingOwnerCount()} - Number of reserve units to sponsor for the sponsee</li>
  * </ul>
@@ -100,13 +102,15 @@ public interface SponsorshipSet extends Transaction {
   Optional<Address> counterpartySponsor();
 
   /**
-   * The total amount of XRP (in drops) to allocate for transaction fees. The sponsee can draw from this
-   * amount to pay transaction fees, up to the {@link #maxFee()} limit per transaction.
+   * A signed delta (in drops) to apply to the sponsorship's fee allocation. A positive value tops up the
+   * allocation the sponsee can draw from to pay transaction fees; a negative value draws it down. The delta
+   * is applied to whatever value the {@link org.xrpl.xrpl4j.model.ledger.SponsorshipObject} currently holds,
+   * rather than replacing it outright.
    *
-   * @return An {@link Optional} {@link XrpCurrencyAmount} representing the fee allocation.
+   * @return An {@link Optional} {@link XrpCurrencyAmount} representing the fee allocation delta.
    */
-  @JsonProperty("FeeAmount")
-  Optional<XrpCurrencyAmount> feeAmount();
+  @JsonProperty("FeeAmountDelta")
+  Optional<XrpCurrencyAmount> feeAmountDelta();
 
   /**
    * The maximum fee (in drops) that can be charged for a single transaction using this sponsorship.
@@ -137,12 +141,13 @@ public interface SponsorshipSet extends Transaction {
    *   <li>Only the sponsor (i.e. when {@link #sponsee()} is set) may create or update the object; when
    *       {@link #counterpartySponsor()} is set instead, {@link SponsorshipSetFlags#tfDeleteObject()} must be
    *       set.</li>
-   *   <li>When {@link SponsorshipSetFlags#tfDeleteObject()} is set, none of {@link #feeAmount()},
+   *   <li>When {@link SponsorshipSetFlags#tfDeleteObject()} is set, none of {@link #feeAmountDelta()},
    *       {@link #maxFee()}, or {@link #remainingOwnerCount()} may be present, and none of the RequireSignFor* /
    *       ClearRequireSignFor* flags may be set.</li>
    *   <li>The RequireSignForFee/ClearRequireSignForFee flags are mutually exclusive, as are the
    *       RequireSignForReserve/ClearRequireSignForReserve flags.</li>
-   *   <li>{@link #feeAmount()} and {@link #maxFee()}, if present, must not be negative.</li>
+   *   <li>{@link #feeAmountDelta()}, if present, must not be zero (it is a signed delta, so negative values
+   *       are permitted). {@link #maxFee()}, if present, must not be negative.</li>
    * </ul>
    *
    * @throws IllegalStateException if validation fails.
@@ -181,8 +186,8 @@ public interface SponsorshipSet extends Transaction {
         "SponsorshipSet must not set any RequireSignFor*/ClearRequireSignFor* flags when tfDeleteObject is set"
       );
       Preconditions.checkState(
-        !feeAmount().isPresent() && !maxFee().isPresent() && !remainingOwnerCount().isPresent(),
-        "SponsorshipSet must not include FeeAmount, MaxFee, or RemainingOwnerCount when tfDeleteObject is set"
+        !feeAmountDelta().isPresent() && !maxFee().isPresent() && !remainingOwnerCount().isPresent(),
+        "SponsorshipSet must not include FeeAmountDelta, MaxFee, or RemainingOwnerCount when tfDeleteObject is set"
       );
     } else {
       Preconditions.checkState(
@@ -191,7 +196,10 @@ public interface SponsorshipSet extends Transaction {
           "(set tfDeleteObject)"
       );
 
-      feeAmount().ifPresent(amount -> Preconditions.checkState(!amount.isNegative(), "FeeAmount must not be negative"));
+      feeAmountDelta().ifPresent(amount -> Preconditions.checkState(
+        !amount.value().equals(UnsignedLong.ZERO),
+        "FeeAmountDelta must not be zero"
+      ));
       maxFee().ifPresent(amount -> Preconditions.checkState(!amount.isNegative(), "MaxFee must not be negative"));
     }
   }

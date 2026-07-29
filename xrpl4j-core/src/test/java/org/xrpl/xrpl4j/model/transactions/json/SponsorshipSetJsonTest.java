@@ -38,13 +38,13 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
   }
 
   @Test
-  public void testSponsorshipSetWithFeeAmountJson() throws JsonProcessingException, JSONException {
+  public void testSponsorshipSetWithFeeAmountDeltaJson() throws JsonProcessingException, JSONException {
     SponsorshipSet sponsorshipSet = SponsorshipSet.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
-      .feeAmount(XrpCurrencyAmount.ofDrops(1000000))
+      .feeAmountDelta(XrpCurrencyAmount.ofDrops(1000000))
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
@@ -56,7 +56,7 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
       "  \"Fee\": \"10\"," +
       "  \"Sequence\": 1," +
       "  \"Sponsee\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\"," +
-      "  \"FeeAmount\": \"1000000\"," +
+      "  \"FeeAmountDelta\": \"1000000\"," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
 
@@ -70,7 +70,7 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
-      .feeAmount(XrpCurrencyAmount.ofDrops(1000000))
+      .feeAmountDelta(XrpCurrencyAmount.ofDrops(1000000))
       .maxFee(XrpCurrencyAmount.ofDrops(100))
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
@@ -83,7 +83,7 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
       "  \"Fee\": \"10\"," +
       "  \"Sequence\": 1," +
       "  \"Sponsee\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\"," +
-      "  \"FeeAmount\": \"1000000\"," +
+      "  \"FeeAmountDelta\": \"1000000\"," +
       "  \"MaxFee\": \"100\"," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
@@ -124,7 +124,7 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
-      .feeAmount(XrpCurrencyAmount.ofDrops(1000000))
+      .feeAmountDelta(XrpCurrencyAmount.ofDrops(1000000))
       .maxFee(XrpCurrencyAmount.ofDrops(100))
       .remainingOwnerCount(UnsignedInteger.valueOf(5))
       .signingPublicKey(
@@ -138,7 +138,7 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
       "  \"Fee\": \"10\"," +
       "  \"Sequence\": 1," +
       "  \"Sponsee\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\"," +
-      "  \"FeeAmount\": \"1000000\"," +
+      "  \"FeeAmountDelta\": \"1000000\"," +
       "  \"MaxFee\": \"100\"," +
       "  \"RemainingOwnerCount\": 5," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +

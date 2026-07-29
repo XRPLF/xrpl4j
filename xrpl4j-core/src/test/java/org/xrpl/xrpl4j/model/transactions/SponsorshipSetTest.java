@@ -16,7 +16,7 @@ public class SponsorshipSetTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
-      .feeAmount(XrpCurrencyAmount.ofDrops(1000000))
+      .feeAmountDelta(XrpCurrencyAmount.ofDrops(1000000))
       .maxFee(XrpCurrencyAmount.ofDrops(100))
       .remainingOwnerCount(UnsignedInteger.valueOf(5))
       .build();
@@ -110,18 +110,18 @@ public class SponsorshipSetTest {
   }
 
   @Test
-  public void deleteObjectWithFeeAmountFails() {
+  public void deleteObjectWithFeeAmountDeltaFails() {
     assertThatThrownBy(() ->
       SponsorshipSet.builder()
         .account(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
         .fee(XrpCurrencyAmount.ofDrops(10))
         .sequence(UnsignedInteger.ONE)
         .counterpartySponsor(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-        .feeAmount(XrpCurrencyAmount.ofDrops(1000000))
+        .feeAmountDelta(XrpCurrencyAmount.ofDrops(1000000))
         .flags(SponsorshipSetFlags.builder().tfDeleteObject().build())
         .build()
     ).isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("must not include FeeAmount, MaxFee, or RemainingOwnerCount");
+      .hasMessageContaining("must not include FeeAmountDelta, MaxFee, or RemainingOwnerCount");
   }
 
   @Test
@@ -248,7 +248,7 @@ public class SponsorshipSetTest {
         .flags(SponsorshipSetFlags.builder().tfDeleteObject().build())
         .build()
     ).isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("must not include FeeAmount, MaxFee, or RemainingOwnerCount");
+      .hasMessageContaining("must not include FeeAmountDelta, MaxFee, or RemainingOwnerCount");
   }
 
   @Test
@@ -263,21 +263,35 @@ public class SponsorshipSetTest {
         .flags(SponsorshipSetFlags.builder().tfDeleteObject().build())
         .build()
     ).isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("must not include FeeAmount, MaxFee, or RemainingOwnerCount");
+      .hasMessageContaining("must not include FeeAmountDelta, MaxFee, or RemainingOwnerCount");
   }
 
   @Test
-  public void negativeFeeAmountFails() {
+  public void negativeFeeAmountDeltaSucceeds() {
+    SponsorshipSet set = SponsorshipSet.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .feeAmountDelta(XrpCurrencyAmount.ofDrops(-1))
+      .build();
+
+    assertThat(set.feeAmountDelta()).isPresent().get()
+      .isEqualTo(XrpCurrencyAmount.ofDrops(-1));
+  }
+
+  @Test
+  public void zeroFeeAmountDeltaFails() {
     assertThatThrownBy(() ->
       SponsorshipSet.builder()
         .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .fee(XrpCurrencyAmount.ofDrops(10))
         .sequence(UnsignedInteger.ONE)
         .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
-        .feeAmount(XrpCurrencyAmount.ofDrops(-1))
+        .feeAmountDelta(XrpCurrencyAmount.ofDrops(0))
         .build()
     ).isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("FeeAmount must not be negative");
+      .hasMessageContaining("FeeAmountDelta must not be zero");
   }
 
   @Test

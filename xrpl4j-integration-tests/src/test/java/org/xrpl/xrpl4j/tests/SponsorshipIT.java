@@ -140,7 +140,7 @@ public class SponsorshipIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .sequence(aliceAccountInfo.accountData().sequence())
         .sponsee(bobAddress)
-        .feeAmount(feeAmount)
+        .feeAmountDelta(feeAmount)
         .maxFee(XrpCurrencyAmount.ofDrops(1000)) // Max 1000 drops per tx
         .signingPublicKey(aliceKeyPair.publicKey())
         .build();
@@ -262,7 +262,7 @@ public class SponsorshipIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .sequence(sponsorAccountInfo.accountData().sequence())
         .sponsee(sponseeAddress)
-        .feeAmount(feeAmount)
+        .feeAmountDelta(feeAmount)
         .signingPublicKey(sponsorKeyPair.publicKey())
         .build();
 
@@ -964,7 +964,7 @@ public class SponsorshipIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .sequence(sponsorAccountInfo.accountData().sequence())
         .sponsee(sponseeAddress)
-        .feeAmount(XrpCurrencyAmount.ofDrops(500000))
+        .feeAmountDelta(XrpCurrencyAmount.ofDrops(500000))
         .flags(SponsorshipSetFlags.builder().tfRequireSignForFee().build())
         .signingPublicKey(sponsorKeyPair.publicKey())
         .build();
@@ -997,7 +997,7 @@ public class SponsorshipIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .sequence(sponsorAccountInfo.accountData().sequence())
         .sponsee(sponseeAddress)
-        .feeAmount(XrpCurrencyAmount.ofDrops(500000))
+        .feeAmountDelta(XrpCurrencyAmount.ofDrops(500000))
         .signingPublicKey(sponsorKeyPair.publicKey())
         .build();
 
@@ -1053,7 +1053,7 @@ public class SponsorshipIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .sequence(sponsorAccountInfo.accountData().sequence())
         .sponsee(sponseeAddress)
-        .feeAmount(XrpCurrencyAmount.ofDrops(100000))
+        .feeAmountDelta(XrpCurrencyAmount.ofDrops(100000))
         .signingPublicKey(sponsorKeyPair.publicKey())
         .build();
 

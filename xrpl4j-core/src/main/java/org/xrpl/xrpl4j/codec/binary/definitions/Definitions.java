@@ -79,6 +79,16 @@ public interface Definitions {
   Map<String, Integer> transactionResults();
 
   /**
+   * Permission values mappings (permission value to ordinal value).
+   * This field is not present in the generated definitions.json file and is populated
+   * programmatically by {@link DefaultDefinitionsProvider}.
+   *
+   * @return {@link Map} keyed by {@link String} with {@link Integer} values for all permission values.
+   */
+  @JsonProperty("PERMISSION_VALUES")
+  Map<String, Integer> permissionValues();
+
+  /**
    * AccountSet flag definitions (flag name to integer value).
    *
    * @return A {@link Map} of AccountSet flag names to their integer values.

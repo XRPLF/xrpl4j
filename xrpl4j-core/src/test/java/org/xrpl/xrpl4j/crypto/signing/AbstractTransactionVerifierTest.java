@@ -105,9 +105,9 @@ public class AbstractTransactionVerifierTest {
     };
   }
 
-  ///////////////////
+  // /////////////////
   // verify (signatureWithKeyMetadata, transaction)
-  ///////////////////
+  // /////////////////
 
   @Test
   void verifyWithNullMetadata() {
@@ -145,9 +145,9 @@ public class AbstractTransactionVerifierTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // verify (signatureWithKeyMetadata, transaction)
-  ///////////////////
+  // /////////////////
 
   @Test
   void verifyMultiWithNullSet() {
@@ -197,9 +197,9 @@ public class AbstractTransactionVerifierTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // edDsaVerify
-  ///////////////////
+  // /////////////////
 
   @Test
   void edDsaVerify() {
@@ -211,9 +211,9 @@ public class AbstractTransactionVerifierTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // ecDsaVerify
-  ///////////////////
+  // /////////////////
 
   @Test
   void ecDsaVerify() {

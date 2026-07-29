@@ -53,6 +53,9 @@ public interface MetaLedgerEntryType {
   MetaLedgerEntryType MP_TOKEN = MetaLedgerEntryType.of("MPToken");
 
   @Beta
+  MetaLedgerEntryType DELEGATE = MetaLedgerEntryType.of("Delegate");
+
+  @Beta
   MetaLedgerEntryType VAULT = MetaLedgerEntryType.of("Vault");
 
   @Beta
@@ -126,6 +129,8 @@ public interface MetaLedgerEntryType {
         return MetaMpTokenObject.class;
       case "PermissionedDomain":
         return MetaPermissionedDomainObject.class;
+      case "Delegate":
+        return MetaDelegateObject.class;
       case "Vault":
         return MetaVaultObject.class;
       case "LoanBroker":

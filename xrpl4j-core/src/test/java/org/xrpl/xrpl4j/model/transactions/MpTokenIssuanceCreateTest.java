@@ -132,22 +132,22 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
   @Test
   void mutableFlagsBuilderSetsCorrectBits() {
     MpTokenIssuanceCreateMutableFlags flags = MpTokenIssuanceCreateMutableFlags.builder()
-      .tmfMptCanMutateCanLock(true)
-      .tmfMptCanMutateRequireAuth(true)
-      .tmfMptCanMutateCanEscrow(true)
-      .tmfMptCanMutateCanTrade(true)
-      .tmfMptCanMutateCanTransfer(true)
-      .tmfMptCanMutateCanClawback(true)
+      .tmfMptCanEnableCanLock(true)
+      .tmfMptCanEnableRequireAuth(true)
+      .tmfMptCanEnableCanEscrow(true)
+      .tmfMptCanEnableCanTrade(true)
+      .tmfMptCanEnableCanTransfer(true)
+      .tmfMptCanEnableCanClawback(true)
       .tmfMptCanMutateMetadata(true)
       .tmfMptCanMutateTransferFee(true)
       .build();
 
-    assertThat(flags.tmfMptCanMutateCanLock()).isTrue();
-    assertThat(flags.tmfMptCanMutateRequireAuth()).isTrue();
-    assertThat(flags.tmfMptCanMutateCanEscrow()).isTrue();
-    assertThat(flags.tmfMptCanMutateCanTrade()).isTrue();
-    assertThat(flags.tmfMptCanMutateCanTransfer()).isTrue();
-    assertThat(flags.tmfMptCanMutateCanClawback()).isTrue();
+    assertThat(flags.tmfMptCanEnableCanLock()).isTrue();
+    assertThat(flags.tmfMptCanEnableRequireAuth()).isTrue();
+    assertThat(flags.tmfMptCanEnableCanEscrow()).isTrue();
+    assertThat(flags.tmfMptCanEnableCanTrade()).isTrue();
+    assertThat(flags.tmfMptCanEnableCanTransfer()).isTrue();
+    assertThat(flags.tmfMptCanEnableCanClawback()).isTrue();
     assertThat(flags.tmfMptCanMutateMetadata()).isTrue();
     assertThat(flags.tmfMptCanMutateTransferFee()).isTrue();
 
@@ -161,7 +161,7 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
     MpTokenIssuanceCreateMutableFlags flags = MpTokenIssuanceCreateMutableFlags.of(65536L);
     assertThat(flags.tmfMptCanMutateMetadata()).isTrue();
     assertThat(flags.tmfMptCanMutateTransferFee()).isFalse();
-    assertThat(flags.tmfMptCanMutateCanLock()).isFalse();
+    assertThat(flags.tmfMptCanEnableCanLock()).isFalse();
   }
 
   @Test

@@ -113,6 +113,10 @@ public interface MpTokenIssuanceCreate extends Transaction {
   @Value.Check
   default void check() {
     immutableFlags().ifPresent(mf -> Preconditions.checkState(
+      mf.getValue() != 0,
+      "ImmutableFlags must not be 0."
+    ));
+    immutableFlags().ifPresent(mf -> Preconditions.checkState(
       (mf.getValue() & ~MpTokenIssuanceImmutableFlags.VALID_MASK) == 0,
       "ImmutableFlags contains invalid or reserved bits. " +
         "Bit 0x1 is reserved (lsfMPTLocked) and must not be set in ImmutableFlags."

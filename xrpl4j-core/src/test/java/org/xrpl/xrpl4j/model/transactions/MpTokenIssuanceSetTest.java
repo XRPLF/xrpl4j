@@ -210,6 +210,23 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
   }
 
   @Test
+  void capabilityFlagAndHolderMutuallyExclusive() {
+    assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
+      .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
+      .sequence(UnsignedInteger.valueOf(335))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
+      )
+      .flags(MpTokenIssuanceSetFlags.builder().tfMptSetCanLock(true).build())
+      .holder(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Holder must not be present");
+  }
+
+  @Test
   void immutableFlagsAndHolderMutuallyExclusive() {
     assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
       .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))

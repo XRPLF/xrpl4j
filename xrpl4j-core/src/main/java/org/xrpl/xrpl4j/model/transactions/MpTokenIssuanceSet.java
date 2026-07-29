@@ -51,7 +51,8 @@ public interface MpTokenIssuanceSet extends Transaction {
   /**
    * An optional XRPL Address of an individual token holder balance to lock/unlock. If omitted, this transaction will
    * apply to all accounts holding MPTs. Mutually exclusive with {@link #immutableFlags()},
-   * {@link #mpTokenMetadata()}, {@link #transferFee()}, and {@link #domainId()}.
+   * {@link #mpTokenMetadata()}, {@link #transferFee()}, the {@code tfMPTSet*} capability-setting flags on
+   * {@link #flags()}, and {@link #domainId()}.
    *
    * @return An optionally-present {@link Address}.
    */
@@ -74,8 +75,8 @@ public interface MpTokenIssuanceSet extends Transaction {
   /**
    * New metadata to replace the existing {@code MPTokenMetadata} value. Setting an empty value removes the field.
    * Fails unless the field is still mutable (i.e. {@code lsifMPTMetadata} has not been set). Mutually exclusive with
-   * {@link #holder()} and {@link #flags()} ({@code tfMPTLock}/{@code tfMPTUnlock}).
-   * Requires the {@code DynamicMPT} amendment.
+   * {@link #holder()} and {@link #flags()} ({@code tfMPTLock}/{@code tfMPTUnlock}/{@code tfMPTSet*} capability
+   * flags). Requires the {@code DynamicMPT} amendment.
    *
    * @return An optionally-present {@link MpTokenMetadata}.
    */
@@ -85,7 +86,8 @@ public interface MpTokenIssuanceSet extends Transaction {
   /**
    * New transfer fee value. Setting to zero removes the field. Fails unless the field is still mutable (i.e.
    * {@code lsifMPTTransferFee} has not been set). Mutually exclusive with {@link #holder()} and {@link #flags()}
-   * ({@code tfMPTLock}/{@code tfMPTUnlock}). Requires the {@code DynamicMPT} amendment.
+   * ({@code tfMPTLock}/{@code tfMPTUnlock}/{@code tfMPTSet*} capability flags). Requires the {@code DynamicMPT}
+   * amendment.
    *
    * @return An optionally-present {@link TransferFee}.
    */
@@ -112,9 +114,18 @@ public interface MpTokenIssuanceSet extends Transaction {
    */
   @Value.Check
   default void check() {
+    boolean hasCapabilitySettingFlag = flags().tfMptSetCanLock() ||
+      flags().tfMptSetRequireAuth() ||
+      flags().tfMptSetCanEscrow() ||
+      flags().tfMptSetCanTrade() ||
+      flags().tfMptSetCanTransfer() ||
+      flags().tfMptSetCanClawback() ||
+      flags().tfMptSetCanHoldConfidentialBalance();
+
     boolean hasDynamicField = immutableFlags().isPresent() ||
       mpTokenMetadata().isPresent() ||
-      transferFee().isPresent();
+      transferFee().isPresent() ||
+      hasCapabilitySettingFlag;
 
     immutableFlags().ifPresent(mf -> {
       long val = mf.getValue();

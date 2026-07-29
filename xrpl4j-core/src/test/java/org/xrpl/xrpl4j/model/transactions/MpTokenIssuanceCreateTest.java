@@ -229,6 +229,21 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
   }
 
   @Test
+  void immutableFlagsRejectsZero() {
+    assertThatThrownBy(() -> MpTokenIssuanceCreate.builder()
+      .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(321))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
+      )
+      .immutableFlags(MpTokenIssuanceImmutableFlags.of(0L))
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("ImmutableFlags must not be 0");
+  }
+
+  @Test
   void builderFromCopiesFlagsCorrectly() {
     MpTokenIssuanceCreate original = MpTokenIssuanceCreate.builder()
       .account(Address.of("rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ"))

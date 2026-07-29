@@ -1,0 +1,25 @@
+name: 'Log in to private xrpld registry'
+description: 'Logs in to the private GitLab registry if a private xrpld image is in use'
+inputs:
+  is_private:
+    description: 'Whether a private image is being used'
+    required: true
+  username:
+    description: 'GitLab registry username'
+    required: true
+  token:
+    description: 'GitLab registry token'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Log in to the private GitLab registry
+      if: ${{ inputs.is_private == 'true' }}
+      shell: bash
+      env:
+        GITLAB_REGISTRY_USERNAME: ${{ inputs.username }}
+        GITLAB_REGISTRY_TOKEN: ${{ inputs.token }}
+      run: |
+        printf '%s' "${GITLAB_REGISTRY_TOKEN}" | docker login registry.gitlab.com \
+          --username "${GITLAB_REGISTRY_USERNAME}" \
+          --password-stdin

@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.primitives.UnsignedInteger;
@@ -58,6 +59,7 @@ public interface Transaction {
       .put(ImmutableCredentialAccept.class, TransactionType.CREDENTIAL_ACCEPT)
       .put(ImmutableCredentialCreate.class, TransactionType.CREDENTIAL_CREATE)
       .put(ImmutableCredentialDelete.class, TransactionType.CREDENTIAL_DELETE)
+      .put(ImmutableDelegateSet.class, TransactionType.DELEGATE_SET)
       .put(ImmutableDepositPreAuth.class, TransactionType.DEPOSIT_PRE_AUTH)
       .put(ImmutableEnableAmendment.class, TransactionType.ENABLE_AMENDMENT)
       .put(ImmutableEscrowCancel.class, TransactionType.ESCROW_CANCEL)
@@ -107,7 +109,22 @@ public interface Transaction {
       .put(ImmutableMpTokenIssuanceSet.class, TransactionType.MPT_ISSUANCE_SET)
       .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
       .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
+      .put(ImmutableVaultCreate.class, TransactionType.VAULT_CREATE)
+      .put(ImmutableVaultSet.class, TransactionType.VAULT_SET)
+      .put(ImmutableVaultDelete.class, TransactionType.VAULT_DELETE)
+      .put(ImmutableVaultDeposit.class, TransactionType.VAULT_DEPOSIT)
+      .put(ImmutableVaultWithdraw.class, TransactionType.VAULT_WITHDRAW)
+      .put(ImmutableVaultClawback.class, TransactionType.VAULT_CLAWBACK)
       .put(ImmutableBatch.class, TransactionType.BATCH)
+      .put(ImmutableLoanBrokerSet.class, TransactionType.LOAN_BROKER_SET)
+      .put(ImmutableLoanBrokerDelete.class, TransactionType.LOAN_BROKER_DELETE)
+      .put(ImmutableLoanBrokerCoverDeposit.class, TransactionType.LOAN_BROKER_COVER_DEPOSIT)
+      .put(ImmutableLoanBrokerCoverWithdraw.class, TransactionType.LOAN_BROKER_COVER_WITHDRAW)
+      .put(ImmutableLoanBrokerCoverClawback.class, TransactionType.LOAN_BROKER_COVER_CLAWBACK)
+      .put(ImmutableLoanSet.class, TransactionType.LOAN_SET)
+      .put(ImmutableLoanDelete.class, TransactionType.LOAN_DELETE)
+      .put(ImmutableLoanManage.class, TransactionType.LOAN_MANAGE)
+      .put(ImmutableLoanPay.class, TransactionType.LOAN_PAY)
       .build();
 
   /**
@@ -238,6 +255,41 @@ public interface Transaction {
 
   @JsonProperty("NetworkID")
   Optional<NetworkId> networkId();
+
+  /**
+   * The delegate account that is sending the transaction on behalf of the {@link #account()}.
+   *
+   * <p>The way the {@code Delegate} field works is somewhat akin to {@code RegularKey}. The {@link #account()} field
+   * is the delegating account, the {@code Delegate} field is the delegate, and the {@link #signingPublicKey()} and
+   * {@link #transactionSignature()} are based on the delegate's keys.</p>
+   *
+   * <p>If a {@code Delegate} has multisign enabled, they can also use that multisign setup on their delegated
+   * transactions.</p>
+   *
+   * <p>The delegate will pay the fees on the transaction, to prevent a delegate from draining an account's XRP via
+   * fees. Only the {@link #account()}'s sequence number is incremented, not the {@code Delegate}'s.</p>
+   *
+   * <p>This field is part of the Permission Delegation feature (XLS-75).</p>
+   *
+   * @return An {@link Optional} {@link Address} of the delegate account.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0075-permission-delegation"
+   */
+  @JsonProperty("Delegate")
+  Optional<Address> delegate();
+
+  /**
+   * Validate that the {@link #delegate()} field is not the same as the {@link #account()} field.
+   */
+  @Value.Check
+  default void validateDelegateNotSameAsAccount() {
+    delegate().ifPresent(delegateAddress -> {
+      Preconditions.checkArgument(
+        !delegateAddress.equals(account()),
+        "Transaction: Delegate and Account must be different."
+      );
+    });
+  }
 
   @JsonAnyGetter
   @JsonInclude(Include.NON_ABSENT)

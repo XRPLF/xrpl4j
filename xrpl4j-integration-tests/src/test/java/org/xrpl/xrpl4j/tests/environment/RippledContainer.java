@@ -22,7 +22,6 @@ package org.xrpl.xrpl4j.tests.environment;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.google.common.base.Preconditions;
 import okhttp3.HttpUrl;
 import org.awaitility.Awaitility;
@@ -57,8 +56,29 @@ public class RippledContainer {
 
   // Seed for the Master/Root wallet in the rippled docker container.
   public static final String MASTER_WALLET_SEED = "snoPBrXtMeMyMHUVTgbuqAfg1SUTb";
+
+  // Default public xrpld image. Overridden via the XRPLD_DOCKER_IMAGE environment variable so CI can
+  // run the local integration tests against a private xrpld image (see .github/xrpld-image.env). When a
+  // private image is used, CI performs a `docker login` beforehand; Testcontainers reuses those Docker
+  // credentials from the default Docker config when pulling.
+  private static final String DEFAULT_DOCKER_IMAGE = "rippleci/xrpld:develop";
+
   private static final Logger LOGGER = getLogger(RippledContainer.class);
   private static ScheduledExecutorService ledgerAcceptor = null;
+
+  /**
+   * Resolves the xrpld Docker image to run, preferring the {@code XRPLD_DOCKER_IMAGE} environment variable and falling
+   * back to the default public image when it is unset or blank.
+   *
+   * @return The fully-qualified xrpld Docker image reference.
+   */
+  private static String resolveDockerImage() {
+    String configuredImage = System.getenv("XRPLD_DOCKER_IMAGE");
+    if (configuredImage == null || configuredImage.trim().isEmpty()) {
+      return DEFAULT_DOCKER_IMAGE;
+    }
+    return configuredImage.trim();
+  }
 
   /**
    * Advances the ledger by one on each call.
@@ -82,14 +102,15 @@ public class RippledContainer {
    * No-args constructor.
    */
   public RippledContainer() {
-    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:develop")) {
-      this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
-          cmd.withEntrypoint("/opt/xrpld/bin/xrpld"))
-        .withCommand("-a --start --conf /config/xrpld.cfg")
+    String dockerImage = resolveDockerImage();
+    LOGGER.info("Using xrpld Docker image '{}' for local integration tests.", dockerImage);
+    try (GenericContainer<?> container = new GenericContainer<>(dockerImage)) {
+      this.rippledContainer = container
+        .withCommand("--standalone")
         .withExposedPorts(5005)
         .withImagePullPolicy(PullPolicy.alwaysPull())
         .withClasspathResourceMapping("xrpld",
-          "/config",
+          "/etc/xrpld/",
           BindMode.READ_ONLY)
         .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
     }
@@ -239,7 +260,7 @@ public class RippledContainer {
   /**
    * Stops the automated Ledger Acceptor, for example to control an integration test more finely.
    */
-  @SuppressWarnings({"all"})
+  @SuppressWarnings( {"all"})
   public void stopLedgerAcceptor() {
     try {
       ledgerAcceptor.shutdown();

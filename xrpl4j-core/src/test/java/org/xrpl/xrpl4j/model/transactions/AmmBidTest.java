@@ -12,6 +12,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 
 class AmmBidTest extends AbstractJsonTest {
@@ -25,7 +26,7 @@ class AmmBidTest extends AbstractJsonTest {
       )
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -77,7 +78,7 @@ class AmmBidTest extends AbstractJsonTest {
       )
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -131,7 +132,7 @@ class AmmBidTest extends AbstractJsonTest {
       )
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -186,7 +187,7 @@ class AmmBidTest extends AbstractJsonTest {
       )
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -263,7 +264,7 @@ class AmmBidTest extends AbstractJsonTest {
       .account(Address.of("rammersz4CroiyvbkzeZN1sBDCK9P8DvxF"))
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rswh1fvyLqHizBS2awu1vs6QcmwTBd9qiv"))
           .currency("XAH")
           .build()
@@ -324,7 +325,7 @@ class AmmBidTest extends AbstractJsonTest {
       )
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -378,7 +379,7 @@ class AmmBidTest extends AbstractJsonTest {
       )
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -400,7 +401,7 @@ class AmmBidTest extends AbstractJsonTest {
       )
       .asset(Issue.XRP)
       .asset2(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()

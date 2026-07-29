@@ -86,6 +86,15 @@ public class XrpCurrencyAmountTest {
   }
 
   @Test
+  public void ofDropsLongMinValueThrowsIllegalArgumentException() {
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class,
+      () -> XrpCurrencyAmount.ofDrops(Long.MIN_VALUE)
+    );
+    assertThat(exception.getMessage()).contains("Long.MIN_VALUE");
+  }
+
+  @Test
   public void ofDropsLongNegative() {
     XrpCurrencyAmount xrpCurrencyAmount = XrpCurrencyAmount.ofDrops(-1L);
     assertThat(xrpCurrencyAmount.value()).isEqualTo(UnsignedLong.ONE);
@@ -310,7 +319,7 @@ public class XrpCurrencyAmountTest {
       .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("+0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
     // Decimals (first negative, second negative)
     assertThat(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001"))
-      .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(2L));
+      .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(-2L));
 
     // Overflow
     assertThrows(IllegalStateException.class, () -> {
@@ -428,7 +437,7 @@ public class XrpCurrencyAmountTest {
       final XrpCurrencyAmount value = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(2L), true)
         .times(XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(3L), true));
       assertThat(value.value()).isEqualTo(UnsignedLong.valueOf(6L));
-      assertThat(value.isNegative()).isTrue();
+      assertThat(value.isNegative()).isFalse();
     }
   }
 
@@ -463,6 +472,20 @@ public class XrpCurrencyAmountTest {
   }
 
   @Test
+  public void bug02_equalsIgnoresNegativeFlag() {
+    final XrpCurrencyAmount positive = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(1_000_000L), false);
+    final XrpCurrencyAmount negative = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(1_000_000L), true);
+    assertThat(positive).isNotEqualTo(negative);
+  }
+
+  @Test
+  public void bug02_hashCodeIgnoresNegativeFlag() {
+    final XrpCurrencyAmount positive = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(1_000_000L), false);
+    final XrpCurrencyAmount negative = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(1_000_000L), true);
+    assertThat(positive.hashCode()).isNotEqualTo(negative.hashCode());
+  }
+
+  @Test
   public void testJsonSerialization() throws JsonProcessingException, JSONException {
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(1000000);
     XrpCurrencyAmountWrapper wrapper = ImmutableXrpCurrencyAmountWrapper.builder()
@@ -480,6 +503,35 @@ public class XrpCurrencyAmountTest {
       XrpCurrencyAmountWrapper.class
     );
     assertThat(deserialized).isEqualTo(wrapper);
+  }
+
+  // /////////////////
+  // isZero
+  // /////////////////
+
+  @Test
+  public void isZeroWithZeroDrops() {
+    assertThat(XrpCurrencyAmount.ofDrops(0L).isZero()).isTrue();
+  }
+
+  @Test
+  public void isZeroWithZeroUnsignedLong() {
+    assertThat(XrpCurrencyAmount.ofDrops(UnsignedLong.ZERO).isZero()).isTrue();
+  }
+
+  @Test
+  public void isZeroWithPositiveDrops() {
+    assertThat(XrpCurrencyAmount.ofDrops(1L).isZero()).isFalse();
+  }
+
+  @Test
+  public void isZeroWithNegativeDrops() {
+    assertThat(XrpCurrencyAmount.ofDrops(-1L).isZero()).isFalse();
+  }
+
+  @Test
+  public void isZeroWithLargeValue() {
+    assertThat(XrpCurrencyAmount.ofDrops(MAX_XRP_IN_DROPS).isZero()).isFalse();
   }
 
   @Value.Immutable

@@ -21,10 +21,10 @@ package org.xrpl.xrpl4j.tests;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -105,16 +105,18 @@ public class PermissionedDomainIT extends AbstractIT {
     assertThat(domainSetTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
     // Then wait until the transaction gets committed to a validated ledger
+    final UnsignedInteger expectedSequenceAfterCreate = createSequence.plus(UnsignedInteger.ONE);
     this.scanForResult(
-      () -> this.getValidatedTransaction(
-        domainSetTxIntermediateResult.transactionResult().hash(), PermissionedDomainSet.class)
+      () -> this.getValidatedAccountInfo(ownerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedSequenceAfterCreate)
     );
 
     assertEntryEqualsObjectFromAccountObjects(ownerKeyPair.publicKey().deriveAddress(), createSequence);
 
     // Update PermissionedDomain object.
     ownerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(ownerKeyPair.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(ownerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedSequenceAfterCreate)
     );
 
     Hash256 permissionedDomainId = getPermissionedDomainId(ownerKeyPair.publicKey().deriveAddress(), createSequence);
@@ -137,16 +139,18 @@ public class PermissionedDomainIT extends AbstractIT {
     assertThat(updateTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
     // Then wait until the transaction gets committed to a validated ledger
+    final UnsignedInteger expectedSequenceAfterUpdate = expectedSequenceAfterCreate.plus(UnsignedInteger.ONE);
     this.scanForResult(
-      () -> this.getValidatedTransaction(
-        updateTxIntermediateResult.transactionResult().hash(), PermissionedDomainSet.class)
+      () -> this.getValidatedAccountInfo(ownerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedSequenceAfterUpdate)
     );
 
     assertEntryEqualsObjectFromAccountObjects(ownerKeyPair.publicKey().deriveAddress(), createSequence);
 
     // Delete PermissionedDomain object.
     ownerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(ownerKeyPair.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(ownerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedSequenceAfterUpdate)
     );
 
     PermissionedDomainDelete deleteDomainTx = PermissionedDomainDelete.builder()
@@ -167,8 +171,8 @@ public class PermissionedDomainIT extends AbstractIT {
 
     // Then wait until the transaction gets committed to a validated ledger
     this.scanForResult(
-      () -> this.getValidatedTransaction(
-        deleteTxIntermediateResult.transactionResult().hash(), PermissionedDomainDelete.class)
+      () -> this.getValidatedAccountInfo(ownerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedSequenceAfterUpdate.plus(UnsignedInteger.ONE))
     );
 
     assertPermissionedDomainDeleted(ownerKeyPair.publicKey().deriveAddress(), createSequence);
@@ -219,9 +223,10 @@ public class PermissionedDomainIT extends AbstractIT {
     assertThat(domainSetTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
     // Then wait until the transaction gets committed to a validated ledger
+    final UnsignedInteger expectedSequenceAfterCreate = createSequence.plus(UnsignedInteger.ONE);
     this.scanForResult(
-      () -> this.getValidatedTransaction(
-        domainSetTxIntermediateResult.transactionResult().hash(), PermissionedDomainSet.class)
+      () -> this.getValidatedAccountInfo(ownerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedSequenceAfterCreate)
     );
 
     assertEntryEqualsObjectFromAccountObjects(
@@ -230,7 +235,8 @@ public class PermissionedDomainIT extends AbstractIT {
 
     // Update PermissionedDomain object with incorrect DomainID.
     ownerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(ownerKeyPair.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(ownerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().sequence().equals(expectedSequenceAfterCreate)
     );
 
     PermissionedDomainSet updateDomainTx = PermissionedDomainSet.builder()
@@ -280,7 +286,7 @@ public class PermissionedDomainIT extends AbstractIT {
   private void assertEntryEqualsObjectFromAccountObjects(
     Address domainOwner,
     UnsignedInteger createSequence
-  ) throws JsonRpcClientErrorException {
+  ) {
     PermissionedDomainObject permissionedDomainObject = (PermissionedDomainObject) this.scanForResult(
       () -> {
         try {
@@ -297,56 +303,96 @@ public class PermissionedDomainIT extends AbstractIT {
       result -> result.size() == 1
     ).get(0);
 
-    LedgerEntryResult<PermissionedDomainObject> permissionedDomainEntry = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.permissionedDomain(
-        PermissionedDomainLedgerEntryParams.builder()
-          .account(domainOwner)
-          .seq(createSequence)
-          .build(),
-        LedgerSpecifier.VALIDATED
-      )
+    LedgerEntryResult<PermissionedDomainObject> permissionedDomainEntry = this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.ledgerEntry(
+            LedgerEntryRequestParams.permissionedDomain(
+              PermissionedDomainLedgerEntryParams.builder()
+                .account(domainOwner)
+                .seq(createSequence)
+                .build(),
+              LedgerSpecifier.VALIDATED
+            )
+          );
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      }
     );
 
     assertThat(permissionedDomainEntry.node()).isEqualTo(permissionedDomainObject);
 
-    LedgerEntryResult<PermissionedDomainObject> entryByIndex = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams
-        .index(permissionedDomainObject.index(), PermissionedDomainObject.class, LedgerSpecifier.VALIDATED)
+    LedgerEntryResult<PermissionedDomainObject> entryByIndex = this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.ledgerEntry(
+            LedgerEntryRequestParams
+              .index(permissionedDomainObject.index(), PermissionedDomainObject.class, LedgerSpecifier.VALIDATED)
+          );
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      }
     );
 
     assertThat(entryByIndex.node()).isEqualTo(permissionedDomainEntry.node());
 
-    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.index(permissionedDomainObject.index(), LedgerSpecifier.VALIDATED)
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.ledgerEntry(
+            LedgerEntryRequestParams.index(permissionedDomainObject.index(), LedgerSpecifier.VALIDATED)
+          );
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      }
     );
 
     assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
   }
 
-  private Hash256 getPermissionedDomainId(Address domainOwner, UnsignedInteger sequence)
-    throws JsonRpcClientErrorException {
-
-    return xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.permissionedDomain(
-        PermissionedDomainLedgerEntryParams.builder()
-          .account(domainOwner)
-          .seq(sequence)
-          .build(),
-        LedgerSpecifier.VALIDATED
-      )
+  private Hash256 getPermissionedDomainId(Address domainOwner, UnsignedInteger sequence) {
+    return this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.ledgerEntry(
+            LedgerEntryRequestParams.permissionedDomain(
+              PermissionedDomainLedgerEntryParams.builder()
+                .account(domainOwner)
+                .seq(sequence)
+                .build(),
+              LedgerSpecifier.VALIDATED
+            )
+          );
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      }
     ).node().index();
   }
 
   private void assertPermissionedDomainDeleted(Address domainOwner, UnsignedInteger sequence) {
-    assertThatThrownBy(() -> xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.permissionedDomain(
-        PermissionedDomainLedgerEntryParams.builder()
-          .account(domainOwner)
-          .seq(sequence)
-          .build(),
-        LedgerSpecifier.VALIDATED
-      )
-    )).isInstanceOf(JsonRpcClientErrorException.class)
-      .hasMessage("entryNotFound (Entry not found.)");
+    try {
+      this.scanForResult(
+        () -> {
+          try {
+            return xrplClient.accountObjects(
+              AccountObjectsRequestParams.builder()
+                .type(AccountObjectType.PERMISSIONED_DOMAIN)
+                .account(domainOwner)
+                .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+                .build()
+            ).accountObjects();
+          } catch (JsonRpcClientErrorException e) {
+            throw new RuntimeException(e);
+          }
+        },
+        objects -> objects.isEmpty()
+      );
+    } catch (ConditionTimeoutException e) {
+      throw new IllegalStateException("PermissionedDomainObject still exists after expected deletion.", e);
+    }
   }
 }

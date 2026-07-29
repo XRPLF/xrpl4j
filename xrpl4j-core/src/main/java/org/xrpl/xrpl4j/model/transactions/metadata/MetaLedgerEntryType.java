@@ -52,6 +52,18 @@ public interface MetaLedgerEntryType {
   MetaLedgerEntryType MP_TOKEN_ISSUANCE = MetaLedgerEntryType.of("MPTokenIssuance");
   MetaLedgerEntryType MP_TOKEN = MetaLedgerEntryType.of("MPToken");
 
+  @Beta
+  MetaLedgerEntryType DELEGATE = MetaLedgerEntryType.of("Delegate");
+
+  @Beta
+  MetaLedgerEntryType VAULT = MetaLedgerEntryType.of("Vault");
+
+  @Beta
+  MetaLedgerEntryType LOAN_BROKER = MetaLedgerEntryType.of("LoanBroker");
+
+  @Beta
+  MetaLedgerEntryType LOAN = MetaLedgerEntryType.of("Loan");
+
 
   /**
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.
@@ -117,6 +129,14 @@ public interface MetaLedgerEntryType {
         return MetaMpTokenObject.class;
       case "PermissionedDomain":
         return MetaPermissionedDomainObject.class;
+      case "Delegate":
+        return MetaDelegateObject.class;
+      case "Vault":
+        return MetaVaultObject.class;
+      case "LoanBroker":
+        return MetaLoanBrokerObject.class;
+      case "Loan":
+        return MetaLoanObject.class;
       default:
         return MetaUnknownObject.class;
     }

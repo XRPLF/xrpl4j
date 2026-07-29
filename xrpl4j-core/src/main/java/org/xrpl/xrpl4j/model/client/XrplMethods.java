@@ -235,4 +235,10 @@ public class XrplMethods {
 
   public static final String GET_AGGREGATE_PRICE = "get_aggregate_price";
   public static final String MPT_HOLDERS = "mpt_holders";
+
+  /**
+   * Constant for the {@code vault_info} rippled API method.
+   */
+  @Beta
+  public static final String VAULT_INFO = "vault_info";
 }

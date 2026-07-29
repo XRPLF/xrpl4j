@@ -42,6 +42,7 @@ import com.google.common.annotations.Beta;
   //    @JsonSubTypes.Type(value = ImmutableAmendmentsObject.class, name = "Amendments"),
   @JsonSubTypes.Type(value = ImmutableCheckObject.class, name = "Check"),
   @JsonSubTypes.Type(value = ImmutableCredentialObject.class, name = "Credential"),
+  @JsonSubTypes.Type(value = ImmutableDelegateObject.class, name = "Delegate"),
   @JsonSubTypes.Type(value = ImmutableDepositPreAuthObject.class, name = "DepositPreauth"),
   //    @JsonSubTypes.Type(value = ImmutableDirectoryNodeObject.class, name = "DirectoryNode"),
   @JsonSubTypes.Type(value = ImmutableEscrowObject.class, name = "Escrow"),
@@ -66,6 +67,9 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableOracleObject.class, name = "Oracle"),
   @JsonSubTypes.Type(value = ImmutableMpTokenIssuanceObject.class, name = "MPTokenIssuance"),
   @JsonSubTypes.Type(value = ImmutableMpTokenObject.class, name = "MPToken"),
+  @JsonSubTypes.Type(value = ImmutableVaultObject.class, name = "Vault"),
+  @JsonSubTypes.Type(value = ImmutableLoanBrokerObject.class, name = "LoanBroker"),
+  @JsonSubTypes.Type(value = ImmutableLoanObject.class, name = "Loan"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -165,6 +169,15 @@ public interface LedgerObject {
     NFTOKEN_PAGE("NFTokenPage"),
 
     /**
+     * The {@link LedgerEntryType} for {@code Delegate} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on
+     * mainnet. Its API is subject to change.</p>
+     */
+    @Beta
+    DELEGATE("Delegate"),
+
+    /**
      * The {@link LedgerEntryType} for {@code AmmObject} ledger objects.
      *
      * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject
@@ -222,7 +235,34 @@ public interface LedgerObject {
     MP_TOKEN_ISSUANCE("MPTokenIssuance"),
 
     @Beta
-    MP_TOKEN("MPToken");
+    MP_TOKEN("MPToken"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Vault} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    VAULT("Vault"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code LoanBroker} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    LOAN_BROKER("LoanBroker"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Loan} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    LOAN("Loan");
 
     private final String value;
 

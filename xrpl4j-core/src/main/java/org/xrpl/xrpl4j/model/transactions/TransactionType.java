@@ -74,6 +74,15 @@ public enum TransactionType {
   DEPOSIT_PRE_AUTH("DepositPreauth"),
 
   /**
+   * The {@link TransactionType} for the {@link DelegateSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   */
+  @Beta
+  DELEGATE_SET("DelegateSet"),
+
+  /**
    * The {@link TransactionType} for the {@link EnableAmendment} transaction.
    */
   ENABLE_AMENDMENT("EnableAmendment"),
@@ -363,6 +372,7 @@ public enum TransactionType {
    * The {@link TransactionType} for the {@link AmmClawback} transaction.
    */
   AMM_CLAWBACK("AMMClawback"),
+
   @Beta
   MPT_ISSUANCE_CREATE("MPTokenIssuanceCreate"),
   @Beta
@@ -373,6 +383,60 @@ public enum TransactionType {
   MPT_AUTHORIZE("MPTokenAuthorize"),
 
   /**
+   * The {@link TransactionType} for the {@link VaultCreate} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  VAULT_CREATE("VaultCreate"),
+
+  /**
+   * The {@link TransactionType} for the {@link VaultSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  VAULT_SET("VaultSet"),
+
+  /**
+   * The {@link TransactionType} for the {@link VaultDelete} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  VAULT_DELETE("VaultDelete"),
+
+  /**
+   * The {@link TransactionType} for the {@link VaultDeposit} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  VAULT_DEPOSIT("VaultDeposit"),
+
+  /**
+   * The {@link TransactionType} for the {@link VaultWithdraw} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  VAULT_WITHDRAW("VaultWithdraw"),
+
+  /**
+   * The {@link TransactionType} for the {@link VaultClawback} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the SingleAssetVault amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  VAULT_CLAWBACK("VaultClawback"),
+
+  /**
    * The {@link TransactionType} for the {@link Batch} transaction.
    *
    * <p>This constant will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet. Its API
@@ -380,6 +444,87 @@ public enum TransactionType {
    */
   @Beta
   BATCH("Batch"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanBrokerSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_BROKER_SET("LoanBrokerSet"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanBrokerDelete} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_BROKER_DELETE("LoanBrokerDelete"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanBrokerCoverDeposit} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_BROKER_COVER_DEPOSIT("LoanBrokerCoverDeposit"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanBrokerCoverWithdraw} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_BROKER_COVER_WITHDRAW("LoanBrokerCoverWithdraw"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanBrokerCoverClawback} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_BROKER_COVER_CLAWBACK("LoanBrokerCoverClawback"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_SET("LoanSet"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanDelete} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_DELETE("LoanDelete"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanManage} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_MANAGE("LoanManage"),
+
+  /**
+   * The {@link TransactionType} for the {@link LoanPay} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  LOAN_PAY("LoanPay"),
 
   /**
    * The {@link TransactionType} for any transaction that is unrecognized/unsupported by xrpl4j.
@@ -395,13 +540,15 @@ public enum TransactionType {
   /**
    * Gets an instance of {@link TransactionType} for the given string value.
    *
+   * <p>The comparison is case-insensitive to handle variations in transaction type formatting.</p>
+   *
    * @param value The {@link String} value corresponding to a {@link TransactionType}.
    *
    * @return The {@link TransactionType} with the corresponding value.
    */
   public static TransactionType forValue(String value) {
     for (TransactionType transactionType : TransactionType.values()) {
-      if (transactionType.value.equals(value)) {
+      if (transactionType.value.equalsIgnoreCase(value)) {
         return transactionType;
       }
     }

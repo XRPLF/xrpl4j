@@ -317,7 +317,7 @@ public class CheckIT extends AbstractIT {
 
   private void assertEntryEqualsObjectFromAccountObjects(CheckObject checkObject) throws JsonRpcClientErrorException {
     LedgerEntryResult<CheckObject> checkEntry = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.check(checkObject.index(), LedgerSpecifier.CURRENT));
+      LedgerEntryRequestParams.check(checkObject.index(), LedgerSpecifier.VALIDATED));
 
     assertThat(checkEntry.node()).isEqualTo(checkObject);
 

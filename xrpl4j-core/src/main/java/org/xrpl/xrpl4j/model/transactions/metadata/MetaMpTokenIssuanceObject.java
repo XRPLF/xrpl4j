@@ -6,9 +6,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceMutableFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.MpTokenMetadata;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
@@ -38,7 +40,16 @@ public interface MetaMpTokenIssuanceObject extends MetaLedgerObject {
   Optional<TransferFee> transferFee();
 
   @JsonProperty("MPTokenMetadata")
-  Optional<String> mpTokenMetadata();
+  Optional<MpTokenMetadata> mpTokenMetadata();
+
+  /**
+   * The {@link Hash256} of a
+   * {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} that restricts who can hold this MPT.
+   *
+   * @return An optionally present {@link Hash256} representing the domain ID.
+   */
+  @JsonProperty("DomainID")
+  Optional<Hash256> domainId();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.
@@ -78,5 +89,17 @@ public interface MetaMpTokenIssuanceObject extends MetaLedgerObject {
    */
   @JsonProperty("OwnerNode")
   Optional<String> ownerNode();
+
+  @JsonProperty("MutableFlags")
+  Optional<MpTokenIssuanceMutableFlags> mutableFlags();
+
+  /**
+   * {@link Hash256} pointing to the vault pseudo-account's holding for the underlying asset. Present for IOU and
+   * MPT-backed vaults. Absent for XRP-backed vaults.
+   *
+   * @return An optionally-present {@link Hash256}.
+   */
+  @JsonProperty("ReferenceHolding")
+  Optional<Hash256> referenceHolding();
 
 }

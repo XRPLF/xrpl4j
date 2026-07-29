@@ -8,4 +8,5 @@ updates:
   - package-ecosystem: "maven" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
-      interval: "weekly"
+      interval: "cron"
+      cronjob: "0 0 1 */3 *" # first day of every quarter, at midnight

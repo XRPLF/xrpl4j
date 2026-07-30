@@ -8,11 +8,14 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
+
+import java.util.stream.Stream;
 
 class MpTokenIssuanceSetTest extends AbstractJsonTest {
 
@@ -209,8 +212,21 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(issuanceSet, json);
   }
 
-  @Test
-  void capabilityFlagAndHolderMutuallyExclusive() {
+  private static Stream<MpTokenIssuanceSetFlags> capabilitySettingFlags() {
+    return Stream.of(
+      MpTokenIssuanceSetFlags.SET_CAN_LOCK,
+      MpTokenIssuanceSetFlags.SET_REQUIRE_AUTH,
+      MpTokenIssuanceSetFlags.SET_CAN_ESCROW,
+      MpTokenIssuanceSetFlags.SET_CAN_TRADE,
+      MpTokenIssuanceSetFlags.SET_CAN_TRANSFER,
+      MpTokenIssuanceSetFlags.SET_CAN_CLAWBACK,
+      MpTokenIssuanceSetFlags.SET_CAN_HOLD_CONFIDENTIAL_BALANCE
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource("capabilitySettingFlags")
+  void capabilityFlagAndHolderMutuallyExclusive(MpTokenIssuanceSetFlags capabilityFlag) {
     assertThatThrownBy(() -> MpTokenIssuanceSet.builder()
       .account(Address.of("rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd"))
       .sequence(UnsignedInteger.valueOf(335))
@@ -219,7 +235,7 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148")
       )
-      .flags(MpTokenIssuanceSetFlags.builder().tfMptSetCanLock(true).build())
+      .flags(capabilityFlag)
       .holder(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
       .build()
     ).isInstanceOf(IllegalStateException.class)

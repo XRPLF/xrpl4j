@@ -62,6 +62,26 @@ class MpTokenIssuanceSetFlagsTest {
   }
 
   @Test
+  void testBuilderTfMptUnlock() {
+    MpTokenIssuanceSetFlags flags = MpTokenIssuanceSetFlags.builder()
+      .tfMptUnlock(true)
+      .build();
+
+    assertThat(flags.tfMptUnlock()).isTrue();
+    assertThat(flags.tfMptLock()).isFalse();
+  }
+
+  @Test
+  void testBuilderTfInnerBatchTxn() {
+    MpTokenIssuanceSetFlags flags = MpTokenIssuanceSetFlags.builder()
+      .tfInnerBatchTxn(true)
+      .build();
+
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfMptLock()).isFalse();
+  }
+
+  @Test
   void testBuilder() {
     MpTokenIssuanceSetFlags flags = MpTokenIssuanceSetFlags.builder()
       .tfMptLock(true)

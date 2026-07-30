@@ -933,6 +933,17 @@ public class MpTokenIT extends AbstractIT {
     SubmitResult<MpTokenIssuanceSet> enableResult = xrplClient.submit(signedEnable);
     assertThat(enableResult.engineResult()).isEqualTo("tecNO_PERMISSION");
 
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedEnable.hash(),
+        enableResult.validatedLedgerIndex(),
+        enableCanClawback.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        enableCanClawback.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_FAILURE
+    );
+
     // Locking a second, distinct capability merges with (rather than overwrites) the first.
     AccountInfoResult issuerInfoAfterFailedEnable = this.scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())

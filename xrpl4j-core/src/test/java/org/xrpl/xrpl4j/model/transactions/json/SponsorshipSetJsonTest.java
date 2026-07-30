@@ -56,7 +56,7 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
       "  \"Fee\": \"10\"," +
       "  \"Sequence\": 1," +
       "  \"Sponsee\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\"," +
-      "  \"FeeAmountDelta\": \"1000000\"," +
+      "  \"FeeAmount\": \"1000000\"," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
 
@@ -83,7 +83,7 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
       "  \"Fee\": \"10\"," +
       "  \"Sequence\": 1," +
       "  \"Sponsee\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\"," +
-      "  \"FeeAmountDelta\": \"1000000\"," +
+      "  \"FeeAmount\": \"1000000\"," +
       "  \"MaxFee\": \"100\"," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
@@ -138,7 +138,7 @@ public class SponsorshipSetJsonTest extends AbstractJsonTest {
       "  \"Fee\": \"10\"," +
       "  \"Sequence\": 1," +
       "  \"Sponsee\": \"rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY\"," +
-      "  \"FeeAmountDelta\": \"1000000\"," +
+      "  \"FeeAmount\": \"1000000\"," +
       "  \"MaxFee\": \"100\"," +
       "  \"RemainingOwnerCount\": 5," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +

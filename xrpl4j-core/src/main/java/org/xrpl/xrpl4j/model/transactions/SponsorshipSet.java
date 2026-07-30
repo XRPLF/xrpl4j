@@ -109,7 +109,7 @@ public interface SponsorshipSet extends Transaction {
    *
    * @return An {@link Optional} {@link XrpCurrencyAmount} representing the fee allocation delta.
    */
-  @JsonProperty("FeeAmountDelta")
+  @JsonProperty("FeeAmount")
   Optional<XrpCurrencyAmount> feeAmountDelta();
 
   /**

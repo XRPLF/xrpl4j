@@ -305,6 +305,73 @@ public class TransactionSponsorshipFieldsTest {
   }
 
   @Test
+  void reserveSponsorshipAllowedTransactionTypePasses() {
+    // Payment is on rippled's isReserveSponsorAllowed allow-list.
+    Payment payment = Payment.builder()
+      .account(ACCOUNT)
+      .destination(DESTINATION)
+      .amount(AMOUNT)
+      .fee(FEE)
+      .sequence(UnsignedInteger.ONE)
+      .sponsor(SPONSOR)
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
+      .build();
+
+    assertThat(payment.sponsorFlags()).isPresent().get().isEqualTo(SponsorFlags.SPONSOR_RESERVE);
+  }
+
+  @Test
+  void reserveSponsorshipDisallowedTransactionTypeFails() {
+    // OfferCreate is not on rippled's isReserveSponsorAllowed allow-list (Offer ledger objects are not
+    // sponsorship-supported).
+    assertThatThrownBy(() -> OfferCreate.builder()
+      .account(ACCOUNT)
+      .sequence(UnsignedInteger.ONE)
+      .fee(FEE)
+      .takerPays(AMOUNT)
+      .takerGets(AMOUNT)
+      .sponsor(SPONSOR)
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
+      .build())
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Reserve sponsorship (spfSponsorReserve) is not allowed for transaction type");
+  }
+
+  @Test
+  void reserveSponsorshipWithDelegateFails() {
+    assertThatThrownBy(() -> Payment.builder()
+      .account(ACCOUNT)
+      .destination(DESTINATION)
+      .amount(AMOUNT)
+      .fee(FEE)
+      .sequence(UnsignedInteger.ONE)
+      .delegate(Address.of("rU6K7V3Po4snVhBBaU29sesqs2qTQJWDw1"))
+      .sponsor(SPONSOR)
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
+      .build())
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Reserve sponsorship (spfSponsorReserve) must not be combined with the Delegate field");
+  }
+
+  @Test
+  void feeSponsorshipWithDelegatePasses() {
+    // Only reserve sponsorship is disallowed with a Delegate; fee sponsorship is unaffected.
+    Payment payment = Payment.builder()
+      .account(ACCOUNT)
+      .destination(DESTINATION)
+      .amount(AMOUNT)
+      .fee(FEE)
+      .sequence(UnsignedInteger.ONE)
+      .delegate(Address.of("rU6K7V3Po4snVhBBaU29sesqs2qTQJWDw1"))
+      .sponsor(SPONSOR)
+      .sponsorFlags(SponsorFlags.SPONSOR_FEE)
+      .build();
+
+    assertThat(payment.delegate()).isPresent();
+    assertThat(payment.sponsorFlags()).isPresent().get().isEqualTo(SponsorFlags.SPONSOR_FEE);
+  }
+
+  @Test
   void sponsorFlagsWithUnknownBitsFails() {
     // Per XLS-0068 section 8.3.1, SponsorFlags with any bit other than spfSponsorFee/spfSponsorReserve is invalid.
     assertThatThrownBy(() -> Payment.builder()

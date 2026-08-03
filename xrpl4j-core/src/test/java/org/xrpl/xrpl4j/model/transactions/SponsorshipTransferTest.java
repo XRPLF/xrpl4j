@@ -297,6 +297,42 @@ public class SponsorshipTransferTest {
   }
 
   @Test
+  public void accountLevelCreateWithoutSponsorSignatureFails() {
+    assertThatThrownBy(() ->
+      SponsorshipTransfer.builder()
+        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .sequence(UnsignedInteger.ONE)
+        .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+        .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
+        .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
+        .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("requires a SponsorSignature from the new sponsor");
+  }
+
+  @Test
+  public void accountLevelCreateWithSponsorSignatureSucceeds() {
+    SponsorSignature sponsorSignature = SponsorSignature.builder()
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(TEST_PUBLIC_KEY))
+      .transactionSignature(Signature.fromBase16(TEST_SIGNATURE))
+      .build();
+
+    SponsorshipTransfer transfer = SponsorshipTransfer.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
+      .sponsorSignature(sponsorSignature)
+      .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
+      .build();
+
+    assertThat(transfer.objectId()).isEmpty();
+    assertThat(transfer.sponsorSignature()).isPresent().get().isEqualTo(sponsorSignature);
+  }
+
+  @Test
   public void objectLevelReassignWithoutSponsorSignatureSucceeds() {
     SponsorshipTransfer transfer = SponsorshipTransfer.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))

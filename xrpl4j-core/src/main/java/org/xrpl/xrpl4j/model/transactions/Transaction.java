@@ -29,6 +29,7 @@ import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,7 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Provides an abstract interface for all concrete XRPL transactions.
@@ -304,6 +306,38 @@ public interface Transaction {
   Optional<SponsorSignature> sponsorSignature();
 
   /**
+   * The set of {@link TransactionType}s for which reserve sponsorship ({@code spfSponsorReserve}) is allowed, per
+   * rippled's {@code isReserveSponsorAllowed} allow-list.
+   */
+  Set<TransactionType> RESERVE_SPONSOR_ALLOWED_TYPES = ImmutableSet.of(
+    TransactionType.DELEGATE_SET,
+    TransactionType.DEPOSIT_PRE_AUTH,
+    TransactionType.PAYMENT,
+    TransactionType.SIGNER_LIST_SET,
+    TransactionType.CHECK_CANCEL,
+    TransactionType.CHECK_CASH,
+    TransactionType.CHECK_CREATE,
+    TransactionType.ESCROW_CANCEL,
+    TransactionType.ESCROW_CREATE,
+    TransactionType.ESCROW_FINISH,
+    TransactionType.PAYMENT_CHANNEL_CLAIM,
+    TransactionType.PAYMENT_CHANNEL_CREATE,
+    TransactionType.PAYMENT_CHANNEL_FUND,
+    TransactionType.CLAWBACK,
+    TransactionType.MPT_AUTHORIZE,
+    TransactionType.MPT_ISSUANCE_CREATE,
+    TransactionType.MPT_ISSUANCE_DESTROY,
+    TransactionType.MPT_ISSUANCE_SET,
+    TransactionType.TRUST_SET,
+    TransactionType.CREDENTIAL_ACCEPT,
+    TransactionType.CREDENTIAL_CREATE,
+    TransactionType.CREDENTIAL_DELETE,
+    TransactionType.ACCOUNT_SET,
+    TransactionType.SET_REGULAR_KEY,
+    TransactionType.SPONSORSHIP_TRANSFER
+  );
+
+  /**
    * Validates the sponsorship fields ({@link #sponsor()} and {@link #sponsorFlags()}) on this transaction per
    * XLS-0068. This runs on every concrete {@link Transaction} construction (including JSON deserialization).
    *
@@ -317,6 +351,10 @@ public interface Transaction {
    *   <li>If {@code SponsorFlags} is present, at least one of {@code spfSponsorFee} or
    *       {@code spfSponsorReserve} MUST be set</li>
    *   <li>{@code SponsorFlags} MUST NOT be present if {@code Sponsor} is not present</li>
+   *   <li>{@code spfSponsorReserve} is only permitted for the allow-listed transaction types in
+   *       {@link #RESERVE_SPONSOR_ALLOWED_TYPES}, consistent with rippled's {@code isReserveSponsorAllowed}</li>
+   *   <li>{@code spfSponsorReserve} MUST NOT be combined with {@link #delegate()}, consistent with rippled's
+   *       {@code Transactor::checkSponsor} rejection of reserve sponsorship under permissioned delegation</li>
    * </ul>
    *
    * <p>Additionally, per rippled's {@code Batch::preflight}, when this transaction is an inner transaction of a
@@ -369,6 +407,21 @@ public interface Transaction {
       if (isInnerBatchTxn && flags.spfSponsorFee()) {
         throw new IllegalStateException(
           "Fee sponsorship (spfSponsorFee) is not allowed on an inner Batch transaction (tfInnerBatchTxn is set)."
+        );
+      }
+
+      if (flags.spfSponsorReserve() && !RESERVE_SPONSOR_ALLOWED_TYPES.contains(transactionType())) {
+        throw new IllegalStateException(
+          "Reserve sponsorship (spfSponsorReserve) is not allowed for transaction type " + transactionType() + ". " +
+            "Per rippled's isReserveSponsorAllowed, only a specific allow-list of transaction types may use " +
+            "spfSponsorReserve."
+        );
+      }
+
+      if (flags.spfSponsorReserve() && delegate().isPresent()) {
+        throw new IllegalStateException(
+          "Reserve sponsorship (spfSponsorReserve) must not be combined with the Delegate field. " +
+            "Per rippled's Transactor::checkSponsor, reserve sponsorship with permissioned delegation is disallowed."
         );
       }
     }

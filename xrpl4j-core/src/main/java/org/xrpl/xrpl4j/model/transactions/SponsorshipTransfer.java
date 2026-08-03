@@ -108,10 +108,11 @@ public interface SponsorshipTransfer extends Transaction {
    * Validates that exactly one mode flag is set (tfSponsorshipEnd, tfSponsorshipCreate, or tfSponsorshipReassign).
    * These flags are mutually exclusive and define the operation mode of the transaction. Also validates that
    * {@link #sponsee()} is only present when {@code tfSponsorshipEnd} is set, and that an account-level
-   * {@code tfSponsorshipReassign} (i.e. one with no {@link #objectId()}) is accompanied by a
-   * {@link Transaction#sponsorSignature()} from the new sponsor, consistent with rippled's requirement that
-   * account-level reserve sponsorship cannot be reassigned without the new sponsor's consent. Object-level
-   * reassignment drawing from a pre-funded {@code Sponsorship} object's budget does not require this signature.
+   * {@code tfSponsorshipCreate} or {@code tfSponsorshipReassign} (i.e. one with no {@link #objectId()}) is
+   * accompanied by a {@link Transaction#sponsorSignature()} from the new sponsor, consistent with rippled's
+   * requirement that account-level reserve sponsorship cannot be created or reassigned without the new sponsor's
+   * consent. Object-level sponsorship drawing from a pre-funded {@code Sponsorship} object's budget does not
+   * require this signature.
    *
    * <p>Per XLS-0068 Section 10.3, also validates that {@link Transaction#sponsor()} and
    * {@link Transaction#sponsorFlags()} are excluded for {@code tfSponsorshipEnd} (which dissolves an existing
@@ -146,11 +147,12 @@ public interface SponsorshipTransfer extends Transaction {
       "Sponsee must not be present unless tfSponsorshipEnd is set"
     );
 
-    boolean isAccountLevelReassign = txFlags.tfSponsorshipReassign() && !objectId().isPresent();
+    boolean isCreateOrReassign = txFlags.tfSponsorshipCreate() || txFlags.tfSponsorshipReassign();
+    boolean isAccountLevelReserveSponsorship = isCreateOrReassign && !objectId().isPresent();
     Preconditions.checkState(
-      !isAccountLevelReassign || sponsorSignature().isPresent(),
-      "An account-level SponsorshipTransfer (tfSponsorshipReassign with no ObjectID) requires a " +
-        "SponsorSignature from the new sponsor"
+      !isAccountLevelReserveSponsorship || sponsorSignature().isPresent(),
+      "An account-level SponsorshipTransfer (tfSponsorshipCreate or tfSponsorshipReassign with no ObjectID) " +
+        "requires a SponsorSignature from the new sponsor"
     );
 
     if (txFlags.tfSponsorshipEnd()) {

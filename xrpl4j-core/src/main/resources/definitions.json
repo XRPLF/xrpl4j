@@ -79,6 +79,26 @@
       }
     ],
     [
+      "FeeAmount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 32,
+        "type": "Amount"
+      }
+    ],
+    [
+      "MaxFee",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 33,
+        "type": "Amount"
+      }
+    ],
+    [
       "LedgerEntryType",
       {
         "isSerialized": true,
@@ -709,7 +729,7 @@
       }
     ],
     [
-      "MutableFlags",
+      "ImmutableFlags",
       {
         "isSerialized": true,
         "isSigningField": true,
@@ -865,6 +885,56 @@
         "isSigningField": true,
         "isVLEncoded": false,
         "nth": 68,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "SponsorFlags",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 74,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "SponsoredOwnerCount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 70,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "SponsoringOwnerCount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 71,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "SponsoringAccountCount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 72,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "RemainingOwnerCount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 73,
         "type": "UInt32"
       }
     ],
@@ -1155,6 +1225,16 @@
         "isSigningField": true,
         "isVLEncoded": false,
         "nth": 31,
+        "type": "UInt64"
+      }
+    ],
+    [
+      "SponseeNode",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 32,
         "type": "UInt64"
       }
     ],
@@ -1535,6 +1615,16 @@
         "isSigningField": true,
         "isVLEncoded": false,
         "nth": 39,
+        "type": "Hash256"
+      }
+    ],
+    [
+      "ObjectID",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 41,
         "type": "Hash256"
       }
     ],
@@ -2339,6 +2429,56 @@
       }
     ],
     [
+      "Sponsor",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 27,
+        "type": "AccountID"
+      }
+    ],
+    [
+      "HighSponsor",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 28,
+        "type": "AccountID"
+      }
+    ],
+    [
+      "LowSponsor",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 29,
+        "type": "AccountID"
+      }
+    ],
+    [
+      "CounterpartySponsor",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 30,
+        "type": "AccountID"
+      }
+    ],
+    [
+      "Sponsee",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": true,
+        "nth": 31,
+        "type": "AccountID"
+      }
+    ],
+    [
       "Number",
       {
         "isSerialized": true,
@@ -2865,6 +3005,16 @@
         "isSigningField": false,
         "isVLEncoded": false,
         "nth": 37,
+        "type": "STObject"
+      }
+    ],
+    [
+      "SponsorSignature",
+      {
+        "isSerialized": true,
+        "isSigningField": false,
+        "isVLEncoded": false,
+        "nth": 38,
         "type": "STObject"
       }
     ],
@@ -3523,15 +3673,16 @@
       "lsfMPTLocked": 1,
       "lsfMPTRequireAuth": 4
     },
-    "MPTokenIssuanceMutable": {
-      "lsmfMPTCanMutateCanClawback": 64,
-      "lsmfMPTCanMutateCanEscrow": 8,
-      "lsmfMPTCanMutateCanLock": 2,
-      "lsmfMPTCanMutateCanTrade": 16,
-      "lsmfMPTCanMutateCanTransfer": 32,
-      "lsmfMPTCanMutateMetadata": 65536,
-      "lsmfMPTCanMutateRequireAuth": 4,
-      "lsmfMPTCanMutateTransferFee": 131072
+    "MPTokenIssuanceImmutable": {
+      "lsifMPTCanClawback": 64,
+      "lsifMPTCanEscrow": 8,
+      "lsifMPTCanHoldConfidentialBalance": 128,
+      "lsifMPTCanLock": 2,
+      "lsifMPTCanTrade": 16,
+      "lsifMPTCanTransfer": 32,
+      "lsifMPTMetadata": 65536,
+      "lsifMPTRequireAuth": 4,
+      "lsifMPTTransferFee": 131072
     },
     "NFTokenOffer": {
       "lsfSellNFToken": 1
@@ -4372,7 +4523,7 @@
         "optionality": 1
       },
       {
-        "name": "MutableFlags",
+        "name": "ImmutableFlags",
         "optionality": 2
       },
       {
@@ -4913,6 +5064,7 @@
     "PermissionedDomain": 130,
     "RippleState": 114,
     "SignerList": 83,
+    "Sponsorship": 144,
     "Ticket": 84,
     "Vault": 132,
     "XChainOwnedClaimID": 113,
@@ -4983,6 +5135,13 @@
     },
     "MPTokenIssuanceSet": {
       "tfMPTLock": 1,
+      "tfMPTSetCanClawback": 128,
+      "tfMPTSetCanEscrow": 16,
+      "tfMPTSetCanHoldConfidentialBalance": 256,
+      "tfMPTSetCanLock": 4,
+      "tfMPTSetCanTrade": 32,
+      "tfMPTSetCanTransfer": 64,
+      "tfMPTSetRequireAuth": 8,
       "tfMPTUnlock": 2
     },
     "NFTokenCreateOffer": {
@@ -5649,7 +5808,7 @@
         "optionality": 1
       },
       {
-        "name": "MutableFlags",
+        "name": "ImmutableFlags",
         "optionality": 1
       }
     ],
@@ -5681,7 +5840,7 @@
         "optionality": 1
       },
       {
-        "name": "MutableFlags",
+        "name": "ImmutableFlags",
         "optionality": 1
       }
     ],
@@ -6651,6 +6810,8 @@
     "SetFee": 101,
     "SetRegularKey": 5,
     "SignerListSet": 12,
+    "SponsorshipSet": 91,
+    "SponsorshipTransfer": 90,
     "TicketCreate": 10,
     "TrustSet": 20,
     "UNLModify": 102,

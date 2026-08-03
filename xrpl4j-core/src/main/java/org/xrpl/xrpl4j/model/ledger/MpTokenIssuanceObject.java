@@ -7,7 +7,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceMutableFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -177,14 +177,14 @@ public interface MpTokenIssuanceObject extends LedgerObject {
   Optional<MpTokenIssuanceId> mpTokenIssuanceId();
 
   /**
-   * An optional set of flags indicating which fields or flags of this issuance may be mutated via
-   * {@code MPTokenIssuanceSet}. Only present when the {@code DynamicMPT} amendment is enabled and mutability was
-   * declared at creation.
+   * An optional set of flags indicating which fields or flags of this issuance have been made permanently immutable
+   * via {@code MPTokenIssuanceCreate} or {@code MPTokenIssuanceSet}. Fields and flags are mutable by default; only
+   * present when the {@code DynamicMPT} amendment is enabled and at least one field or flag has been locked.
    *
-   * @return An optionally-present {@link MpTokenIssuanceMutableFlags}.
+   * @return An optionally-present {@link MpTokenIssuanceImmutableFlags}.
    */
-  @JsonProperty("MutableFlags")
-  Optional<MpTokenIssuanceMutableFlags> mutableFlags();
+  @JsonProperty("ImmutableFlags")
+  Optional<MpTokenIssuanceImmutableFlags> immutableFlags();
 
   /**
    * {@link Hash256} pointing to the vault pseudo-account's holding for the underlying asset. Present for IOU and

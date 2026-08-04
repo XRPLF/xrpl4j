@@ -8,7 +8,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateMutableFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 
 import java.util.Optional;
 
@@ -82,16 +82,18 @@ public interface MpTokenIssuanceCreate extends Transaction {
   Optional<MpTokenMetadata> mpTokenMetadata();
 
   /**
-   * An optional set of flags declaring which fields or flags of the created {@code MPTokenIssuance} may be mutated
-   * after issuance via {@code MPTokenIssuanceSet}. Requires the {@code DynamicMPT} amendment.
+   * An optional set of flags declaring which fields or flags of the created {@code MPTokenIssuance} should be
+   * permanently immutable from creation onward. Fields and flags are mutable by default; setting a bit here locks
+   * the corresponding field or flag so it can never be changed via {@code MPTokenIssuanceSet}. Requires the
+   * {@code DynamicMPT} amendment.
    *
    * <p>Bit {@code 0x00000001} is reserved and must not be set. Only bits defined in
-   * {@link MpTokenIssuanceCreateMutableFlags} are valid.
+   * {@link MpTokenIssuanceImmutableFlags} are valid.
    *
-   * @return An optionally present {@link MpTokenIssuanceCreateMutableFlags}.
+   * @return An optionally present {@link MpTokenIssuanceImmutableFlags}.
    */
-  @JsonProperty("MutableFlags")
-  Optional<MpTokenIssuanceCreateMutableFlags> mutableFlags();
+  @JsonProperty("ImmutableFlags")
+  Optional<MpTokenIssuanceImmutableFlags> immutableFlags();
 
   /**
    * The {@link Hash256} of a {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} that restricts
@@ -105,7 +107,7 @@ public interface MpTokenIssuanceCreate extends Transaction {
   /**
    * Validates invariants for {@link MpTokenIssuanceCreate}.
    * <ul>
-   *   <li>{@code MutableFlags}, when present, must only contain bits from the allowed set — bit {@code 0x1} is
+   *   <li>{@code ImmutableFlags}, when present, must only contain bits from the allowed set — bit {@code 0x1} is
    *       reserved for {@code lsfMPTLocked} and may not appear here.</li>
    *   <li>A non-zero {@code TransferFee} must not be combined with the {@code tfMPTCanHoldConfidentialBalance} flag.
    *   </li>
@@ -113,10 +115,14 @@ public interface MpTokenIssuanceCreate extends Transaction {
    */
   @Value.Check
   default void check() {
-    mutableFlags().ifPresent(mf -> Preconditions.checkState(
-      (mf.getValue() & ~MpTokenIssuanceCreateMutableFlags.VALID_MASK) == 0,
-      "MutableFlags contains invalid or reserved bits. " +
-        "Bit 0x1 is reserved (lsfMPTLocked) and must not be set in MutableFlags."
+    immutableFlags().ifPresent(mf -> Preconditions.checkState(
+      mf.getValue() != 0,
+      "ImmutableFlags must not be 0."
+    ));
+    immutableFlags().ifPresent(mf -> Preconditions.checkState(
+      (mf.getValue() & ~MpTokenIssuanceImmutableFlags.VALID_MASK) == 0,
+      "ImmutableFlags contains invalid or reserved bits. " +
+        "Bit 0x1 is reserved (lsfMPTLocked) and must not be set in ImmutableFlags."
     ));
 
     transferFee().ifPresent(fee -> Preconditions.checkState(

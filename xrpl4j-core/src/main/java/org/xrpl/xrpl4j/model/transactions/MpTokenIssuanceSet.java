@@ -4,12 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
-import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetMutableFlags;
 
 import java.util.Optional;
 
@@ -52,8 +51,10 @@ public interface MpTokenIssuanceSet extends Transaction {
 
   /**
    * An optional XRPL Address of an individual token holder balance to lock/unlock. If omitted, this transaction will
-   * apply to all accounts holding MPTs. Mutually exclusive with {@link #mutableFlags()},
-   * {@link #mpTokenMetadata()}, {@link #transferFee()}, and {@link #domainId()}.
+   * apply to all accounts holding MPTs. Mutually exclusive with {@link #immutableFlags()},
+   * {@link #mpTokenMetadata()}, {@link #transferFee()}, the {@code tfMPTSet*} capability-setting flags on
+   * {@link #flags()}, {@link #domainId()}, {@link #issuerEncryptionKey()}, and {@link #auditorEncryptionKey()}.
+   * Must not equal {@link #account()}.
    *
    * @return An optionally-present {@link Address}.
    */
@@ -66,6 +67,8 @@ public interface MpTokenIssuanceSet extends Transaction {
    * <p>This key is used to encrypt confidential amounts that the issuer can decrypt to monitor
    * the total supply of confidential tokens.</p>
    *
+   * <p>Mutually exclusive with {@link #holder()}. Requires the {@code ConfidentialTransfer} amendment.</p>
+   *
    * @return An optionally-present {@link PublicKey}.
    */
   @JsonProperty("IssuerEncryptionKey")
@@ -77,27 +80,32 @@ public interface MpTokenIssuanceSet extends Transaction {
    * <p>This key is used to encrypt confidential amounts that an auditor can decrypt for
    * compliance and regulatory purposes.</p>
    *
+   * <p>Mutually exclusive with {@link #holder()}, and may only be present when
+   * {@link #issuerEncryptionKey()} is also present. Requires the {@code ConfidentialTransfer} amendment.</p>
+   *
    * @return An optionally-present {@link PublicKey}.
    */
   @JsonProperty("AuditorEncryptionKey")
   Optional<PublicKey> auditorEncryptionKey();
 
   /**
-   * An optional set of flags to set or clear on the {@code MPTokenIssuance}. Only flags that were declared mutable at
-   * creation time may be modified. Must not be {@code 0}, must only contain bits {@code 0x001}–{@code 0x800}, and
-   * must not set and clear the same flag in one transaction. Mutually exclusive with {@link #flags()}
+   * An optional set of flags declaring which fields or flags of the {@code MPTokenIssuance} should be permanently
+   * immutable from this point on. Fields and flags are mutable by default; setting a bit here locks the
+   * corresponding field or flag so it can never be changed again. Bits merge with (rather than overwrite) any bits
+   * already recorded on the ledger object. Must not be {@code 0} and must only contain bits defined in
+   * {@link MpTokenIssuanceImmutableFlags}. Mutually exclusive with {@link #flags()}
    * ({@code tfMPTLock}/{@code tfMPTUnlock}) and {@link #holder()}. Requires the {@code DynamicMPT} amendment.
    *
-   * @return An optionally present {@link MpTokenIssuanceSetMutableFlags}.
+   * @return An optionally present {@link MpTokenIssuanceImmutableFlags}.
    */
-  @JsonProperty("MutableFlags")
-  Optional<MpTokenIssuanceSetMutableFlags> mutableFlags();
+  @JsonProperty("ImmutableFlags")
+  Optional<MpTokenIssuanceImmutableFlags> immutableFlags();
 
   /**
    * New metadata to replace the existing {@code MPTokenMetadata} value. Setting an empty value removes the field.
-   * Requires {@code lsmfMPTCanMutateMetadata} to have been set at creation. Mutually exclusive with
-   * {@link #holder()} and {@link #flags()} ({@code tfMPTLock}/{@code tfMPTUnlock}).
-   * Requires the {@code DynamicMPT} amendment.
+   * Fails unless the field is still mutable (i.e. {@code lsifMPTMetadata} has not been set). Mutually exclusive with
+   * {@link #holder()} and {@link #flags()} ({@code tfMPTLock}/{@code tfMPTUnlock}/{@code tfMPTSet*} capability
+   * flags). Requires the {@code DynamicMPT} amendment.
    *
    * @return An optionally-present {@link MpTokenMetadata}.
    */
@@ -105,9 +113,10 @@ public interface MpTokenIssuanceSet extends Transaction {
   Optional<MpTokenMetadata> mpTokenMetadata();
 
   /**
-   * New transfer fee value. Setting to zero removes the field. Requires {@code lsmfMPTCanMutateTransferFee} to have
-   * been set at creation. Mutually exclusive with {@link #holder()} and {@link #flags()}
-   * ({@code tfMPTLock}/{@code tfMPTUnlock}). Requires the {@code DynamicMPT} amendment.
+   * New transfer fee value. Setting to zero removes the field. Fails unless the field is still mutable (i.e.
+   * {@code lsifMPTTransferFee} has not been set). Mutually exclusive with {@link #holder()} and {@link #flags()}
+   * ({@code tfMPTLock}/{@code tfMPTUnlock}/{@code tfMPTSet*} capability flags). Requires the {@code DynamicMPT}
+   * amendment.
    *
    * @return An optionally-present {@link TransferFee}.
    */
@@ -126,12 +135,9 @@ public interface MpTokenIssuanceSet extends Transaction {
   /**
    * Validates invariants for {@link MpTokenIssuanceSet}.
    * <ul>
-   *   <li>{@code MutableFlags}, when present, must be non-zero and contain only known bits
-   *       ({@code 0x001}–{@code 0x800}).</li>
-   *   <li>{@code MutableFlags} must not set and clear the same flag simultaneously.</li>
-   *   <li>{@code MutableFlags}, {@code MPTokenMetadata}, and {@code TransferFee} are mutually exclusive with
+   *   <li>{@code ImmutableFlags}, when present, must be non-zero and contain only known bits.</li>
+   *   <li>{@code ImmutableFlags}, {@code MPTokenMetadata}, and {@code TransferFee} are mutually exclusive with
    *       {@code Holder} and with the {@code tfMPTLock}/{@code tfMPTUnlock} flags.</li>
-   *   <li>A non-zero {@code TransferFee} must not be combined with {@code tmfMPTClearCanTransfer}.</li>
    *   <li>{@code DomainID} is mutually exclusive with {@code Holder}.</li>
    *   <li>{@code Account} must not equal {@code Holder}.</li>
    *   <li>{@code Holder} is mutually exclusive with {@code IssuerEncryptionKey} and {@code AuditorEncryptionKey}.</li>
@@ -140,81 +146,36 @@ public interface MpTokenIssuanceSet extends Transaction {
    */
   @Value.Check
   default void check() {
-    boolean hasDynamicField = mutableFlags().isPresent() ||
-      mpTokenMetadata().isPresent() ||
-      transferFee().isPresent();
+    boolean hasCapabilitySettingFlag = flags().tfMptSetCanLock() ||
+      flags().tfMptSetRequireAuth() ||
+      flags().tfMptSetCanEscrow() ||
+      flags().tfMptSetCanTrade() ||
+      flags().tfMptSetCanTransfer() ||
+      flags().tfMptSetCanClawback() ||
+      flags().tfMptSetCanHoldConfidentialBalance();
 
-    mutableFlags().ifPresent(mf -> {
+    boolean hasDynamicField = immutableFlags().isPresent() ||
+      mpTokenMetadata().isPresent() ||
+      transferFee().isPresent() ||
+      hasCapabilitySettingFlag;
+
+    immutableFlags().ifPresent(mf -> {
       long val = mf.getValue();
 
       Preconditions.checkState(val != 0,
-        "MutableFlags must not be 0.");
+        "ImmutableFlags must not be 0.");
 
-      Preconditions.checkState((val & ~MpTokenIssuanceSetMutableFlags.VALID_MASK) == 0,
-        "MutableFlags contains invalid bits. Only bits 0x001–0x800 are valid.");
-
-      // Set/clear conflict checks for each flag pair
-      Preconditions.checkState(
-        (val & (MpTokenIssuanceSetMutableFlags.SET_CAN_LOCK.getValue() |
-          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_LOCK.getValue())) !=
-          (MpTokenIssuanceSetMutableFlags.SET_CAN_LOCK.getValue() |
-          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_LOCK.getValue()),
-        "Cannot set and clear lsfMPTCanLock in the same transaction.");
-
-      Preconditions.checkState(
-        (val & (MpTokenIssuanceSetMutableFlags.SET_REQUIRE_AUTH.getValue() |
-          MpTokenIssuanceSetMutableFlags.CLEAR_REQUIRE_AUTH.getValue())) !=
-          (MpTokenIssuanceSetMutableFlags.SET_REQUIRE_AUTH.getValue() |
-          MpTokenIssuanceSetMutableFlags.CLEAR_REQUIRE_AUTH.getValue()),
-        "Cannot set and clear lsfMPTRequireAuth in the same transaction.");
-
-      Preconditions.checkState(
-        (val & (MpTokenIssuanceSetMutableFlags.SET_CAN_ESCROW.getValue() |
-          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_ESCROW.getValue())) !=
-          (MpTokenIssuanceSetMutableFlags.SET_CAN_ESCROW.getValue() |
-          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_ESCROW.getValue()),
-        "Cannot set and clear lsfMPTCanEscrow in the same transaction.");
-
-      Preconditions.checkState(
-        (val & (MpTokenIssuanceSetMutableFlags.SET_CAN_TRADE.getValue() |
-          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_TRADE.getValue())) !=
-          (MpTokenIssuanceSetMutableFlags.SET_CAN_TRADE.getValue() |
-          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_TRADE.getValue()),
-        "Cannot set and clear lsfMPTCanTrade in the same transaction.");
-
-      Preconditions.checkState(
-        (val & (MpTokenIssuanceSetMutableFlags.SET_CAN_TRANSFER.getValue() |
-          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_TRANSFER.getValue())) !=
-          (MpTokenIssuanceSetMutableFlags.SET_CAN_TRANSFER.getValue() |
-          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_TRANSFER.getValue()),
-        "Cannot set and clear lsfMPTCanTransfer in the same transaction.");
-
-      Preconditions.checkState(
-        (val & (MpTokenIssuanceSetMutableFlags.SET_CAN_CLAWBACK.getValue() |
-          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_CLAWBACK.getValue())) !=
-          (MpTokenIssuanceSetMutableFlags.SET_CAN_CLAWBACK.getValue() |
-          MpTokenIssuanceSetMutableFlags.CLEAR_CAN_CLAWBACK.getValue()),
-        "Cannot set and clear lsfMPTCanClawback in the same transaction.");
+      Preconditions.checkState((val & ~MpTokenIssuanceImmutableFlags.VALID_MASK) == 0,
+        "ImmutableFlags contains invalid bits.");
     });
 
     if (hasDynamicField) {
       Preconditions.checkState(!holder().isPresent(),
-        "Holder must not be present when MutableFlags, MPTokenMetadata, or TransferFee is set.");
+        "Holder must not be present when ImmutableFlags, MPTokenMetadata, or TransferFee is set.");
 
       Preconditions.checkState(!flags().tfMptLock() && !flags().tfMptUnlock(),
-        "tfMPTLock and tfMPTUnlock must not be set when MutableFlags, MPTokenMetadata, or TransferFee is present.");
+        "tfMPTLock and tfMPTUnlock must not be set when ImmutableFlags, MPTokenMetadata, or TransferFee is present.");
     }
-
-    transferFee().ifPresent(fee -> {
-      if (fee.value().compareTo(UnsignedInteger.ZERO) > 0) {
-        mutableFlags().ifPresent(mf ->
-          Preconditions.checkState(
-            (mf.getValue() & MpTokenIssuanceSetMutableFlags.CLEAR_CAN_TRANSFER.getValue()) == 0,
-            "A non-zero TransferFee cannot be combined with tmfMPTClearCanTransfer."
-          )
-        );
-      }
-    });
 
     domainId().ifPresent($ -> Preconditions.checkState(
       !holder().isPresent(),

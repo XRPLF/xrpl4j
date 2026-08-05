@@ -2,7 +2,8 @@
 
 [![codecov][codecov-image]][codecov-url]
 [![issues][github-issues-image]][github-issues-url]
-[![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-parent/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-parent)
+[![javadoc-core](https://javadoc.io/badge2/org.xrpl/xrpl4j-core/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-core/latest/index.html)
+[![javadoc-client](https://javadoc.io/badge2/org.xrpl/xrpl4j-client/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-client/latest/index.html)
 
 This project is a pure Java implementation of an SDK that works with the XRP Ledger. This library supports XRPL key 
 and address generation, transaction serialization and signing, provides useful Java bindings for XRP Ledger objects and 

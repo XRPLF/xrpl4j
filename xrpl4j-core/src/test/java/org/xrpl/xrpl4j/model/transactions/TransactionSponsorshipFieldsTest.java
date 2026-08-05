@@ -153,6 +153,7 @@ public class TransactionSponsorshipFieldsTest {
       .fee(FEE)
       .sequence(UnsignedInteger.ONE)
       .sponsee(DESTINATION)
+      .feeAmountDelta(XrpCurrencyAmount.ofDrops(1000000))
       .build();
 
     assertThat(sponsorshipSet.sponsor()).isEmpty();

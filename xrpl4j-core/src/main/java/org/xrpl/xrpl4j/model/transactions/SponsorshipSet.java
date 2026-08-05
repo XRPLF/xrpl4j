@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
-import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.SponsorshipSetFlags;
@@ -46,7 +45,8 @@ import java.util.Optional;
  *   <li>{@link #feeAmountDelta()} - Signed delta (in drops) to apply to the sponsorship's fee
  *       allocation; positive to top up, negative to draw down</li>
  *   <li>{@link #maxFee()} - Maximum fee per transaction that can be drawn from the allocation</li>
- *   <li>{@link #remainingOwnerCount()} - Number of reserve units to sponsor for the sponsee</li>
+ *   <li>{@link #remainingOwnerCountDelta()} - Signed delta to apply to the number of reserve units
+ *       sponsored for the sponsee</li>
  * </ul>
  *
  * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
@@ -109,12 +109,13 @@ public interface SponsorshipSet extends Transaction {
    *
    * @return An {@link Optional} {@link XrpCurrencyAmount} representing the fee allocation delta.
    */
-  @JsonProperty("FeeAmount")
+  @JsonProperty("FeeAmountDelta")
   Optional<XrpCurrencyAmount> feeAmountDelta();
 
   /**
    * The maximum fee (in drops) that can be charged for a single transaction using this sponsorship.
-   * This prevents the sponsee from consuming the entire {@link #feeAmount()} in a single transaction.
+   * This prevents the sponsee from consuming the entire {@link #feeAmountDelta()} allocation in a single
+   * transaction.
    *
    * @return An {@link Optional} {@link XrpCurrencyAmount} representing the maximum fee per transaction.
    */
@@ -122,14 +123,16 @@ public interface SponsorshipSet extends Transaction {
   Optional<XrpCurrencyAmount> maxFee();
 
   /**
-   * The number of reserve units to sponsor for the sponsee. Each unit represents the reserve requirement
-   * for one ledger object owned by the sponsee. This allows the sponsee to create ledger objects without
-   * having to maintain the reserve themselves.
+   * A signed delta to apply to the sponsorship's {@code RemainingOwnerCount} allocation. A positive value
+   * tops up the number of reserve units sponsored for the sponsee; a negative value draws it down. Each unit
+   * represents the reserve requirement for one ledger object owned by the sponsee. The delta is applied to
+   * whatever value the {@link org.xrpl.xrpl4j.model.ledger.SponsorshipObject} currently holds, rather than
+   * replacing it outright.
    *
-   * @return An {@link Optional} {@link UnsignedInteger} representing the number of reserve units.
+   * @return An {@link Optional} {@link Integer} representing the reserve unit delta.
    */
-  @JsonProperty("RemainingOwnerCount")
-  Optional<UnsignedInteger> remainingOwnerCount();
+  @JsonProperty("RemainingOwnerCountDelta")
+  Optional<Integer> remainingOwnerCountDelta();
 
   /**
    * Validates this transaction's field combinations per XLS-0068 Section 9.4, mirroring the field-level checks
@@ -142,12 +145,16 @@ public interface SponsorshipSet extends Transaction {
    *       {@link #counterpartySponsor()} is set instead, {@link SponsorshipSetFlags#tfDeleteObject()} must be
    *       set.</li>
    *   <li>When {@link SponsorshipSetFlags#tfDeleteObject()} is set, none of {@link #feeAmountDelta()},
-   *       {@link #maxFee()}, or {@link #remainingOwnerCount()} may be present, and none of the RequireSignFor* /
-   *       ClearRequireSignFor* flags may be set.</li>
+   *       {@link #maxFee()}, or {@link #remainingOwnerCountDelta()} may be present, and none of the
+   *       RequireSignFor* / ClearRequireSignFor* flags may be set.</li>
    *   <li>The RequireSignForFee/ClearRequireSignForFee flags are mutually exclusive, as are the
    *       RequireSignForReserve/ClearRequireSignForReserve flags.</li>
    *   <li>{@link #feeAmountDelta()}, if present, must not be zero (it is a signed delta, so negative values
-   *       are permitted). {@link #maxFee()}, if present, must not be negative.</li>
+   *       are permitted). {@link #maxFee()}, if present, must not be negative.
+   *       {@link #remainingOwnerCountDelta()}, if present, must not be zero.</li>
+   *   <li>When not deleting, at least one of {@link #feeAmountDelta()}, {@link #maxFee()},
+   *       {@link #remainingOwnerCountDelta()}, or a RequireSignFor* / ClearRequireSignFor* flag must be present;
+   *       otherwise the transaction has no effect.</li>
    * </ul>
    *
    * @throws IllegalStateException if validation fails.
@@ -186,8 +193,9 @@ public interface SponsorshipSet extends Transaction {
         "SponsorshipSet must not set any RequireSignFor*/ClearRequireSignFor* flags when tfDeleteObject is set"
       );
       Preconditions.checkState(
-        !feeAmountDelta().isPresent() && !maxFee().isPresent() && !remainingOwnerCount().isPresent(),
-        "SponsorshipSet must not include FeeAmountDelta, MaxFee, or RemainingOwnerCount when tfDeleteObject is set"
+        !feeAmountDelta().isPresent() && !maxFee().isPresent() && !remainingOwnerCountDelta().isPresent(),
+        "SponsorshipSet must not include FeeAmountDelta, MaxFee, or RemainingOwnerCountDelta when " +
+          "tfDeleteObject is set"
       );
     } else {
       Preconditions.checkState(
@@ -201,6 +209,19 @@ public interface SponsorshipSet extends Transaction {
         "FeeAmountDelta must not be zero"
       ));
       maxFee().ifPresent(amount -> Preconditions.checkState(!amount.isNegative(), "MaxFee must not be negative"));
+      remainingOwnerCountDelta().ifPresent(delta -> Preconditions.checkState(
+        delta != 0,
+        "RemainingOwnerCountDelta must not be zero"
+      ));
+
+      boolean hasModifyFlag = txFlags.tfRequireSignForFee() || txFlags.tfClearRequireSignForFee() ||
+        txFlags.tfRequireSignForReserve() || txFlags.tfClearRequireSignForReserve();
+      Preconditions.checkState(
+        feeAmountDelta().isPresent() || maxFee().isPresent() || remainingOwnerCountDelta().isPresent() ||
+          hasModifyFlag,
+        "SponsorshipSet must include at least one of FeeAmountDelta, MaxFee, RemainingOwnerCountDelta, or a " +
+          "RequireSignFor*/ClearRequireSignFor* flag"
+      );
     }
   }
 

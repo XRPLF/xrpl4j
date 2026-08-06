@@ -52,6 +52,7 @@ public abstract class SerializedType<T extends SerializedType<T>> {
       .put("Hash160", () -> new Hash160Type())
       .put("Hash192", () -> new UInt192Type())
       .put("Hash256", () -> new Hash256Type())
+      .put("Int32", () -> new Int32Type())
       .put("PathSet", () -> new PathSetType())
       .put("STArray", () -> new STArrayType())
       .put("STObject", () -> new STObjectType())

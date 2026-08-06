@@ -8,7 +8,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceMutableFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -141,11 +141,11 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
   }
 
   @Test
-  void testJsonWithMutableFlags() throws JSONException, JsonProcessingException {
-    MpTokenIssuanceMutableFlags lsmf = MpTokenIssuanceMutableFlags.builder()
-      .lsmfMptCanMutateMetadata(true)
-      .lsmfMptCanMutateTransferFee(true)
-      .lsmfMptCanEnableCanLock(true)
+  void testJsonWithImmutableFlags() throws JSONException, JsonProcessingException {
+    MpTokenIssuanceImmutableFlags lsif = MpTokenIssuanceImmutableFlags.builder()
+      .lsifMptMetadata(true)
+      .lsifMptTransferFee(true)
+      .lsifMptCanLock(true)
       .build();
 
     MpTokenIssuanceObject object = MpTokenIssuanceObject.builder()
@@ -162,7 +162,7 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
       .transferFee(TransferFee.of(UnsignedInteger.valueOf(10)))
       .index(Hash256.of("9295A1CC8C9E8C7CA77C823F2D10B9C599E63707C7A222B306F603D4CF511301"))
       .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179C3493FFEB0869853DDEC0705800595424710FA7A"))
-      .mutableFlags(lsmf)
+      .immutableFlags(lsif)
       .build();
 
     String json = "{\n" +
@@ -180,15 +180,15 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
                   "  \"TransferFee\" : 10,\n" +
                   "  \"index\" : \"9295A1CC8C9E8C7CA77C823F2D10B9C599E63707C7A222B306F603D4CF511301\",\n" +
                   "  \"mpt_issuance_id\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\",\n" +
-                  "  \"MutableFlags\" : " + lsmf.getValue() + "\n" +
+                  "  \"ImmutableFlags\" : " + lsif.getValue() + "\n" +
                   "}";
 
     assertCanSerializeAndDeserialize(object, json);
-    assertThat(object.mutableFlags()).isPresent().get().isEqualTo(lsmf);
+    assertThat(object.immutableFlags()).isPresent().get().isEqualTo(lsif);
   }
 
   @Test
-  void testMutableFlagsIsOptional() {
+  void testImmutableFlagsIsOptional() {
     MpTokenIssuanceObject object = MpTokenIssuanceObject.builder()
       .flags(MpTokenIssuanceFlags.of(122))
       .issuer(Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c"))
@@ -203,7 +203,7 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
       .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179C3493FFEB0869853DDEC0705800595424710FA7A"))
       .build();
 
-    assertThat(object.mutableFlags()).isEmpty();
+    assertThat(object.immutableFlags()).isEmpty();
   }
 
 }

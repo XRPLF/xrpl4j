@@ -79,6 +79,26 @@
       }
     ],
     [
+      "FeeAmount",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 32,
+        "type": "Amount"
+      }
+    ],
+    [
+      "MaxFee",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 33,
+        "type": "Amount"
+      }
+    ],
+    [
       "LedgerEntryType",
       {
         "isSerialized": true,
@@ -709,7 +729,7 @@
       }
     ],
     [
-      "MutableFlags",
+      "ImmutableFlags",
       {
         "isSerialized": true,
         "isSigningField": true,
@@ -3874,16 +3894,16 @@
       "lsfMPTLocked": 1,
       "lsfMPTRequireAuth": 4
     },
-    "MPTokenIssuanceMutable": {
-      "lsmfMPTCanEnableCanClawback": 64,
-      "lsmfMPTCanEnableCanEscrow": 8,
-      "lsmfMPTCanEnableCanLock": 2,
-      "lsmfMPTCanEnableCanTrade": 16,
-      "lsmfMPTCanEnableCanTransfer": 32,
-      "lsmfMPTCanEnableRequireAuth": 4,
-      "lsmfMPTCanMutateMetadata": 65536,
-      "lsmfMPTCanMutateTransferFee": 131072,
-      "lsmfMPTCannotEnableCanHoldConfidentialBalance": 128
+    "MPTokenIssuanceImmutable": {
+      "lsifMPTCanClawback": 64,
+      "lsifMPTCanEscrow": 8,
+      "lsifMPTCanHoldConfidentialBalance": 128,
+      "lsifMPTCanLock": 2,
+      "lsifMPTCanTrade": 16,
+      "lsifMPTCanTransfer": 32,
+      "lsifMPTMetadata": 65536,
+      "lsifMPTRequireAuth": 4,
+      "lsifMPTTransferFee": 131072
     },
     "NFTokenOffer": {
       "lsfSellNFToken": 1
@@ -4764,7 +4784,7 @@
         "optionality": 1
       },
       {
-        "name": "MutableFlags",
+        "name": "ImmutableFlags",
         "optionality": 2
       },
       {
@@ -5439,6 +5459,13 @@
     },
     "MPTokenIssuanceSet": {
       "tfMPTLock": 1,
+      "tfMPTSetCanClawback": 128,
+      "tfMPTSetCanEscrow": 16,
+      "tfMPTSetCanHoldConfidentialBalance": 256,
+      "tfMPTSetCanLock": 4,
+      "tfMPTSetCanTrade": 32,
+      "tfMPTSetCanTransfer": 64,
+      "tfMPTSetRequireAuth": 8,
       "tfMPTUnlock": 2
     },
     "NFTokenCreateOffer": {
@@ -6256,7 +6283,7 @@
         "optionality": 1
       },
       {
-        "name": "MutableFlags",
+        "name": "ImmutableFlags",
         "optionality": 1
       }
     ],
@@ -6288,7 +6315,7 @@
         "optionality": 1
       },
       {
-        "name": "MutableFlags",
+        "name": "ImmutableFlags",
         "optionality": 1
       },
       {

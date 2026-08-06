@@ -219,6 +219,7 @@ jobs:
   # Verifies the mpt-crypto native libraries (loaded via JNA) on each platform we ship binaries for.
   build_confidential_native_its:
     name: confidential_native_${{ matrix.platform }}_${{ matrix.network }}
+    needs: resolve_xrpld_image
     strategy:
       fail-fast: false
       matrix:
@@ -261,6 +262,8 @@ jobs:
             network: devnet
             it_flags: '-DuseDevnet'
     runs-on: ${{ matrix.os }}
+    env:
+      XRPLD_DOCKER_IMAGE: ${{ needs.resolve_xrpld_image.outputs.image }}
     defaults:
       run:
         shell: bash
@@ -285,6 +288,15 @@ jobs:
           colima start --cpus 3 --memory 8
           echo "DOCKER_HOST=unix://$HOME/.colima/default/docker.sock" >> "$GITHUB_ENV"
           echo "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock" >> "$GITHUB_ENV"
+      # Only the local-rippled rows pull an xrpld image, so only they need the registry login. This step must follow
+      # the Colima setup above, which is what provides the Docker daemon on the macOS Intel runner.
+      - name: Log in to private registry
+        if: matrix.network == 'local-rippled'
+        uses: ./.github/actions/xrpld-login
+        with:
+          is_private: ${{ needs.resolve_xrpld_image.outputs.is_private }}
+          username: ${{ vars.GITLAB_REGISTRY_USERNAME }}
+          token: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
       - name: Build and run unit tests
         run: mvn clean install -DskipITs -Dmaven.javadoc.skip=true
       - name: Run ConfidentialTransfersIT

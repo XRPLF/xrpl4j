@@ -292,6 +292,8 @@
     <module>xrpl4j-integration-tests</module>
     <module>xrpl4j-client</module>
     <module>xrpl4j-bom</module>
+    <!-- Must remain last: aggregates coverage after every other module has produced its exec files. -->
+    <module>xrpl4j-coverage</module>
   </modules>
 
   <build>

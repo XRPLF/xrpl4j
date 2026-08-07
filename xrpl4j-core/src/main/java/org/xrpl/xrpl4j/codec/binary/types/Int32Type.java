@@ -71,6 +71,11 @@ public class Int32Type extends SerializedType<Int32Type> {
 
   @Override
   public JsonNode toJson() {
-    return new IntNode((int) Long.parseLong(toHex(), 16));
+    String hex = toHex();
+    try {
+      return new IntNode((int) Long.parseLong(hex, 16));
+    } catch (NumberFormatException e) {
+      throw new IllegalStateException("Invalid hex value for Int32Type: " + hex, e);
+    }
   }
 }

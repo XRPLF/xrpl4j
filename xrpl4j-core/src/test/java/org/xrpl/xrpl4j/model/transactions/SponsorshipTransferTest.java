@@ -262,17 +262,20 @@ public class SponsorshipTransferTest {
   }
 
   @Test
-  public void accountLevelReassignWithoutSponsorSignatureFails() {
-    assertThatThrownBy(() ->
-      SponsorshipTransfer.builder()
-        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-        .fee(XrpCurrencyAmount.ofDrops(10))
-        .sequence(UnsignedInteger.ONE)
-        .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
-        .flags(SponsorshipTransferFlags.builder().tfSponsorshipReassign(true).build())
-        .build()
-    ).isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("requires a SponsorSignature from the new sponsor");
+  public void accountLevelReassignWithoutSponsorSignatureSucceeds() {
+    // Building without a SponsorSignature must succeed: this is the "unsigned" form of the transaction that the
+    // new sponsor signs over to produce the SponsorSignature, before it's attached and the transaction is
+    // submitted. rippled (not this model) is what ultimately rejects a final submission missing this signature.
+    SponsorshipTransfer transfer = SponsorshipTransfer.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
+      .flags(SponsorshipTransferFlags.builder().tfSponsorshipReassign(true).build())
+      .build();
+
+    assertThat(transfer.sponsorSignature()).isEmpty();
   }
 
   @Test
@@ -297,18 +300,20 @@ public class SponsorshipTransferTest {
   }
 
   @Test
-  public void accountLevelCreateWithoutSponsorSignatureFails() {
-    assertThatThrownBy(() ->
-      SponsorshipTransfer.builder()
-        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-        .fee(XrpCurrencyAmount.ofDrops(10))
-        .sequence(UnsignedInteger.ONE)
-        .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
-        .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
-        .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
-        .build()
-    ).isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("requires a SponsorSignature from the new sponsor");
+  public void accountLevelCreateWithoutSponsorSignatureSucceeds() {
+    // Building without a SponsorSignature must succeed: this is the "unsigned" form of the transaction that the
+    // new sponsor signs over to produce the SponsorSignature, before it's attached and the transaction is
+    // submitted. rippled (not this model) is what ultimately rejects a final submission missing this signature.
+    SponsorshipTransfer transfer = SponsorshipTransfer.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .sponsor(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
+      .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
+      .build();
+
+    assertThat(transfer.sponsorSignature()).isEmpty();
   }
 
   @Test

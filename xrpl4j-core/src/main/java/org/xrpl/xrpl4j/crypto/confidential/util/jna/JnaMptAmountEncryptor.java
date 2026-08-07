@@ -28,6 +28,7 @@ import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.util.MptAmountEncryptor;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -86,19 +87,24 @@ public class JnaMptAmountEncryptor implements MptAmountEncryptor {
       PUBLIC_KEY_SIZE, publicKeyBytes.length
     );
 
+    // Extract the blinding factor just before use; zero the copy when done
     byte[] blindingBytes = blindingFactor.value().toByteArray();
-    Preconditions.checkArgument(
-      blindingBytes.length == BLINDING_FACTOR_SIZE,
-      "blindingFactor must be %s bytes, but was %s bytes",
-      BLINDING_FACTOR_SIZE, blindingBytes.length
-    );
+    try {
+      Preconditions.checkArgument(
+        blindingBytes.length == BLINDING_FACTOR_SIZE,
+        "blindingFactor must be %s bytes, but was %s bytes",
+        BLINDING_FACTOR_SIZE, blindingBytes.length
+      );
 
-    byte[] outCiphertext = new byte[CIPHERTEXT_SIZE];
-    int result = lib.mpt_encrypt_amount(amount.longValue(), publicKeyBytes, blindingBytes, outCiphertext);
-    if (result != 0) {
-      throw new IllegalStateException("mpt_encrypt_amount failed with error code: " + result);
+      byte[] outCiphertext = new byte[CIPHERTEXT_SIZE];
+      int result = lib.mpt_encrypt_amount(amount.longValue(), publicKeyBytes, blindingBytes, outCiphertext);
+      if (result != 0) {
+        throw new IllegalStateException("mpt_encrypt_amount failed with error code: " + result);
+      }
+
+      return EncryptedAmount.fromBytes(outCiphertext);
+    } finally {
+      Arrays.fill(blindingBytes, (byte) 0);
     }
-
-    return EncryptedAmount.fromBytes(outCiphertext);
   }
 }

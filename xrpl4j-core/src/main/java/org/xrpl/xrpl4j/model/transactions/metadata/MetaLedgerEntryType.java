@@ -64,6 +64,9 @@ public interface MetaLedgerEntryType {
   @Beta
   MetaLedgerEntryType LOAN = MetaLedgerEntryType.of("Loan");
 
+  @Beta
+  MetaLedgerEntryType SPONSORSHIP = MetaLedgerEntryType.of("Sponsorship");
+
 
   /**
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.
@@ -137,6 +140,8 @@ public interface MetaLedgerEntryType {
         return MetaLoanBrokerObject.class;
       case "Loan":
         return MetaLoanObject.class;
+      case "Sponsorship":
+        return MetaSponsorshipObject.class;
       default:
         return MetaUnknownObject.class;
     }

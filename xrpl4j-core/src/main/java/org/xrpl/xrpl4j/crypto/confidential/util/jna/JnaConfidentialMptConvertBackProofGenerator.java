@@ -96,7 +96,11 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
 
     byte[] outProof = new byte[PROOF_SIZE];
 
-    // Extract keys and context just before use; zero the private key copy when done
+    // Extract the sender's secrets just before use; zero these copies when done. The balance blinding factor is
+    // secret in the same sense the private key is: an ElGamal ciphertext plus its blinding factor reveals the
+    // encrypted amount, so it is scrubbed alongside it. Note this clears only these Java copies -- the caller's own
+    // BlindingFactor instance, and any temporary buffers JNA marshals into native memory, are outside this method's
+    // control.
     byte[] privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
     byte[] publicKeyBytes = senderKeyPair.publicKey().value().toByteArray();
     byte[] contextHash = context.value().toByteArray();
@@ -109,6 +113,7 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
       );
     } finally {
       Arrays.fill(privateKeyBytes, (byte) 0);
+      Arrays.fill(params.blindingFactor, (byte) 0);
     }
 
     if (result != 0) {

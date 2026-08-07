@@ -135,6 +135,45 @@ class SeedCodecTest extends AbstractCodecTest {
     assertThat(decoded).isEqualTo(entropy.value().hexValue());
   }
 
+  /**
+   * 32-byte entropy exists only for ElGamal secp256k1 seeds. Under the ED25519 version prefix it encodes to a
+   * 53-character seed that {@link SeedCodec#decodeSeed(String)} cannot decode, so it must be rejected at encode time
+   * rather than returned as unrecoverable key material.
+   */
+  @Test
+  public void encodeSeedRejectsThirtyTwoByteEntropyForEd25519() {
+    assertThrows(
+      EncodeException.class,
+      () -> seedCodec.encodeSeed(
+        unsignedByteArrayFromHex("4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4"),
+        KeyType.ED25519
+      ),
+      "32-byte entropy is only supported for SECP256K1 seeds, but was ED25519."
+    );
+  }
+
+  /**
+   * Guards the round-trip property this codec must hold: every seed {@link SeedCodec#encodeSeed} accepts must be
+   * decodable back to the same entropy and key type.
+   */
+  @Test
+  public void everyEncodableSeedIsDecodable() {
+    String sixteen = "CF2DE378FBDD7E2EE87D486DFB5A7BFF";
+    String thirtyTwo = "4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4";
+
+    for (Object[] testCase : new Object[][] {
+      {sixteen, KeyType.ED25519}, {sixteen, KeyType.SECP256K1}, {thirtyTwo, KeyType.SECP256K1}
+    }) {
+      String hex = (String) testCase[0];
+      KeyType keyType = (KeyType) testCase[1];
+
+      Decoded decoded = seedCodec.decodeSeed(seedCodec.encodeSeed(unsignedByteArrayFromHex(hex), keyType));
+
+      assertThat(decoded.bytes().hexValue()).isEqualTo(hex);
+      assertThat(decoded.type()).isPresent().get().isEqualTo(keyType);
+    }
+  }
+
   @Test
   public void encodeSeedWithFewerThanSixteenBytes() {
     assertThrows(

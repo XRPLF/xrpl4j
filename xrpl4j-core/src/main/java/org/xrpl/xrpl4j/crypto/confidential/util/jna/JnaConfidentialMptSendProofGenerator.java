@@ -131,21 +131,27 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     byte[] outProof = new byte[SEND_PROOF_SIZE];
     long[] outLen = new long[]{SEND_PROOF_SIZE};
 
-    // Extract sender keys just before use; zero the private key copy when done
+    // Extract the sender's secrets just before use; zero these copies when done. Blinding factors are secret in the
+    // same sense the private key is: an ElGamal ciphertext plus its blinding factor reveals the encrypted amount, so
+    // they are scrubbed alongside it. Note this clears only these Java copies -- the caller's own BlindingFactor
+    // instances, and any temporary buffers JNA marshals into native memory, are outside this method's control.
     byte[] privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
     byte[] publicKeyBytes = senderKeyPair.publicKey().value().toByteArray();
+    byte[] txBlindingFactorBytes = txBlindingFactor.value().toByteArray();
 
     int result;
     try {
       result = lib.mpt_get_confidential_send_proof(
         privateKeyBytes, publicKeyBytes, amount.longValue(),
         participantArray, numParticipants,
-        txBlindingFactor.value().toByteArray(), context.value().toByteArray(),
+        txBlindingFactorBytes, context.value().toByteArray(),
         amountCommitment.value().toByteArray(), balanceStruct,
         outProof, outLen
       );
     } finally {
       Arrays.fill(privateKeyBytes, (byte) 0);
+      Arrays.fill(txBlindingFactorBytes, (byte) 0);
+      Arrays.fill(balanceStruct.blindingFactor, (byte) 0);
     }
 
     if (result != 0) {

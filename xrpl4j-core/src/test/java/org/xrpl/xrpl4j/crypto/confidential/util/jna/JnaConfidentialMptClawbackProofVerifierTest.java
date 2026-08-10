@@ -11,6 +11,7 @@ import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptClawbackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptClawbackProof;
@@ -60,6 +61,14 @@ class JnaConfidentialMptClawbackProofVerifierTest {
   void rejectsNonSecp256k1PublicKey() {
     assertThatThrownBy(() -> verifier.verifyProof(PROOF, CIPHERTEXT, ED_PUBLIC_KEY, AMOUNT, CONTEXT))
       .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("SECP256K1");
+  }
+
+  @Test
+  void rejectsEmptyPublicKey() {
+    // An empty key is classified SECP256K1 and is constructible, so it passes the keyType() check but is not 33 bytes.
+    PublicKey emptyKey = PublicKey.builder().value(UnsignedByteArray.empty()).build();
+    assertThatThrownBy(() -> verifier.verifyProof(PROOF, CIPHERTEXT, emptyKey, AMOUNT, CONTEXT))
+      .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("33 bytes");
   }
 
   @Test

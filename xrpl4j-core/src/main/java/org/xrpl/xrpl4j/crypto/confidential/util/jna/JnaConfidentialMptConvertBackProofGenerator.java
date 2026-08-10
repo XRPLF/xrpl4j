@@ -101,9 +101,14 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     // encrypted amount, so it is scrubbed alongside it. Note this clears only these Java copies -- the caller's own
     // BlindingFactor instance, and any temporary buffers JNA marshals into native memory, are outside this method's
     // control.
-    byte[] privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
+    // Validate the public key before copying out the private key, so a failure leaves no unscrubbed secret.
+    // keyType() is content-derived and does not by itself guarantee length.
     byte[] publicKeyBytes = senderKeyPair.publicKey().value().toByteArray();
+    Preconditions.checkArgument(publicKeyBytes.length == 33, "senderKeyPair public key must be 33 bytes");
     byte[] contextHash = context.value().toByteArray();
+
+    byte[] privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
+    Preconditions.checkArgument(privateKeyBytes.length == 32, "senderKeyPair private key must be 32 bytes");
 
     int result;
     try {

@@ -81,9 +81,13 @@ public class JnaConfidentialMptConvertBackProofVerifier implements ConfidentialM
       senderPublicKey.keyType() == KeyType.SECP256K1, "senderPublicKey must be SECP256K1"
     );
 
+    // keyType() is content-derived and does not by itself guarantee length; the native call needs exactly 33 bytes.
+    byte[] senderPublicKeyBytes = senderPublicKey.value().toByteArray();
+    Preconditions.checkArgument(senderPublicKeyBytes.length == 33, "senderPublicKey must be 33 bytes");
+
     return lib.mpt_verify_convert_back_proof(
       proof.value().toByteArray(),
-      senderPublicKey.value().toByteArray(),
+      senderPublicKeyBytes,
       encryptedBalance.value().toByteArray(),
       balanceCommitment.value().toByteArray(),
       amount.longValue(),

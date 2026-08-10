@@ -71,6 +71,8 @@ public interface MptCryptoLibrary extends Library {
     MptPedersenProofParams params, byte[] outProof
   );
 
+  // numParticipants is `long` here but `byte` in mpt_verify_send_proof because the native header declares them
+  // differently (size_t vs uint8_t); the JNA mappings must match the native ABI, so they are not unified.
   int mpt_get_confidential_send_proof(
     byte[] privateKey, byte[] publicKey, long amount,
     MptConfidentialParticipant[] participants, long numParticipants,

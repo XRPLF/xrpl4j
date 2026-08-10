@@ -11,6 +11,7 @@ import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptClawbackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptClawbackProof;
@@ -69,6 +70,24 @@ class JnaConfidentialMptClawbackProofGeneratorTest {
     assertThatThrownBy(() -> generator.generateProof(
       CIPHERTEXT, ED_KEY_PAIR.publicKey(), AMOUNT, ED_KEY_PAIR.privateKey(), CONTEXT
     )).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("SECP256K1");
+  }
+
+  @Test
+  void generateProofRejectsEmptyPublicKey() {
+    // An empty key is classified SECP256K1 and is constructible, so it passes the keyType() check but is not 33 bytes.
+    PublicKey emptyKey = PublicKey.builder().value(UnsignedByteArray.empty()).build();
+    assertThatThrownBy(() -> generator.generateProof(CIPHERTEXT, emptyKey, AMOUNT, SECP_PRIVATE_KEY, CONTEXT))
+      .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("33 bytes");
+  }
+
+  @Test
+  void generateProofRejectsDestroyedPrivateKey() {
+    // A destroyed PrivateKey yields empty natural bytes, not the 32 bytes the native call expects.
+    PrivateKey destroyedPrivateKey =
+      Seed.secp256k1SeedFromPassphrase(Passphrase.of("clawback-destroyed")).deriveKeyPair().privateKey();
+    destroyedPrivateKey.destroy();
+    assertThatThrownBy(() -> generator.generateProof(CIPHERTEXT, SECP_PUBLIC_KEY, AMOUNT, destroyedPrivateKey, CONTEXT))
+      .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("32 bytes");
   }
 
   @Test

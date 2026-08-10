@@ -75,6 +75,16 @@ class JnaConfidentialMptConvertBackProofGeneratorTest {
   }
 
   @Test
+  void generateProofRejectsDestroyedPrivateKey() {
+    // A destroyed PrivateKey yields empty natural bytes, not the 32 bytes the native call expects.
+    KeyPair destroyedKeyPair =
+      Seed.secp256k1SeedFromPassphrase(Passphrase.of("convert-back-destroyed")).deriveKeyPair();
+    destroyedKeyPair.privateKey().destroy();
+    assertThatThrownBy(() -> generator.generateProof(destroyedKeyPair, AMOUNT, CONTEXT, BALANCE_PARAMS))
+      .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("32 bytes");
+  }
+
+  @Test
   void generateProofThrowsOnNativeError() {
     when(lib.mpt_get_convert_back_proof(any(), any(), any(), anyLong(), any(), any())).thenReturn(-1);
 

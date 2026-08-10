@@ -81,10 +81,14 @@ public class JnaConfidentialMptClawbackProofVerifier implements ConfidentialMptC
 
     byte[] ciphertext = issuerEncryptedBalance.value().toByteArray();
 
+    // keyType() is content-derived and does not by itself guarantee length; the native call needs exactly 33 bytes.
+    byte[] publicKeyBytes = issuerPublicKey.value().toByteArray();
+    Preconditions.checkArgument(publicKeyBytes.length == 33, "issuerPublicKey must be 33 bytes");
+
     return lib.mpt_verify_clawback_proof(
       proof.value().toByteArray(),
       amount.longValue(),
-      issuerPublicKey.value().toByteArray(),
+      publicKeyBytes,
       ciphertext,
       context.value().toByteArray()
     ) == 0;

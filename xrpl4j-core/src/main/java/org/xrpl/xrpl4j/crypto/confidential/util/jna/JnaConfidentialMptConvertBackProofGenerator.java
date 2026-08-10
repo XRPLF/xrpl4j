@@ -108,10 +108,11 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     byte[] contextHash = context.value().toByteArray();
 
     byte[] privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
-    Preconditions.checkArgument(privateKeyBytes.length == 32, "senderKeyPair private key must be 32 bytes");
 
     int result;
     try {
+      // Validate inside the try so a failed check still scrubs the private key in the finally block.
+      Preconditions.checkArgument(privateKeyBytes.length == 32, "senderKeyPair private key must be 32 bytes");
       result = lib.mpt_get_convert_back_proof(
         privateKeyBytes, publicKeyBytes, contextHash, amount.longValue(),
         params, outProof

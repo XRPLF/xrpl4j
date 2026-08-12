@@ -117,4 +117,5 @@ public interface TicketObject extends LedgerObject {
    * @return A {@link Hash256}.
    */
   Hash256 index();
+
 }

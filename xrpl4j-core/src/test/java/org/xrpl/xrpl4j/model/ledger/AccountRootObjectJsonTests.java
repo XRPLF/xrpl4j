@@ -115,4 +115,50 @@ public class AccountRootObjectJsonTests extends AbstractJsonTest {
 
     assertCanSerializeAndDeserialize(object, json);
   }
+
+  @Test
+  public void testJsonWithSponsor() throws JsonProcessingException, JSONException {
+    AccountRootObject object = AccountRootObject.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .accountTransactionId(Hash256.of("0D5FB50FA65C9FE1538FD7E398FFFE9D1908DFA4576D8D7A020040686F93C77D"))
+      .balance(XrpCurrencyAmount.ofDrops(148446663))
+      .domain("6D64756F31332E636F6D")
+      .emailHash("98B4375E1D753E5B91627516F6D70977")
+      .flags(AccountRootFlags.of(8388608))
+      .messageKey("0000000000000000000000070000000300")
+      .ownerCount(UnsignedInteger.valueOf(3))
+      .previousTransactionId(Hash256.of("0D5FB50FA65C9FE1538FD7E398FFFE9D1908DFA4576D8D7A020040686F93C77D"))
+      .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14091160))
+      .sequence(UnsignedInteger.valueOf(336))
+      .transferRate(UnsignedInteger.valueOf(1004999999))
+      .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk"))
+      .sponsoredOwnerCount(UnsignedInteger.valueOf(2))
+      .sponsoringOwnerCount(UnsignedInteger.valueOf(4))
+      .sponsoringAccountCount(UnsignedInteger.valueOf(1))
+      .index(Hash256.of("13F1A95D7AAB7108D5CE7EEAF504B2894B8C674E6D68499076441C4837282BF8"))
+      .build();
+
+    String json = "{\n" +
+      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"AccountTxnID\": \"0D5FB50FA65C9FE1538FD7E398FFFE9D1908DFA4576D8D7A020040686F93C77D\",\n" +
+      "    \"Balance\": \"148446663\",\n" +
+      "    \"Domain\": \"6D64756F31332E636F6D\",\n" +
+      "    \"EmailHash\": \"98B4375E1D753E5B91627516F6D70977\",\n" +
+      "    \"Flags\": 8388608,\n" +
+      "    \"LedgerEntryType\": \"AccountRoot\",\n" +
+      "    \"MessageKey\": \"0000000000000000000000070000000300\",\n" +
+      "    \"OwnerCount\": 3,\n" +
+      "    \"PreviousTxnID\": \"0D5FB50FA65C9FE1538FD7E398FFFE9D1908DFA4576D8D7A020040686F93C77D\",\n" +
+      "    \"PreviousTxnLgrSeq\": 14091160,\n" +
+      "    \"Sequence\": 336,\n" +
+      "    \"TransferRate\": 1004999999,\n" +
+      "    \"Sponsor\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk\",\n" +
+      "    \"SponsoredOwnerCount\": 2,\n" +
+      "    \"SponsoringOwnerCount\": 4,\n" +
+      "    \"SponsoringAccountCount\": 1,\n" +
+      "    \"index\": \"13F1A95D7AAB7108D5CE7EEAF504B2894B8C674E6D68499076441C4837282BF8\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(object, json);
+  }
 }

@@ -65,6 +65,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountSponsoringRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountSponsoringResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
@@ -991,6 +993,20 @@ public class XrplClientTest {
     verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountLinesResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_LINES);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountLinesRequestParams);
+  }
+
+  @Test
+  public void accountSponsoring() throws JsonRpcClientErrorException {
+    AccountSponsoringRequestParams accountSponsoringRequestParams = AccountSponsoringRequestParams.builder()
+      .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
+      .build();
+    xrplClient.accountSponsoring(accountSponsoringRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountSponsoringResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_SPONSORING);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountSponsoringRequestParams);
   }
 
   @Test

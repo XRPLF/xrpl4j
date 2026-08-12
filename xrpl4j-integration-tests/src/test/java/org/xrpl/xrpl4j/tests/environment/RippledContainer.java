@@ -61,7 +61,7 @@ public class RippledContainer {
   // run the local integration tests against a private xrpld image (see .github/xrpld-image.env). When a
   // private image is used, CI performs a `docker login` beforehand; Testcontainers reuses those Docker
   // credentials from the default Docker config when pulling.
-  private static final String DEFAULT_DOCKER_IMAGE = "rippleci/xrpld:3.3.0";
+  private static final String DEFAULT_DOCKER_IMAGE = "rippleci/xrpld:develop";
 
   private static final Logger LOGGER = getLogger(RippledContainer.class);
   private static ScheduledExecutorService ledgerAcceptor = null;

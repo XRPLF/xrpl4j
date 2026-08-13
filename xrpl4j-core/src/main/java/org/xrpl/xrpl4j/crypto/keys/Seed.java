@@ -42,6 +42,7 @@ import org.xrpl.xrpl4j.crypto.HashingUtils;
 import org.xrpl.xrpl4j.crypto.signing.bc.Secp256k1;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -117,13 +118,16 @@ public interface Seed extends javax.security.auth.Destroyable {
     Objects.requireNonNull(passphrase);
 
     final byte[] entropyBytes = new byte[32];
+    try {
+      // 32 bytes of deterministic entropy.
+      Hashing.sha512()
+        .hashBytes(passphrase.value())
+        .writeBytesTo(entropyBytes, 0, 32);
 
-    // 32 bytes of deterministic entropy.
-    Hashing.sha512()
-      .hashBytes(passphrase.value())
-      .writeBytesTo(entropyBytes, 0, 32);
-
-    return elGamalSecp256k1SeedFromEntropy(Entropy.of(entropyBytes));
+      return elGamalSecp256k1SeedFromEntropy(Entropy.of(entropyBytes));
+    } finally {
+      Arrays.fill(entropyBytes, (byte) 0);
+    }
   }
 
   /**

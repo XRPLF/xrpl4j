@@ -234,6 +234,50 @@ public class FeeUtils {
   }
 
   /**
+   * Computes the fee necessary for a multi-signed {@code SponsorshipTransfer} transaction that is sponsored.
+   *
+   * <p>Per XLS-0068, the fee for such a transaction must cover {@code baseFee * (1 + |sponseeSigners| +
+   * |sponsorSigners|)}, further scaled by load (see rippled's {@code Transactor::calculateBaseFee()} and
+   * {@code scaleFeeLoad()}).</p>
+   *
+   * @param feeResult          {@link FeeResult} obtained by querying the ledger (e.g., via {@code XrplClient#fee()}).
+   * @param numSponseeSigners  The number of signers multi-signing as the sponsee. Use 0 for a single-signed sponsee.
+   * @param numSponsorSigners  The number of signers multi-signing as the sponsor. Use 0 for a single-signed sponsor.
+   *
+   * @return A {@link ComputedNetworkFees} with low, medium and high fee levels scaled for the SponsorshipTransfer
+   *   transaction.
+   */
+  public static ComputedNetworkFees computeSponsorshipTransferNetworkFees(
+    final FeeResult feeResult,
+    final UnsignedInteger numSponseeSigners,
+    final UnsignedInteger numSponsorSigners
+  ) {
+    Objects.requireNonNull(feeResult);
+    Objects.requireNonNull(numSponseeSigners);
+    Objects.requireNonNull(numSponsorSigners);
+    Preconditions.checkArgument(
+      numSponseeSigners.compareTo(UnsignedInteger.valueOf(32)) <= 0,
+      "numSponseeSigners must not exceed 32 (XRPL signer list limit)."
+    );
+    Preconditions.checkArgument(
+      numSponsorSigners.compareTo(UnsignedInteger.valueOf(32)) <= 0,
+      "numSponsorSigners must not exceed 32 (XRPL signer list limit)."
+    );
+
+    ComputedNetworkFees computedNetworkFees = computeNetworkFees(feeResult);
+    // Fee multiplier = (1 + |sponseeSigners| + |sponsorSigners|)
+    XrpCurrencyAmount numberOfSignaturesAsAmount = XrpCurrencyAmount.of(
+      UnsignedLong.valueOf(1L + numSponseeSigners.longValue() + numSponsorSigners.longValue())
+    );
+    return ComputedNetworkFees.builder()
+      .feeLow(computedNetworkFees.feeLow().times(numberOfSignaturesAsAmount))
+      .feeMedium(computedNetworkFees.feeMedium().times(numberOfSignaturesAsAmount))
+      .feeHigh(computedNetworkFees.feeHigh().times(numberOfSignaturesAsAmount))
+      .queuePercentage(computedNetworkFees.queuePercentage())
+      .build();
+  }
+
+  /**
    * Calculate the lowest fee the user is able to pay if the queue is empty.
    *
    * @param decomposedFees A {@link DecomposedFees} that contains information about current XRPL fees.

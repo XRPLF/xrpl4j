@@ -179,6 +179,24 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   }
 
   @Override
+  public <T extends Transaction> Signature sponsorSign(
+    final PrivateKeyReference privateKeyReference, final T transaction
+  ) {
+    Objects.requireNonNull(privateKeyReference);
+    Objects.requireNonNull(transaction);
+    return getTransactionSigner(privateKeyReference).sponsorSign(transaction);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorMultiSign(
+    final PrivateKeyReference privateKeyReference, final T transaction
+  ) {
+    Objects.requireNonNull(privateKeyReference);
+    Objects.requireNonNull(transaction);
+    return getTransactionSigner(privateKeyReference).sponsorMultiSign(transaction);
+  }
+
+  @Override
   public <T extends Transaction> Signer multiSignToSigner(PrivateKeyReference privateKeyable, T transaction) {
     return getTransactionSigner(privateKeyable).multiSignToSigner(transaction);
   }
@@ -370,6 +388,14 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
 
     public final Signature counterpartyMultiSign(final LoanSet transaction) {
       return bcSignatureService.counterpartyMultiSign(this.privateKey, transaction);
+    }
+
+    public <T extends Transaction> Signature sponsorSign(final T transaction) {
+      return bcSignatureService.sponsorSign(this.privateKey, transaction);
+    }
+
+    public <T extends Transaction> Signature sponsorMultiSign(final T transaction) {
+      return bcSignatureService.sponsorMultiSign(this.privateKey, transaction);
     }
 
     public PublicKey getPublicKey() {

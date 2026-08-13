@@ -25,19 +25,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
+import org.xrpl.xrpl4j.model.flags.SponsorFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Provides an abstract interface for all concrete XRPL transactions.
@@ -125,6 +129,8 @@ public interface Transaction {
       .put(ImmutableLoanDelete.class, TransactionType.LOAN_DELETE)
       .put(ImmutableLoanManage.class, TransactionType.LOAN_MANAGE)
       .put(ImmutableLoanPay.class, TransactionType.LOAN_PAY)
+      .put(ImmutableSponsorshipTransfer.class, TransactionType.SPONSORSHIP_TRANSFER)
+      .put(ImmutableSponsorshipSet.class, TransactionType.SPONSORSHIP_SET)
       .build();
 
   /**
@@ -255,6 +261,197 @@ public interface Transaction {
 
   @JsonProperty("NetworkID")
   Optional<NetworkId> networkId();
+
+  /**
+   * The account that is sponsoring the transaction fee and/or reserve requirements. If specified, the sponsor
+   * will pay the transaction fee and/or cover reserve requirements instead of the transaction sender.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An {@link Optional} {@link Address} of the sponsoring account.
+   */
+  @Beta
+  @JsonProperty("Sponsor")
+  Optional<Address> sponsor();
+
+  /**
+   * Flags indicating what type of sponsorship this transaction uses. The flags are:
+   * <ul>
+   *   <li>tfSponsorFee (1) - The sponsor is paying the transaction fee</li>
+   *   <li>tfSponsorReserve (2) - The sponsor is covering reserve requirements</li>
+   * </ul>
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An {@link Optional} {@link SponsorFlags} containing the sponsor flags.
+   */
+  @Beta
+  @JsonProperty("SponsorFlags")
+  Optional<SponsorFlags> sponsorFlags();
+
+  /**
+   * Contains the signing information for the sponsor. This field is required if the transaction is sponsored
+   * and the sponsor is not using a pre-funded Sponsorship object. The sponsor can sign with either a single
+   * signature or multi-signature.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An {@link Optional} {@link SponsorSignature} containing the sponsor's signature information.
+   */
+  @Beta
+  @JsonProperty("SponsorSignature")
+  Optional<SponsorSignature> sponsorSignature();
+
+  /**
+   * The set of {@link TransactionType}s for which reserve sponsorship ({@code spfSponsorReserve}) is allowed, per
+   * rippled's {@code isReserveSponsorAllowed} allow-list.
+   */
+  Set<TransactionType> RESERVE_SPONSOR_ALLOWED_TYPES = ImmutableSet.of(
+    TransactionType.DELEGATE_SET,
+    TransactionType.DEPOSIT_PRE_AUTH,
+    TransactionType.PAYMENT,
+    TransactionType.SIGNER_LIST_SET,
+    TransactionType.CHECK_CANCEL,
+    TransactionType.CHECK_CASH,
+    TransactionType.CHECK_CREATE,
+    TransactionType.ESCROW_CANCEL,
+    TransactionType.ESCROW_CREATE,
+    TransactionType.ESCROW_FINISH,
+    TransactionType.PAYMENT_CHANNEL_CLAIM,
+    TransactionType.PAYMENT_CHANNEL_CREATE,
+    TransactionType.PAYMENT_CHANNEL_FUND,
+    TransactionType.CLAWBACK,
+    TransactionType.MPT_AUTHORIZE,
+    TransactionType.MPT_ISSUANCE_CREATE,
+    TransactionType.MPT_ISSUANCE_DESTROY,
+    TransactionType.MPT_ISSUANCE_SET,
+    TransactionType.TRUST_SET,
+    TransactionType.CREDENTIAL_ACCEPT,
+    TransactionType.CREDENTIAL_CREATE,
+    TransactionType.CREDENTIAL_DELETE,
+    TransactionType.ACCOUNT_SET,
+    TransactionType.SET_REGULAR_KEY,
+    TransactionType.SPONSORSHIP_TRANSFER
+  );
+
+  /**
+   * Validates the sponsorship fields ({@link #sponsor()} and {@link #sponsorFlags()}) on this transaction per
+   * XLS-0068. This runs on every concrete {@link Transaction} construction (including JSON deserialization).
+   *
+   * <p>{@link SponsorshipSet} and {@link SponsorshipTransfer} transactions are exempt from this validation
+   * because they use the {@code Sponsor} field differently - to specify the new sponsor in a sponsorship
+   * management operation, not to indicate who is sponsoring this transaction's fee/reserve.</p>
+   *
+   * <p>Per the spec:</p>
+   * <ul>
+   *   <li>If {@code Sponsor} is present, {@code SponsorFlags} MUST also be present</li>
+   *   <li>If {@code SponsorFlags} is present, at least one of {@code spfSponsorFee} or
+   *       {@code spfSponsorReserve} MUST be set</li>
+   *   <li>{@code SponsorFlags} MUST NOT be present if {@code Sponsor} is not present</li>
+   *   <li>{@code spfSponsorReserve} is only permitted for the allow-listed transaction types in
+   *       {@link #RESERVE_SPONSOR_ALLOWED_TYPES}, consistent with rippled's {@code isReserveSponsorAllowed}</li>
+   *   <li>{@code spfSponsorReserve} MUST NOT be combined with {@link #delegate()}, consistent with rippled's
+   *       {@code Transactor::checkSponsor} rejection of reserve sponsorship under permissioned delegation</li>
+   * </ul>
+   *
+   * <p>Additionally, per rippled's {@code Batch::preflight}, when this transaction is an inner transaction of a
+   * {@link Batch} transaction (i.e. {@code tfInnerBatchTxn} is set):</p>
+   * <ul>
+   *   <li>Fee sponsorship ({@code spfSponsorFee}) is not allowed.</li>
+   *   <li>An embedded {@link #sponsorSignature()}, if present, must be the "empty" placeholder form (no
+   *       {@code TxnSignature}, {@code Signers}, or {@code SigningPubKey}) — inner transactions never carry a
+   *       real sponsor signature.</li>
+   * </ul>
+   * <p>Conversely, outside of an inner Batch transaction, an empty {@link #sponsorSignature()} placeholder is not
+   * meaningful and is rejected.</p>
+   *
+   * @throws IllegalStateException if the sponsorship fields are invalid.
+   */
+  @Value.Check
+  default void checkSponsorshipFields() {
+    if (this instanceof SponsorshipSet || this instanceof SponsorshipTransfer) {
+      return;
+    }
+
+    Optional<Address> sponsor = sponsor();
+    Optional<SponsorFlags> sponsorFlags = sponsorFlags();
+    boolean isInnerBatchTxn = transactionFlags().tfInnerBatchTxn();
+
+    if (sponsorFlags.isPresent() && !sponsor.isPresent()) {
+      throw new IllegalStateException(
+        "SponsorFlags must not be present without Sponsor field. " +
+          "Per XLS-0068, SponsorFlags requires Sponsor to be set."
+      );
+    }
+
+    if (sponsor.isPresent() && !sponsorFlags.isPresent()) {
+      throw new IllegalStateException(
+        "Sponsor field requires SponsorFlags to be set. " +
+          "Per XLS-0068, at least one of spfSponsorFee or spfSponsorReserve must be specified."
+      );
+    }
+
+    if (sponsorFlags.isPresent()) {
+      SponsorFlags flags = sponsorFlags.get();
+      if (!flags.isValid()) {
+        throw new IllegalStateException(
+          "SponsorFlags must have at least one flag set (spfSponsorFee=0x01 or spfSponsorReserve=0x02) and " +
+            "no other flags. Per XLS-0068, at least one sponsorship type must be specified and any other flag is " +
+            "invalid. Current value: " + flags.getValue()
+        );
+      }
+
+      if (isInnerBatchTxn && flags.spfSponsorFee()) {
+        throw new IllegalStateException(
+          "Fee sponsorship (spfSponsorFee) is not allowed on an inner Batch transaction (tfInnerBatchTxn is set)."
+        );
+      }
+
+      if (flags.spfSponsorReserve() && !RESERVE_SPONSOR_ALLOWED_TYPES.contains(transactionType())) {
+        throw new IllegalStateException(
+          "Reserve sponsorship (spfSponsorReserve) is not allowed for transaction type " + transactionType() + ". " +
+            "Per rippled's isReserveSponsorAllowed, only a specific allow-list of transaction types may use " +
+            "spfSponsorReserve."
+        );
+      }
+
+      if (flags.spfSponsorReserve() && delegate().isPresent()) {
+        throw new IllegalStateException(
+          "Reserve sponsorship (spfSponsorReserve) must not be combined with the Delegate field. " +
+            "Per rippled's Transactor::checkSponsor, reserve sponsorship with permissioned delegation is disallowed."
+        );
+      }
+    }
+
+    sponsorSignature().ifPresent(sig -> {
+      boolean isEmptySponsorSignature = !sig.transactionSignature().isPresent() && !sig.signers().isPresent();
+      if (isInnerBatchTxn) {
+        if (!isEmptySponsorSignature) {
+          throw new IllegalStateException(
+            "SponsorSignature must omit TxnSignature and Signers on an inner Batch transaction " +
+              "(tfInnerBatchTxn is set); inner transactions never carry a real sponsor signature."
+          );
+        }
+      } else if (isEmptySponsorSignature) {
+        throw new IllegalStateException(
+          "SponsorSignature must include either TxnSignature or Signers unless this is an inner Batch " +
+            "transaction (tfInnerBatchTxn)."
+        );
+      } else if (!sponsor.isPresent()) {
+        // Per XLS-0068 section 8.3.1, a real (non-placeholder) SponsorSignature may only be present when the
+        // transaction is sponsored, i.e. Sponsor (and therefore SponsorFlags) must also be present. It is never
+        // valid to supply a SponsorSignature on its own.
+        throw new IllegalStateException(
+          "SponsorSignature must not be present without Sponsor and SponsorFlags. " +
+            "Per XLS-0068, a sponsored transaction must include Sponsor and SponsorFlags alongside " +
+            "SponsorSignature (SponsorSignature may only be omitted when using a pre-funded Sponsorship object)."
+        );
+      }
+    });
+  }
 
   /**
    * The delegate account that is sending the transaction on behalf of the {@link #account()}.

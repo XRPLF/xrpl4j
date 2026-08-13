@@ -33,6 +33,7 @@ import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.flags.BatchFlags;
 import org.xrpl.xrpl4j.model.flags.LoanSetFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.SponsorFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.math.BigInteger;
@@ -223,6 +224,21 @@ public class BatchTest {
 
         @Override
         public Optional<NetworkId> networkId() {
+          return Optional.empty();
+        }
+
+        @Override
+        public Optional<Address> sponsor() {
+          return Optional.empty();
+        }
+
+        @Override
+        public Optional<SponsorFlags> sponsorFlags() {
+          return Optional.empty();
+        }
+
+        @Override
+        public Optional<SponsorSignature> sponsorSignature() {
           return Optional.empty();
         }
 

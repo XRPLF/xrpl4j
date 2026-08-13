@@ -79,26 +79,6 @@
       }
     ],
     [
-      "FeeAmount",
-      {
-        "isSerialized": true,
-        "isSigningField": true,
-        "isVLEncoded": false,
-        "nth": 32,
-        "type": "Amount"
-      }
-    ],
-    [
-      "MaxFee",
-      {
-        "isSerialized": true,
-        "isSigningField": true,
-        "isVLEncoded": false,
-        "nth": 33,
-        "type": "Amount"
-      }
-    ],
-    [
       "LedgerEntryType",
       {
         "isSerialized": true,
@@ -1969,6 +1949,16 @@
       }
     ],
     [
+      "FeeAmountDelta",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 34,
+        "type": "Amount"
+      }
+    ],
+    [
       "PublicKey",
       {
         "isSerialized": true,
@@ -2855,6 +2845,16 @@
         "isSigningField": true,
         "isVLEncoded": false,
         "nth": 1,
+        "type": "Int32"
+      }
+    ],
+    [
+      "RemainingOwnerCountDelta",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 2,
         "type": "Int32"
       }
     ],
@@ -6643,7 +6643,7 @@
         "optionality": 1
       },
       {
-        "name": "FeeAmount",
+        "name": "FeeAmountDelta",
         "optionality": 1
       },
       {
@@ -6651,7 +6651,7 @@
         "optionality": 1
       },
       {
-        "name": "RemainingOwnerCount",
+        "name": "RemainingOwnerCountDelta",
         "optionality": 1
       }
     ],

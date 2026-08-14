@@ -32,8 +32,8 @@ and flag values against it, not the XLS draft (drafts lag rippled).
   substitute a Bitcoin base58 library; the broad catch→false in `isValid*` is intentional.
 
 ## definitions.json
-- A vendored snapshot (rippled `--get_definitions` / xrpl.js) — **no
-  in-repo generator**; regenerate whole per `resources/README.md`, never hand-edit. A NEW
+- A vendored snapshot (rippled `--get_definitions` / xrpl.js) — **no committed codegen
+  step**; regenerate whole per `resources/README.md`, never hand-edit. A NEW
   top-level key breaks the whole codec at load — the same PR must extend `Definitions.java`.
 - A serialized type name must be registered in `SerializedType.typeMap` — an unregistered
   `isSerialized:true` type throws only at first use; pseudo/`isSerialized:false` names are

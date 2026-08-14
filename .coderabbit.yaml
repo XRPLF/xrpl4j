@@ -1,8 +1,9 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 language: "en-US"
 
-# Short steer toward useful feedback for open-source contributors; skip style nits (max 250 chars).
-tone_instructions: "Be concise and encouraging to open-source contributors. Flag correctness, security, and API-contract issues; skip style and formatting nits."
+# Short steer toward useful feedback for open-source contributors (max 250 chars). Formatting is
+# already enforced deterministically by checkstyle.xml in the Maven build, so the bot skips it.
+tone_instructions: "Be concise and encouraging to open-source contributors. Flag correctness, security, and API-contract issues; skip formatting and whitespace nits already covered by checkstyle."
 
 reviews:
   # chill = fewer, higher-signal comments (assertive is nitpicky).

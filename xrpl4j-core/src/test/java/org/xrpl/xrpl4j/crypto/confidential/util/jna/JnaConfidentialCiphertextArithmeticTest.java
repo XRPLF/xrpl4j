@@ -88,7 +88,15 @@ class JnaConfidentialCiphertextArithmeticTest {
   void throwsWhenMakeEcPairFails() {
     when(lib.mpt_make_ec_pair(any(), any(), any())).thenReturn(false);
     assertThatThrownBy(() -> arithmetic.add(A, B))
-      .isInstanceOf(IllegalStateException.class).hasMessageContaining("mpt_make_ec_pair");
+      .isInstanceOf(IllegalStateException.class).hasMessageContaining("left ciphertext");
+  }
+
+  @Test
+  void throwsWhenSecondMakeEcPairFails() {
+    // The first (left) parse succeeds, the second (right) fails.
+    when(lib.mpt_make_ec_pair(any(), any(), any())).thenReturn(true, false);
+    assertThatThrownBy(() -> arithmetic.add(A, B))
+      .isInstanceOf(IllegalStateException.class).hasMessageContaining("right ciphertext");
   }
 
   @Test

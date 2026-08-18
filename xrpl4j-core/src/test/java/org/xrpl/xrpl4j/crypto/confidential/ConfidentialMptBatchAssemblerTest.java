@@ -22,8 +22,12 @@ import org.xrpl.xrpl4j.crypto.confidential.model.ConfidentialIssuanceInfo;
 import org.xrpl.xrpl4j.crypto.confidential.model.ConfidentialTokenState;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptClawbackContext;
+import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertBackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptClawbackProof;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
@@ -37,7 +41,9 @@ import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMptClawback;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvert;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvertBack;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptSend;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -84,6 +90,14 @@ class ConfidentialMptBatchAssemblerTest {
     ConfidentialMptConvertContext.fromHex(Strings.repeat("AB", 32));
   private static final ConfidentialMptConvertProof DUMMY_CONVERT_PROOF =
     ConfidentialMptConvertProof.fromHex(Strings.repeat("CD", 64));
+  private static final ConfidentialMptConvertBackContext DUMMY_CONVERT_BACK_CTX =
+    ConfidentialMptConvertBackContext.fromHex(Strings.repeat("AB", 32));
+  private static final ConfidentialMptConvertBackProof DUMMY_CONVERT_BACK_PROOF =
+    ConfidentialMptConvertBackProof.fromHex(Strings.repeat("CD", 816));
+  private static final ConfidentialMptClawbackContext DUMMY_CLAWBACK_CTX =
+    ConfidentialMptClawbackContext.fromHex(Strings.repeat("AB", 32));
+  private static final ConfidentialMptClawbackProof DUMMY_CLAWBACK_PROOF =
+    ConfidentialMptClawbackProof.fromHex(Strings.repeat("CD", 64));
   private static final PedersenProofParams DUMMY_PARAMS = PedersenProofParams.builder()
     .pedersenCommitment(UnsignedByteArray.fromHex(Strings.repeat("02", 33)))
     .amount(UnsignedLong.valueOf(70))
@@ -139,9 +153,38 @@ class ConfidentialMptBatchAssemblerTest {
     when(convertService.generateProof(any(), any())).thenReturn(DUMMY_CONVERT_PROOF);
   }
 
+  private void stubConvertBackCrypto() {
+    stubCommonCrypto();
+    when(convertBackService.generateContext(any(), any(), any(), any())).thenReturn(DUMMY_CONVERT_BACK_CTX);
+    when(convertBackService.generatePedersenProofParams(any(), any(), any())).thenReturn(DUMMY_PARAMS);
+    when(convertBackService.generateProof(any(), any(), any(), any())).thenReturn(DUMMY_CONVERT_BACK_PROOF);
+  }
+
+  private void stubClawbackCrypto() {
+    when(clawbackService.generateContext(any(), any(), any(), any())).thenReturn(DUMMY_CLAWBACK_CTX);
+    when(clawbackService.generateProof(any(), any(), any(), any(), any())).thenReturn(DUMMY_CLAWBACK_PROOF);
+  }
+
   private ConfidentialConvertOp convert(final Address account) {
     return ConfidentialConvertOp.builder()
       .account(account).amount(UnsignedLong.valueOf(10)).holderKeyPair(ALICE_EG).mpTokenIssuanceId(TOKEN).build();
+  }
+
+  private ConfidentialConvertBackOp convertBack(final Address account) {
+    return ConfidentialConvertBackOp.builder()
+      .account(account).amount(UnsignedLong.valueOf(20)).holderKeyPair(ALICE_EG).mpTokenIssuanceId(TOKEN).build();
+  }
+
+  private ConfidentialClawbackOp clawback(final Address issuer, final Address holder) {
+    return ConfidentialClawbackOp.builder()
+      .account(issuer).holder(holder).amount(UnsignedLong.valueOf(40)).issuerKeyPair(ISSUER_EG)
+      .mpTokenIssuanceId(TOKEN).build();
+  }
+
+  /** A holder state with a spendable + issuer-encrypted balance, enough for a debit or clawback to read. */
+  private ConfidentialTokenState fundedState() {
+    return ConfidentialTokenState.builder()
+      .spending(DUMMY_CT).issuerEncrypted(DUMMY_CT).version(UnsignedInteger.valueOf(3)).build();
   }
 
   private Map<MpTokenIssuanceId, ConfidentialIssuanceInfo> defaultIssuances() {
@@ -292,6 +335,51 @@ class ConfidentialMptBatchAssemblerTest {
     verify(decryptor, atLeastOnce()).decrypt(any(), any(), eq(UnsignedLong.ZERO), eq(UnsignedLong.valueOf(500)));
     // The sender's spending balance was threaded homomorphically (debited) between the two sends.
     verify(ciphertextArithmetic, atLeastOnce()).subtract(any(), any());
+  }
+
+  @Test
+  void buildsConvertBackInnerAndChainsVersion() {
+    stubConvertBackCrypto();
+    Map<String, ConfidentialTokenState> states = new HashMap<>();
+    states.put(ConfidentialBatchRequest.stateKey(ALICE_ADDR, TOKEN), fundedState());
+
+    Batch batch = assembler.assemble(
+      baseRequest(Arrays.asList(convertBack(ALICE_ADDR), convertBack(ALICE_ADDR))).states(states).build()
+    );
+
+    ConfidentialMptConvertBack inner = (ConfidentialMptConvertBack) batch.rawTransactions().get(0).rawTransaction();
+    assertThat(inner.sequence()).isEqualTo(UnsignedInteger.valueOf(11));
+    assertThat(inner.fee()).isEqualTo(XrpCurrencyAmount.ofDrops(0));
+    assertThat(inner.flags().tfInnerBatchTxn()).isTrue();
+    assertThat(inner.signingPublicKey()).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
+    assertThat(inner.zkProof()).isEqualTo(DUMMY_CONVERT_BACK_PROOF);
+
+    // The second convert-back binds the version the first left behind (3 -> 4), threaded via the debit.
+    ArgumentCaptor<UnsignedInteger> versions = ArgumentCaptor.forClass(UnsignedInteger.class);
+    verify(convertBackService, atLeastOnce()).generateContext(eq(ALICE_ADDR), any(), eq(TOKEN), versions.capture());
+    assertThat(versions.getAllValues()).containsExactly(UnsignedInteger.valueOf(3), UnsignedInteger.valueOf(4));
+    verify(ciphertextArithmetic, atLeastOnce()).subtract(any(), any());
+  }
+
+  @Test
+  void buildsClawbackInner() {
+    stubClawbackCrypto();
+    // Alice (as the issuer submitter of the outer Batch) claws back from Bob then Carol — distinct holders.
+    Map<String, ConfidentialTokenState> states = new HashMap<>();
+    states.put(ConfidentialBatchRequest.stateKey(BOB_ADDR, TOKEN), fundedState());
+    states.put(ConfidentialBatchRequest.stateKey(CAROL_ADDR, TOKEN), fundedState());
+
+    Batch batch = assembler.assemble(baseRequest(
+      Arrays.asList(clawback(ALICE_ADDR, BOB_ADDR), clawback(ALICE_ADDR, CAROL_ADDR))
+    ).states(states).build());
+
+    ConfidentialMptClawback inner = (ConfidentialMptClawback) batch.rawTransactions().get(0).rawTransaction();
+    assertThat(inner.sequence()).isEqualTo(UnsignedInteger.valueOf(11));
+    assertThat(inner.fee()).isEqualTo(XrpCurrencyAmount.ofDrops(0));
+    assertThat(inner.flags().tfInnerBatchTxn()).isTrue();
+    assertThat(inner.signingPublicKey()).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
+    assertThat(inner.holder()).isEqualTo(BOB_ADDR);
+    assertThat(inner.zkProof()).isEqualTo(DUMMY_CLAWBACK_PROOF);
   }
 
   @Test

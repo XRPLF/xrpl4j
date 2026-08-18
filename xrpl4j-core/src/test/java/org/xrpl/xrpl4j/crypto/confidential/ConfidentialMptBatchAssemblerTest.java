@@ -61,7 +61,8 @@ class ConfidentialMptBatchAssemblerTest {
   private static final KeyPair ALICE = Seed.secp256k1SeedFromPassphrase(Passphrase.of("alice")).deriveKeyPair();
   private static final KeyPair BOB = Seed.secp256k1SeedFromPassphrase(Passphrase.of("bob")).deriveKeyPair();
   private static final KeyPair CAROL = Seed.secp256k1SeedFromPassphrase(Passphrase.of("carol")).deriveKeyPair();
-  private static final KeyPair ALICE_EG = Seed.elGamalSecp256k1SeedFromPassphrase(Passphrase.of("a-eg")).deriveKeyPair();
+  private static final KeyPair ALICE_EG =
+    Seed.elGamalSecp256k1SeedFromPassphrase(Passphrase.of("a-eg")).deriveKeyPair();
   private static final KeyPair BOB_EG = Seed.elGamalSecp256k1SeedFromPassphrase(Passphrase.of("b-eg")).deriveKeyPair();
   private static final KeyPair ISSUER_EG =
     Seed.elGamalSecp256k1SeedFromPassphrase(Passphrase.of("i-eg")).deriveKeyPair();

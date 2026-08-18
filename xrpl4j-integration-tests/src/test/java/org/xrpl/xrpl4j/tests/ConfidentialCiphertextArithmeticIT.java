@@ -35,29 +35,30 @@ class ConfidentialCiphertextArithmeticIT {
   @Test
   void addYieldsEncryptionOfSum() {
     KeyPair keyPair = Seed.elGamalSecp256k1Seed().deriveKeyPair();
-    UnsignedLong a = UnsignedLong.valueOf(100);
-    UnsignedLong b = UnsignedLong.valueOf(30);
+    UnsignedLong first = UnsignedLong.valueOf(100);
+    UnsignedLong second = UnsignedLong.valueOf(30);
 
-    // Independent blinding factors: the homomorphic sum's blinding is r_a + r_b, which still decrypts to a + b.
-    EncryptedAmount encA = encryptor.encrypt(a, keyPair.publicKey(), blindingFactors.generate());
-    EncryptedAmount encB = encryptor.encrypt(b, keyPair.publicKey(), blindingFactors.generate());
+    // Independent blinding factors: the homomorphic sum's blinding differs, but it still decrypts to first + second.
+    EncryptedAmount encFirst = encryptor.encrypt(first, keyPair.publicKey(), blindingFactors.generate());
+    EncryptedAmount encSecond = encryptor.encrypt(second, keyPair.publicKey(), blindingFactors.generate());
 
-    EncryptedAmount sum = arithmetic.add(encA, encB);
+    EncryptedAmount sum = arithmetic.add(encFirst, encSecond);
 
-    UnsignedLong decrypted = decryptor.decrypt(sum, keyPair.privateKey(), UnsignedLong.ZERO, UnsignedLong.valueOf(1000));
+    UnsignedLong decrypted =
+      decryptor.decrypt(sum, keyPair.privateKey(), UnsignedLong.ZERO, UnsignedLong.valueOf(1000));
     assertThat(decrypted).isEqualTo(UnsignedLong.valueOf(130));
   }
 
   @Test
   void subtractYieldsEncryptionOfDifference() {
     KeyPair keyPair = Seed.elGamalSecp256k1Seed().deriveKeyPair();
-    UnsignedLong a = UnsignedLong.valueOf(100);
-    UnsignedLong b = UnsignedLong.valueOf(30);
+    UnsignedLong first = UnsignedLong.valueOf(100);
+    UnsignedLong second = UnsignedLong.valueOf(30);
 
-    EncryptedAmount encA = encryptor.encrypt(a, keyPair.publicKey(), blindingFactors.generate());
-    EncryptedAmount encB = encryptor.encrypt(b, keyPair.publicKey(), blindingFactors.generate());
+    EncryptedAmount encFirst = encryptor.encrypt(first, keyPair.publicKey(), blindingFactors.generate());
+    EncryptedAmount encSecond = encryptor.encrypt(second, keyPair.publicKey(), blindingFactors.generate());
 
-    EncryptedAmount difference = arithmetic.subtract(encA, encB);
+    EncryptedAmount difference = arithmetic.subtract(encFirst, encSecond);
 
     UnsignedLong decrypted =
       decryptor.decrypt(difference, keyPair.privateKey(), UnsignedLong.ZERO, UnsignedLong.valueOf(1000));

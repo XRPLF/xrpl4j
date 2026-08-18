@@ -493,10 +493,10 @@ public class ConfidentialMptBatchAssembler {
     final EncryptedAmount issuerEncrypted =
       ciphertextArithmetic.subtract(requireBalance(state.issuerEncrypted(), "issuer-encrypted balance"),
         issuerCiphertext);
-    final Optional<EncryptedAmount> auditorEncrypted = auditorCiphertext.isPresent()
-      ? Optional.of(ciphertextArithmetic.subtract(
-          requireBalance(state.auditorEncrypted(), "auditor-encrypted balance"), auditorCiphertext.get()))
-      : state.auditorEncrypted();
+    final Optional<EncryptedAmount> auditorEncrypted = auditorCiphertext.isPresent() ?
+      Optional.of(ciphertextArithmetic.subtract(
+        requireBalance(state.auditorEncrypted(), "auditor-encrypted balance"), auditorCiphertext.get())) :
+      state.auditorEncrypted();
     return ConfidentialTokenState.builder()
       .from(state)
       .spending(spending)
@@ -517,17 +517,17 @@ public class ConfidentialMptBatchAssembler {
     final Optional<EncryptedAmount> auditorCiphertext,
     final PublicKey holderKey
   ) {
-    final EncryptedAmount inbox = state.inbox().isPresent()
-      ? ciphertextArithmetic.add(state.inbox().get(), holderCiphertext)
-      : holderCiphertext;
-    final EncryptedAmount issuerEncrypted = state.issuerEncrypted().isPresent()
-      ? ciphertextArithmetic.add(state.issuerEncrypted().get(), issuerCiphertext)
-      : issuerCiphertext;
+    final EncryptedAmount inbox = state.inbox().isPresent() ?
+      ciphertextArithmetic.add(state.inbox().get(), holderCiphertext) :
+      holderCiphertext;
+    final EncryptedAmount issuerEncrypted = state.issuerEncrypted().isPresent() ?
+      ciphertextArithmetic.add(state.issuerEncrypted().get(), issuerCiphertext) :
+      issuerCiphertext;
     Optional<EncryptedAmount> auditorEncrypted = state.auditorEncrypted();
     if (auditorCiphertext.isPresent()) {
-      auditorEncrypted = auditorEncrypted.isPresent()
-        ? Optional.of(ciphertextArithmetic.add(auditorEncrypted.get(), auditorCiphertext.get()))
-        : auditorCiphertext;
+      auditorEncrypted = auditorEncrypted.isPresent() ?
+        Optional.of(ciphertextArithmetic.add(auditorEncrypted.get(), auditorCiphertext.get())) :
+        auditorCiphertext;
     }
     return ConfidentialTokenState.builder()
       .from(state)
@@ -704,17 +704,21 @@ public class ConfidentialMptBatchAssembler {
 
   private static EncryptedAmount requireBalance(final Optional<EncryptedAmount> balance, final String what) {
     return balance.orElseThrow(() -> new IllegalStateException(
-      "ConfidentialMptBatchAssembler: cannot read " + what + " — it is unavailable (absent on-ledger, or reset by an "
-        + "earlier MergeInbox/Clawback in this Batch, a value the client cannot reproduce). Split these operations "
-        + "across separate Batches."
+      "ConfidentialMptBatchAssembler: cannot read " + what + " — it is unavailable (absent on-ledger, or reset by an " +
+        "earlier MergeInbox/Clawback in this Batch, a value the client cannot reproduce). Split these operations " +
+        "across separate Batches."
     ));
   }
 
-  private static Map.Entry<String, ConfidentialTokenState> update(final String key, final ConfidentialTokenState state) {
+  private static Map.Entry<String, ConfidentialTokenState> update(
+    final String key, final ConfidentialTokenState state
+  ) {
     return new AbstractMap.SimpleImmutableEntry<>(key, state);
   }
 
-  /** A built inner transaction plus the predicted-state updates it implies, keyed by {@code (account, token)}. */
+  /**
+   * A built inner transaction plus the predicted-state updates it implies, keyed by {@code (account, token)}.
+   */
   private static final class BuiltInner {
     private final Transaction transaction;
     private final List<Map.Entry<String, ConfidentialTokenState>> updates;

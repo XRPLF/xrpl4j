@@ -25,10 +25,10 @@ import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 /**
  * Homomorphic addition and subtraction of ElGamal ciphertexts ("encrypted amounts").
  *
- * <p>ElGamal encryption is additively homomorphic: two ciphertexts encrypted under the <em>same</em> public key can be
- * combined into a ciphertext encrypting the sum or difference of their plaintexts, without ever decrypting. This mirrors
- * the {@code secp256k1_elgamal_add} / {@code secp256k1_elgamal_subtract} routines rippled itself runs when it applies a
- * confidential transaction to a balance, so the result equals what the ledger will store byte-for-byte.</p>
+ * <p>ElGamal encryption is additively homomorphic: two ciphertexts encrypted under the <em>same</em> public key can
+ * be combined into a ciphertext encrypting the sum or difference of their plaintexts, without ever decrypting. This
+ * mirrors the {@code secp256k1_elgamal_add} / {@code secp256k1_elgamal_subtract} routines rippled runs when it applies
+ * a confidential transaction to a balance, so the result equals what the ledger will store byte-for-byte.</p>
  *
  * <p>This identity is what lets a client predict an account's post-transaction confidential balance when chaining
  * Confidential MPT operations for the same {@code (account, token)} inside a single Batch (XLS-56): each chained proof

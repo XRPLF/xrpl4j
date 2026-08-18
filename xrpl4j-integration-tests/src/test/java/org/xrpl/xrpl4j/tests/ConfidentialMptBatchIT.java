@@ -34,6 +34,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
@@ -42,8 +44,6 @@ import org.xrpl.xrpl4j.model.transactions.BatchSignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvert;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptMergeInbox;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
-import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
@@ -351,7 +351,9 @@ public class ConfidentialMptBatchIT extends AbstractIT {
     this.scanForResult(() -> this.getValidatedTransaction(signed.hash(), ConfidentialMptMergeInbox.class));
   }
 
-  /** A holder that has authorized, received {@code amount} public MPT, converted it, and merged it — fully spendable. */
+  /**
+   * A holder that has authorized, received {@code amount} public MPT, converted it, and merged it — fully spendable.
+   */
   private ConfidentialHolder fundedHolder(
     final KeyPair issuer, final MpTokenIssuanceId issuanceId, final KeyPair issuerElGamal,
     final KeyPair auditorElGamal, final long amount, final XrpCurrencyAmount fee

@@ -27,14 +27,14 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * A single Confidential MPT operation to place inside a Batch, minus the fields the {@link ConfidentialMptBatchAssembler}
- * owns (sequence, fee, inner-batch flag). This is a closed union of five variants — {@link ConfidentialSendOp},
- * {@link ConfidentialConvertOp}, {@link ConfidentialConvertBackOp}, {@link ConfidentialMergeInboxOp}, and
- * {@link ConfidentialClawbackOp}.
+ * A single Confidential MPT operation to place inside a Batch, minus the fields the
+ * {@link ConfidentialMptBatchAssembler} owns (sequence, fee, inner-batch flag). This is a closed union of five
+ * variants — {@link ConfidentialSendOp}, {@link ConfidentialConvertOp}, {@link ConfidentialConvertBackOp},
+ * {@link ConfidentialMergeInboxOp}, and {@link ConfidentialClawbackOp}.
  *
- * <p>Following the {@code CurrencyAmount} idiom used elsewhere in this codebase (Java 8 has no sealed types or pattern
- * matching), callers dispatch on the concrete variant via the exhaustive {@link #handle} / {@link #map} callbacks rather
- * than an {@code instanceof} chain of their own.</p>
+ * <p>Following the {@code CurrencyAmount} idiom used elsewhere in this codebase (Java 8 has no sealed types or
+ * pattern matching), callers dispatch on the concrete variant via the exhaustive {@link #handle} / {@link #map}
+ * callbacks rather than an {@code instanceof} chain of their own.</p>
  */
 public interface ConfidentialMptOp {
 

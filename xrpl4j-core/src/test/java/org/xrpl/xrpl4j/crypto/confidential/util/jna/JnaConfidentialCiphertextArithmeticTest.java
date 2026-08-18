@@ -68,13 +68,13 @@ class JnaConfidentialCiphertextArithmeticTest {
   @Test
   void rejectsNullArguments() {
     assertThatThrownBy(() -> arithmetic.add(null, B))
-      .isInstanceOf(NullPointerException.class).hasMessageContaining("a");
+      .isInstanceOf(NullPointerException.class).hasMessageContaining("left");
     assertThatThrownBy(() -> arithmetic.add(A, null))
-      .isInstanceOf(NullPointerException.class).hasMessageContaining("b");
+      .isInstanceOf(NullPointerException.class).hasMessageContaining("right");
     assertThatThrownBy(() -> arithmetic.subtract(null, B))
-      .isInstanceOf(NullPointerException.class).hasMessageContaining("a");
+      .isInstanceOf(NullPointerException.class).hasMessageContaining("left");
     assertThatThrownBy(() -> arithmetic.subtract(A, null))
-      .isInstanceOf(NullPointerException.class).hasMessageContaining("b");
+      .isInstanceOf(NullPointerException.class).hasMessageContaining("right");
   }
 
   @Test

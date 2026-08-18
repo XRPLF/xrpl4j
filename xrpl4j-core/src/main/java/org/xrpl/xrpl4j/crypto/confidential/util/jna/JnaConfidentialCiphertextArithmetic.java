@@ -75,44 +75,47 @@ public class JnaConfidentialCiphertextArithmetic implements ConfidentialCipherte
   /**
    * Parse both ciphertexts to EC-point pairs, run the native add/subtract, and serialize the result.
    *
-   * @param a   The left-hand ciphertext.
-   * @param b   The right-hand ciphertext.
-   * @param add {@code true} to add {@code b} to {@code a}, {@code false} to subtract {@code b} from {@code a}.
+   * @param left  The left-hand ciphertext.
+   * @param right The right-hand ciphertext under the same key.
+   * @param add   {@code true} to add, {@code false} to subtract {@code right} from {@code left}.
    *
    * @return The combined {@link EncryptedAmount}.
    */
-  private EncryptedAmount combine(final EncryptedAmount a, final EncryptedAmount b, final boolean add) {
-    Objects.requireNonNull(a, "a must not be null");
-    Objects.requireNonNull(b, "b must not be null");
+  private EncryptedAmount combine(final EncryptedAmount left, final EncryptedAmount right, final boolean add) {
+    Objects.requireNonNull(left, "left must not be null");
+    Objects.requireNonNull(right, "right must not be null");
 
-    byte[] aBytes = a.value().toByteArray();
-    byte[] bBytes = b.value().toByteArray();
-    Preconditions.checkArgument(aBytes.length == CIPHERTEXT_SIZE, "a must be %s bytes", CIPHERTEXT_SIZE);
-    Preconditions.checkArgument(bBytes.length == CIPHERTEXT_SIZE, "b must be %s bytes", CIPHERTEXT_SIZE);
+    byte[] leftBytes = left.value().toByteArray();
+    byte[] rightBytes = right.value().toByteArray();
+    Preconditions.checkArgument(leftBytes.length == CIPHERTEXT_SIZE, "left must be %s bytes", CIPHERTEXT_SIZE);
+    Preconditions.checkArgument(rightBytes.length == CIPHERTEXT_SIZE, "right must be %s bytes", CIPHERTEXT_SIZE);
 
     Pointer ctx = lib.mpt_secp256k1_context();
     if (ctx == null) {
       throw new IllegalStateException("mpt_secp256k1_context returned a null context");
     }
 
-    // Two parsed points per input, plus two for the result.
-    Memory apoint1 = new Memory(PUBKEY_STRUCT_SIZE);
-    Memory apoint2 = new Memory(PUBKEY_STRUCT_SIZE);
-    Memory bpoint1 = new Memory(PUBKEY_STRUCT_SIZE);
-    Memory bpoint2 = new Memory(PUBKEY_STRUCT_SIZE);
-    Memory outPoint1 = new Memory(PUBKEY_STRUCT_SIZE);
-    Memory outPoint2 = new Memory(PUBKEY_STRUCT_SIZE);
+    // Two parsed points (C1, C2) per input, plus two for the result.
+    Memory leftC1 = new Memory(PUBKEY_STRUCT_SIZE);
+    Memory leftC2 = new Memory(PUBKEY_STRUCT_SIZE);
+    Memory rightC1 = new Memory(PUBKEY_STRUCT_SIZE);
+    Memory rightC2 = new Memory(PUBKEY_STRUCT_SIZE);
+    Memory outC1 = new Memory(PUBKEY_STRUCT_SIZE);
+    Memory outC2 = new Memory(PUBKEY_STRUCT_SIZE);
     try {
-      if (!lib.mpt_make_ec_pair(aBytes, apoint1, apoint2)) {
-        throw new IllegalStateException("mpt_make_ec_pair failed to parse ciphertext a");
+      if (!lib.mpt_make_ec_pair(leftBytes, leftC1, leftC2)) {
+        throw new IllegalStateException("mpt_make_ec_pair failed to parse the left ciphertext");
       }
-      if (!lib.mpt_make_ec_pair(bBytes, bpoint1, bpoint2)) {
-        throw new IllegalStateException("mpt_make_ec_pair failed to parse ciphertext b");
+      if (!lib.mpt_make_ec_pair(rightBytes, rightC1, rightC2)) {
+        throw new IllegalStateException("mpt_make_ec_pair failed to parse the right ciphertext");
       }
 
-      int result = add
-        ? lib.secp256k1_elgamal_add(ctx, outPoint1, outPoint2, apoint1, apoint2, bpoint1, bpoint2)
-        : lib.secp256k1_elgamal_subtract(ctx, outPoint1, outPoint2, apoint1, apoint2, bpoint1, bpoint2);
+      int result;
+      if (add) {
+        result = lib.secp256k1_elgamal_add(ctx, outC1, outC2, leftC1, leftC2, rightC1, rightC2);
+      } else {
+        result = lib.secp256k1_elgamal_subtract(ctx, outC1, outC2, leftC1, leftC2, rightC1, rightC2);
+      }
       // secp256k1 convention: 1 == success.
       if (result != 1) {
         throw new IllegalStateException(
@@ -121,17 +124,17 @@ public class JnaConfidentialCiphertextArithmetic implements ConfidentialCipherte
       }
 
       byte[] out = new byte[CIPHERTEXT_SIZE];
-      if (!lib.mpt_serialize_ec_pair(outPoint1, outPoint2, out)) {
+      if (!lib.mpt_serialize_ec_pair(outC1, outC2, out)) {
         throw new IllegalStateException("mpt_serialize_ec_pair failed to serialize the combined ciphertext");
       }
       return EncryptedAmount.fromBytes(out);
     } finally {
-      apoint1.close();
-      apoint2.close();
-      bpoint1.close();
-      bpoint2.close();
-      outPoint1.close();
-      outPoint2.close();
+      leftC1.close();
+      leftC2.close();
+      rightC1.close();
+      rightC2.close();
+      outC1.close();
+      outC2.close();
     }
   }
 }

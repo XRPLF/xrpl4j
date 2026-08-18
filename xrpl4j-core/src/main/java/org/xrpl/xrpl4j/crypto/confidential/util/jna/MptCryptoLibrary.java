@@ -77,12 +77,12 @@ public interface MptCryptoLibrary extends Library {
 
   int secp256k1_elgamal_add(
     Pointer ctx, Pointer sumC1, Pointer sumC2,
-    Pointer aC1, Pointer aC2, Pointer bC1, Pointer bC2
+    Pointer leftC1, Pointer leftC2, Pointer rightC1, Pointer rightC2
   );
 
   int secp256k1_elgamal_subtract(
     Pointer ctx, Pointer diffC1, Pointer diffC2,
-    Pointer aC1, Pointer aC2, Pointer bC1, Pointer bC2
+    Pointer leftC1, Pointer leftC2, Pointer rightC1, Pointer rightC2
   );
 
   // =========================================================================

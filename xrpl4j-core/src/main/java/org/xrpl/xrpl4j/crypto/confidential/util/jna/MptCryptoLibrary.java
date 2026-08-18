@@ -22,6 +22,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;
+import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 
 /**
@@ -55,6 +56,34 @@ public interface MptCryptoLibrary extends Library {
   int mpt_generate_blinding_factor(byte[] outFactor);
 
   int mpt_get_pedersen_commitment(long amount, byte[] blindingFactor, byte[] outCommitment);
+
+  // =========================================================================
+  // Homomorphic Ciphertext Operations
+  // =========================================================================
+  //
+  // ElGamal is additively homomorphic: two same-key ciphertexts can be combined
+  // into an encryption of the sum/difference of their plaintexts without
+  // decrypting. The add/subtract routines operate on parsed secp256k1 points
+  // (opaque 64-byte `secp256k1_pubkey` buffers), so a 66-byte wire ciphertext
+  // (C1 || C2) is bridged to/from two points via mpt_make_ec_pair /
+  // mpt_serialize_ec_pair. Unlike the mpt_* primitives above (0 == success),
+  // these follow secp256k1's convention: they return 1 (true) on success.
+
+  Pointer mpt_secp256k1_context();
+
+  boolean mpt_make_ec_pair(byte[] buffer, Pointer out1, Pointer out2);
+
+  boolean mpt_serialize_ec_pair(Pointer in1, Pointer in2, byte[] out);
+
+  int secp256k1_elgamal_add(
+    Pointer ctx, Pointer sumC1, Pointer sumC2,
+    Pointer aC1, Pointer aC2, Pointer bC1, Pointer bC2
+  );
+
+  int secp256k1_elgamal_subtract(
+    Pointer ctx, Pointer diffC1, Pointer diffC2,
+    Pointer aC1, Pointer aC2, Pointer bC1, Pointer bC2
+  );
 
   // =========================================================================
   // Proof Generation

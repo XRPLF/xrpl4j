@@ -38,7 +38,7 @@ public class UInt64Type extends UIntType<UInt64Type> {
    * These fields are represented as base 10 Strings in JSON, whereas all other STUInt64s are represented in base16.
    */
   protected static final Set<String> BASE_10_UINT64_FIELD_NAMES = Sets.newHashSet(
-    "MaximumAmount", "OutstandingAmount", "MPTAmount", "LockedAmount"
+    "MaximumAmount", "OutstandingAmount", "MPTAmount", "LockedAmount", "ConfidentialOutstandingAmount"
   );
 
   public UInt64Type() {

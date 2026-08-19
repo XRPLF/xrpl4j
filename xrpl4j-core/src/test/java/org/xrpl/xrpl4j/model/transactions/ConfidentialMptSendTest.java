@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
@@ -36,6 +37,30 @@ class ConfidentialMptSendTest {
       .build()
     ).isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("Account and Destination must not be the same");
+  }
+
+  @Test
+  void issuerCannotBeSender() {
+    // Build an issuance ID whose embedded issuer is ACCOUNT (the sender), which rippled rejects (temMALFORMED).
+    String accountIdHex = AddressCodec.getInstance().decodeAccountId(ACCOUNT).hexValue();
+    MpTokenIssuanceId issuerOwned = MpTokenIssuanceId.of("00000179" + accountIdHex);
+    assertThatThrownBy(() -> baseBuilder()
+      .mpTokenIssuanceId(issuerOwned)
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("issuer cannot be the sender");
+  }
+
+  @Test
+  void issuerCannotBeDestination() {
+    // Build an issuance ID whose embedded issuer is DESTINATION, which rippled rejects (temMALFORMED).
+    String destinationIdHex = AddressCodec.getInstance().decodeAccountId(DESTINATION).hexValue();
+    MpTokenIssuanceId issuerOwned = MpTokenIssuanceId.of("00000179" + destinationIdHex);
+    assertThatThrownBy(() -> baseBuilder()
+      .mpTokenIssuanceId(issuerOwned)
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("issuer cannot be the destination");
   }
 
   @Test
@@ -93,7 +118,8 @@ class ConfidentialMptSendTest {
         PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
       )
       .destination(DESTINATION)
-      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179C3493FFEB0869853DDEC0705800595424710FA7A"))
+      // An issuance ID whose embedded issuer is neither ACCOUNT nor DESTINATION (a Send is never to/from the issuer).
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179" + Strings.repeat("11", 20)))
       .senderEncryptedAmount(EncryptedAmount.of(Strings.repeat("AB", 66)))
       .destinationEncryptedAmount(EncryptedAmount.of(Strings.repeat("CD", 66)))
       .issuerEncryptedAmount(EncryptedAmount.of(Strings.repeat("EF", 66)))

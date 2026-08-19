@@ -28,6 +28,7 @@ import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.ConfidentialIssuanceInfo;
 import org.xrpl.xrpl4j.crypto.confidential.model.ConfidentialTokenState;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.ImmutableConfidentialTokenState;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptClawbackContext;
@@ -337,10 +338,6 @@ public class ConfidentialMptBatchAssembler {
     final String key = ConfidentialBatchRequest.stateKey(op.account(), op.mpTokenIssuanceId());
     final ConfidentialTokenState state = predicted.getOrDefault(key, ConfidentialTokenState.builder().build());
 
-    final ConfidentialMptConvertContext context =
-      convertService.generateContext(op.account(), sequence, op.mpTokenIssuanceId());
-    final ConfidentialMptConvertProof proof = convertService.generateProof(op.holderKeyPair(), context);
-
     final BlindingFactor blinding = blindingFactorGenerator.generate();
     final EncryptedAmount holderCiphertext =
       encryptor.encrypt(op.amount(), op.holderKeyPair().publicKey(), blinding);
@@ -356,16 +353,30 @@ public class ConfidentialMptBatchAssembler {
       .flags(TransactionFlags.INNER_BATCH_TXN)
       .mpTokenIssuanceId(op.mpTokenIssuanceId())
       .mptAmount(MpTokenNumericAmount.of(op.amount()))
-      .holderEncryptionKey(op.holderKeyPair().publicKey())
       .holderEncryptedAmount(holderCiphertext)
       .issuerEncryptedAmount(issuerCiphertext)
-      .blindingFactor(blinding)
-      .zkProof(proof);
+      .blindingFactor(blinding);
     auditorCiphertext.ifPresent(builder::auditorEncryptedAmount);
 
-    // Predicted state after the convert: credit inbox/issuer/auditor and register the holder key.
+    // rippled requires HolderEncryptionKey and ZKProof to be set-or-omitted together: attach both only when
+    // registering the holder key (its first Convert). A top-up Convert omits them (rippled rejects a
+    // re-registration as tecDUPLICATE), so its Schnorr proof — an expensive native call — is never generated.
+    final Optional<PublicKey> registeredKey;
+    if (op.registerKey()) {
+      final ConfidentialMptConvertContext context =
+        convertService.generateContext(op.account(), sequence, op.mpTokenIssuanceId());
+      builder
+        .holderEncryptionKey(op.holderKeyPair().publicKey())
+        .zkProof(convertService.generateProof(op.holderKeyPair(), context));
+      registeredKey = Optional.of(op.holderKeyPair().publicKey());
+    } else {
+      registeredKey = Optional.empty();
+    }
+
+    // Predicted state after the convert: credit inbox/issuer/auditor, and register the holder key only when this
+    // Convert actually did (a top-up leaves the previously-registered key in place).
     final ConfidentialTokenState credited = applyConvertCredit(
-      state, holderCiphertext, issuerCiphertext, auditorCiphertext, op.holderKeyPair().publicKey()
+      state, holderCiphertext, issuerCiphertext, auditorCiphertext, registeredKey
     );
     return new BuiltInner(builder.build(), update(key, credited));
   }
@@ -507,14 +518,15 @@ public class ConfidentialMptBatchAssembler {
 
   /**
    * Credit a holder's pending balances after a Convert (rippled adds the tx ciphertexts straight in; a first-ever
-   * convert initializes them). Spending is untouched; the holder key is registered.
+   * convert initializes them). Spending is untouched. The holder key is (re-)registered only when {@code registeredKey}
+   * is present — a top-up Convert that does not register leaves the previously-registered key in place.
    */
   private ConfidentialTokenState applyConvertCredit(
     final ConfidentialTokenState state,
     final EncryptedAmount holderCiphertext,
     final EncryptedAmount issuerCiphertext,
     final Optional<EncryptedAmount> auditorCiphertext,
-    final PublicKey holderKey
+    final Optional<PublicKey> registeredKey
   ) {
     final EncryptedAmount inbox = state.inbox().isPresent() ?
       ciphertextArithmetic.add(state.inbox().get(), holderCiphertext) :
@@ -528,13 +540,13 @@ public class ConfidentialMptBatchAssembler {
         Optional.of(ciphertextArithmetic.add(auditorEncrypted.get(), auditorCiphertext.get())) :
         auditorCiphertext;
     }
-    return ConfidentialTokenState.builder()
+    final ImmutableConfidentialTokenState.Builder builder = ConfidentialTokenState.builder()
       .from(state)
       .inbox(inbox)
       .issuerEncrypted(issuerEncrypted)
-      .auditorEncrypted(auditorEncrypted)
-      .holderKey(holderKey)
-      .build();
+      .auditorEncrypted(auditorEncrypted);
+    registeredKey.ifPresent(builder::holderKey);
+    return builder.build();
   }
 
   /**

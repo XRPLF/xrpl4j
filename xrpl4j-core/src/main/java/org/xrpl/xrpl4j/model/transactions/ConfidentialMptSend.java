@@ -146,6 +146,9 @@ public interface ConfidentialMptSend extends Transaction {
    *
    * <ul>
    *   <li>The {@code Account} (sender) must not equal the {@code Destination} — an account cannot send to itself.</li>
+   *   <li>The issuer of the {@code MPTokenIssuanceID} must be neither the sender ({@code Account}) nor the
+   *       {@code Destination} — a Send moves value issuer &rarr; holder then holder &rarr; holder, never to or from
+   *       the issuer itself.</li>
    *   <li>{@code CredentialIDs}, when present, must contain at most 8 unique entries.</li>
    * </ul>
    *
@@ -156,6 +159,15 @@ public interface ConfidentialMptSend extends Transaction {
     Preconditions.checkState(
       !account().equals(destination()),
       "Account and Destination must not be the same (an account cannot send to itself)."
+    );
+
+    Preconditions.checkState(
+      !mpTokenIssuanceId().isIssuer(account()),
+      "The issuer cannot be the sender of a ConfidentialMptSend."
+    );
+    Preconditions.checkState(
+      !mpTokenIssuanceId().isIssuer(destination()),
+      "The issuer cannot be the destination of a ConfidentialMptSend."
     );
 
     if (!credentialIds().isEmpty()) {

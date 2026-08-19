@@ -31,7 +31,10 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
+
+import java.util.Locale;
 
 /**
  * Unit tests for {@link MpTokenIssuanceId}.
@@ -75,6 +78,42 @@ public class MpTokenIssuanceIdTest {
 
     MpTokenIssuanceIdWrapper deserialized = objectMapper.readValue(serialized, MpTokenIssuanceIdWrapper.class);
     assertThat(deserialized).isEqualTo(wrapper);
+  }
+
+  @Test
+  void isIssuerTrueWhenAccountMatchesEmbeddedIssuer() {
+    Address issuer = Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c");
+    // An issuance ID is a 4-byte (8 hex char) sequence followed by the 20-byte (40 hex char) issuer AccountID.
+    String accountIdHex = AddressCodec.getInstance().decodeAccountId(issuer).hexValue();
+    MpTokenIssuanceId id = MpTokenIssuanceId.of("00000179" + accountIdHex);
+
+    assertThat(id.isIssuer(issuer)).isTrue();
+  }
+
+  @Test
+  void isIssuerFalseForDifferentAccount() {
+    Address issuer = Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c");
+    Address other = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+    String accountIdHex = AddressCodec.getInstance().decodeAccountId(issuer).hexValue();
+    MpTokenIssuanceId id = MpTokenIssuanceId.of("00000179" + accountIdHex);
+
+    assertThat(id.isIssuer(other)).isFalse();
+  }
+
+  @Test
+  void isIssuerIsCaseInsensitiveOnTheIssuanceId() {
+    Address issuer = Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c");
+    String accountIdHex = AddressCodec.getInstance().decodeAccountId(issuer).hexValue();
+    MpTokenIssuanceId id = MpTokenIssuanceId.of(("00000179" + accountIdHex).toLowerCase(Locale.ENGLISH));
+
+    assertThat(id.isIssuer(issuer)).isTrue();
+  }
+
+  @Test
+  void isIssuerFalseForMalformedIssuanceId() {
+    Address account = Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c");
+    // Not 48 hex characters — extraction is impossible, so isIssuer returns false rather than throwing.
+    assertThat(MpTokenIssuanceId.of("DEADBEEF").isIssuer(account)).isFalse();
   }
 
   @Value.Immutable

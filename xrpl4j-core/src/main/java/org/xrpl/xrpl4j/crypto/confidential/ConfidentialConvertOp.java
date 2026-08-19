@@ -53,4 +53,20 @@ public interface ConfidentialConvertOp extends ConfidentialMptOp {
    * @return A {@link KeyPair}.
    */
   KeyPair holderKeyPair();
+
+  /**
+   * Whether to register the holder's ElGamal encryption key (attaching {@code HolderEncryptionKey} and its Schnorr
+   * ownership proof) on this Convert.
+   *
+   * <p>{@code rippled} requires the key on a holder's <em>first</em> Convert (otherwise {@code tecNO_PERMISSION}) and
+   * rejects it as {@code tecDUPLICATE} on every later one. Because this assembler is client-free and cannot read the
+   * ledger to tell which case applies, the caller declares intent here: {@code true} (the default) for a holder's
+   * first Convert, {@code false} for a top-up Convert on an already-registered holder.</p>
+   *
+   * @return {@code true} to register the holder key (and emit its proof) on this Convert; defaults to {@code true}.
+   */
+  @Value.Default
+  default boolean registerKey() {
+    return true;
+  }
 }

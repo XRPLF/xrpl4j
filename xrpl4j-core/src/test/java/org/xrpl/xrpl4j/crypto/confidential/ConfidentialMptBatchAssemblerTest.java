@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -245,6 +246,37 @@ class ConfidentialMptBatchAssemblerTest {
       assertThat(inner.signingPublicKey()).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
       assertThat(inner.mpTokenIssuanceId()).isEqualTo(TOKEN);
     }
+  }
+
+  @Test
+  void registersHolderKeyByDefault() {
+    stubConvertCrypto();
+    // A default Convert (registerKey defaults to true) attaches the holder key and its Schnorr proof.
+    Batch batch = assembler.assemble(baseRequest(Arrays.asList(convert(ALICE_ADDR), convert(BOB_ADDR))).build());
+
+    ConfidentialMptConvert inner = (ConfidentialMptConvert) batch.rawTransactions().get(0).rawTransaction();
+    assertThat(inner.holderEncryptionKey()).contains(ALICE_EG.publicKey());
+    assertThat(inner.zkProof()).contains(DUMMY_CONVERT_PROOF);
+  }
+
+  @Test
+  void topUpConvertOmitsHolderKeyAndProof() {
+    stubConvertCrypto();
+    // Top-up Converts on already-registered holders (registerKey = false) omit the holder key and proof — rippled
+    // rejects a re-registration as tecDUPLICATE — and skip the Schnorr proof (a native call) entirely.
+    Batch batch =
+      assembler.assemble(baseRequest(Arrays.asList(topUpConvert(ALICE_ADDR), topUpConvert(BOB_ADDR))).build());
+
+    ConfidentialMptConvert inner = (ConfidentialMptConvert) batch.rawTransactions().get(0).rawTransaction();
+    assertThat(inner.holderEncryptionKey()).isEmpty();
+    assertThat(inner.zkProof()).isEmpty();
+    verify(convertService, never()).generateProof(any(), any());
+  }
+
+  private ConfidentialConvertOp topUpConvert(final Address account) {
+    return ConfidentialConvertOp.builder()
+      .account(account).amount(UnsignedLong.valueOf(10)).holderKeyPair(ALICE_EG).mpTokenIssuanceId(TOKEN)
+      .registerKey(false).build();
   }
 
   @Test

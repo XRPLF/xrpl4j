@@ -61,7 +61,7 @@ public class ConfidentialMptSendJsonTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
       )
-      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179C3493FFEB0869853DDEC0705800595424710FA7A"))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("000001791111111111111111111111111111111111111111"))
       .destination(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
       .destinationTag(UnsignedInteger.valueOf(13))
       .senderEncryptedAmount(SENDER_ENCRYPTED_AMOUNT)
@@ -80,7 +80,7 @@ public class ConfidentialMptSendJsonTest extends AbstractJsonTest {
       "  \"Fee\" : \"135\",\n" +
       "  \"Sequence\" : 377,\n" +
       "  \"SigningPubKey\" : \"EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710\",\n" +
-      "  \"MPTokenIssuanceID\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\",\n" +
+      "  \"MPTokenIssuanceID\" : \"000001791111111111111111111111111111111111111111\",\n" +
       "  \"Destination\" : \"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh\",\n" +
       "  \"DestinationTag\" : 13,\n" +
       "  \"SenderEncryptedAmount\" : \"" + SENDER_ENCRYPTED_AMOUNT.hexValue() + "\",\n" +
@@ -105,7 +105,7 @@ public class ConfidentialMptSendJsonTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
       )
-      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179C3493FFEB0869853DDEC0705800595424710FA7A"))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("000001791111111111111111111111111111111111111111"))
       .destination(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
       .senderEncryptedAmount(SENDER_ENCRYPTED_AMOUNT)
       .destinationEncryptedAmount(DESTINATION_ENCRYPTED_AMOUNT)
@@ -121,7 +121,7 @@ public class ConfidentialMptSendJsonTest extends AbstractJsonTest {
       "  \"Fee\" : \"135\",\n" +
       "  \"Sequence\" : 377,\n" +
       "  \"SigningPubKey\" : \"EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710\",\n" +
-      "  \"MPTokenIssuanceID\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\",\n" +
+      "  \"MPTokenIssuanceID\" : \"000001791111111111111111111111111111111111111111\",\n" +
       "  \"Destination\" : \"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh\",\n" +
       "  \"SenderEncryptedAmount\" : \"" + SENDER_ENCRYPTED_AMOUNT.hexValue() + "\",\n" +
       "  \"DestinationEncryptedAmount\" : \"" + DESTINATION_ENCRYPTED_AMOUNT.hexValue() + "\",\n" +

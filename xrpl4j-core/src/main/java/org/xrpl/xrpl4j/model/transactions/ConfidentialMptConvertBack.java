@@ -123,6 +123,8 @@ public interface ConfidentialMptConvertBack extends Transaction {
    * <ul>
    *   <li>{@code MPTAmount} must be non-zero and no greater than the maximum allowable supply
    *       ({@code temBAD_AMOUNT} in {@code rippled}).</li>
+   *   <li>The issuer of the {@code MPTokenIssuanceID} must not be the {@code Account} — the issuer cannot convert
+   *       back its own issuance ({@code temMALFORMED} in {@code rippled}).</li>
    * </ul>
    *
    * <p>The proof's fixed length (816 bytes) is enforced by {@link ConfidentialMptConvertBackProof} itself.</p>
@@ -132,6 +134,11 @@ public interface ConfidentialMptConvertBack extends Transaction {
     Preconditions.checkState(
       !mptAmount().value().equals(UnsignedLong.ZERO),
       "MPTAmount must not be zero for ConfidentialMptConvertBack."
+    );
+
+    Preconditions.checkState(
+      !mpTokenIssuanceId().isIssuer(account()),
+      "The issuer cannot convert back its own issuance."
     );
 
     Preconditions.checkState(

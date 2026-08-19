@@ -47,6 +47,7 @@ import java.util.Objects;
 public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSendProofGenerator {
 
   private static final int PUBLIC_KEY_SIZE = 33;
+  private static final int PRIVATE_KEY_SIZE = 32;
   private static final int CIPHERTEXT_SIZE = 66;
   private static final int SEND_PROOF_SIZE = 946;
   private static final int MIN_PARTICIPANTS = 3;
@@ -94,6 +95,13 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
       senderKeyPair.publicKey().keyType() == KeyType.SECP256K1,
       "senderKeyPair must be SECP256K1"
     );
+    // Extract and validate the (public) sender key up front — before any secret is copied into a native struct — so a
+    // wrong-length key fails before, not after, a scrubbed buffer is populated. keyType() does not guarantee length.
+    byte[] publicKeyBytes = senderKeyPair.publicKey().value().toByteArray();
+    Preconditions.checkArgument(
+      publicKeyBytes.length == PUBLIC_KEY_SIZE,
+      "senderKeyPair public key must be %s bytes, but was %s bytes", PUBLIC_KEY_SIZE, publicKeyBytes.length
+    );
     Preconditions.checkArgument(
       participants.size() >= MIN_PARTICIPANTS && participants.size() <= MAX_PARTICIPANTS,
       "participants must contain %s or %s entries (sender, destination, issuer, and optional auditor), but was %s",
@@ -108,11 +116,20 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
         new MptCryptoLibrary.MptConfidentialParticipant().toArray(numParticipants);
     for (int i = 0; i < numParticipants; i++) {
       MptConfidentialParty party = participants.get(i);
-      System.arraycopy(party.publicKey().value().toByteArray(), 0, participantArray[i].publicKey, 0, PUBLIC_KEY_SIZE);
-      System.arraycopy(
-        party.encryptedAmount().value().toByteArray(), 0,
-        participantArray[i].ciphertext, 0, CIPHERTEXT_SIZE
+      byte[] partyPublicKey = party.publicKey().value().toByteArray();
+      byte[] partyCiphertext = party.encryptedAmount().value().toByteArray();
+      // keyType() is content-derived and does not guarantee length; validate before copying into the fixed-size
+      // native struct, which would otherwise silently truncate a too-long value.
+      Preconditions.checkArgument(
+        partyPublicKey.length == PUBLIC_KEY_SIZE,
+        "participant %s public key must be %s bytes, but was %s bytes", i, PUBLIC_KEY_SIZE, partyPublicKey.length
       );
+      Preconditions.checkArgument(
+        partyCiphertext.length == CIPHERTEXT_SIZE,
+        "participant %s ciphertext must be %s bytes, but was %s bytes", i, CIPHERTEXT_SIZE, partyCiphertext.length
+      );
+      System.arraycopy(partyPublicKey, 0, participantArray[i].publicKey, 0, PUBLIC_KEY_SIZE);
+      System.arraycopy(partyCiphertext, 0, participantArray[i].ciphertext, 0, CIPHERTEXT_SIZE);
     }
 
     // Build the MptPedersenProofParams struct for the balance
@@ -136,11 +153,15 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     // they are scrubbed alongside it. Note this clears only these Java copies -- the caller's own BlindingFactor
     // instances, and any temporary buffers JNA marshals into native memory, are outside this method's control.
     byte[] privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
-    byte[] publicKeyBytes = senderKeyPair.publicKey().value().toByteArray();
     byte[] txBlindingFactorBytes = txBlindingFactor.value().toByteArray();
 
     int result;
     try {
+      // Validate inside the try so a failed check still scrubs the private key in the finally block.
+      Preconditions.checkArgument(
+        privateKeyBytes.length == PRIVATE_KEY_SIZE,
+        "senderKeyPair private key must be %s bytes, but was %s bytes", PRIVATE_KEY_SIZE, privateKeyBytes.length
+      );
       result = lib.mpt_get_confidential_send_proof(
         privateKeyBytes, publicKeyBytes, amount.longValue(),
         participantArray, numParticipants,

@@ -81,38 +81,28 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
       "senderKeyPair must be SECP256K1"
     );
 
-    // Construct the MptPedersenProofParams struct for the native library
-    MptCryptoLibrary.MptPedersenProofParams params = new MptCryptoLibrary.MptPedersenProofParams();
-    System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, params.pedersenCommitment, 0, 33);
-    params.amount = balanceParams.amount().longValue();
-    System.arraycopy(
-      balanceParams.encryptedAmount().value().toByteArray(), 0,
-      params.encryptedAmount, 0, 66
-    );
-    System.arraycopy(
-      balanceParams.blindingFactor().value().toByteArray(), 0,
-      params.blindingFactor, 0, 32
-    );
-
-    byte[] outProof = new byte[PROOF_SIZE];
-
-    // Extract the sender's secrets just before use; zero these copies when done. The balance blinding factor is
-    // secret in the same sense the private key is: an ElGamal ciphertext plus its blinding factor reveals the
-    // encrypted amount, so it is scrubbed alongside it. Note this clears only these Java copies -- the caller's own
-    // BlindingFactor instance, and any temporary buffers JNA marshals into native memory, are outside this method's
-    // control.
-    // Validate the public key before copying out the private key, so a failure leaves no unscrubbed secret.
+    // Validate the (public) sender key before copying out any secret, so a failure leaves no unscrubbed secret.
     // keyType() is content-derived and does not by itself guarantee length.
     byte[] publicKeyBytes = senderKeyPair.publicKey().value().toByteArray();
     Preconditions.checkArgument(publicKeyBytes.length == 33, "senderKeyPair public key must be 33 bytes");
     byte[] contextHash = context.value().toByteArray();
 
+    byte[] outProof = new byte[PROOF_SIZE];
     byte[] privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
 
+    // The balance blinding factor is secret in the same sense the private key is: an ElGamal ciphertext plus its
+    // blinding factor reveals the encrypted amount. Populate the params struct (which copies it) inside the try, so any
+    // failure — including the length check — still scrubs it in the finally block. This clears only these Java copies;
+    // the caller's own BlindingFactor instance, and any buffers JNA marshals into native memory, are outside this
+    // method's control.
+    MptCryptoLibrary.MptPedersenProofParams params = new MptCryptoLibrary.MptPedersenProofParams();
     int result;
     try {
-      // Validate inside the try so a failed check still scrubs the private key in the finally block.
       Preconditions.checkArgument(privateKeyBytes.length == 32, "senderKeyPair private key must be 32 bytes");
+      System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, params.pedersenCommitment, 0, 33);
+      params.amount = balanceParams.amount().longValue();
+      System.arraycopy(balanceParams.encryptedAmount().value().toByteArray(), 0, params.encryptedAmount, 0, 66);
+      System.arraycopy(balanceParams.blindingFactor().value().toByteArray(), 0, params.blindingFactor, 0, 32);
       result = lib.mpt_get_convert_back_proof(
         privateKeyBytes, publicKeyBytes, contextHash, amount.longValue(),
         params, outProof

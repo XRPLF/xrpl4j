@@ -35,4 +35,25 @@ class EncryptedAmountTest {
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("EncryptedAmount must be");
   }
+
+  @Test
+  void rejectsTooLong() {
+    assertThatThrownBy(() -> EncryptedAmount.of(Strings.repeat("03", 67)))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("EncryptedAmount must be");
+  }
+
+  @Test
+  void rejectsEmpty() {
+    assertThatThrownBy(() -> EncryptedAmount.of(""))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("EncryptedAmount must be");
+  }
+
+  @Test
+  void equalsIsCaseInsensitive() {
+    // fromHex normalizes case, so lower- and upper-case hex produce equal byte values.
+    assertThat(EncryptedAmount.of(Strings.repeat("ab", 66)))
+      .isEqualTo(EncryptedAmount.of(Strings.repeat("AB", 66)));
+  }
 }

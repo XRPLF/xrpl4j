@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.base.Strings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
@@ -75,6 +76,20 @@ class JnaConfidentialMptSendProofVerifierTest {
       PROOF, Collections.singletonList(MptConfidentialParty.of(PUBLIC_KEY, CIPHERTEXT)),
       CIPHERTEXT, CONTEXT, AMOUNT_COMMITMENT, BALANCE_COMMITMENT
     )).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("participants must contain");
+  }
+
+  @Test
+  void rejectsWrongLengthParticipantPublicKey() {
+    // An empty key is classified SECP256K1 and is constructible, so it passes the keyType() check but is not 33 bytes.
+    PublicKey emptyKey = PublicKey.builder().value(UnsignedByteArray.empty()).build();
+    List<MptConfidentialParty> participants = Arrays.asList(
+      MptConfidentialParty.of(PUBLIC_KEY, CIPHERTEXT),
+      MptConfidentialParty.of(emptyKey, CIPHERTEXT),
+      MptConfidentialParty.of(PUBLIC_KEY, CIPHERTEXT)
+    );
+    assertThatThrownBy(() -> verifier.verifyProof(
+      PROOF, participants, CIPHERTEXT, CONTEXT, AMOUNT_COMMITMENT, BALANCE_COMMITMENT
+    )).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("public key must be 33 bytes");
   }
 
   @Test

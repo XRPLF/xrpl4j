@@ -2,7 +2,6 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeAll;
@@ -109,8 +108,8 @@ public class ConfidentialMptBatchIT extends AbstractIT {
 
     // Alice holds 500 spendable confidential MPT; Bob and Carol have only registered their keys (send destinations).
     final ConfidentialHolder alice = fundedHolder(issuer, issuanceId, issuerElGamal, auditorElGamal, 500L, fee);
-    final ConfidentialHolder bob = registeredHolder(issuer, issuanceId, issuerElGamal, auditorElGamal, fee);
-    final ConfidentialHolder carol = registeredHolder(issuer, issuanceId, issuerElGamal, auditorElGamal, fee);
+    final ConfidentialHolder bob = registeredHolder(issuanceId, issuerElGamal, auditorElGamal, fee);
+    final ConfidentialHolder carol = registeredHolder(issuanceId, issuerElGamal, auditorElGamal, fee);
 
     assertThat(spendable(alice, issuanceId)).isEqualTo(UnsignedLong.valueOf(500));
 
@@ -310,7 +309,7 @@ public class ConfidentialMptBatchIT extends AbstractIT {
    */
   private void convert(
     final KeyPair holder, final KeyPair holderElGamal, final MpTokenIssuanceId issuanceId,
-    final KeyPair issuerElGamal, final KeyPair auditorElGamal, final UnsignedLong amount, final XrpCurrencyAmount fee
+    final KeyPair issuerElGamal, final KeyPair auditorElGamal, final UnsignedLong amount
   ) throws Exception {
     final AccountInfoResult info = accountInfo(holder);
     final ConfidentialMptConvertContext context =
@@ -336,8 +335,7 @@ public class ConfidentialMptBatchIT extends AbstractIT {
     this.scanForResult(() -> this.getValidatedTransaction(signed.hash(), ConfidentialMptConvert.class));
   }
 
-  private void mergeInbox(final KeyPair holder, final MpTokenIssuanceId issuanceId, final XrpCurrencyAmount fee)
-    throws Exception {
+  private void mergeInbox(final KeyPair holder, final MpTokenIssuanceId issuanceId) throws Exception {
     final AccountInfoResult info = accountInfo(holder);
     final ConfidentialMptMergeInbox merge = ConfidentialMptMergeInbox.builder()
       .account(holder.publicKey().deriveAddress())
@@ -375,20 +373,20 @@ public class ConfidentialMptBatchIT extends AbstractIT {
     assertThat(xrplClient.submit(signedPayment).engineResult()).isEqualTo("tesSUCCESS");
     this.scanForResult(() -> this.getValidatedTransaction(signedPayment.hash(), Payment.class));
 
-    convert(holder, holderElGamal, issuanceId, issuerElGamal, auditorElGamal, UnsignedLong.valueOf(amount), fee);
-    mergeInbox(holder, issuanceId, fee);
+    convert(holder, holderElGamal, issuanceId, issuerElGamal, auditorElGamal, UnsignedLong.valueOf(amount));
+    mergeInbox(holder, issuanceId);
     return new ConfidentialHolder(holder, holderElGamal);
   }
 
   /** A holder that has authorized and registered its ElGamal key (via a zero-amount convert) — a send destination. */
   private ConfidentialHolder registeredHolder(
-    final KeyPair issuer, final MpTokenIssuanceId issuanceId, final KeyPair issuerElGamal,
+    final MpTokenIssuanceId issuanceId, final KeyPair issuerElGamal,
     final KeyPair auditorElGamal, final XrpCurrencyAmount fee
   ) throws Exception {
     final KeyPair holder = createRandomAccountEd25519();
     final KeyPair holderElGamal = Seed.elGamalSecp256k1Seed().deriveKeyPair();
     authorize(holder, issuanceId, fee);
-    convert(holder, holderElGamal, issuanceId, issuerElGamal, auditorElGamal, UnsignedLong.ZERO, fee);
+    convert(holder, holderElGamal, issuanceId, issuerElGamal, auditorElGamal, UnsignedLong.ZERO);
     return new ConfidentialHolder(holder, holderElGamal);
   }
 

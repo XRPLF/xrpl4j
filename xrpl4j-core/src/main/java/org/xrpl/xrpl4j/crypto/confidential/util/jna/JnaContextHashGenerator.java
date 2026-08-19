@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
@@ -180,6 +181,9 @@ public class JnaContextHashGenerator implements ContextHashGenerator {
   private static MptCryptoLibrary.MptAccountId toAccountId(final Address address) {
     MptCryptoLibrary.MptAccountId accountId = new MptCryptoLibrary.MptAccountId();
     byte[] decoded = ADDRESS_CODEC.decodeAccountId(address).toByteArray();
+    Preconditions.checkArgument(
+      decoded.length == 20, "decoded account ID must be 20 bytes, but was %s bytes", decoded.length
+    );
     System.arraycopy(decoded, 0, accountId.bytes, 0, 20);
     return accountId;
   }
@@ -194,6 +198,9 @@ public class JnaContextHashGenerator implements ContextHashGenerator {
   private static MptCryptoLibrary.MptIssuanceId toIssuanceId(final MpTokenIssuanceId issuanceId) {
     MptCryptoLibrary.MptIssuanceId issId = new MptCryptoLibrary.MptIssuanceId();
     byte[] decoded = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
+    Preconditions.checkArgument(
+      decoded.length == 24, "decoded MPTokenIssuanceID must be 24 bytes, but was %s bytes", decoded.length
+    );
     System.arraycopy(decoded, 0, issId.bytes, 0, 24);
     return issId;
   }

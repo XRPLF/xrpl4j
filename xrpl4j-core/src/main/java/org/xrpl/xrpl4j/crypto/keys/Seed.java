@@ -191,11 +191,14 @@ public interface Seed extends javax.security.auth.Destroyable {
   }
 
   /**
-   * Construct a secp256k1-compatible {@link Seed} using a random {@link Entropy} instance. This random {@link Entropy}
-   * is created using {@link Entropy#newInstance()}.
+   * Construct a secp256k1-compatible {@link Seed} for ElGamal use from 32 bytes of random {@link Entropy} (created via
+   * {@link Entropy#newInstance(int)}).
    *
-   * <p>This method generates random entropy until a valid secp256k1 scalar is found
-   * (i.e., 1 ≤ scalar &lt; curve order n).</p>
+   * <p>The seed is the raw entropy; it is not itself reduced to a scalar here. A valid secp256k1 scalar
+   * (1 ≤ scalar &lt; curve order n) is produced later, when a key pair is derived from this seed — see the
+   * rejection-sampling loop in {@code deriveScalar}, which hashes the seed and retries until the result is in range.
+   * The probability that 32 random bytes fall outside {@code [0, n)} is negligible (~2<sup>-128</sup>) and is handled
+   * by that downstream derivation regardless.</p>
    *
    * @return A {@link Seed}.
    */

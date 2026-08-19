@@ -35,4 +35,25 @@ class CommitmentTest {
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("Commitment must be");
   }
+
+  @Test
+  void rejectsTooLong() {
+    assertThatThrownBy(() -> Commitment.of(Strings.repeat("02", 34)))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Commitment must be");
+  }
+
+  @Test
+  void rejectsEmpty() {
+    assertThatThrownBy(() -> Commitment.of(""))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Commitment must be");
+  }
+
+  @Test
+  void equalsIsCaseInsensitive() {
+    // fromHex normalizes case, so lower- and upper-case hex produce equal byte values.
+    assertThat(Commitment.of(Strings.repeat("ab", 33)))
+      .isEqualTo(Commitment.of(Strings.repeat("AB", 33)));
+  }
 }

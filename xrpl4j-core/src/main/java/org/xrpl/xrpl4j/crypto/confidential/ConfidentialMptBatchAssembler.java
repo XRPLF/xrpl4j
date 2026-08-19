@@ -249,7 +249,7 @@ public class ConfidentialMptBatchAssembler {
       convert -> buildConvert(request, predicted, convert, sequence),
       convertBack -> buildConvertBack(request, predicted, convertTotals, convertBack, sequence),
       mergeInbox -> buildMergeInbox(predicted, mergeInbox, sequence),
-      clawback -> buildClawback(request, predicted, clawback, sequence)
+      clawback -> buildClawback(predicted, clawback, sequence)
     );
   }
 
@@ -443,7 +443,6 @@ public class ConfidentialMptBatchAssembler {
   }
 
   private BuiltInner buildClawback(
-    final ConfidentialBatchRequest request,
     final Map<String, ConfidentialTokenState> predicted,
     final ConfidentialClawbackOp op,
     final UnsignedInteger sequence

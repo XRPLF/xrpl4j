@@ -94,13 +94,20 @@ public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendP
         new MptCryptoLibrary.MptConfidentialParticipant().toArray(numParticipants);
     for (int i = 0; i < numParticipants; i++) {
       MptConfidentialParty party = participants.get(i);
-      System.arraycopy(
-        party.publicKey().value().toByteArray(), 0, participantArray[i].publicKey, 0, PUBLIC_KEY_SIZE
+      byte[] partyPublicKey = party.publicKey().value().toByteArray();
+      byte[] partyCiphertext = party.encryptedAmount().value().toByteArray();
+      // keyType() is content-derived and does not guarantee length; validate before copying into the fixed-size
+      // native struct, which would otherwise silently truncate a too-long value.
+      Preconditions.checkArgument(
+        partyPublicKey.length == PUBLIC_KEY_SIZE,
+        "participant %s public key must be %s bytes, but was %s bytes", i, PUBLIC_KEY_SIZE, partyPublicKey.length
       );
-      System.arraycopy(
-        party.encryptedAmount().value().toByteArray(), 0,
-        participantArray[i].ciphertext, 0, CIPHERTEXT_SIZE
+      Preconditions.checkArgument(
+        partyCiphertext.length == CIPHERTEXT_SIZE,
+        "participant %s ciphertext must be %s bytes, but was %s bytes", i, CIPHERTEXT_SIZE, partyCiphertext.length
       );
+      System.arraycopy(partyPublicKey, 0, participantArray[i].publicKey, 0, PUBLIC_KEY_SIZE);
+      System.arraycopy(partyCiphertext, 0, participantArray[i].ciphertext, 0, CIPHERTEXT_SIZE);
     }
 
     byte[] proofBytes = proof.value().toByteArray();

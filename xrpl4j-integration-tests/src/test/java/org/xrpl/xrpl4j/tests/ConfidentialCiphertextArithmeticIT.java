@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialCiphertextArithmetic;

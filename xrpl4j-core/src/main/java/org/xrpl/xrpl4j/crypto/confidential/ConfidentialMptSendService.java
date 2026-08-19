@@ -154,7 +154,6 @@ public class ConfidentialMptSendService {
     Objects.requireNonNull(encryptedAmount, "encryptedAmount must not be null");
     Objects.requireNonNull(pedersenBlindingFactor, "pedersenBlindingFactor must not be null");
 
-    // Generate Pedersen commitment
     Commitment commitment = commitmentGenerator.generateCommitment(amount, pedersenBlindingFactor);
 
     return PedersenProofParams.builder()

@@ -136,7 +136,6 @@ public class ConfidentialMptConvertBackService {
     Objects.requireNonNull(encryptedBalance, "encryptedBalance must not be null");
     Objects.requireNonNull(pedersenBlindingFactor, "pedersenBlindingFactor must not be null");
 
-    // Generate Pedersen commitment
     Commitment commitment = commitmentGenerator.generateCommitment(balance, pedersenBlindingFactor);
 
     return PedersenProofParams.builder()

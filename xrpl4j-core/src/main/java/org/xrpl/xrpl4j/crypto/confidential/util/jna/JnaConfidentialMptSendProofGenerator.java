@@ -110,7 +110,6 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
 
     int numParticipants = participants.size();
 
-    // Build the MptConfidentialParticipant struct array for the native library
     MptCryptoLibrary.MptConfidentialParticipant[] participantArray =
       (MptCryptoLibrary.MptConfidentialParticipant[])
         new MptCryptoLibrary.MptConfidentialParticipant().toArray(numParticipants);
@@ -118,8 +117,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
       MptConfidentialParty party = participants.get(i);
       byte[] partyPublicKey = party.publicKey().value().toByteArray();
       byte[] partyCiphertext = party.encryptedAmount().value().toByteArray();
-      // keyType() is content-derived and does not guarantee length; validate before copying into the fixed-size
-      // native struct, which would otherwise silently truncate a too-long value.
+      // keyType() does not guarantee byte length; validate before the fixed-size arraycopy silently truncates.
       Preconditions.checkArgument(
         partyPublicKey.length == PUBLIC_KEY_SIZE,
         "participant %s public key must be %s bytes, but was %s bytes", i, PUBLIC_KEY_SIZE, partyPublicKey.length
@@ -132,32 +130,37 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
       System.arraycopy(partyCiphertext, 0, participantArray[i].ciphertext, 0, CIPHERTEXT_SIZE);
     }
 
-    // Build the MptPedersenProofParams struct for the balance
-    MptCryptoLibrary.MptPedersenProofParams balanceStruct = new MptCryptoLibrary.MptPedersenProofParams();
-    System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, balanceStruct.pedersenCommitment, 0, 33);
-    balanceStruct.amount = balanceParams.amount().longValue();
-    System.arraycopy(
-      balanceParams.encryptedAmount().value().toByteArray(), 0,
-      balanceStruct.encryptedAmount, 0, 66
-    );
-    System.arraycopy(
-      balanceParams.blindingFactor().value().toByteArray(), 0,
-      balanceStruct.blindingFactor, 0, 32
-    );
-
     byte[] outProof = new byte[SEND_PROOF_SIZE];
     long[] outLen = new long[]{SEND_PROOF_SIZE};
 
-    // Extract the sender's secrets just before use; zero these copies when done. Blinding factors are secret in the
-    // same sense the private key is: an ElGamal ciphertext plus its blinding factor reveals the encrypted amount, so
-    // they are scrubbed alongside it. Note this clears only these Java copies -- the caller's own BlindingFactor
-    // instances, and any temporary buffers JNA marshals into native memory, are outside this method's control.
-    byte[] privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
-    byte[] txBlindingFactorBytes = txBlindingFactor.value().toByteArray();
+    // Declared before the try so the finally scrubs them even if population/extraction below throws. The struct's
+    // blindingFactor is a fixed-size buffer (zero-filled by its constructor) so scrubbing is always safe; the byte[]
+    // copies stay null until assigned, hence the finally's null-checks.
+    MptCryptoLibrary.MptPedersenProofParams balanceStruct = new MptCryptoLibrary.MptPedersenProofParams();
+    byte[] privateKeyBytes = null;
+    byte[] txBlindingFactorBytes = null;
 
     int result;
     try {
-      // Validate inside the try so a failed check still scrubs the private key in the finally block.
+      // Populate the balance struct and extract the sender's secrets inside the try, so every error path reaches the
+      // finally scrub. A blinding factor is secret like the private key: an ElGamal ciphertext plus its blinding factor
+      // reveals the amount. This clears only these Java copies -- the caller's own BlindingFactor instances and any
+      // buffers JNA marshals into native memory are outside this method's control.
+      System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, balanceStruct.pedersenCommitment, 0, 33);
+      balanceStruct.amount = balanceParams.amount().longValue();
+      System.arraycopy(
+        balanceParams.encryptedAmount().value().toByteArray(), 0,
+        balanceStruct.encryptedAmount, 0, 66
+      );
+      System.arraycopy(
+        balanceParams.blindingFactor().value().toByteArray(), 0,
+        balanceStruct.blindingFactor, 0, 32
+      );
+
+      privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
+      txBlindingFactorBytes = txBlindingFactor.value().toByteArray();
+
+      // Validate after extraction (still inside the try) so a failed check still scrubs the private key.
       Preconditions.checkArgument(
         privateKeyBytes.length == PRIVATE_KEY_SIZE,
         "senderKeyPair private key must be %s bytes, but was %s bytes", PRIVATE_KEY_SIZE, privateKeyBytes.length
@@ -170,8 +173,12 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
         outProof, outLen
       );
     } finally {
-      Arrays.fill(privateKeyBytes, (byte) 0);
-      Arrays.fill(txBlindingFactorBytes, (byte) 0);
+      if (privateKeyBytes != null) {
+        Arrays.fill(privateKeyBytes, (byte) 0);
+      }
+      if (txBlindingFactorBytes != null) {
+        Arrays.fill(txBlindingFactorBytes, (byte) 0);
+      }
       Arrays.fill(balanceStruct.blindingFactor, (byte) 0);
     }
 

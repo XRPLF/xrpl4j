@@ -319,7 +319,6 @@ public class ConfidentialMptBatchAssembler {
       .balanceCommitment(Commitment.of(balanceParams.pedersenCommitment()));
     auditorCiphertext.ifPresent(builder::auditorEncryptedAmount);
 
-    // Predicted state after the send: debit the sender, credit the destination's balances (re-blinded as rippled will).
     final ConfidentialTokenState debitedSender =
       applyDebit(senderState, senderCiphertext, issuerCiphertext, auditorCiphertext);
     final ConfidentialTokenState creditedDest = applyRecipientCredit(
@@ -373,8 +372,7 @@ public class ConfidentialMptBatchAssembler {
       registeredKey = Optional.empty();
     }
 
-    // Predicted state after the convert: credit inbox/issuer/auditor, and register the holder key only when this
-    // Convert actually did (a top-up leaves the previously-registered key in place).
+    // Register the holder key in predicted state only when this Convert did — a top-up leaves the prior key in place.
     final ConfidentialTokenState credited = applyConvertCredit(
       state, holderCiphertext, issuerCiphertext, auditorCiphertext, registeredKey
     );
@@ -428,7 +426,6 @@ public class ConfidentialMptBatchAssembler {
       .zkProof(proof);
     auditorCiphertext.ifPresent(builder::auditorEncryptedAmount);
 
-    // Predicted state after the convert-back: debit spending/issuer/auditor.
     final ConfidentialTokenState debited =
       applyDebit(state, holderCiphertext, issuerCiphertext, auditorCiphertext);
     return new BuiltInner(builder.build(), update(key, debited));

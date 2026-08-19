@@ -90,11 +90,10 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     byte[] outProof = new byte[PROOF_SIZE];
     byte[] privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
 
-    // The balance blinding factor is secret in the same sense the private key is: an ElGamal ciphertext plus its
-    // blinding factor reveals the encrypted amount. Populate the params struct (which copies it) inside the try, so any
-    // failure — including the length check — still scrubs it in the finally block. This clears only these Java copies;
-    // the caller's own BlindingFactor instance, and any buffers JNA marshals into native memory, are outside this
-    // method's control.
+    // The balance blinding factor is secret like the private key: an ElGamal ciphertext plus its blinding factor
+    // reveals the amount. Populate the params struct (which copies it) inside the try, so any failure — including the
+    // length check — still scrubs it in the finally. This clears only these Java copies; the caller's own
+    // BlindingFactor instance and any buffers JNA marshals into native memory are outside this method's control.
     MptCryptoLibrary.MptPedersenProofParams params = new MptCryptoLibrary.MptPedersenProofParams();
     int result;
     try {

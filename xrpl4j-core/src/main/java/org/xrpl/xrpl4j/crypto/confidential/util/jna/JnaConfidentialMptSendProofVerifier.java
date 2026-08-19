@@ -88,7 +88,6 @@ public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendP
 
     int numParticipants = participants.size();
 
-    // Build the MptConfidentialParticipant struct array for the native library
     MptCryptoLibrary.MptConfidentialParticipant[] participantArray =
       (MptCryptoLibrary.MptConfidentialParticipant[])
         new MptCryptoLibrary.MptConfidentialParticipant().toArray(numParticipants);
@@ -96,8 +95,7 @@ public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendP
       MptConfidentialParty party = participants.get(i);
       byte[] partyPublicKey = party.publicKey().value().toByteArray();
       byte[] partyCiphertext = party.encryptedAmount().value().toByteArray();
-      // keyType() is content-derived and does not guarantee length; validate before copying into the fixed-size
-      // native struct, which would otherwise silently truncate a too-long value.
+      // keyType() does not guarantee byte length; validate before the fixed-size arraycopy silently truncates.
       Preconditions.checkArgument(
         partyPublicKey.length == PUBLIC_KEY_SIZE,
         "participant %s public key must be %s bytes, but was %s bytes", i, PUBLIC_KEY_SIZE, partyPublicKey.length

@@ -26,6 +26,7 @@ import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.util.PedersenCommitmentGenerator;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -65,9 +66,14 @@ public class JnaPedersenCommitmentGenerator implements PedersenCommitmentGenerat
     Objects.requireNonNull(blindingFactor, "blindingFactor must not be null");
 
     byte[] outCommitment = new byte[COMMITMENT_SIZE];
-    int result = lib.mpt_get_pedersen_commitment(
-      amount.longValue(), blindingFactor.value().toByteArray(), outCommitment
-    );
+    // The blinding factor is secret; scrub the Java copy after the native call, as the other JNA generators do.
+    byte[] blindingFactorBytes = blindingFactor.value().toByteArray();
+    int result;
+    try {
+      result = lib.mpt_get_pedersen_commitment(amount.longValue(), blindingFactorBytes, outCommitment);
+    } finally {
+      Arrays.fill(blindingFactorBytes, (byte) 0);
+    }
     if (result != 0) {
       throw new IllegalStateException("mpt_get_pedersen_commitment failed with error code: " + result);
     }

@@ -37,7 +37,7 @@ import org.xrpl.xrpl4j.model.jackson.modules.CommitmentSerializer;
 @Value.Immutable
 @JsonSerialize(as = ImmutableCommitment.class, using = CommitmentSerializer.class)
 @JsonDeserialize(as = ImmutableCommitment.class, using = CommitmentDeserializer.class)
-public interface Commitment {
+public abstract class Commitment {
 
   /**
    * Creates a commitment from an {@link UnsignedByteArray}.
@@ -46,7 +46,7 @@ public interface Commitment {
    *
    * @return A {@link Commitment}.
    */
-  static Commitment of(final UnsignedByteArray value) {
+  public static Commitment of(final UnsignedByteArray value) {
     return ImmutableCommitment.builder().value(value).build();
   }
 
@@ -57,7 +57,7 @@ public interface Commitment {
    *
    * @return A {@link Commitment}.
    */
-  static Commitment of(final String hex) {
+  public static Commitment of(final String hex) {
     return of(UnsignedByteArray.fromHex(hex));
   }
 
@@ -68,7 +68,7 @@ public interface Commitment {
    *
    * @return A {@link Commitment}.
    */
-  static Commitment fromBytes(final byte[] bytes) {
+  public static Commitment fromBytes(final byte[] bytes) {
     return of(UnsignedByteArray.of(bytes));
   }
 
@@ -77,13 +77,13 @@ public interface Commitment {
    *
    * @return An {@link UnsignedByteArray}.
    */
-  UnsignedByteArray value();
+  public abstract UnsignedByteArray value();
 
   /**
    * Validates that the commitment is exactly 33 bytes.
    */
   @Value.Check
-  default void check() {
+  void check() {
     final int expectedLength = 33;
     Preconditions.checkArgument(
       value().length() == expectedLength,
@@ -99,7 +99,17 @@ public interface Commitment {
    */
   @JsonIgnore
   @Value.Lazy
-  default String hexValue() {
+  public String hexValue() {
     return BaseEncoding.base16().encode(value().toByteArray());
+  }
+
+  /**
+   * A debug-friendly representation showing the value as hex rather than the raw byte array.
+   *
+   * @return A {@link String}.
+   */
+  @Override
+  public String toString() {
+    return "Commitment{value=" + hexValue() + "}";
   }
 }

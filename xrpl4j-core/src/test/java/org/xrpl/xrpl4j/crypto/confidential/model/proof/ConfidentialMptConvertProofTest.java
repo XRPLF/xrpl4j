@@ -33,4 +33,10 @@ class ConfidentialMptConvertProofTest {
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("ConfidentialMptConvertProof must be");
   }
+
+  @Test
+  void toStringRendersHex() {
+    assertThat(ConfidentialMptConvertProof.fromHex(PROOF_HEX))
+      .hasToString("ConfidentialMptConvertProof{value=" + PROOF_HEX + "}");
+  }
 }

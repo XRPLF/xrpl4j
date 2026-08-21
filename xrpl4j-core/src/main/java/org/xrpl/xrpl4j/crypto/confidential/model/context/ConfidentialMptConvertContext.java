@@ -37,14 +37,14 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 @Value.Immutable
 @JsonSerialize(as = ImmutableConfidentialMptConvertContext.class)
 @JsonDeserialize(as = ImmutableConfidentialMptConvertContext.class)
-public interface ConfidentialMptConvertContext {
+public abstract class ConfidentialMptConvertContext {
 
   /**
    * Creates a new builder for {@link ConfidentialMptConvertContext}.
    *
    * @return A new builder.
    */
-  static ImmutableConfidentialMptConvertContext.Builder builder() {
+  public static ImmutableConfidentialMptConvertContext.Builder builder() {
     return ImmutableConfidentialMptConvertContext.builder();
   }
 
@@ -57,7 +57,7 @@ public interface ConfidentialMptConvertContext {
    *
    * @throws IllegalArgumentException if value is not exactly 32 bytes.
    */
-  static ConfidentialMptConvertContext of(final UnsignedByteArray value) {
+  public static ConfidentialMptConvertContext of(final UnsignedByteArray value) {
     return builder().value(value).build();
   }
 
@@ -70,7 +70,7 @@ public interface ConfidentialMptConvertContext {
    *
    * @throws IllegalArgumentException if hex is not a valid 32-byte hex string.
    */
-  static ConfidentialMptConvertContext fromHex(final String hex) {
+  public static ConfidentialMptConvertContext fromHex(final String hex) {
     return of(UnsignedByteArray.fromHex(hex));
   }
 
@@ -79,13 +79,13 @@ public interface ConfidentialMptConvertContext {
    *
    * @return The context hash as an {@link UnsignedByteArray}.
    */
-  UnsignedByteArray value();
+  public abstract UnsignedByteArray value();
 
   /**
    * Validates that the context hash is exactly 32 bytes.
    */
   @Value.Check
-  default void check() {
+  void check() {
     Preconditions.checkArgument(
       value().length() == 32,
       "Context hash must be %s bytes, but was %s bytes",
@@ -100,7 +100,17 @@ public interface ConfidentialMptConvertContext {
    */
   @Lazy
   @JsonIgnore
-  default String hexValue() {
+  public String hexValue() {
     return BaseEncoding.base16().encode(value().toByteArray());
+  }
+
+  /**
+   * A debug-friendly representation showing the value as hex rather than the raw byte array.
+   *
+   * @return A {@link String}.
+   */
+  @Override
+  public String toString() {
+    return "ConfidentialMptConvertContext{value=" + hexValue() + "}";
   }
 }

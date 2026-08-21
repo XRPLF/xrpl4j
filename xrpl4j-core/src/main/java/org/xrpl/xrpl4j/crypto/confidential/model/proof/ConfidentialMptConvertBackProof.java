@@ -43,7 +43,7 @@ import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptConvertBackProofSeri
 @JsonDeserialize(
   as = ImmutableConfidentialMptConvertBackProof.class, using = ConfidentialMptConvertBackProofDeserializer.class
 )
-public interface ConfidentialMptConvertBackProof {
+public abstract class ConfidentialMptConvertBackProof {
 
   /**
    * Creates a proof from an {@link UnsignedByteArray}.
@@ -52,7 +52,7 @@ public interface ConfidentialMptConvertBackProof {
    *
    * @return A {@link ConfidentialMptConvertBackProof}.
    */
-  static ConfidentialMptConvertBackProof of(final UnsignedByteArray value) {
+  public static ConfidentialMptConvertBackProof of(final UnsignedByteArray value) {
     return ImmutableConfidentialMptConvertBackProof.builder().value(value).build();
   }
 
@@ -63,7 +63,7 @@ public interface ConfidentialMptConvertBackProof {
    *
    * @return A {@link ConfidentialMptConvertBackProof}.
    */
-  static ConfidentialMptConvertBackProof fromHex(final String hex) {
+  public static ConfidentialMptConvertBackProof fromHex(final String hex) {
     return of(UnsignedByteArray.fromHex(hex));
   }
 
@@ -72,13 +72,13 @@ public interface ConfidentialMptConvertBackProof {
    *
    * @return An {@link UnsignedByteArray}.
    */
-  UnsignedByteArray value();
+  public abstract UnsignedByteArray value();
 
   /**
    * Validates that the proof is exactly 816 bytes: compact sigma (128) + single bulletproof (688).
    */
   @Value.Check
-  default void check() {
+  void check() {
     final int compactSigmaSize = 128;
     final int singleBulletproofSize = 688;
     final int expectedSize = compactSigmaSize + singleBulletproofSize;
@@ -96,7 +96,17 @@ public interface ConfidentialMptConvertBackProof {
    */
   @JsonIgnore
   @Value.Lazy
-  default String hexValue() {
+  public String hexValue() {
     return BaseEncoding.base16().encode(value().toByteArray());
+  }
+
+  /**
+   * A debug-friendly representation showing the value as hex rather than the raw byte array.
+   *
+   * @return A {@link String}.
+   */
+  @Override
+  public String toString() {
+    return "ConfidentialMptConvertBackProof{value=" + hexValue() + "}";
   }
 }

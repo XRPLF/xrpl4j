@@ -56,4 +56,10 @@ class CommitmentTest {
     assertThat(Commitment.of(Strings.repeat("ab", 33)))
       .isEqualTo(Commitment.of(Strings.repeat("AB", 33)));
   }
+
+  @Test
+  void toStringRendersHex() {
+    assertThat(Commitment.of(HEX))
+      .hasToString("Commitment{value=" + HEX + "}");
+  }
 }

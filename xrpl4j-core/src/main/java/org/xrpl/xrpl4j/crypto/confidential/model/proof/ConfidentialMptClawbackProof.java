@@ -40,7 +40,7 @@ import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptClawbackProofSeriali
 @JsonDeserialize(
   as = ImmutableConfidentialMptClawbackProof.class, using = ConfidentialMptClawbackProofDeserializer.class
 )
-public interface ConfidentialMptClawbackProof {
+public abstract class ConfidentialMptClawbackProof {
 
   /**
    * Creates a proof from an {@link UnsignedByteArray}.
@@ -49,7 +49,7 @@ public interface ConfidentialMptClawbackProof {
    *
    * @return A {@link ConfidentialMptClawbackProof}.
    */
-  static ConfidentialMptClawbackProof of(final UnsignedByteArray value) {
+  public static ConfidentialMptClawbackProof of(final UnsignedByteArray value) {
     return ImmutableConfidentialMptClawbackProof.builder().value(value).build();
   }
 
@@ -60,7 +60,7 @@ public interface ConfidentialMptClawbackProof {
    *
    * @return A {@link ConfidentialMptClawbackProof}.
    */
-  static ConfidentialMptClawbackProof fromHex(final String hex) {
+  public static ConfidentialMptClawbackProof fromHex(final String hex) {
     return of(UnsignedByteArray.fromHex(hex));
   }
 
@@ -69,13 +69,13 @@ public interface ConfidentialMptClawbackProof {
    *
    * @return An {@link UnsignedByteArray}.
    */
-  UnsignedByteArray value();
+  public abstract UnsignedByteArray value();
 
   /**
    * Validates that the proof is exactly 64 bytes (SECP256K1_COMPACT_CLAWBACK_PROOF_SIZE).
    */
   @Value.Check
-  default void check() {
+  void check() {
     final int expectedSize = 64;
     Preconditions.checkArgument(
       value().length() == expectedSize,
@@ -91,7 +91,17 @@ public interface ConfidentialMptClawbackProof {
    */
   @JsonIgnore
   @Value.Lazy
-  default String hexValue() {
+  public String hexValue() {
     return BaseEncoding.base16().encode(value().toByteArray());
+  }
+
+  /**
+   * A debug-friendly representation showing the value as hex rather than the raw byte array.
+   *
+   * @return A {@link String}.
+   */
+  @Override
+  public String toString() {
+    return "ConfidentialMptClawbackProof{value=" + hexValue() + "}";
   }
 }

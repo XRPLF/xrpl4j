@@ -34,4 +34,10 @@ class ConfidentialMptConvertBackContextTest {
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("Context hash must be");
   }
+
+  @Test
+  void toStringRendersHex() {
+    assertThat(ConfidentialMptConvertBackContext.fromHex(HASH_HEX))
+      .hasToString("ConfidentialMptConvertBackContext{value=" + HASH_HEX + "}");
+  }
 }

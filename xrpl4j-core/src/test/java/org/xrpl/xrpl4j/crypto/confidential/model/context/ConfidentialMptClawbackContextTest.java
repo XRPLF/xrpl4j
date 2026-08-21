@@ -34,4 +34,10 @@ class ConfidentialMptClawbackContextTest {
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("Context hash must be");
   }
+
+  @Test
+  void toStringRendersHex() {
+    assertThat(ConfidentialMptClawbackContext.fromHex(HASH_HEX))
+      .hasToString("ConfidentialMptClawbackContext{value=" + HASH_HEX + "}");
+  }
 }

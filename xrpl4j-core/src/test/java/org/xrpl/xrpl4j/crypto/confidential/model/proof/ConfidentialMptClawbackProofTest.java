@@ -33,4 +33,10 @@ class ConfidentialMptClawbackProofTest {
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("ConfidentialMptClawbackProof must be");
   }
+
+  @Test
+  void toStringRendersHex() {
+    assertThat(ConfidentialMptClawbackProof.fromHex(PROOF_HEX))
+      .hasToString("ConfidentialMptClawbackProof{value=" + PROOF_HEX + "}");
+  }
 }

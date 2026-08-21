@@ -53,4 +53,11 @@ class BlindingFactorTest {
     assertThat(BlindingFactor.of(Strings.repeat("ab", 32)))
       .isEqualTo(BlindingFactor.of(Strings.repeat("AB", 32)));
   }
+
+  @Test
+  void toStringRendersHex() {
+    String hex = Strings.repeat("12", 32);
+    assertThat(BlindingFactor.of(hex))
+      .hasToString("BlindingFactor{value=" + hex + "}");
+  }
 }

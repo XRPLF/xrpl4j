@@ -37,7 +37,7 @@ import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorSerializer;
 @Value.Immutable
 @JsonSerialize(as = ImmutableBlindingFactor.class, using = BlindingFactorSerializer.class)
 @JsonDeserialize(as = ImmutableBlindingFactor.class, using = BlindingFactorDeserializer.class)
-public interface BlindingFactor {
+public abstract class BlindingFactor {
 
   /**
    * Creates a blinding factor from an {@link UnsignedByteArray}.
@@ -46,7 +46,7 @@ public interface BlindingFactor {
    *
    * @return A {@link BlindingFactor}.
    */
-  static BlindingFactor of(final UnsignedByteArray value) {
+  public static BlindingFactor of(final UnsignedByteArray value) {
     return ImmutableBlindingFactor.builder().value(value).build();
   }
 
@@ -57,7 +57,7 @@ public interface BlindingFactor {
    *
    * @return A {@link BlindingFactor}.
    */
-  static BlindingFactor of(final String hex) {
+  public static BlindingFactor of(final String hex) {
     return of(UnsignedByteArray.fromHex(hex));
   }
 
@@ -68,7 +68,7 @@ public interface BlindingFactor {
    *
    * @return A {@link BlindingFactor}.
    */
-  static BlindingFactor fromBytes(final byte[] bytes) {
+  public static BlindingFactor fromBytes(final byte[] bytes) {
     return of(UnsignedByteArray.of(bytes));
   }
 
@@ -77,13 +77,13 @@ public interface BlindingFactor {
    *
    * @return An {@link UnsignedByteArray}.
    */
-  UnsignedByteArray value();
+  public abstract UnsignedByteArray value();
 
   /**
    * Validates that the blinding factor is exactly 32 bytes.
    */
   @Value.Check
-  default void check() {
+  void check() {
     final int expectedLength = 32;
     Preconditions.checkArgument(
       value().length() == expectedLength,
@@ -99,7 +99,17 @@ public interface BlindingFactor {
    */
   @JsonIgnore
   @Value.Lazy
-  default String hexValue() {
+  public String hexValue() {
     return BaseEncoding.base16().encode(value().toByteArray());
+  }
+
+  /**
+   * A debug-friendly representation showing the value as hex rather than the raw byte array.
+   *
+   * @return A {@link String}.
+   */
+  @Override
+  public String toString() {
+    return "BlindingFactor{value=" + hexValue() + "}";
   }
 }

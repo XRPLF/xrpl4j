@@ -27,6 +27,7 @@ import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofVerifier;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 import java.util.List;
 import java.util.Objects;
@@ -40,8 +41,6 @@ import java.util.Objects;
  */
 public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendProofVerifier {
 
-  private static final int PUBLIC_KEY_SIZE = 33;
-  private static final int CIPHERTEXT_SIZE = 66;
   private static final int MIN_PARTICIPANTS = 3;
   private static final int MAX_PARTICIPANTS = 4;
 
@@ -97,15 +96,16 @@ public class JnaConfidentialMptSendProofVerifier implements ConfidentialMptSendP
       byte[] partyCiphertext = party.encryptedAmount().value().toByteArray();
       // keyType() does not guarantee byte length; validate before the fixed-size arraycopy silently truncates.
       Preconditions.checkArgument(
-        partyPublicKey.length == PUBLIC_KEY_SIZE,
-        "participant %s public key must be %s bytes, but was %s bytes", i, PUBLIC_KEY_SIZE, partyPublicKey.length
+        partyPublicKey.length == PublicKey.LENGTH,
+        "participant %s public key must be %s bytes, but was %s bytes", i, PublicKey.LENGTH, partyPublicKey.length
       );
       Preconditions.checkArgument(
-        partyCiphertext.length == CIPHERTEXT_SIZE,
-        "participant %s ciphertext must be %s bytes, but was %s bytes", i, CIPHERTEXT_SIZE, partyCiphertext.length
+        partyCiphertext.length == EncryptedAmount.LENGTH,
+        "participant %s ciphertext must be %s bytes, but was %s bytes",
+        i, EncryptedAmount.LENGTH, partyCiphertext.length
       );
-      System.arraycopy(partyPublicKey, 0, participantArray[i].publicKey, 0, PUBLIC_KEY_SIZE);
-      System.arraycopy(partyCiphertext, 0, participantArray[i].ciphertext, 0, CIPHERTEXT_SIZE);
+      System.arraycopy(partyPublicKey, 0, participantArray[i].publicKey, 0, PublicKey.LENGTH);
+      System.arraycopy(partyCiphertext, 0, participantArray[i].ciphertext, 0, EncryptedAmount.LENGTH);
     }
 
     byte[] proofBytes = proof.value().toByteArray();

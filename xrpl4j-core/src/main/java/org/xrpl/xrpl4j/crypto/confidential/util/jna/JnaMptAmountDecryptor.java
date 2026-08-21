@@ -40,8 +40,6 @@ import java.util.Objects;
  */
 public class JnaMptAmountDecryptor implements MptAmountDecryptor {
 
-  private static final int CIPHERTEXT_SIZE = 66;
-  private static final int PRIVATE_KEY_SIZE = 32;
 
   private final MptCryptoLibrary lib;
 
@@ -88,18 +86,18 @@ public class JnaMptAmountDecryptor implements MptAmountDecryptor {
 
     byte[] ciphertextBytes = ciphertext.value().toByteArray();
     Preconditions.checkArgument(
-      ciphertextBytes.length == CIPHERTEXT_SIZE,
+      ciphertextBytes.length == EncryptedAmount.LENGTH,
       "ciphertext must be %s bytes, but was %s bytes",
-      CIPHERTEXT_SIZE, ciphertextBytes.length
+      EncryptedAmount.LENGTH, ciphertextBytes.length
     );
 
     // Extract the private key just before use; zero the copy when done
     byte[] privateKeyBytes = privateKey.naturalBytes().toByteArray();
     try {
       Preconditions.checkArgument(
-        privateKeyBytes.length == PRIVATE_KEY_SIZE,
+        privateKeyBytes.length == PrivateKey.LENGTH,
         "privateKey must be %s bytes, but was %s bytes",
-        PRIVATE_KEY_SIZE, privateKeyBytes.length
+        PrivateKey.LENGTH, privateKeyBytes.length
       );
 
       long[] outAmount = new long[1];

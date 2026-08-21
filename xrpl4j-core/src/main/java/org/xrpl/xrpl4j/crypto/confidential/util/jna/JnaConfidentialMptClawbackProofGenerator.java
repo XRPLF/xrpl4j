@@ -89,7 +89,8 @@ public class JnaConfidentialMptClawbackProofGenerator implements ConfidentialMpt
     byte[] encryptedAmount = issuerEncryptedBalance.value().toByteArray();
 
     // keyType() is content-derived and does not by itself guarantee length; the native call needs exactly 33 bytes.
-    Preconditions.checkArgument(publicKeyBytes.length == 33, "issuerPublicKey must be 33 bytes");
+    Preconditions.checkArgument(
+      publicKeyBytes.length == PublicKey.LENGTH, "issuerPublicKey must be %s bytes", PublicKey.LENGTH);
 
     // Extract the private key just before use; zero the copy when done
     byte[] privateKeyBytes = issuerPrivateKey.naturalBytes().toByteArray();
@@ -98,7 +99,8 @@ public class JnaConfidentialMptClawbackProofGenerator implements ConfidentialMpt
     int result;
     try {
       // Validate inside the try so a failed check still scrubs the private key in the finally block.
-      Preconditions.checkArgument(privateKeyBytes.length == 32, "issuerPrivateKey must be 32 bytes");
+      Preconditions.checkArgument(
+        privateKeyBytes.length == PrivateKey.LENGTH, "issuerPrivateKey must be %s bytes", PrivateKey.LENGTH);
       result = lib.mpt_get_clawback_proof(
         privateKeyBytes, publicKeyBytes, contextHash, amount.longValue(), encryptedAmount, outProof
       );

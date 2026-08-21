@@ -83,7 +83,8 @@ public class JnaConfidentialMptConvertBackProofVerifier implements ConfidentialM
 
     // keyType() is content-derived and does not by itself guarantee length; the native call needs exactly 33 bytes.
     byte[] senderPublicKeyBytes = senderPublicKey.value().toByteArray();
-    Preconditions.checkArgument(senderPublicKeyBytes.length == 33, "senderPublicKey must be 33 bytes");
+    Preconditions.checkArgument(
+      senderPublicKeyBytes.length == PublicKey.LENGTH, "senderPublicKey must be %s bytes", PublicKey.LENGTH);
 
     return lib.mpt_verify_convert_back_proof(
       proof.value().toByteArray(),

@@ -35,8 +35,6 @@ import java.util.Objects;
  */
 public class JnaBlindingFactorGenerator implements BlindingFactorGenerator {
 
-  private static final int BLINDING_FACTOR_SIZE = 32;
-
   private final MptCryptoLibrary lib;
 
   /**
@@ -59,7 +57,7 @@ public class JnaBlindingFactorGenerator implements BlindingFactorGenerator {
 
   @Override
   public BlindingFactor generate() {
-    byte[] outFactor = new byte[BLINDING_FACTOR_SIZE];
+    byte[] outFactor = new byte[BlindingFactor.LENGTH];
     try {
       int result = lib.mpt_generate_blinding_factor(outFactor);
       if (result != 0) {

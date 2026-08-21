@@ -56,7 +56,7 @@ public class ConfidentialMptConvertJsonTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
       )
-      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179C3493FFEB0869853DDEC0705800595424710FA7A"))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("000001791111111111111111111111111111111111111111"))
       .mptAmount(MpTokenNumericAmount.of(1000))
       // A valid 33-byte (66 hex character) compressed EC public key.
       .holderEncryptionKey(
@@ -77,7 +77,7 @@ public class ConfidentialMptConvertJsonTest extends AbstractJsonTest {
       "  \"Fee\" : \"135\",\n" +
       "  \"Sequence\" : 377,\n" +
       "  \"SigningPubKey\" : \"EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710\",\n" +
-      "  \"MPTokenIssuanceID\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\",\n" +
+      "  \"MPTokenIssuanceID\" : \"000001791111111111111111111111111111111111111111\",\n" +
       "  \"MPTAmount\" : \"1000\",\n" +
       "  \"HolderEncryptionKey\" : \"028D7500BFCD792B487E4E51664037AB543E76CEBACF0E7E17AD4B83057E1F2B30\",\n" +
       "  \"HolderEncryptedAmount\" : \"" + HOLDER_ENCRYPTED_AMOUNT.hexValue() + "\",\n" +
@@ -99,7 +99,7 @@ public class ConfidentialMptConvertJsonTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
       )
-      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179C3493FFEB0869853DDEC0705800595424710FA7A"))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("000001791111111111111111111111111111111111111111"))
       .mptAmount(MpTokenNumericAmount.of(1000))
       .holderEncryptedAmount(HOLDER_ENCRYPTED_AMOUNT)
       .issuerEncryptedAmount(ISSUER_ENCRYPTED_AMOUNT)
@@ -112,7 +112,7 @@ public class ConfidentialMptConvertJsonTest extends AbstractJsonTest {
       "  \"Fee\" : \"135\",\n" +
       "  \"Sequence\" : 377,\n" +
       "  \"SigningPubKey\" : \"EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710\",\n" +
-      "  \"MPTokenIssuanceID\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\",\n" +
+      "  \"MPTokenIssuanceID\" : \"000001791111111111111111111111111111111111111111\",\n" +
       "  \"MPTAmount\" : \"1000\",\n" +
       "  \"HolderEncryptedAmount\" : \"" + HOLDER_ENCRYPTED_AMOUNT.hexValue() + "\",\n" +
       "  \"IssuerEncryptedAmount\" : \"" + ISSUER_ENCRYPTED_AMOUNT.hexValue() + "\",\n" +

@@ -24,11 +24,15 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertBackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertBackProofGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -84,7 +88,8 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     // Validate the (public) sender key before copying out any secret, so a failure leaves no unscrubbed secret.
     // keyType() is content-derived and does not by itself guarantee length.
     byte[] publicKeyBytes = senderKeyPair.publicKey().value().toByteArray();
-    Preconditions.checkArgument(publicKeyBytes.length == 33, "senderKeyPair public key must be 33 bytes");
+    Preconditions.checkArgument(
+      publicKeyBytes.length == PublicKey.LENGTH, "senderKeyPair public key must be %s bytes", PublicKey.LENGTH);
     byte[] contextHash = context.value().toByteArray();
 
     byte[] outProof = new byte[PROOF_SIZE];
@@ -98,13 +103,15 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     byte[] balanceBlindingBytes = null;
     int result;
     try {
-      Preconditions.checkArgument(privateKeyBytes.length == 32, "senderKeyPair private key must be 32 bytes");
+      Preconditions.checkArgument(
+        privateKeyBytes.length == PrivateKey.LENGTH, "senderKeyPair private key must be %s bytes", PrivateKey.LENGTH);
       System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, params.pedersenCommitment, 0, 33);
       params.amount = balanceParams.amount().longValue();
-      System.arraycopy(balanceParams.encryptedAmount().value().toByteArray(), 0, params.encryptedAmount, 0, 66);
+      System.arraycopy(
+        balanceParams.encryptedAmount().value().toByteArray(), 0, params.encryptedAmount, 0, EncryptedAmount.LENGTH);
       // Copy the secret blinding factor via a named local so the finally can scrub it too — not just the struct field.
       balanceBlindingBytes = balanceParams.blindingFactor().value().toByteArray();
-      System.arraycopy(balanceBlindingBytes, 0, params.blindingFactor, 0, 32);
+      System.arraycopy(balanceBlindingBytes, 0, params.blindingFactor, 0, BlindingFactor.LENGTH);
       result = lib.mpt_get_convert_back_proof(
         privateKeyBytes, publicKeyBytes, contextHash, amount.longValue(),
         params, outProof

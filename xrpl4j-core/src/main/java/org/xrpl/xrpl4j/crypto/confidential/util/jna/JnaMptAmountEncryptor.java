@@ -40,10 +40,6 @@ import java.util.Objects;
  */
 public class JnaMptAmountEncryptor implements MptAmountEncryptor {
 
-  private static final int PUBLIC_KEY_SIZE = 33;
-  private static final int BLINDING_FACTOR_SIZE = 32;
-  private static final int CIPHERTEXT_SIZE = 66;
-
   private final MptCryptoLibrary lib;
 
   /**
@@ -82,21 +78,21 @@ public class JnaMptAmountEncryptor implements MptAmountEncryptor {
 
     byte[] publicKeyBytes = publicKey.value().toByteArray();
     Preconditions.checkArgument(
-      publicKeyBytes.length == PUBLIC_KEY_SIZE,
+      publicKeyBytes.length == PublicKey.LENGTH,
       "publicKey must be %s bytes, but was %s bytes",
-      PUBLIC_KEY_SIZE, publicKeyBytes.length
+      PublicKey.LENGTH, publicKeyBytes.length
     );
 
     // Extract the blinding factor just before use; zero the copy when done
     byte[] blindingBytes = blindingFactor.value().toByteArray();
     try {
       Preconditions.checkArgument(
-        blindingBytes.length == BLINDING_FACTOR_SIZE,
+        blindingBytes.length == BlindingFactor.LENGTH,
         "blindingFactor must be %s bytes, but was %s bytes",
-        BLINDING_FACTOR_SIZE, blindingBytes.length
+        BlindingFactor.LENGTH, blindingBytes.length
       );
 
-      byte[] outCiphertext = new byte[CIPHERTEXT_SIZE];
+      byte[] outCiphertext = new byte[EncryptedAmount.LENGTH];
       int result = lib.mpt_encrypt_amount(amount.longValue(), publicKeyBytes, blindingBytes, outCiphertext);
       if (result != 0) {
         throw new IllegalStateException("mpt_encrypt_amount failed with error code: " + result);

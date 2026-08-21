@@ -41,6 +41,11 @@ import org.xrpl.xrpl4j.model.jackson.modules.EncryptedAmountSerializer;
 public abstract class EncryptedAmount {
 
   /**
+   * The length, in bytes, of an ElGamal ciphertext (two 33-byte compressed points).
+   */
+  public static final int LENGTH = 66;
+
+  /**
    * Creates an encrypted amount from an {@link UnsignedByteArray}.
    *
    * @param value The 66-byte ciphertext.
@@ -85,11 +90,10 @@ public abstract class EncryptedAmount {
    */
   @Value.Check
   void check() {
-    final int expectedLength = 66;
     Preconditions.checkArgument(
-      value().length() == expectedLength,
+      value().length() == LENGTH,
       "EncryptedAmount must be %s bytes, but was %s bytes",
-      expectedLength, value().length()
+      LENGTH, value().length()
     );
   }
 

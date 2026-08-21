@@ -45,6 +45,11 @@ import javax.security.auth.Destroyable;
 public abstract class BlindingFactor implements Destroyable {
 
   /**
+   * The length, in bytes, of a blinding factor (a 32-byte ElGamal scalar).
+   */
+  public static final int LENGTH = 32;
+
+  /**
    * Creates a blinding factor from an {@link UnsignedByteArray}.
    *
    * @param value The 32-byte scalar.
@@ -89,11 +94,10 @@ public abstract class BlindingFactor implements Destroyable {
    */
   @Value.Check
   void check() {
-    final int expectedLength = 32;
     Preconditions.checkArgument(
-      value().length() == expectedLength,
+      value().length() == LENGTH,
       "BlindingFactor must be %s bytes, but was %s bytes",
-      expectedLength, value().length()
+      LENGTH, value().length()
     );
   }
 

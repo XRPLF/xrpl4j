@@ -38,7 +38,6 @@ import java.util.Objects;
  */
 public class JnaConfidentialCiphertextArithmetic implements ConfidentialCiphertextArithmetic {
 
-  private static final int CIPHERTEXT_SIZE = 66;
   // sizeof(secp256k1_pubkey): an opaque `unsigned char data[64]` struct.
   private static final int PUBKEY_STRUCT_SIZE = 64;
 
@@ -87,8 +86,10 @@ public class JnaConfidentialCiphertextArithmetic implements ConfidentialCipherte
 
     byte[] leftBytes = left.value().toByteArray();
     byte[] rightBytes = right.value().toByteArray();
-    Preconditions.checkArgument(leftBytes.length == CIPHERTEXT_SIZE, "left must be %s bytes", CIPHERTEXT_SIZE);
-    Preconditions.checkArgument(rightBytes.length == CIPHERTEXT_SIZE, "right must be %s bytes", CIPHERTEXT_SIZE);
+    Preconditions.checkArgument(
+      leftBytes.length == EncryptedAmount.LENGTH, "left must be %s bytes", EncryptedAmount.LENGTH);
+    Preconditions.checkArgument(
+      rightBytes.length == EncryptedAmount.LENGTH, "right must be %s bytes", EncryptedAmount.LENGTH);
 
     Pointer ctx = lib.mpt_secp256k1_context();
     if (ctx == null) {
@@ -123,7 +124,7 @@ public class JnaConfidentialCiphertextArithmetic implements ConfidentialCipherte
         );
       }
 
-      byte[] out = new byte[CIPHERTEXT_SIZE];
+      byte[] out = new byte[EncryptedAmount.LENGTH];
       if (!lib.mpt_serialize_ec_pair(outC1, outC2, out)) {
         throw new IllegalStateException("mpt_serialize_ec_pair failed to serialize the combined ciphertext");
       }

@@ -55,9 +55,9 @@ class BlindingFactorTest {
   }
 
   @Test
-  void toStringRendersHex() {
-    String hex = Strings.repeat("12", 32);
-    assertThat(BlindingFactor.of(hex))
-      .hasToString("BlindingFactor{value=" + hex + "}");
+  void toStringRedactsSecretValue() {
+    // The blinding factor is secret, so toString() must not leak the raw value.
+    assertThat(BlindingFactor.of(Strings.repeat("12", 32)))
+      .hasToString("BlindingFactor{value=[redacted]}");
   }
 }

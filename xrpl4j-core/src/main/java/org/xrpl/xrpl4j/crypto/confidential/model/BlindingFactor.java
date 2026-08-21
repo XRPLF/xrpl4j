@@ -104,12 +104,14 @@ public abstract class BlindingFactor {
   }
 
   /**
-   * A debug-friendly representation showing the value as hex rather than the raw byte array.
+   * A debug-friendly representation that <em>redacts</em> the value: the blinding factor is secret (with an ElGamal
+   * ciphertext it reveals the encrypted amount), so it must never appear in logs. Use {@link #hexValue()} only for the
+   * wire format.
    *
-   * @return A {@link String}.
+   * @return A {@link String} with the value redacted.
    */
   @Override
   public String toString() {
-    return "BlindingFactor{value=" + hexValue() + "}";
+    return "BlindingFactor{value=[redacted]}";
   }
 }

@@ -58,6 +58,18 @@ class BlindingFactorTest {
   void toStringRedactsSecretValue() {
     // The blinding factor is secret, so toString() must not leak the raw value.
     assertThat(BlindingFactor.of(Strings.repeat("12", 32)))
-      .hasToString("BlindingFactor{value=[redacted]}");
+      .hasToString("BlindingFactor{value=[redacted], destroyed=false}");
+  }
+
+  @Test
+  void destroyZeroesOutValueAndMarksDestroyed() {
+    BlindingFactor factor = BlindingFactor.of(Strings.repeat("12", 32));
+    assertThat(factor.isDestroyed()).isFalse();
+
+    factor.destroy();
+
+    assertThat(factor.isDestroyed()).isTrue();
+    assertThat(factor.value().isDestroyed()).isTrue();
+    assertThat(factor.value().toByteArray()).isEmpty();
   }
 }

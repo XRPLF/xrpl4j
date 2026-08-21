@@ -30,14 +30,19 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorSerializer;
 
+import javax.security.auth.Destroyable;
+
 /**
  * The 32-byte scalar blinding factor (ElGamal randomness {@code r}) used to encrypt an amount in Confidential MPT
  * transactions. Held as raw bytes; on the wire it is serialized as an uppercase hex string.
+ *
+ * <p>A blinding factor is secret, so it is {@link Destroyable}: {@link #destroy()} zeroes the underlying bytes once
+ * the value is no longer needed, in the same way {@code Seed} is destroyed.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableBlindingFactor.class, using = BlindingFactorSerializer.class)
 @JsonDeserialize(as = ImmutableBlindingFactor.class, using = BlindingFactorDeserializer.class)
-public abstract class BlindingFactor {
+public abstract class BlindingFactor implements Destroyable {
 
   /**
    * Creates a blinding factor from an {@link UnsignedByteArray}.
@@ -104,14 +109,29 @@ public abstract class BlindingFactor {
   }
 
   /**
+   * Destroys this blinding factor by zeroing out its underlying {@link #value()}. Because {@link BlindingFactor} is an
+   * immutable value type, destruction is delegated to the mutable {@link UnsignedByteArray} it wraps rather than
+   * tracked via a field on this class.
+   */
+  @Override
+  public void destroy() {
+    value().destroy();
+  }
+
+  @Override
+  public boolean isDestroyed() {
+    return value().isDestroyed();
+  }
+
+  /**
    * A debug-friendly representation that <em>redacts</em> the value: the blinding factor is secret (with an ElGamal
    * ciphertext it reveals the encrypted amount), so it must never appear in logs. Use {@link #hexValue()} only for the
    * wire format.
    *
-   * @return A {@link String} with the value redacted.
+   * @return A {@link String} with the value redacted, plus whether this factor has been destroyed.
    */
   @Override
   public String toString() {
-    return "BlindingFactor{value=[redacted]}";
+    return "BlindingFactor{value=[redacted], destroyed=" + isDestroyed() + "}";
   }
 }

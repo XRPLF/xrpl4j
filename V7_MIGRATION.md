@@ -215,8 +215,21 @@ UnsignedInteger age = validatedLedger.age();
 
 // After (v7.0.0)
 Optional<UnsignedInteger> age = validatedLedger.age();
-// To get the value directly (throws if absent, only safe when you know the server reported an age):
-UnsignedInteger ageValue = validatedLedger.age().orElseThrow();
+
+// Idiomatic ways to use the optional value:
+// Option 1: Check if present and use it
+if (validatedLedger.age().isPresent()) {
+    UnsignedInteger ageValue = validatedLedger.age().get();
+    // Use ageValue here
+}
+
+// Option 2: Use ifPresent for a functional style
+validatedLedger.age().ifPresent(ageValue -> {
+    // Use ageValue here
+});
+
+// Option 3: Provide a default value
+UnsignedInteger ageValue = validatedLedger.age().orElse(UnsignedInteger.ZERO);
 ```
 
 ## Backward Compatibility

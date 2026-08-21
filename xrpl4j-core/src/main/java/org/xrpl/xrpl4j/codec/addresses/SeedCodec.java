@@ -102,11 +102,12 @@ public class SeedCodec {
     }
 
     // 32-byte entropy exists only to support ElGamal secp256k1 seeds (see Seed#elGamalSecp256k1SeedFromEntropy).
-    // Encoding 32 bytes under the ED25519 prefix yields a 53-character seed that decodeSeed cannot decode -- it
-    // matches neither the 51-character secp256k1 branch nor the 16-byte fallback -- so it would be silently
-    // unrecoverable. Reject it rather than return unusable key material.
-    if (entropy.getUnsignedBytes().size() == 32 && type.equals(KeyType.ED25519)) {
-      throw new EncodeException("32-byte entropy is only supported for SECP256K1 seeds, but was ED25519.");
+    // Encoding 32 bytes under any non-secp256k1 prefix yields a seed that decodeSeed cannot decode -- e.g. the ED25519
+    // prefix produces a 53-character seed that matches neither the 51-character secp256k1 branch nor the 16-byte
+    // fallback -- so it would be silently unrecoverable. Gate on SECP256K1 (rather than excluding ED25519) so a
+    // future KeyType with 32-byte entropy is rejected by default rather than mistakenly accepted.
+    if (entropy.getUnsignedBytes().size() == 32 && !type.equals(KeyType.SECP256K1)) {
+      throw new EncodeException("32-byte entropy is only supported for SECP256K1 seeds, but was " + type + ".");
     }
 
     Version version = type.equals(KeyType.ED25519) ? Version.ED25519_SEED : Version.FAMILY_SEED;

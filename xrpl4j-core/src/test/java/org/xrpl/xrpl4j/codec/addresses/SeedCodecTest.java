@@ -153,14 +153,16 @@ class SeedCodecTest extends AbstractCodecTest {
    */
   @Test
   public void encodeSeedRejectsThirtyTwoByteEntropyForEd25519() {
-    assertThrows(
+    // The guard is gated on SECP256K1 (not "exclude ED25519"), so any non-SECP256K1 type is rejected for 32-byte
+    // entropy; ED25519 is the only such type today. Assert the message to lock that SECP256K1-gated intent.
+    EncodeException thrown = assertThrows(
       EncodeException.class,
       () -> seedCodec.encodeSeed(
         unsignedByteArrayFromHex("4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4"),
         KeyType.ED25519
-      ),
-      "32-byte entropy is only supported for SECP256K1 seeds, but was ED25519."
+      )
     );
+    assertThat(thrown).hasMessageContaining("32-byte entropy is only supported for SECP256K1 seeds");
   }
 
   /**

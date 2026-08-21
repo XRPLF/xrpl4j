@@ -139,6 +139,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     MptCryptoLibrary.MptPedersenProofParams balanceStruct = new MptCryptoLibrary.MptPedersenProofParams();
     byte[] privateKeyBytes = null;
     byte[] txBlindingFactorBytes = null;
+    byte[] balanceBlindingBytes = null;
 
     int result;
     try {
@@ -152,10 +153,8 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
         balanceParams.encryptedAmount().value().toByteArray(), 0,
         balanceStruct.encryptedAmount, 0, 66
       );
-      System.arraycopy(
-        balanceParams.blindingFactor().value().toByteArray(), 0,
-        balanceStruct.blindingFactor, 0, 32
-      );
+      balanceBlindingBytes = balanceParams.blindingFactor().value().toByteArray();
+      System.arraycopy(balanceBlindingBytes, 0, balanceStruct.blindingFactor, 0, 32);
 
       privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
       txBlindingFactorBytes = txBlindingFactor.value().toByteArray();
@@ -178,6 +177,9 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
       }
       if (txBlindingFactorBytes != null) {
         Arrays.fill(txBlindingFactorBytes, (byte) 0);
+      }
+      if (balanceBlindingBytes != null) {
+        Arrays.fill(balanceBlindingBytes, (byte) 0);
       }
       Arrays.fill(balanceStruct.blindingFactor, (byte) 0);
     }

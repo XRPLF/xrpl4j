@@ -95,13 +95,16 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     // length check — still scrubs it in the finally. This clears only these Java copies; the caller's own
     // BlindingFactor instance and any buffers JNA marshals into native memory are outside this method's control.
     MptCryptoLibrary.MptPedersenProofParams params = new MptCryptoLibrary.MptPedersenProofParams();
+    byte[] balanceBlindingBytes = null;
     int result;
     try {
       Preconditions.checkArgument(privateKeyBytes.length == 32, "senderKeyPair private key must be 32 bytes");
       System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, params.pedersenCommitment, 0, 33);
       params.amount = balanceParams.amount().longValue();
       System.arraycopy(balanceParams.encryptedAmount().value().toByteArray(), 0, params.encryptedAmount, 0, 66);
-      System.arraycopy(balanceParams.blindingFactor().value().toByteArray(), 0, params.blindingFactor, 0, 32);
+      // Copy the secret blinding factor via a named local so the finally can scrub it too — not just the struct field.
+      balanceBlindingBytes = balanceParams.blindingFactor().value().toByteArray();
+      System.arraycopy(balanceBlindingBytes, 0, params.blindingFactor, 0, 32);
       result = lib.mpt_get_convert_back_proof(
         privateKeyBytes, publicKeyBytes, contextHash, amount.longValue(),
         params, outProof
@@ -109,6 +112,9 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     } finally {
       Arrays.fill(privateKeyBytes, (byte) 0);
       Arrays.fill(params.blindingFactor, (byte) 0);
+      if (balanceBlindingBytes != null) {
+        Arrays.fill(balanceBlindingBytes, (byte) 0);
+      }
     }
 
     if (result != 0) {

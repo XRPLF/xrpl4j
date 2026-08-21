@@ -20,8 +20,10 @@ package org.xrpl.xrpl4j.codec.addresses;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
+import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 
@@ -35,6 +37,11 @@ import java.util.Optional;
 public class SeedCodec {
 
   private static final SeedCodec INSTANCE = new SeedCodec();
+
+  // A 16-byte ED25519 or SECP256K1 seed Base58Check-encodes to 31 or 29 characters, respectively; a 32-byte
+  // SECP256K1 seed (used only for ElGamal seeds; see #encodeSeed) encodes to 51 characters. No other length is
+  // decodable -- e.g. a 32-byte ED25519 seed would encode to 53 characters, but #encodeSeed refuses to produce one.
+  private static final ImmutableSet<Integer> VALID_SEED_LENGTHS = ImmutableSet.of(29, 31, 51);
 
   public static SeedCodec getInstance() {
     return INSTANCE;
@@ -52,6 +59,15 @@ public class SeedCodec {
   public Decoded decodeSeed(final String base58EncodedSeed) throws EncodingFormatException {
     Objects.requireNonNull(base58EncodedSeed);
 
+    if (!VALID_SEED_LENGTHS.contains(base58EncodedSeed.length())) {
+      throw new DecodeException(
+        String.format("Invalid seed length %s; expected %s.", base58EncodedSeed.length(), VALID_SEED_LENGTHS)
+      );
+    }
+
+    // A 32-byte secp256k1 seed (used only for ElGamal seeds; see #encodeSeed) Base58Check-encodes to 51 characters,
+    // versus 29 for the standard 16-byte payload. Detect that length here since AddressBase58.decode needs the
+    // expected payload size up front to pick the right branch.
     if (base58EncodedSeed.length() == 51) {
       return AddressBase58.decode(
         base58EncodedSeed,

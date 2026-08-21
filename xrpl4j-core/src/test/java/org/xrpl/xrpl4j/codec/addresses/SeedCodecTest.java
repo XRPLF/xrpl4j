@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
 import org.xrpl.xrpl4j.crypto.keys.Entropy;
 
@@ -44,6 +45,16 @@ class SeedCodecTest extends AbstractCodecTest {
   @Test
   void getInstance() {
     assertThat(SeedCodec.getInstance()).isNotNull();
+  }
+
+  @Test
+  public void decodeSeedRejectsInvalidLength() {
+    // Only 29-, 31-, and 51-character seeds are decodable; any other length is rejected overtly, up front.
+    // Cases: empty; the 29-char secp256k1 seed minus one char (28); the 31-char ed25519 seed plus one char (32).
+    for (String badSeed : new String[] {"", "sn259rEFXrQrWyx3Q7XneWcwV6df", "sEdTM1uX8pu2do5XvTnutH6HsouMaM2X"}) {
+      DecodeException thrown = assertThrows(DecodeException.class, () -> seedCodec.decodeSeed(badSeed));
+      assertThat(thrown.getMessage()).contains("Invalid seed length");
+    }
   }
 
   @Test

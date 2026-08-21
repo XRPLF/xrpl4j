@@ -545,6 +545,14 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
     assertThat(senderBalanceAfterSend.longValue()).isEqualTo(400L);
 
+    // Auditor selective disclosure: the auditor's key (not the holder's) decrypts the mirror to the same 400.
+    EncryptedAmount auditorMirrorAfterSend = senderMpTokenAfterSend.auditorEncryptedBalance()
+      .orElseThrow(() -> new RuntimeException("Sender has no auditor-encrypted balance after send"));
+    UnsignedLong auditorViewAfterSend = decryptor.decrypt(
+      auditorMirrorAfterSend, auditorElGamalKeyPair.privateKey(), UnsignedLong.ZERO, amountToConvert
+    );
+    assertThat(auditorViewAfterSend.longValue()).isEqualTo(400L);
+
     // 8. ConfidentialMptConvertBack: Holder 1 converts 50 confidential MPTs back to public balance.
     UnsignedLong convertBackAmount = UnsignedLong.valueOf(50);
 
@@ -634,6 +642,14 @@ public class ConfidentialTransfersIT extends AbstractIT {
       remainingBalanceCiphertext, holderElGamalKeyPair.privateKey(), UnsignedLong.ZERO, amountToConvert
     );
     assertThat(remainingConfidentialBalance.longValue()).isEqualTo(350L);
+
+    // Auditor selective disclosure: the auditor's key decrypts the post-convert-back mirror to 350.
+    EncryptedAmount auditorMirrorAfterConvertBack = holderMpTokenAfterConvertBack.auditorEncryptedBalance()
+      .orElseThrow(() -> new RuntimeException("No auditor-encrypted balance after convert back"));
+    UnsignedLong auditorViewAfterConvertBack = decryptor.decrypt(
+      auditorMirrorAfterConvertBack, auditorElGamalKeyPair.privateKey(), UnsignedLong.ZERO, amountToConvert
+    );
+    assertThat(auditorViewAfterConvertBack.longValue()).isEqualTo(350L);
 
     // 9. ConfidentialMptClawback: Issuer claws back 350 confidential MPTs from Holder 1, using the issuer's
     //    encrypted mirror of the holder's balance (IssuerEncryptedBalance on the holder's MPToken).

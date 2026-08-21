@@ -147,6 +147,8 @@ public interface ConfidentialMptConvert extends Transaction {
    * {@code temBAD_AMOUNT} checks in {@code rippled}'s {@code ConfidentialMPTConvert} preflight.
    *
    * <ul>
+   *   <li>The issuer of the {@code MPTokenIssuanceID} must not be the {@code Account} — the issuer cannot convert its
+   *       own issuance ({@code temMALFORMED} in {@code rippled}).</li>
    *   <li>{@code MPTAmount} must be no greater than the maximum allowable supply ({@code temBAD_AMOUNT} in
    *       {@code rippled}). A zero amount is permitted, since a zero-amount conversion is the opt-in mechanism used to
    *       register a {@code HolderEncryptionKey}.</li>
@@ -158,6 +160,11 @@ public interface ConfidentialMptConvert extends Transaction {
    */
   @Value.Check
   default void validateFieldCombinations() {
+    Preconditions.checkState(
+      !mpTokenIssuanceId().isIssuer(account()),
+      "The issuer cannot convert its own issuance."
+    );
+
     Preconditions.checkState(
       mptAmount().value().compareTo(MpTokenNumericAmount.MAX_AMOUNT) <= 0,
       "MPTAmount must not exceed the maximum allowable supply (%s).", MpTokenNumericAmount.MAX_AMOUNT

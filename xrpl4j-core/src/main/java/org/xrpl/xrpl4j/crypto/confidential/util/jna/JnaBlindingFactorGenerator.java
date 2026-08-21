@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
 import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -59,10 +60,16 @@ public class JnaBlindingFactorGenerator implements BlindingFactorGenerator {
   @Override
   public BlindingFactor generate() {
     byte[] outFactor = new byte[BLINDING_FACTOR_SIZE];
-    int result = lib.mpt_generate_blinding_factor(outFactor);
-    if (result != 0) {
-      throw new IllegalStateException("mpt_generate_blinding_factor failed with error code: " + result);
+    try {
+      int result = lib.mpt_generate_blinding_factor(outFactor);
+      if (result != 0) {
+        throw new IllegalStateException("mpt_generate_blinding_factor failed with error code: " + result);
+      }
+      // BlindingFactor.fromBytes copies the bytes (UnsignedByteArray.of duplicates them), so scrubbing outFactor in
+      // the finally does not affect the returned value -- it only clears this transient copy of the secret factor.
+      return BlindingFactor.fromBytes(outFactor);
+    } finally {
+      Arrays.fill(outFactor, (byte) 0);
     }
-    return BlindingFactor.fromBytes(outFactor);
   }
 }

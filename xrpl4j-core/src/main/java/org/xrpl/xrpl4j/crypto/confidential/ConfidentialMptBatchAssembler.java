@@ -37,7 +37,6 @@ import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertC
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptClawbackProof;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
-import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialCiphertextArithmetic;
@@ -614,8 +613,9 @@ public class ConfidentialMptBatchAssembler {
       requireBalance(destState.issuerEncrypted(), "destination issuer-encrypted balance"),
       rerandomize(issuerCiphertext, issuance.issuerEncryptionKey(), challenge)
     );
+    // auditorCiphertext is present iff the issuance has an auditor key, so this also gates the key .get() below.
     Optional<EncryptedAmount> auditorEncrypted = destState.auditorEncrypted();
-    if (auditorCiphertext.isPresent() && issuance.auditorEncryptionKey().isPresent()) {
+    if (auditorCiphertext.isPresent()) {
       auditorEncrypted = Optional.of(ciphertextArithmetic.add(
         requireBalance(auditorEncrypted, "destination auditor-encrypted balance"),
         rerandomize(auditorCiphertext.get(), issuance.auditorEncryptionKey().get(), challenge)

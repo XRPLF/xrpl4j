@@ -20,10 +20,13 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
+
+import java.util.function.Supplier;
 
 /**
  * JNA binding interface for the mpt-crypto native library.
@@ -181,23 +184,36 @@ public interface MptCryptoLibrary extends Library {
   // =========================================================================
 
   /**
+   * Loads the native library via {@code loader}, wrapping any {@link UnsatisfiedLinkError} with actionable guidance on
+   * making the library discoverable. Exposed only so the error handling can be exercised without the native library
+   * present; production code loads via {@link #getInstance()}.
+   *
+   * @param loader Supplies the native library (in production, {@code Native.load(...)}).
+   *
+   * @return The loaded {@link MptCryptoLibrary}.
+   *
+   * @throws UnsatisfiedLinkError wrapping the loader's error (with guidance) if loading fails.
+   */
+  @VisibleForTesting
+  static MptCryptoLibrary load(final Supplier<MptCryptoLibrary> loader) {
+    try {
+      return loader.get();
+    } catch (UnsatisfiedLinkError e) {
+      UnsatisfiedLinkError error = new UnsatisfiedLinkError(
+        "Unable to load the native 'mpt-crypto' library. Ensure it is installed and discoverable, " +
+          "e.g. via the 'jna.library.path' system property or the system library path. " +
+          "Original error: " + e.getMessage()
+      );
+      error.initCause(e);
+      throw error;
+    }
+  }
+
+  /**
    * Holder class for lazy initialization of the native library singleton.
    */
   final class Holder {
-    private static final MptCryptoLibrary INSTANCE = loadLibrary();
-
-    private static MptCryptoLibrary loadLibrary() {
-      try {
-        return Native.load("mpt-crypto", MptCryptoLibrary.class);
-      } catch (UnsatisfiedLinkError e) {
-        UnsatisfiedLinkError error = new UnsatisfiedLinkError(
-          "Unable to load the native 'mpt-crypto' library. Ensure it is installed and discoverable, " +
-            "e.g. via the 'jna.library.path' system property or the system library path. " +
-            "Original error: " + e.getMessage()
-        );
-        error.initCause(e);
-        throw error;
-      }
-    }
+    private static final MptCryptoLibrary INSTANCE =
+      load(() -> Native.load("mpt-crypto", MptCryptoLibrary.class));
   }
 }

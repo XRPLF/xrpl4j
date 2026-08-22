@@ -83,11 +83,24 @@ jobs:
           token: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
       - name: Build
         run: mvn clean install
-      - name: Upload to Codecov
+      - name: Upload unit coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: >-
+            xrpl4j-core/target/site/jacoco/jacoco.xml,
+            xrpl4j-client/target/site/jacoco/jacoco.xml
+          flags: unittests
+          disable_search: true
           fail_ci_if_error: true
+      - name: Upload aggregate coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: xrpl4j-coverage/target/site/jacoco-aggregate/jacoco.xml
+          flags: aggregate
+          disable_search: true
+          fail_ci_if_error: false
 
   build_jdk_semeru_8:
     needs: resolve_xrpld_image
@@ -301,6 +314,21 @@ jobs:
         run: mvn clean install -DskipITs -Dmaven.javadoc.skip=true
       - name: Run ConfidentialTransfersIT
         run: mvn -pl xrpl4j-integration-tests verify -Dit.test=ConfidentialTransfersIT ${{ matrix.it_flags }} -Dmaven.javadoc.skip=true
+      # Only the linux-x86-64 leg (real native library against a local rippled Testcontainer, the most
+      # deterministic environment) feeds the aggregate report - the other legs exist for cross-platform native
+      # compatibility, not to generate additional coverage data.
+      - name: Build aggregate coverage report including ConfidentialTransfersIT
+        if: matrix.platform == 'linux-x86-64'
+        run: mvn -pl xrpl4j-coverage -am verify -DskipTests -DskipITs -Dmaven.javadoc.skip=true
+      - name: Upload confidential-mpt aggregate coverage to Codecov
+        if: matrix.platform == 'linux-x86-64'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: xrpl4j-coverage/target/site/jacoco-aggregate/jacoco.xml
+          flags: aggregate
+          disable_search: true
+          fail_ci_if_error: false
 
   build_devnet_its:
     runs-on: ubuntu-latest

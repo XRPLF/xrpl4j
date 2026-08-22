@@ -56,9 +56,33 @@ class BlindingFactorTest {
 
   @Test
   void toStringRedactsSecretValue() {
-    // The blinding factor is secret, so toString() must not leak the raw value.
+    // An instance can't tell whether it plays the disclosed (Convert) or secret (Send) role, so toString() fails safe
+    // and never renders the raw value.
     assertThat(BlindingFactor.of(Strings.repeat("12", 32)))
       .hasToString("BlindingFactor{value=[redacted], destroyed=false}");
+  }
+
+  @Test
+  void hexValueThrowsAfterDestroy() {
+    // destroy() empties the bytes, so without this guard a destroyed factor would silently serialize as an empty
+    // BlindingFactor field (rejected on-ledger as tecBAD_PROOF) instead of failing here.
+    BlindingFactor factor = BlindingFactor.of(Strings.repeat("12", 32));
+    factor.destroy();
+
+    assertThatThrownBy(factor::hexValue)
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("BlindingFactor has been destroyed");
+  }
+
+  @Test
+  void hexValueIsNotCachedAcrossDestroy() {
+    // hexValue() must not be @Value.Lazy: a cached hex String would outlive destroy() and defeat Destroyable.
+    BlindingFactor factor = BlindingFactor.of(Strings.repeat("12", 32));
+    assertThat(factor.hexValue()).isEqualTo(Strings.repeat("12", 32));
+
+    factor.destroy();
+
+    assertThatThrownBy(factor::hexValue).isInstanceOf(IllegalStateException.class);
   }
 
   @Test

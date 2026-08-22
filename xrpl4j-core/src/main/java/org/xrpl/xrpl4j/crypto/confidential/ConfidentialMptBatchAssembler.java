@@ -275,55 +275,65 @@ public class ConfidentialMptBatchAssembler {
       op.account(), sequence, op.mpTokenIssuanceId(), op.destination(), senderState.version()
     );
 
-    final BlindingFactor txBlinding = blindingFactorGenerator.generate();
-    final EncryptedAmount senderCiphertext = encryptor.encrypt(op.amount(), op.senderKeyPair().publicKey(), txBlinding);
-    final EncryptedAmount destCiphertext = encryptor.encrypt(op.amount(), destPublicKey, txBlinding);
-    final EncryptedAmount issuerCiphertext =
-      encryptor.encrypt(op.amount(), issuance.issuerEncryptionKey(), txBlinding);
-    final Optional<EncryptedAmount> auditorCiphertext =
-      issuance.auditorEncryptionKey().map(key -> encryptor.encrypt(op.amount(), key, txBlinding));
+    // Both factors are secret: a Send has no BlindingFactor field, so neither reaches the wire. The amount factor is
+    // reused across all four participant ciphertexts and the amount commitment (which is how the proof shows they
+    // encrypt the same amount), so leaking it would unmask that amount for every participant at once. Both are
+    // generated before the try so the finally can always zero them rather than leaving the secrets for GC.
+    final BlindingFactor amountBlindingFactor = blindingFactorGenerator.generate();
+    final BlindingFactor balanceBlindingFactor = blindingFactorGenerator.generate();
+    try {
+      final EncryptedAmount senderCiphertext =
+        encryptor.encrypt(op.amount(), op.senderKeyPair().publicKey(), amountBlindingFactor);
+      final EncryptedAmount destCiphertext = encryptor.encrypt(op.amount(), destPublicKey, amountBlindingFactor);
+      final EncryptedAmount issuerCiphertext =
+        encryptor.encrypt(op.amount(), issuance.issuerEncryptionKey(), amountBlindingFactor);
+      final Optional<EncryptedAmount> auditorCiphertext =
+        encryptForAuditor(issuance, op.amount(), amountBlindingFactor);
 
-    // Proof participants, in order: sender, destination, issuer, [auditor].
-    final List<MptConfidentialParty> participants = new ArrayList<>();
-    participants.add(MptConfidentialParty.of(op.senderKeyPair().publicKey(), senderCiphertext));
-    participants.add(MptConfidentialParty.of(destPublicKey, destCiphertext));
-    participants.add(MptConfidentialParty.of(issuance.issuerEncryptionKey(), issuerCiphertext));
-    issuance.auditorEncryptionKey().ifPresent(key ->
-      participants.add(MptConfidentialParty.of(key, auditorCiphertext.get())));
+      // Proof participants, in order: sender, destination, issuer, [auditor].
+      final List<MptConfidentialParty> participants = new ArrayList<>();
+      participants.add(MptConfidentialParty.of(op.senderKeyPair().publicKey(), senderCiphertext));
+      participants.add(MptConfidentialParty.of(destPublicKey, destCiphertext));
+      participants.add(MptConfidentialParty.of(issuance.issuerEncryptionKey(), issuerCiphertext));
+      issuance.auditorEncryptionKey().ifPresent(key ->
+        participants.add(MptConfidentialParty.of(key, auditorCiphertext.get())));
 
-    final UnsignedLong currentBalance = decryptor.decrypt(
-      spending, op.senderKeyPair().privateKey(), UnsignedLong.ZERO,
-      decryptBound(issuance, convertTotals, op.mpTokenIssuanceId())
-    );
-    final Commitment amountCommitment = sendService.generatePedersenCommitment(op.amount(), txBlinding);
-    final BlindingFactor balanceBlinding = blindingFactorGenerator.generate();
-    final PedersenProofParams balanceParams =
-      sendService.generatePedersenProofParams(currentBalance, spending, balanceBlinding);
-    final ConfidentialMptSendProof proof = sendService.generateProof(
-      op.senderKeyPair(), op.amount(), participants, txBlinding, context, amountCommitment, balanceParams
-    );
+      final UnsignedLong currentBalance = decryptor.decrypt(
+        spending, op.senderKeyPair().privateKey(), UnsignedLong.ZERO,
+        decryptBound(issuance, convertTotals, op.mpTokenIssuanceId())
+      );
+      final Commitment amountCommitment = sendService.generatePedersenCommitment(op.amount(), amountBlindingFactor);
+      final PedersenProofParams balanceParams =
+        sendService.generatePedersenProofParams(currentBalance, spending, balanceBlindingFactor);
+      final ConfidentialMptSendProof proof = sendService.generateProof(
+        op.senderKeyPair(), op.amount(), participants, amountBlindingFactor, context, amountCommitment, balanceParams
+      );
 
-    final ImmutableConfidentialMptSend.Builder builder = ConfidentialMptSend.builder()
-      .account(op.account())
-      .fee(ZERO_FEE)
-      .sequence(sequence)
-      .flags(TransactionFlags.INNER_BATCH_TXN)
-      .destination(op.destination())
-      .mpTokenIssuanceId(op.mpTokenIssuanceId())
-      .senderEncryptedAmount(senderCiphertext)
-      .destinationEncryptedAmount(destCiphertext)
-      .issuerEncryptedAmount(issuerCiphertext)
-      .zkProof(proof)
-      .amountCommitment(amountCommitment)
-      .balanceCommitment(Commitment.of(balanceParams.pedersenCommitment()));
-    auditorCiphertext.ifPresent(builder::auditorEncryptedAmount);
+      final ImmutableConfidentialMptSend.Builder builder = ConfidentialMptSend.builder()
+        .account(op.account())
+        .fee(ZERO_FEE)
+        .sequence(sequence)
+        .flags(TransactionFlags.INNER_BATCH_TXN)
+        .destination(op.destination())
+        .mpTokenIssuanceId(op.mpTokenIssuanceId())
+        .senderEncryptedAmount(senderCiphertext)
+        .destinationEncryptedAmount(destCiphertext)
+        .issuerEncryptedAmount(issuerCiphertext)
+        .zkProof(proof)
+        .amountCommitment(amountCommitment)
+        .balanceCommitment(Commitment.of(balanceParams.pedersenCommitment()));
+      auditorCiphertext.ifPresent(builder::auditorEncryptedAmount);
 
-    final ConfidentialTokenState debitedSender =
-      applyDebit(senderState, senderCiphertext, issuerCiphertext, auditorCiphertext);
-    final ConfidentialTokenState creditedDest = applyRecipientCredit(
-      destState, proof, destPublicKey, destCiphertext, issuance, issuerCiphertext, auditorCiphertext
-    );
-    return new BuiltInner(builder.build(), update(senderKey, debitedSender), update(destinationKey, creditedDest));
+      final ConfidentialTokenState debitedSender =
+        applyDebit(senderState, senderCiphertext, issuerCiphertext, auditorCiphertext);
+      final ConfidentialTokenState creditedDest = applyRecipientCredit(
+        destState, proof, destPublicKey, destCiphertext, issuance, issuerCiphertext, auditorCiphertext
+      );
+      return new BuiltInner(builder.build(), update(senderKey, debitedSender), update(destinationKey, creditedDest));
+    } finally {
+      amountBlindingFactor.destroy();
+      balanceBlindingFactor.destroy();
+    }
   }
 
   private BuiltInner buildConvert(
@@ -336,13 +346,15 @@ public class ConfidentialMptBatchAssembler {
     final String key = ConfidentialBatchRequest.stateKey(op.account(), op.mpTokenIssuanceId());
     final ConfidentialTokenState state = predicted.getOrDefault(key, ConfidentialTokenState.builder().build());
 
-    final BlindingFactor blinding = blindingFactorGenerator.generate();
+    // Disclosed on the wire: a Convert reveals a plaintext MPTAmount, so publishing the factor costs no privacy and
+    // lets validators recompute these ciphertexts deterministically instead of verifying a ZKP. See BlindingFactor.
+    final BlindingFactor disclosedBlindingFactor = blindingFactorGenerator.generate();
     final EncryptedAmount holderCiphertext =
-      encryptor.encrypt(op.amount(), op.holderKeyPair().publicKey(), blinding);
+      encryptor.encrypt(op.amount(), op.holderKeyPair().publicKey(), disclosedBlindingFactor);
     final EncryptedAmount issuerCiphertext =
-      encryptor.encrypt(op.amount(), issuance.issuerEncryptionKey(), blinding);
+      encryptor.encrypt(op.amount(), issuance.issuerEncryptionKey(), disclosedBlindingFactor);
     final Optional<EncryptedAmount> auditorCiphertext =
-      issuance.auditorEncryptionKey().map(auditorKey -> encryptor.encrypt(op.amount(), auditorKey, blinding));
+      encryptForAuditor(issuance, op.amount(), disclosedBlindingFactor);
 
     final ImmutableConfidentialMptConvert.Builder builder = ConfidentialMptConvert.builder()
       .account(op.account())
@@ -353,7 +365,7 @@ public class ConfidentialMptBatchAssembler {
       .mptAmount(MpTokenNumericAmount.of(op.amount()))
       .holderEncryptedAmount(holderCiphertext)
       .issuerEncryptedAmount(issuerCiphertext)
-      .blindingFactor(blinding);
+      .blindingFactor(disclosedBlindingFactor);
     auditorCiphertext.ifPresent(builder::auditorEncryptedAmount);
 
     // rippled requires HolderEncryptionKey and ZKProof to be set-or-omitted together: attach both only when
@@ -371,7 +383,6 @@ public class ConfidentialMptBatchAssembler {
       registeredKey = Optional.empty();
     }
 
-    // Register the holder key in predicted state only when this Convert did — a top-up leaves the prior key in place.
     final ConfidentialTokenState credited = applyConvertCredit(
       state, holderCiphertext, issuerCiphertext, auditorCiphertext, registeredKey
     );
@@ -390,13 +401,14 @@ public class ConfidentialMptBatchAssembler {
     final ConfidentialIssuanceInfo issuance = requireIssuance(request, op.mpTokenIssuanceId());
     final EncryptedAmount spending = requireBalance(state.spending(), "holder spending balance");
 
-    final BlindingFactor blinding = blindingFactorGenerator.generate();
+    // Disclosed on the wire, like Convert: a ConvertBack reveals a plaintext MPTAmount. See BlindingFactor.
+    final BlindingFactor disclosedBlindingFactor = blindingFactorGenerator.generate();
     final EncryptedAmount holderCiphertext =
-      encryptor.encrypt(op.amount(), op.holderKeyPair().publicKey(), blinding);
+      encryptor.encrypt(op.amount(), op.holderKeyPair().publicKey(), disclosedBlindingFactor);
     final EncryptedAmount issuerCiphertext =
-      encryptor.encrypt(op.amount(), issuance.issuerEncryptionKey(), blinding);
+      encryptor.encrypt(op.amount(), issuance.issuerEncryptionKey(), disclosedBlindingFactor);
     final Optional<EncryptedAmount> auditorCiphertext =
-      issuance.auditorEncryptionKey().map(auditorKey -> encryptor.encrypt(op.amount(), auditorKey, blinding));
+      encryptForAuditor(issuance, op.amount(), disclosedBlindingFactor);
 
     final ConfidentialMptConvertBackContext context = convertBackService.generateContext(
       op.account(), sequence, op.mpTokenIssuanceId(), state.version()
@@ -405,29 +417,35 @@ public class ConfidentialMptBatchAssembler {
       spending, op.holderKeyPair().privateKey(), UnsignedLong.ZERO,
       decryptBound(issuance, convertTotals, op.mpTokenIssuanceId())
     );
-    final BlindingFactor balanceBlinding = blindingFactorGenerator.generate();
-    final PedersenProofParams balanceParams =
-      convertBackService.generatePedersenProofParams(currentBalance, spending, balanceBlinding);
-    final ConfidentialMptConvertBackProof proof =
-      convertBackService.generateProof(op.holderKeyPair(), op.amount(), context, balanceParams);
+    // The balance factor is secret and -- unlike disclosedBlindingFactor above -- never reaches the wire, so zero it
+    // in the finally. Generated before the try so the finally can always destroy it.
+    final BlindingFactor balanceBlindingFactor = blindingFactorGenerator.generate();
+    try {
+      final PedersenProofParams balanceParams =
+        convertBackService.generatePedersenProofParams(currentBalance, spending, balanceBlindingFactor);
+      final ConfidentialMptConvertBackProof proof =
+        convertBackService.generateProof(op.holderKeyPair(), op.amount(), context, balanceParams);
 
-    final ImmutableConfidentialMptConvertBack.Builder builder = ConfidentialMptConvertBack.builder()
-      .account(op.account())
-      .fee(ZERO_FEE)
-      .sequence(sequence)
-      .flags(TransactionFlags.INNER_BATCH_TXN)
-      .mpTokenIssuanceId(op.mpTokenIssuanceId())
-      .mptAmount(MpTokenNumericAmount.of(op.amount()))
-      .holderEncryptedAmount(holderCiphertext)
-      .issuerEncryptedAmount(issuerCiphertext)
-      .blindingFactor(blinding)
-      .balanceCommitment(Commitment.of(balanceParams.pedersenCommitment()))
-      .zkProof(proof);
-    auditorCiphertext.ifPresent(builder::auditorEncryptedAmount);
+      final ImmutableConfidentialMptConvertBack.Builder builder = ConfidentialMptConvertBack.builder()
+        .account(op.account())
+        .fee(ZERO_FEE)
+        .sequence(sequence)
+        .flags(TransactionFlags.INNER_BATCH_TXN)
+        .mpTokenIssuanceId(op.mpTokenIssuanceId())
+        .mptAmount(MpTokenNumericAmount.of(op.amount()))
+        .holderEncryptedAmount(holderCiphertext)
+        .issuerEncryptedAmount(issuerCiphertext)
+        .blindingFactor(disclosedBlindingFactor)
+        .balanceCommitment(Commitment.of(balanceParams.pedersenCommitment()))
+        .zkProof(proof);
+      auditorCiphertext.ifPresent(builder::auditorEncryptedAmount);
 
-    final ConfidentialTokenState debited =
-      applyDebit(state, holderCiphertext, issuerCiphertext, auditorCiphertext);
-    return new BuiltInner(builder.build(), update(key, debited));
+      final ConfidentialTokenState debited =
+        applyDebit(state, holderCiphertext, issuerCiphertext, auditorCiphertext);
+      return new BuiltInner(builder.build(), update(key, debited));
+    } finally {
+      balanceBlindingFactor.destroy();
+    }
   }
 
   private BuiltInner buildMergeInbox(
@@ -478,6 +496,17 @@ public class ConfidentialMptBatchAssembler {
       .build();
 
     return new BuiltInner(tx, update(holderKey, applyClawback(holderState)));
+  }
+
+  /**
+   * Encrypt {@code amount} under the issuance's auditor key, if it registered one. Absent for an issuance without an
+   * auditor, which is what gates every auditor branch downstream (transaction field, proof participant, and the
+   * predicted auditor balance).
+   */
+  private Optional<EncryptedAmount> encryptForAuditor(
+    final ConfidentialIssuanceInfo issuance, final UnsignedLong amount, final BlindingFactor blinding
+  ) {
+    return issuance.auditorEncryptionKey().map(auditorKey -> encryptor.encrypt(amount, auditorKey, blinding));
   }
 
   // =========================================================================

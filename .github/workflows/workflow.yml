@@ -224,8 +224,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Linux x86-64 runners have Docker, so ConfidentialTransfersIT runs against the local
-          # rippled Testcontainer and exercises the real native library end-to-end.
+          # Linux x86-64 runners have Docker, so the confidential MPT ITs run against the local
+          # rippled Testcontainer and exercise the real native library end-to-end.
           - os: ubuntu-latest
             platform: linux-x86-64
             java: '8'
@@ -249,7 +249,7 @@ jobs:
             setup_docker_via_colima: true
           # ARM macOS runners cannot run Docker at all (Apple's Virtualization Framework does not
           # support nested virtualization), and Windows runners cannot run Linux containers, so
-          # these platforms run ConfidentialTransfersIT against Devnet instead of a local rippled.
+          # these platforms run the confidential MPT ITs against Devnet instead of a local rippled.
           # Temurin doesn't ship JDK 8 for macOS ARM64, so we use JDK 11 there.
           - os: macos-14
             platform: darwin-aarch64
@@ -299,8 +299,8 @@ jobs:
           token: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
       - name: Build and run unit tests
         run: mvn clean install -DskipITs -Dmaven.javadoc.skip=true
-      - name: Run ConfidentialTransfersIT
-        run: mvn -pl xrpl4j-integration-tests verify -Dit.test=ConfidentialTransfersIT ${{ matrix.it_flags }} -Dmaven.javadoc.skip=true
+      - name: Run Confidential MPT ITs
+        run: mvn -pl xrpl4j-integration-tests verify -Dit.test='Confidential*IT' -Dfailsafe.failIfNoSpecifiedTests=true ${{ matrix.it_flags }} -Dmaven.javadoc.skip=true
 
   build_devnet_its:
     runs-on: ubuntu-latest

@@ -24,11 +24,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactorValue;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofGenerator;
@@ -78,7 +79,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     final KeyPair senderKeyPair,
     final UnsignedLong amount,
     final List<MptConfidentialParty> participants,
-    final BlindingFactor txBlindingFactor,
+    final SecretBlindingFactor txBlindingFactor,
     final ConfidentialMptSendContext context,
     final Commitment amountCommitment,
     final PedersenProofParams balanceParams
@@ -146,8 +147,8 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     try {
       // Populate the balance struct and extract the sender's secrets inside the try, so every error path reaches the
       // finally scrub. A blinding factor is secret like the private key: an ElGamal ciphertext plus its blinding factor
-      // reveals the amount. This clears only these Java copies -- the caller's own BlindingFactor instances and any
-      // buffers JNA marshals into native memory are outside this method's control.
+      // reveals the amount. This clears only these Java copies -- the caller's own SecretBlindingFactor instances and
+      // any buffers JNA marshals into native memory are outside this method's control.
       System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, balanceStruct.pedersenCommitment, 0, 33);
       balanceStruct.amount = balanceParams.amount().longValue();
       System.arraycopy(
@@ -155,7 +156,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
         balanceStruct.encryptedAmount, 0, EncryptedAmount.LENGTH
       );
       balanceBlindingBytes = balanceParams.blindingFactor().value().toByteArray();
-      System.arraycopy(balanceBlindingBytes, 0, balanceStruct.blindingFactor, 0, BlindingFactor.LENGTH);
+      System.arraycopy(balanceBlindingBytes, 0, balanceStruct.blindingFactor, 0, BlindingFactorValue.LENGTH);
 
       privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
       txBlindingFactorBytes = txBlindingFactor.value().toByteArray();

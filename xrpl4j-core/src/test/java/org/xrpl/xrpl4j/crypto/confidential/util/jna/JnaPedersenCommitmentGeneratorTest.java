@@ -11,8 +11,8 @@ import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 
 import java.util.Arrays;
 
@@ -23,7 +23,7 @@ import java.util.Arrays;
 class JnaPedersenCommitmentGeneratorTest {
 
   private static final UnsignedLong AMOUNT = UnsignedLong.valueOf(1000);
-  private static final BlindingFactor BLINDING_FACTOR = BlindingFactor.of(Strings.repeat("11", 32));
+  private static final SecretBlindingFactor BLINDING_FACTOR = SecretBlindingFactor.of(Strings.repeat("11", 32));
 
   private MptCryptoLibrary lib;
   private JnaPedersenCommitmentGenerator generator;

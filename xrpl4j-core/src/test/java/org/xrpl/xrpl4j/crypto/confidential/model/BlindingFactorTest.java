@@ -6,8 +6,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.google.common.base.Strings;
 import org.junit.jupiter.api.Test;
 
+import javax.security.auth.Destroyable;
+
 /**
- * Unit tests for {@link BlindingFactor}.
+ * Unit tests for {@link BlindingFactor}, the disclosed blinding factor that Convert and ConvertBack publish on the
+ * ledger. See {@link SecretBlindingFactorTest} for its secret counterpart.
  */
 class BlindingFactorTest {
 
@@ -55,45 +58,16 @@ class BlindingFactorTest {
   }
 
   @Test
-  void toStringRedactsSecretValue() {
-    // An instance can't tell whether it plays the disclosed (Convert) or secret (Send) role, so toString() fails safe
-    // and never renders the raw value.
+  void toStringRendersValue() {
+    // An on-ledger field, so there is nothing to hide -- contrast SecretBlindingFactorTest.
     assertThat(BlindingFactor.of(Strings.repeat("12", 32)))
-      .hasToString("BlindingFactor{value=[redacted], destroyed=false}");
+      .hasToString("BlindingFactor{value=" + Strings.repeat("12", 32) + "}");
   }
 
   @Test
-  void hexValueThrowsAfterDestroy() {
-    // destroy() empties the bytes, so without this guard a destroyed factor would silently serialize as an empty
-    // BlindingFactor field (rejected on-ledger as tecBAD_PROOF) instead of failing here.
-    BlindingFactor factor = BlindingFactor.of(Strings.repeat("12", 32));
-    factor.destroy();
-
-    assertThatThrownBy(factor::hexValue)
-      .isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("BlindingFactor has been destroyed");
-  }
-
-  @Test
-  void hexValueIsNotCachedAcrossDestroy() {
-    // hexValue() must not be @Value.Lazy: a cached hex String would outlive destroy() and defeat Destroyable.
-    BlindingFactor factor = BlindingFactor.of(Strings.repeat("12", 32));
-    assertThat(factor.hexValue()).isEqualTo(Strings.repeat("12", 32));
-
-    factor.destroy();
-
-    assertThatThrownBy(factor::hexValue).isInstanceOf(IllegalStateException.class);
-  }
-
-  @Test
-  void destroyZeroesOutValueAndMarksDestroyed() {
-    BlindingFactor factor = BlindingFactor.of(Strings.repeat("12", 32));
-    assertThat(factor.isDestroyed()).isFalse();
-
-    factor.destroy();
-
-    assertThat(factor.isDestroyed()).isTrue();
-    assertThat(factor.value().isDestroyed()).isTrue();
-    assertThat(factor.value().toByteArray()).isEmpty();
+  void isNotDestroyable() {
+    // Zeroing a factor a pending transaction still carries would serialize an empty field, rejected as tecBAD_PROOF.
+    // hexValue()'s old runtime guard existed only because one type served both roles.
+    assertThat(BlindingFactor.of(Strings.repeat("12", 32))).isNotInstanceOf(Destroyable.class);
   }
 }

@@ -23,6 +23,7 @@ import org.xrpl.xrpl4j.crypto.confidential.model.ConfidentialIssuanceInfo;
 import org.xrpl.xrpl4j.crypto.confidential.model.ConfidentialTokenState;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptClawbackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertBackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertContext;
@@ -84,6 +85,7 @@ class ConfidentialMptBatchAssemblerTest {
   private static final XrpCurrencyAmount ZERO_FEE = XrpCurrencyAmount.ofDrops(0);
 
   private static final BlindingFactor DUMMY_BF = BlindingFactor.of(Strings.repeat("11", 32));
+  private static final SecretBlindingFactor DUMMY_SECRET_BF = SecretBlindingFactor.of(Strings.repeat("11", 32));
   private static final EncryptedAmount DUMMY_CT = EncryptedAmount.of(Strings.repeat("02", 66));
   private static final Commitment DUMMY_COMMITMENT = Commitment.of(Strings.repeat("03", 33));
   private static final ConfidentialMptSendContext DUMMY_SEND_CTX =
@@ -106,7 +108,7 @@ class ConfidentialMptBatchAssemblerTest {
     .pedersenCommitment(UnsignedByteArray.fromHex(Strings.repeat("02", 33)))
     .amount(UnsignedLong.valueOf(70))
     .encryptedAmount(DUMMY_CT)
-    .blindingFactor(DUMMY_BF)
+    .blindingFactor(DUMMY_SECRET_BF)
     .build();
 
   private ConfidentialMptConvertService convertService;
@@ -141,6 +143,7 @@ class ConfidentialMptBatchAssemblerTest {
 
   private void stubCommonCrypto() {
     when(blindingFactorGenerator.generate()).thenReturn(DUMMY_BF);
+    when(blindingFactorGenerator.generateSecretBlindingFactor()).thenReturn(DUMMY_SECRET_BF);
     when(encryptor.encrypt(any(), any(), any())).thenReturn(DUMMY_CT);
     when(decryptor.decrypt(any(), any(), any(), any())).thenReturn(UnsignedLong.valueOf(70));
     when(ciphertextArithmetic.add(any(), any())).thenReturn(DUMMY_CT);

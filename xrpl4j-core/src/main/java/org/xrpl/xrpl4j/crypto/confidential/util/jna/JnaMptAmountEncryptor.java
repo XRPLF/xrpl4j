@@ -23,7 +23,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactorValue;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.util.MptAmountEncryptor;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -64,7 +64,7 @@ public class JnaMptAmountEncryptor implements MptAmountEncryptor {
   public EncryptedAmount encrypt(
     final UnsignedLong amount,
     final PublicKey publicKey,
-    final BlindingFactor blindingFactor
+    final BlindingFactorValue blindingFactor
   ) {
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(publicKey, "publicKey must not be null");
@@ -87,9 +87,9 @@ public class JnaMptAmountEncryptor implements MptAmountEncryptor {
     byte[] blindingBytes = blindingFactor.value().toByteArray();
     try {
       Preconditions.checkArgument(
-        blindingBytes.length == BlindingFactor.LENGTH,
+        blindingBytes.length == BlindingFactorValue.LENGTH,
         "blindingFactor must be %s bytes, but was %s bytes",
-        BlindingFactor.LENGTH, blindingBytes.length
+        BlindingFactorValue.LENGTH, blindingBytes.length
       );
 
       byte[] outCiphertext = new byte[EncryptedAmount.LENGTH];

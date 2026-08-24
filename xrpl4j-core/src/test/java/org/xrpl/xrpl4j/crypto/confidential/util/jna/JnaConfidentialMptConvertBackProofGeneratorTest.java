@@ -11,10 +11,10 @@ import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertBackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -40,7 +40,7 @@ class JnaConfidentialMptConvertBackProofGeneratorTest {
     .pedersenCommitment(Commitment.of(Strings.repeat("02", 33)).value())
     .amount(UnsignedLong.valueOf(500))
     .encryptedAmount(EncryptedAmount.of(Strings.repeat("03", 66)))
-    .blindingFactor(BlindingFactor.of(Strings.repeat("11", 32)))
+    .blindingFactor(SecretBlindingFactor.of(Strings.repeat("11", 32)))
     .build();
 
   private MptCryptoLibrary lib;

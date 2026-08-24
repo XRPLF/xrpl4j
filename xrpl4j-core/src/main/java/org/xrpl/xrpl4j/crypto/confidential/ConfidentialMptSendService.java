@@ -22,11 +22,11 @@ package org.xrpl.xrpl4j.crypto.confidential;
 
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofGenerator;
@@ -119,13 +119,13 @@ public class ConfidentialMptSendService {
    * Generates a Pedersen commitment for the given amount and blinding factor.
    *
    * @param amount         The amount to commit to.
-   * @param blindingFactor The blinding factor.
+   * @param blindingFactor The secret blinding factor.
    *
    * @return A {@link Commitment}.
    */
   public Commitment generatePedersenCommitment(
     final UnsignedLong amount,
-    final BlindingFactor blindingFactor
+    final SecretBlindingFactor blindingFactor
   ) {
     return commitmentGenerator.generateCommitment(amount, blindingFactor);
   }
@@ -141,14 +141,14 @@ public class ConfidentialMptSendService {
    *
    * @param amount                  The amount to commit to.
    * @param encryptedAmount         The ElGamal ciphertext of the encrypted amount.
-   * @param pedersenBlindingFactor  The blinding factor for the Pedersen commitment.
+   * @param pedersenBlindingFactor  The secret blinding factor for the Pedersen commitment.
    *
    * @return A {@link PedersenProofParams} containing all parameters.
    */
   public PedersenProofParams generatePedersenProofParams(
     final UnsignedLong amount,
     final EncryptedAmount encryptedAmount,
-    final BlindingFactor pedersenBlindingFactor
+    final SecretBlindingFactor pedersenBlindingFactor
   ) {
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(encryptedAmount, "encryptedAmount must not be null");
@@ -175,7 +175,7 @@ public class ConfidentialMptSendService {
    * @param senderKeyPair     The sender's key pair (must be secp256k1).
    * @param amount            The amount being sent.
    * @param recipients        The list of participants (sender, destination, issuer, and optionally auditor).
-   * @param txBlindingFactor  The ElGamal randomness r (also used as blinding factor for pc_m).
+   * @param txBlindingFactor  The secret ElGamal randomness r (also used as blinding factor for pc_m).
    * @param context           The context hash binding the proof to a specific transaction.
    * @param amountCommitment  The Pedersen commitment pc_m = m*G + r*H.
    * @param balanceParams     The Pedersen proof parameters for the sender's balance.
@@ -186,7 +186,7 @@ public class ConfidentialMptSendService {
     final KeyPair senderKeyPair,
     final UnsignedLong amount,
     final List<MptConfidentialParty> recipients,
-    final BlindingFactor txBlindingFactor,
+    final SecretBlindingFactor txBlindingFactor,
     final ConfidentialMptSendContext context,
     final Commitment amountCommitment,
     final PedersenProofParams balanceParams

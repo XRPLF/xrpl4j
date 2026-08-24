@@ -76,9 +76,10 @@ public interface PedersenProofParams {
   EncryptedAmount encryptedAmount();
 
   /**
-   * The 32-byte secret random value used to blind the Pedersen commitment.
+   * The 32-byte secret random value used to blind the Pedersen commitment. The caller destroys it once the proof built
+   * from these params is complete.
    *
-   * @return The blinding factor.
+   * @return The secret blinding factor.
    */
-  BlindingFactor blindingFactor();
+  SecretBlindingFactor blindingFactor();
 }

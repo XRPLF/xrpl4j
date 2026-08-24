@@ -21,7 +21,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  */
 
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactorValue;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
@@ -31,6 +31,8 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
  * <p>This interface mirrors the C utility function {@code mpt_encrypt_amount} from mpt_utility.h,
  * but uses Java-friendly types for all parameters and return values.</p>
  *
+ * <p>Takes a {@link BlindingFactorValue}, i.e. either kind of factor: encryption is the same operation whether the
+ * randomness is later published or kept secret.</p>
  */
 public interface MptAmountEncryptor {
 
@@ -48,13 +50,13 @@ public interface MptAmountEncryptor {
    *
    * @param amount         The amount to encrypt (0 to 2^63-1 for MPT protocol).
    * @param publicKey      The recipient's secp256k1 public key.
-   * @param blindingFactor The 32-byte random blinding factor.
+   * @param blindingFactor The 32-byte random blinding factor, disclosed or secret.
    *
    * @return The encrypted amount as an {@link EncryptedAmount}.
    *
    * @throws NullPointerException     if any parameter is null.
    * @throws IllegalArgumentException if publicKey is not a secp256k1 key.
    */
-  EncryptedAmount encrypt(UnsignedLong amount, PublicKey publicKey, BlindingFactor blindingFactor);
+  EncryptedAmount encrypt(UnsignedLong amount, PublicKey publicKey, BlindingFactorValue blindingFactor);
 }
 

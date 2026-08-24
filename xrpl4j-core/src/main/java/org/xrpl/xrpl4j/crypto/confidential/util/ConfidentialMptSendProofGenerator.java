@@ -21,10 +21,10 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  */
 
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -52,7 +52,7 @@ public interface ConfidentialMptSendProofGenerator {
    * @param senderKeyPair     The sender's key pair (must be secp256k1).
    * @param amount            The amount being sent.
    * @param recipients        The list of participants (sender, destination, issuer, and optionally auditor).
-   * @param txBlindingFactor  The ElGamal randomness r (also used as blinding factor for pc_m).
+   * @param txBlindingFactor  The secret ElGamal randomness r (also used as blinding factor for pc_m).
    * @param context           The context hash binding the proof to a specific transaction.
    * @param amountCommitment  The Pedersen commitment pc_m = m*G + r*H.
    * @param balanceParams     The Pedersen proof parameters for the sender's balance.
@@ -67,7 +67,7 @@ public interface ConfidentialMptSendProofGenerator {
     KeyPair senderKeyPair,
     UnsignedLong amount,
     List<MptConfidentialParty> recipients,
-    BlindingFactor txBlindingFactor,
+    SecretBlindingFactor txBlindingFactor,
     ConfidentialMptSendContext context,
     Commitment amountCommitment,
     PedersenProofParams balanceParams

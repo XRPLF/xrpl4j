@@ -30,42 +30,26 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorSerializer;
 
-import javax.security.auth.Destroyable;
-
 /**
- * The 32-byte scalar blinding factor (ElGamal randomness {@code r}) used to encrypt an amount in Confidential MPT
- * transactions. Held as raw bytes; on the wire it is serialized as an uppercase hex string.
+ * A blinding factor (the ElGamal randomness {@code r}) that the protocol publishes on the ledger. On the wire it is an
+ * uppercase hex string, in the field literally named {@code BlindingFactor}.
  *
- * <p><b>Whether this value is secret depends on the operation using it, not on this type.</b> Per XLS-0096, a blinding
- * factor plays two distinct roles:</p>
+ * <p>Only {@link org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvert} and
+ * {@link org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvertBack} carry that field, and disclosing {@code r}
+ * there is intentional. Both cross the boundary between public and confidential balances and so already reveal a
+ * plaintext {@code MPTAmount}; publishing the randomness that encrypted an already-visible amount costs no privacy, and
+ * it lets validators recompute the ciphertexts deterministically instead of verifying a zero-knowledge proof.</p>
  *
- * <ul>
- *   <li><b>Disclosed</b> in {@link org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvert} and
- *       {@link org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvertBack}, where it is a required on-ledger field.
- *       Those operations cross the public/confidential boundary and already reveal a plaintext {@code MPTAmount}, so
- *       publishing {@code r} costs no privacy and lets validators deterministically recompute the ciphertexts instead
- *       of verifying a zero-knowledge proof.</li>
- *   <li><b>Secret</b> in {@code ConfidentialMptSend}, which has no blinding-factor field: the amount stays hidden, and
- *       an ElGamal ciphertext plus its {@code r} reveals that amount (amounts are small enough to brute-force the
- *       remaining discrete log). A Send additionally shares one {@code r} across the sender, destination, issuer, and
- *       auditor ciphertexts and reuses it as the Pedersen amount commitment's blinding factor, so leaking it unmasks
- *       the amount for every participant at once.</li>
- * </ul>
+ * <p>Deliberately not {@link javax.security.auth.Destroyable}: zeroing a factor that a pending transaction still
+ * references would serialize an empty field. Send's randomness and the Pedersen balance factors use
+ * {@link SecretBlindingFactor} instead.</p>
  *
- * <p>Because a given instance cannot tell which role it plays, this type fails safe: {@link #toString()} redacts the
- * value, and the type is {@link Destroyable} so callers holding a secret (Send) factor can {@link #destroy()} it once
- * it is no longer needed. Do not destroy a factor that is still referenced by a transaction awaiting serialization —
- * see {@link #hexValue()}.</p>
+ * @see SecretBlindingFactor
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableBlindingFactor.class, using = BlindingFactorSerializer.class)
 @JsonDeserialize(as = ImmutableBlindingFactor.class, using = BlindingFactorDeserializer.class)
-public abstract class BlindingFactor implements Destroyable {
-
-  /**
-   * The length, in bytes, of a blinding factor (a 32-byte ElGamal scalar).
-   */
-  public static final int LENGTH = 32;
+public abstract class BlindingFactor implements BlindingFactorValue {
 
   /**
    * Creates a blinding factor from an {@link UnsignedByteArray}.
@@ -101,13 +85,6 @@ public abstract class BlindingFactor implements Destroyable {
   }
 
   /**
-   * The raw 32-byte scalar value.
-   *
-   * @return An {@link UnsignedByteArray}.
-   */
-  public abstract UnsignedByteArray value();
-
-  /**
    * Validates that the blinding factor is exactly 32 bytes.
    */
   @Value.Check
@@ -120,50 +97,22 @@ public abstract class BlindingFactor implements Destroyable {
   }
 
   /**
-   * The blinding factor as an uppercase hex string, as it appears on the XRP Ledger wire format. Only
-   * ConfidentialMptConvert and ConfidentialMptConvertBack put this value on the wire; a Send's blinding factor is
-   * secret and is never serialized, so this is not called for one.
-   *
-   * <p>Deliberately <em>not</em> {@code @Value.Lazy}: caching the hex would keep a copy in an immutable {@link String}
-   * that {@link #destroy()} cannot zero, which would defeat the {@link Destroyable} contract for a secret (Send)
-   * factor. Recomputing from the live bytes on each call means nothing survives {@code destroy()}.</p>
+   * The blinding factor as an uppercase hex string, as it appears on the XRP Ledger wire format.
    *
    * @return A 64-character hex {@link String}.
-   *
-   * @throws IllegalStateException if this blinding factor has been destroyed. {@link #destroy()} empties the underlying
-   *   bytes, so without this check a destroyed factor would silently serialize as an empty {@code BlindingFactor}
-   *   field, which the network rejects as {@code tecBAD_PROOF} — a loud failure here is easier to diagnose.
    */
   @JsonIgnore
   public String hexValue() {
-    Preconditions.checkState(!isDestroyed(), "BlindingFactor has been destroyed");
     return BaseEncoding.base16().encode(value().toByteArray());
   }
 
   /**
-   * Destroys this blinding factor by zeroing out its underlying {@link #value()}. Because {@link BlindingFactor} is an
-   * immutable value type, destruction is delegated to the mutable {@link UnsignedByteArray} it wraps rather than
-   * tracked via a field on this class.
-   */
-  @Override
-  public void destroy() {
-    value().destroy();
-  }
-
-  @Override
-  public boolean isDestroyed() {
-    return value().isDestroyed();
-  }
-
-  /**
-   * A debug-friendly representation that <em>redacts</em> the value: the blinding factor is secret (with an ElGamal
-   * ciphertext it reveals the encrypted amount), so it must never appear in logs. Use {@link #hexValue()} only for the
-   * wire format.
+   * Renders the value in full, unlike {@link SecretBlindingFactor#toString()} -- this one is an on-ledger field.
    *
-   * @return A {@link String} with the value redacted, plus whether this factor has been destroyed.
+   * @return A {@link String} containing the hex form of this blinding factor.
    */
   @Override
   public String toString() {
-    return "BlindingFactor{value=[redacted], destroyed=" + isDestroyed() + "}";
+    return "BlindingFactor{value=" + hexValue() + "}";
   }
 }

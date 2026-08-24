@@ -21,7 +21,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  */
 
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 
 /**
  * High-level interface for generating Pedersen Commitments.
@@ -31,6 +31,8 @@ import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
  *
  * <p>This interface uses Java-friendly types for all parameters and return values.</p>
  *
+ * <p>The blinding factor is always secret: paired with the commitment it would reveal the committed value.</p>
+ *
  * @see org.xrpl.xrpl4j.crypto.confidential.model.Commitment
  */
 public interface PedersenCommitmentGenerator {
@@ -39,7 +41,7 @@ public interface PedersenCommitmentGenerator {
    * Generates a Pedersen Commitment for the given amount and blinding factor.
    *
    * @param amount         The value to commit to.
-   * @param blindingFactor The blinding factor (rho).
+   * @param blindingFactor The secret blinding factor (rho).
    *
    * @return A {@link org.xrpl.xrpl4j.crypto.confidential.model.Commitment} containing the 33-byte
    *   compressed commitment.
@@ -48,7 +50,7 @@ public interface PedersenCommitmentGenerator {
    * @throws IllegalStateException if commitment generation fails.
    */
   org.xrpl.xrpl4j.crypto.confidential.model.Commitment generateCommitment(
-    UnsignedLong amount, BlindingFactor blindingFactor
+    UnsignedLong amount, SecretBlindingFactor blindingFactor
   );
 }
 

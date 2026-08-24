@@ -34,6 +34,7 @@ import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptClawbackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertBackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertContext;
@@ -315,7 +316,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
       sender.address(), sequence, issuance.issuanceId, destination.address(), senderToken.confidentialBalanceVersion()
     );
 
-    final BlindingFactor blinding = blindingFactorGenerator.generate();
+    final SecretBlindingFactor blinding = blindingFactorGenerator.generateSecretBlindingFactor();
     final EncryptedAmount senderCiphertext = encryptor.encrypt(value, sender.elGamal.publicKey(), blinding);
     final EncryptedAmount destCiphertext = encryptor.encrypt(value, destination.elGamal.publicKey(), blinding);
     final EncryptedAmount issuerCiphertext = encryptor.encrypt(value, issuance.issuerElGamal.publicKey(), blinding);
@@ -327,7 +328,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
       decryptor.decrypt(senderBalance, sender.elGamal.privateKey(), UnsignedLong.ZERO, DECRYPT_BOUND);
 
     final Commitment amountCommitment = sendService.generatePedersenCommitment(value, blinding);
-    final BlindingFactor balanceBlinding = blindingFactorGenerator.generate();
+    final SecretBlindingFactor balanceBlinding = blindingFactorGenerator.generateSecretBlindingFactor();
     final PedersenProofParams balanceParams =
       sendService.generatePedersenProofParams(senderCurrentBalance, senderBalance, balanceBlinding);
 
@@ -398,7 +399,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
     final UnsignedLong currentPlain =
       decryptor.decrypt(currentBalance, holder.elGamal.privateKey(), UnsignedLong.ZERO, DECRYPT_BOUND);
 
-    final BlindingFactor balanceBlinding = blindingFactorGenerator.generate();
+    final SecretBlindingFactor balanceBlinding = blindingFactorGenerator.generateSecretBlindingFactor();
     final PedersenProofParams balanceParams =
       convertBackService.generatePedersenProofParams(currentPlain, currentBalance, balanceBlinding);
     final ConfidentialMptConvertBackProof proof =

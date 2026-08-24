@@ -21,6 +21,8 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  */
 
 import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactorValue;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
 
 import java.util.Arrays;
@@ -57,17 +59,38 @@ public class JnaBlindingFactorGenerator implements BlindingFactorGenerator {
 
   @Override
   public BlindingFactor generate() {
-    byte[] outFactor = new byte[BlindingFactor.LENGTH];
+    byte[] outFactor = generateBytes();
     try {
-      int result = lib.mpt_generate_blinding_factor(outFactor);
-      if (result != 0) {
-        throw new IllegalStateException("mpt_generate_blinding_factor failed with error code: " + result);
-      }
-      // BlindingFactor.fromBytes copies the bytes (UnsignedByteArray.of duplicates them), so scrubbing outFactor in
-      // the finally does not affect the returned value -- it only clears this transient copy of the secret factor.
       return BlindingFactor.fromBytes(outFactor);
     } finally {
       Arrays.fill(outFactor, (byte) 0);
     }
+  }
+
+  @Override
+  public SecretBlindingFactor generateSecretBlindingFactor() {
+    byte[] outFactor = generateBytes();
+    try {
+      return SecretBlindingFactor.fromBytes(outFactor);
+    } finally {
+      Arrays.fill(outFactor, (byte) 0);
+    }
+  }
+
+  /**
+   * Draws 32 random bytes from the native CSPRNG. Both factor kinds come from this same call; only what the caller does
+   * with the result differs. Callers scrub the returned array in a {@code finally} -- safe because {@code fromBytes}
+   * copies it.
+   *
+   * @return A newly generated 32-byte scalar, which the caller is responsible for scrubbing.
+   */
+  private byte[] generateBytes() {
+    byte[] outFactor = new byte[BlindingFactorValue.LENGTH];
+    int result = lib.mpt_generate_blinding_factor(outFactor);
+    if (result != 0) {
+      Arrays.fill(outFactor, (byte) 0);
+      throw new IllegalStateException("mpt_generate_blinding_factor failed with error code: " + result);
+    }
+    return outFactor;
   }
 }

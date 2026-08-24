@@ -22,10 +22,10 @@ package org.xrpl.xrpl4j.crypto.confidential;
 
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertBackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertBackProofGenerator;
@@ -123,14 +123,14 @@ public class ConfidentialMptConvertBackService {
    *
    * @param balance                 The current balance amount.
    * @param encryptedBalance        The ElGamal ciphertext of the encrypted balance.
-   * @param pedersenBlindingFactor  The blinding factor for the Pedersen commitment.
+   * @param pedersenBlindingFactor  The secret blinding factor for the Pedersen commitment.
    *
    * @return A {@link PedersenProofParams} containing all parameters.
    */
   public PedersenProofParams generatePedersenProofParams(
     final UnsignedLong balance,
     final EncryptedAmount encryptedBalance,
-    final BlindingFactor pedersenBlindingFactor
+    final SecretBlindingFactor pedersenBlindingFactor
   ) {
     Objects.requireNonNull(balance, "balance must not be null");
     Objects.requireNonNull(encryptedBalance, "encryptedBalance must not be null");

@@ -22,8 +22,8 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
 
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.util.PedersenCommitmentGenerator;
 
 import java.util.Arrays;
@@ -61,7 +61,7 @@ public class JnaPedersenCommitmentGenerator implements PedersenCommitmentGenerat
   }
 
   @Override
-  public Commitment generateCommitment(final UnsignedLong amount, final BlindingFactor blindingFactor) {
+  public Commitment generateCommitment(final UnsignedLong amount, final SecretBlindingFactor blindingFactor) {
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(blindingFactor, "blindingFactor must not be null");
 

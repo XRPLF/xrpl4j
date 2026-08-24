@@ -82,12 +82,13 @@ class JnaConfidentialMptClawbackProofGeneratorTest {
 
   @Test
   void generateProofRejectsDestroyedPrivateKey() {
-    // A destroyed PrivateKey yields empty natural bytes, not the 32 bytes the native call expects.
+    // Caught by the explicit isDestroyed() precondition. Without it the destroyed key still failed, but as a
+    // length mismatch ("must be 32 bytes"), since destroy() empties the underlying bytes.
     PrivateKey destroyedPrivateKey =
       Seed.secp256k1SeedFromPassphrase(Passphrase.of("clawback-destroyed")).deriveKeyPair().privateKey();
     destroyedPrivateKey.destroy();
     assertThatThrownBy(() -> generator.generateProof(CIPHERTEXT, SECP_PUBLIC_KEY, AMOUNT, destroyedPrivateKey, CONTEXT))
-      .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("32 bytes");
+      .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("issuerPrivateKey has been destroyed");
   }
 
   @Test

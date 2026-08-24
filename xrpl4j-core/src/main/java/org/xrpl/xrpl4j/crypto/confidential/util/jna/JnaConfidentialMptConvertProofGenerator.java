@@ -71,6 +71,7 @@ public class JnaConfidentialMptConvertProofGenerator implements ConfidentialMptC
   ) {
     Objects.requireNonNull(keyPair, "keyPair must not be null");
     Objects.requireNonNull(context, "context must not be null");
+    Preconditions.checkArgument(!keyPair.privateKey().isDestroyed(), "keyPair's privateKey has been destroyed");
 
     Preconditions.checkArgument(
       keyPair.publicKey().keyType() == KeyType.SECP256K1,

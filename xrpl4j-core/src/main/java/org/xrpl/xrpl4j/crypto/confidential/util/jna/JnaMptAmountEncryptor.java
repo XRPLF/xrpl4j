@@ -69,6 +69,7 @@ public class JnaMptAmountEncryptor implements MptAmountEncryptor {
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(publicKey, "publicKey must not be null");
     Objects.requireNonNull(blindingFactor, "blindingFactor must not be null");
+    Preconditions.checkArgument(!blindingFactor.isDestroyed(), "blindingFactor has been destroyed");
 
     Preconditions.checkArgument(
       publicKey.keyType() == KeyType.SECP256K1,

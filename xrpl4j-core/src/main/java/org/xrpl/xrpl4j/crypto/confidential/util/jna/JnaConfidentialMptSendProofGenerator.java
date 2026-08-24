@@ -91,6 +91,11 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     Objects.requireNonNull(context, "context must not be null");
     Objects.requireNonNull(amountCommitment, "amountCommitment must not be null");
     Objects.requireNonNull(balanceParams, "balanceParams must not be null");
+    Preconditions.checkArgument(
+      !senderKeyPair.privateKey().isDestroyed(), "senderKeyPair's privateKey has been destroyed");
+    Preconditions.checkArgument(!txBlindingFactor.isDestroyed(), "txBlindingFactor has been destroyed");
+    Preconditions.checkArgument(
+      !balanceParams.blindingFactor().isDestroyed(), "balanceParams' blindingFactor has been destroyed");
 
     Preconditions.checkArgument(
       senderKeyPair.publicKey().keyType() == KeyType.SECP256K1,

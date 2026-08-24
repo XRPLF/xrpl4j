@@ -43,4 +43,15 @@ public interface BlindingFactorValue {
    * @return An {@link UnsignedByteArray}.
    */
   UnsignedByteArray value();
+
+  /**
+   * Whether the underlying bytes have been destroyed. A disclosed {@link BlindingFactor} offers no {@code destroy()},
+   * but its {@link #value()} can be destroyed independently, so this is queryable on either kind -- JNA wrappers check
+   * it before handing bytes to native code, where a zero-length buffer would be read out of bounds.
+   *
+   * @return {@code true} if the underlying {@link UnsignedByteArray} has been destroyed.
+   */
+  default boolean isDestroyed() {
+    return value().isDestroyed();
+  }
 }

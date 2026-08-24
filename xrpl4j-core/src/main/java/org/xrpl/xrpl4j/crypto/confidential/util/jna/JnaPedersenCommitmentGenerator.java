@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
@@ -64,6 +65,7 @@ public class JnaPedersenCommitmentGenerator implements PedersenCommitmentGenerat
   public Commitment generateCommitment(final UnsignedLong amount, final SecretBlindingFactor blindingFactor) {
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(blindingFactor, "blindingFactor must not be null");
+    Preconditions.checkArgument(!blindingFactor.isDestroyed(), "blindingFactor has been destroyed");
 
     byte[] outCommitment = new byte[COMMITMENT_SIZE];
     // The blinding factor is secret; scrub the Java copy after the native call, as the other JNA generators do.

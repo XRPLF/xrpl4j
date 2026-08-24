@@ -72,6 +72,7 @@ public class JnaMptAmountDecryptor implements MptAmountDecryptor {
     Objects.requireNonNull(privateKey, "privateKey must not be null");
     Objects.requireNonNull(minAmount, "minAmount must not be null");
     Objects.requireNonNull(maxAmount, "maxAmount must not be null");
+    Preconditions.checkArgument(!privateKey.isDestroyed(), "privateKey has been destroyed");
 
     Preconditions.checkArgument(
       privateKey.keyType() == KeyType.SECP256K1,

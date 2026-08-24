@@ -77,6 +77,7 @@ public class JnaConfidentialMptClawbackProofGenerator implements ConfidentialMpt
     Objects.requireNonNull(issuerPublicKey, "issuerPublicKey must not be null");
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(issuerPrivateKey, "issuerPrivateKey must not be null");
+    Preconditions.checkArgument(!issuerPrivateKey.isDestroyed(), "issuerPrivateKey has been destroyed");
     Objects.requireNonNull(context, "context must not be null");
 
     Preconditions.checkArgument(

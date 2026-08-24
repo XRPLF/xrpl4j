@@ -78,7 +78,7 @@ public interface MptCryptoLibrary extends Library {
    * @param privateKey The 32-byte private key.
    * @param outAmount  A single-element array to receive the decrypted amount.
    * @param rangeLow   Lower bound of the search range, inclusive.
-   * @param rangeHigh  Upper bound of the search range, inclusive; must be >= {@code rangeLow} and less than
+   * @param rangeHigh  Upper bound of the search range, inclusive; must be &gt;= {@code rangeLow} and less than
    *                   2^64 - 1.
    *
    * @return 0 on success, -1 on failure, or -2 if the range is inverted or {@code rangeHigh} is 2^64 - 1.

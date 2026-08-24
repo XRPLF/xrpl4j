@@ -66,6 +66,16 @@ class JnaMptAmountDecryptorTest {
   }
 
   @Test
+  void decryptRejectsDestroyedPrivateKey() {
+    PrivateKey destroyed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("decrypt-destroyed"))
+      .deriveKeyPair().privateKey();
+    destroyed.destroy();
+
+    assertThatThrownBy(() -> decryptor.decrypt(CIPHERTEXT, destroyed, MIN, MAX))
+      .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("privateKey has been destroyed");
+  }
+
+  @Test
   void decryptThrowsOnNativeError() {
     when(lib.mpt_decrypt_amount(any(), any(), any(), anyLong(), anyLong())).thenReturn(-1);
 

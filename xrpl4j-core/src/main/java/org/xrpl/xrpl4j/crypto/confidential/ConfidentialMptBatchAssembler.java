@@ -579,8 +579,9 @@ public class ConfidentialMptBatchAssembler {
   }
 
   /**
-   * Fold a holder's inbox into spending after a MergeInbox and reset the inbox (rippled resets it to a canonical
-   * encrypted zero the client cannot reproduce, so it becomes unavailable).
+   * Fold a holder's inbox into spending after a MergeInbox and drop the inbox. rippled resets it to a deterministic
+   * canonical encrypted zero derived from the holder key, account and issuance; this assembler has no binding for that
+   * primitive yet, so it marks the inbox unknown rather than predicting it wrongly.
    */
   private ConfidentialTokenState applyMerge(final ConfidentialTokenState state) {
     final EncryptedAmount spending = ciphertextArithmetic.add(
@@ -595,8 +596,9 @@ public class ConfidentialMptBatchAssembler {
   }
 
   /**
-   * Reset a holder's balances after a Clawback burns their entire confidential holding (all balances become the
-   * canonical encrypted zero the client cannot reproduce, so they become unavailable).
+   * Reset a holder's balances after a Clawback burns their entire confidential holding. rippled sets each to a
+   * deterministic canonical encrypted zero under the respective key; see {@link #applyMerge} for why this assembler
+   * marks them unknown instead.
    */
   private ConfidentialTokenState applyClawback(final ConfidentialTokenState state) {
     return ConfidentialTokenState.builder()
@@ -747,8 +749,8 @@ public class ConfidentialMptBatchAssembler {
   private static EncryptedAmount requireBalance(final Optional<EncryptedAmount> balance, final String what) {
     return balance.orElseThrow(() -> new IllegalStateException(
       "ConfidentialMptBatchAssembler: cannot read " + what + " — it is unavailable (absent on-ledger, or reset by an " +
-        "earlier MergeInbox/Clawback in this Batch, a value the client cannot reproduce). Split these operations " +
-        "across separate Batches."
+        "earlier MergeInbox/Clawback in this Batch to a canonical encrypted zero this assembler cannot yet compute). " +
+        "Split these operations across separate Batches."
     ));
   }
 

@@ -62,6 +62,15 @@ class JnaConfidentialMptConvertProofGeneratorTest {
   }
 
   @Test
+  void generateProofRejectsDestroyedPrivateKey() {
+    KeyPair destroyed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("convert-destroyed")).deriveKeyPair();
+    destroyed.privateKey().destroy();
+
+    assertThatThrownBy(() -> generator.generateProof(destroyed, CONTEXT))
+      .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("privateKey has been destroyed");
+  }
+
+  @Test
   void generateProofThrowsOnNativeError() {
     when(lib.mpt_get_convert_proof(any(), any(), any(), any())).thenReturn(-1);
 

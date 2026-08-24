@@ -86,6 +86,18 @@ class JnaConfidentialMptConvertBackProofGeneratorTest {
   }
 
   @Test
+  void generateProofRejectsDestroyedBalanceBlindingFactor() {
+    SecretBlindingFactor destroyed = SecretBlindingFactor.of(Strings.repeat("33", 32));
+    destroyed.destroy();
+    PedersenProofParams params = PedersenProofParams.builder().from(BALANCE_PARAMS)
+      .blindingFactor(destroyed).build();
+
+    assertThatThrownBy(() -> generator.generateProof(SECP_KEY_PAIR, AMOUNT, CONTEXT, params))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("balanceParams' blindingFactor has been destroyed");
+  }
+
+  @Test
   void generateProofThrowsOnNativeError() {
     when(lib.mpt_get_convert_back_proof(any(), any(), any(), anyLong(), any(), any())).thenReturn(-1);
 

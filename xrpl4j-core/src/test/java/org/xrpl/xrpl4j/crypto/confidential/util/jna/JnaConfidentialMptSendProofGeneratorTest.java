@@ -86,6 +86,39 @@ class JnaConfidentialMptSendProofGeneratorTest {
   }
 
   @Test
+  void generateProofRejectsDestroyedPrivateKey() {
+    KeyPair destroyed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("send-destroyed-key")).deriveKeyPair();
+    destroyed.privateKey().destroy();
+
+    assertThatThrownBy(() -> generator.generateProof(
+      destroyed, AMOUNT, PARTICIPANTS, BLINDING_FACTOR, CONTEXT, AMOUNT_COMMITMENT, BALANCE_PARAMS
+    )).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("privateKey has been destroyed");
+  }
+
+  @Test
+  void generateProofRejectsDestroyedTxBlindingFactor() {
+    SecretBlindingFactor destroyed = SecretBlindingFactor.of(Strings.repeat("22", 32));
+    destroyed.destroy();
+
+    assertThatThrownBy(() -> generator.generateProof(
+      SECP_KEY_PAIR, AMOUNT, PARTICIPANTS, destroyed, CONTEXT, AMOUNT_COMMITMENT, BALANCE_PARAMS
+    )).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("txBlindingFactor has been destroyed");
+  }
+
+  @Test
+  void generateProofRejectsDestroyedBalanceBlindingFactor() {
+    SecretBlindingFactor destroyed = SecretBlindingFactor.of(Strings.repeat("33", 32));
+    destroyed.destroy();
+    PedersenProofParams params = PedersenProofParams.builder().from(BALANCE_PARAMS)
+      .blindingFactor(destroyed).build();
+
+    assertThatThrownBy(() -> generator.generateProof(
+      SECP_KEY_PAIR, AMOUNT, PARTICIPANTS, BLINDING_FACTOR, CONTEXT, AMOUNT_COMMITMENT, params
+    )).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("balanceParams' blindingFactor has been destroyed");
+  }
+
+  @Test
   void generateProofThrowsWhenNativeWritesUnexpectedLength() {
     when(lib.mpt_get_confidential_send_proof(
       any(), any(), anyLong(), any(), anyLong(), any(), any(), any(), any(), any(), any()

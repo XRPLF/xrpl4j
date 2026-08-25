@@ -36,12 +36,26 @@ public class Entropy implements javax.security.auth.Destroyable {
   private boolean destroyed;
 
   /**
-   * Construct a new instance of an {@link Entropy}.
+   * Construct a new instance of a 16-byte {@link Entropy} for standard XRPL seeds.
    *
-   * @return An {@link Entropy}.
+   * @return An {@link Entropy} with 16 bytes.
    */
   public static Entropy newInstance() {
-    final byte[] entropyBytes = SecureRandomUtils.secureRandom().generateSeed(16);
+    return newInstance(16);
+  }
+
+  /**
+   * Construct a new instance of an {@link Entropy} with the specified size.
+   *
+   * @param size The number of bytes of entropy to generate (must be 16 or 32).
+   *
+   * @return An {@link Entropy} with the specified number of bytes.
+   *
+   * @throws IllegalArgumentException if size is not 16 or 32.
+   */
+  public static Entropy newInstance(final int size) {
+    Preconditions.checkArgument(size == 16 || size == 32, "Entropy size must be 16 or 32 bytes");
+    final byte[] entropyBytes = SecureRandomUtils.secureRandom().generateSeed(size);
     return new Entropy(entropyBytes);
   }
 
@@ -64,7 +78,7 @@ public class Entropy implements javax.security.auth.Destroyable {
    */
   private Entropy(final byte[] entropy) {
     Objects.requireNonNull(entropy);
-    Preconditions.checkArgument(entropy.length == 16, "Entropy must be 16 bytes");
+    Preconditions.checkArgument(entropy.length == 16 || entropy.length == 32, "Entropy must be 16 or 32 bytes long.");
     final byte[] copiedEntropy = new byte[entropy.length];
     System.arraycopy(entropy, 0, copiedEntropy, 0, entropy.length);
     this.value = copiedEntropy;

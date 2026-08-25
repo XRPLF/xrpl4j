@@ -84,6 +84,7 @@ class VaultInfoResultTest extends AbstractJsonTest {
       "            \"Issuer\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
       "            \"LedgerEntryType\" : \"MPTokenIssuance\",\n" +
       "            \"OutstandingAmount\" : \"1000000\",\n" +
+      "            \"ConfidentialOutstandingAmount\" : \"0\",\n" +
       "            \"AssetScale\" : 0,\n" +
       "            \"TransferFee\" : 0,\n" +
       "            \"PreviousTxnID\" : \"0000000000000000000000000000000000000000000000000000000000000010\",\n" +

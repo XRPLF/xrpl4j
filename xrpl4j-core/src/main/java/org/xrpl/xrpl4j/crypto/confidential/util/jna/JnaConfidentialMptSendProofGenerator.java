@@ -24,7 +24,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactorValue;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
@@ -161,7 +160,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
         balanceStruct.encryptedAmount, 0, EncryptedAmount.LENGTH
       );
       balanceBlindingBytes = balanceParams.blindingFactor().value().toByteArray();
-      System.arraycopy(balanceBlindingBytes, 0, balanceStruct.blindingFactor, 0, BlindingFactorValue.LENGTH);
+      System.arraycopy(balanceBlindingBytes, 0, balanceStruct.blindingFactor, 0, SecretBlindingFactor.LENGTH);
 
       privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
       txBlindingFactorBytes = txBlindingFactor.value().toByteArray();

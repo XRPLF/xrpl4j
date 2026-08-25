@@ -20,8 +20,6 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * =========================LICENSE_END==================================
  */
 
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactorValue;
 import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
 
@@ -58,17 +56,7 @@ public class JnaBlindingFactorGenerator implements BlindingFactorGenerator {
   }
 
   @Override
-  public BlindingFactor generate() {
-    byte[] outFactor = generateBytes();
-    try {
-      return BlindingFactor.fromBytes(outFactor);
-    } finally {
-      Arrays.fill(outFactor, (byte) 0);
-    }
-  }
-
-  @Override
-  public SecretBlindingFactor generateSecretBlindingFactor() {
+  public SecretBlindingFactor generate() {
     byte[] outFactor = generateBytes();
     try {
       return SecretBlindingFactor.fromBytes(outFactor);
@@ -78,14 +66,13 @@ public class JnaBlindingFactorGenerator implements BlindingFactorGenerator {
   }
 
   /**
-   * Draws 32 random bytes from the native CSPRNG. Both factor kinds come from this same call; only what the caller does
-   * with the result differs. Callers scrub the returned array in a {@code finally} -- safe because {@code fromBytes}
-   * copies it.
+   * Draws 32 random bytes from the native CSPRNG. Callers scrub the returned array in a {@code finally} -- safe
+   * because {@code fromBytes} copies it.
    *
    * @return A newly generated 32-byte scalar, which the caller is responsible for scrubbing.
    */
   private byte[] generateBytes() {
-    byte[] outFactor = new byte[BlindingFactorValue.LENGTH];
+    byte[] outFactor = new byte[SecretBlindingFactor.LENGTH];
     int result = lib.mpt_generate_blinding_factor(outFactor);
     if (result != 0) {
       Arrays.fill(outFactor, (byte) 0);

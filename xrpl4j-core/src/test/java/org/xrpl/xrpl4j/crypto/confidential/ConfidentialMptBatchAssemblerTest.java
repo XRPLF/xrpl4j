@@ -142,9 +142,13 @@ class ConfidentialMptBatchAssemblerTest {
   // ---------------------------------------------------------------------------
 
   private void stubCommonCrypto() {
-    when(blindingFactorGenerator.generate()).thenReturn(DUMMY_BF);
-    when(blindingFactorGenerator.generateSecretBlindingFactor()).thenReturn(DUMMY_SECRET_BF);
-    when(encryptor.encrypt(any(), any(), any())).thenReturn(DUMMY_CT);
+    // A fresh instance per call, as the real generator does -- inners destroy their factors, so a shared
+    // instance would be dead by the second one.
+    when(blindingFactorGenerator.generate())
+      .thenAnswer(invocation -> SecretBlindingFactor.of(Strings.repeat("11", 32)));
+    // encrypt() is overloaded on the factor type, so the matcher must name which overload it stubs.
+    when(encryptor.encrypt(any(), any(), any(SecretBlindingFactor.class))).thenReturn(DUMMY_CT);
+    when(encryptor.encrypt(any(), any(), any(BlindingFactor.class))).thenReturn(DUMMY_CT);
     when(decryptor.decrypt(any(), any(), any(), any())).thenReturn(UnsignedLong.valueOf(70));
     when(ciphertextArithmetic.add(any(), any())).thenReturn(DUMMY_CT);
     when(ciphertextArithmetic.subtract(any(), any())).thenReturn(DUMMY_CT);

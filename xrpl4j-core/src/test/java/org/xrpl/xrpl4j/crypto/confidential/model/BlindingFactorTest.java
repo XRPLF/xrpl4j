@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.base.Strings;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 
 import javax.security.auth.Destroyable;
 
@@ -14,60 +17,75 @@ import javax.security.auth.Destroyable;
  */
 class BlindingFactorTest {
 
-  @Test
-  void constructsValidBlindingFactor() {
-    String hex = Strings.repeat("12", 32); // 64 hex chars = 32 bytes.
-    BlindingFactor factor = BlindingFactor.of(hex);
-    assertThat(factor.value().length()).isEqualTo(32);
-    assertThat(factor.hexValue()).isEqualTo(hex);
-  }
+  private static final String HEX = Strings.repeat("12", 32); // 64 hex chars = 32 bytes.
 
   @Test
-  void fromBytesRoundTrips() {
-    byte[] bytes = new byte[32];
+  void constructsFromHexBytesAndUnsignedByteArray() {
+    byte[] bytes = new byte[BlindingFactor.LENGTH];
     java.util.Arrays.fill(bytes, (byte) 0x12);
+
+    assertThat(BlindingFactor.of(HEX).hexValue()).isEqualTo(HEX);
     assertThat(BlindingFactor.fromBytes(bytes).value().toByteArray()).isEqualTo(bytes);
+    assertThat(BlindingFactor.of(UnsignedByteArray.fromHex(HEX)).value().length()).isEqualTo(BlindingFactor.LENGTH);
   }
 
-  @Test
-  void rejectsTooShort() {
-    assertThatThrownBy(() -> BlindingFactor.of(Strings.repeat("12", 31))) // 31 bytes.
+  @ParameterizedTest
+  @ValueSource(ints = {0, 31, 33})
+  void rejectsWrongLength(int byteLength) {
+    assertThatThrownBy(() -> BlindingFactor.of(Strings.repeat("12", byteLength)))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("must be 32 bytes");
   }
 
   @Test
-  void rejectsTooLong() {
-    assertThatThrownBy(() -> BlindingFactor.of(Strings.repeat("12", 33))) // 33 bytes.
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("must be 32 bytes");
+  void rejectsNullValue() {
+    assertThatThrownBy(() -> BlindingFactor.of((UnsignedByteArray) null))
+      .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  void rejectsEmpty() {
-    assertThatThrownBy(() -> BlindingFactor.of(""))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("must be 32 bytes");
+  void ofCopiesSoCallerCannotMutate() {
+    UnsignedByteArray caller = UnsignedByteArray.fromHex(HEX);
+    BlindingFactor factor = BlindingFactor.of(caller);
+
+    caller.destroy();
+
+    assertThat(factor.hexValue()).isEqualTo(HEX.toUpperCase());
   }
 
   @Test
-  void equalsIsCaseInsensitive() {
+  void valueReturnsDefensiveCopy() {
+    BlindingFactor factor = BlindingFactor.of(HEX);
+
+    factor.value().destroy();
+
+    assertThat(factor.hexValue()).isEqualTo(HEX.toUpperCase());
+  }
+
+  @Test
+  void equalsAndHashCode() {
+    BlindingFactor factor = BlindingFactor.of(HEX);
     // fromHex normalizes case, so lower- and upper-case hex produce equal byte values.
-    assertThat(BlindingFactor.of(Strings.repeat("ab", 32)))
-      .isEqualTo(BlindingFactor.of(Strings.repeat("AB", 32)));
+    BlindingFactor sameValue = BlindingFactor.of(HEX.toUpperCase());
+    BlindingFactor otherValue = BlindingFactor.of(Strings.repeat("34", 32));
+
+    assertThat(factor).isEqualTo(factor);
+    assertThat(factor).isEqualTo(sameValue);
+    assertThat(factor).hasSameHashCodeAs(sameValue);
+    assertThat(factor).isNotEqualTo(otherValue);
+    assertThat(factor).isNotEqualTo(null);
+    assertThat(factor).isNotEqualTo("not a blinding factor");
   }
 
   @Test
   void toStringRendersValue() {
     // An on-ledger field, so there is nothing to hide -- contrast SecretBlindingFactorTest.
-    assertThat(BlindingFactor.of(Strings.repeat("12", 32)))
-      .hasToString("BlindingFactor{value=" + Strings.repeat("12", 32) + "}");
+    assertThat(BlindingFactor.of(HEX)).hasToString("BlindingFactor{value=" + HEX + "}");
   }
 
   @Test
   void isNotDestroyable() {
     // Zeroing a factor a pending transaction still carries would serialize an empty field, rejected as tecBAD_PROOF.
-    // hexValue()'s old runtime guard existed only because one type served both roles.
-    assertThat(BlindingFactor.of(Strings.repeat("12", 32))).isNotInstanceOf(Destroyable.class);
+    assertThat(BlindingFactor.of(HEX)).isNotInstanceOf(Destroyable.class);
   }
 }

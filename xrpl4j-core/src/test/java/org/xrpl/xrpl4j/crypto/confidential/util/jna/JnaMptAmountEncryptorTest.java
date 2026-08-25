@@ -91,7 +91,7 @@ class JnaMptAmountEncryptorTest {
     assertThatThrownBy(() -> encryptor.encrypt(AMOUNT, null, BLINDING_FACTOR))
       .isInstanceOf(NullPointerException.class)
       .hasMessageContaining("publicKey");
-    assertThatThrownBy(() -> encryptor.encrypt(AMOUNT, SECP_PUBLIC_KEY, null))
+    assertThatThrownBy(() -> encryptor.encrypt(AMOUNT, SECP_PUBLIC_KEY, (SecretBlindingFactor) null))
       .isInstanceOf(NullPointerException.class)
       .hasMessageContaining("blindingFactor");
   }

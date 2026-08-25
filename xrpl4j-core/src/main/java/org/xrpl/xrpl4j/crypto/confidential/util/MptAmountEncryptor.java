@@ -21,8 +21,9 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  */
 
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactorValue;
+import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 /**
@@ -31,8 +32,8 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
  * <p>This interface mirrors the C utility function {@code mpt_encrypt_amount} from mpt_utility.h,
  * but uses Java-friendly types for all parameters and return values.</p>
  *
- * <p>Takes a {@link BlindingFactorValue}, i.e. either kind of factor: encryption is the same operation whether the
- * randomness is later published or kept secret.</p>
+ * <p>Encryption is the same operation whether the randomness is later published or kept secret, so the disclosed
+ * overload simply adapts to the secret one.</p>
  */
 public interface MptAmountEncryptor {
 
@@ -50,13 +51,32 @@ public interface MptAmountEncryptor {
    *
    * @param amount         The amount to encrypt (0 to 2^63-1 for MPT protocol).
    * @param publicKey      The recipient's secp256k1 public key.
-   * @param blindingFactor The 32-byte random blinding factor, disclosed or secret.
+   * @param blindingFactor The 32-byte random blinding factor.
    *
    * @return The encrypted amount as an {@link EncryptedAmount}.
    *
    * @throws NullPointerException     if any parameter is null.
    * @throws IllegalArgumentException if publicKey is not a secp256k1 key.
    */
-  EncryptedAmount encrypt(UnsignedLong amount, PublicKey publicKey, BlindingFactorValue blindingFactor);
+  EncryptedAmount encrypt(UnsignedLong amount, PublicKey publicKey, SecretBlindingFactor blindingFactor);
+
+  /**
+   * Encrypts an MPT amount using randomness the protocol discloses -- a Convert or ConvertBack factor, or the
+   * challenge carved out of a published proof.
+   *
+   * @param amount         The amount to encrypt (0 to 2^63-1 for MPT protocol).
+   * @param publicKey      The recipient's secp256k1 public key.
+   * @param blindingFactor The 32-byte disclosed blinding factor.
+   *
+   * @return The encrypted amount as an {@link EncryptedAmount}.
+   *
+   * @throws NullPointerException     if any parameter is null.
+   * @throws IllegalArgumentException if publicKey is not a secp256k1 key.
+   */
+  default EncryptedAmount encrypt(
+    final UnsignedLong amount, final PublicKey publicKey, final BlindingFactor blindingFactor
+  ) {
+    return encrypt(amount, publicKey, SecretBlindingFactor.of(blindingFactor.value()));
+  }
 }
 

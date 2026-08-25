@@ -25,10 +25,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
-import org.immutables.value.Value;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorSerializer;
+
+import java.util.Objects;
 
 /**
  * A blinding factor (the ElGamal randomness {@code r}) that the protocol publishes on the ledger. On the wire it is an
@@ -44,22 +45,53 @@ import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorSerializer;
  * references would serialize an empty field. Send's randomness and the Pedersen balance factors use
  * {@link SecretBlindingFactor} instead.</p>
  *
+ * <p>Deliberately hand-written rather than an Immutables {@code @Value.Immutable} abstract class, for the same reason
+ * as {@link SecretBlindingFactor}: Immutables can't generate a {@code private} accessor for the stored bytes (private
+ * methods can't be abstract), so the backing array would only ever be package-encapsulated, reachable by any other
+ * class in this package. Construction copies the bytes it's given, and {@link #value()} hands out a fresh copy on
+ * every call, so nothing outside this class -- not even a sibling in the same package -- can mutate the bytes this
+ * object actually holds.</p>
+ *
  * @see SecretBlindingFactor
  */
-@Value.Immutable
-@JsonSerialize(as = ImmutableBlindingFactor.class, using = BlindingFactorSerializer.class)
-@JsonDeserialize(as = ImmutableBlindingFactor.class, using = BlindingFactorDeserializer.class)
-public abstract class BlindingFactor implements BlindingFactorValue {
+@JsonSerialize(as = BlindingFactor.class, using = BlindingFactorSerializer.class)
+@JsonDeserialize(as = BlindingFactor.class, using = BlindingFactorDeserializer.class)
+public final class BlindingFactor {
 
   /**
-   * Creates a blinding factor from an {@link UnsignedByteArray}.
+   * The length, in bytes, of a blinding factor (a 32-byte secp256k1 scalar).
+   */
+  public static final int LENGTH = 32;
+
+  private final UnsignedByteArray rawValue;
+
+  /**
+   * Required-args constructor. Private because construction always goes through {@link #of(UnsignedByteArray)},
+   * which copies the caller's bytes before storing them here.
+   *
+   * @param rawValue The 32-byte scalar this factor privately holds; already a defensive copy.
+   */
+  private BlindingFactor(final UnsignedByteArray rawValue) {
+    this.rawValue = rawValue;
+  }
+
+  /**
+   * Creates a blinding factor from an {@link UnsignedByteArray}. The bytes are copied, so the caller may continue to
+   * use or scrub the array afterward without affecting this factor.
    *
    * @param value The 32-byte scalar.
    *
    * @return A {@link BlindingFactor}.
    */
   public static BlindingFactor of(final UnsignedByteArray value) {
-    return ImmutableBlindingFactor.builder().value(value).build();
+    Objects.requireNonNull(value);
+    final UnsignedByteArray copy = UnsignedByteArray.of(value.toByteArray());
+    Preconditions.checkArgument(
+      copy.length() == LENGTH,
+      "BlindingFactor must be %s bytes, but was %s bytes",
+      LENGTH, copy.length()
+    );
+    return new BlindingFactor(copy);
   }
 
   /**
@@ -85,15 +117,12 @@ public abstract class BlindingFactor implements BlindingFactorValue {
   }
 
   /**
-   * Validates that the blinding factor is exactly 32 bytes.
+   * A defensive copy of the raw 32-byte scalar value.
+   *
+   * @return An {@link UnsignedByteArray}.
    */
-  @Value.Check
-  void check() {
-    Preconditions.checkArgument(
-      value().length() == LENGTH,
-      "BlindingFactor must be %s bytes, but was %s bytes",
-      LENGTH, value().length()
-    );
+  public UnsignedByteArray value() {
+    return UnsignedByteArray.of(rawValue.toByteArray());
   }
 
   /**
@@ -103,7 +132,25 @@ public abstract class BlindingFactor implements BlindingFactorValue {
    */
   @JsonIgnore
   public String hexValue() {
-    return BaseEncoding.base16().encode(value().toByteArray());
+    return BaseEncoding.base16().encode(rawValue.toByteArray());
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof BlindingFactor)) {
+      return false;
+    }
+
+    BlindingFactor that = (BlindingFactor) obj;
+    return this.rawValue.equals(that.rawValue);
+  }
+
+  @Override
+  public int hashCode() {
+    return rawValue.hashCode();
   }
 
   /**

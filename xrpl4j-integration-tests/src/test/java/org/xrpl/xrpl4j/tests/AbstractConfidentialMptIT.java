@@ -234,7 +234,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
   ) throws Exception {
     final UnsignedInteger sequence = currentSequence(holder.address());
     final UnsignedLong value = UnsignedLong.valueOf(amount);
-    final BlindingFactor blinding = blindingFactorGenerator.generate();
+    final SecretBlindingFactor blinding = blindingFactorGenerator.generate();
 
     final ImmutableConfidentialMptConvert.Builder builder = ConfidentialMptConvert.builder()
       .account(holder.address())
@@ -246,7 +246,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
       .holderEncryptedAmount(encryptor.encrypt(value, holder.elGamal.publicKey(), blinding))
       .issuerEncryptedAmount(encryptor.encrypt(value, issuance.issuerElGamal.publicKey(), blinding))
       .auditorEncryptedAmount(encryptor.encrypt(value, issuance.auditorElGamal.publicKey(), blinding))
-      .blindingFactor(blinding);
+      .blindingFactor(blinding.toBlindingFactor());
 
     if (registerKey) {
       final ConfidentialMptConvertContext context =
@@ -316,7 +316,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
       sender.address(), sequence, issuance.issuanceId, destination.address(), senderToken.confidentialBalanceVersion()
     );
 
-    final SecretBlindingFactor blinding = blindingFactorGenerator.generateSecretBlindingFactor();
+    final SecretBlindingFactor blinding = blindingFactorGenerator.generate();
     final EncryptedAmount senderCiphertext = encryptor.encrypt(value, sender.elGamal.publicKey(), blinding);
     final EncryptedAmount destCiphertext = encryptor.encrypt(value, destination.elGamal.publicKey(), blinding);
     final EncryptedAmount issuerCiphertext = encryptor.encrypt(value, issuance.issuerElGamal.publicKey(), blinding);
@@ -328,7 +328,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
       decryptor.decrypt(senderBalance, sender.elGamal.privateKey(), UnsignedLong.ZERO, DECRYPT_BOUND);
 
     final Commitment amountCommitment = sendService.generatePedersenCommitment(value, blinding);
-    final SecretBlindingFactor balanceBlinding = blindingFactorGenerator.generateSecretBlindingFactor();
+    final SecretBlindingFactor balanceBlinding = blindingFactorGenerator.generate();
     final PedersenProofParams balanceParams =
       sendService.generatePedersenProofParams(senderCurrentBalance, senderBalance, balanceBlinding);
 
@@ -388,7 +388,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
     final UnsignedInteger sequence = currentSequence(holder.address());
     final UnsignedLong value = UnsignedLong.valueOf(amount);
     final MpTokenObject token = getMpToken(holder.address(), issuance.issuanceId);
-    final BlindingFactor blinding = blindingFactorGenerator.generate();
+    final SecretBlindingFactor blinding = blindingFactorGenerator.generate();
 
     final ConfidentialMptConvertBackContext context = convertBackService.generateContext(
       holder.address(), sequence, issuance.issuanceId, token.confidentialBalanceVersion()
@@ -399,7 +399,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
     final UnsignedLong currentPlain =
       decryptor.decrypt(currentBalance, holder.elGamal.privateKey(), UnsignedLong.ZERO, DECRYPT_BOUND);
 
-    final SecretBlindingFactor balanceBlinding = blindingFactorGenerator.generateSecretBlindingFactor();
+    final SecretBlindingFactor balanceBlinding = blindingFactorGenerator.generate();
     final PedersenProofParams balanceParams =
       convertBackService.generatePedersenProofParams(currentPlain, currentBalance, balanceBlinding);
     final ConfidentialMptConvertBackProof proof =
@@ -420,7 +420,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
       .holderEncryptedAmount(encryptor.encrypt(value, holder.elGamal.publicKey(), blinding))
       .issuerEncryptedAmount(encryptor.encrypt(value, issuance.issuerElGamal.publicKey(), blinding))
       .auditorEncryptedAmount(encryptor.encrypt(value, issuance.auditorElGamal.publicKey(), blinding))
-      .blindingFactor(blinding)
+      .blindingFactor(blinding.toBlindingFactor())
       .balanceCommitment(Commitment.of(balanceParams.pedersenCommitment().hexValue()))
       .zkProof(proof)
       .build();

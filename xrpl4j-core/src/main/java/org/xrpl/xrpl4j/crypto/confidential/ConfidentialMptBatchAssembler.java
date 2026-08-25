@@ -24,7 +24,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactorValue;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.ConfidentialIssuanceInfo;
 import org.xrpl.xrpl4j.crypto.confidential.model.ConfidentialTokenState;
@@ -281,8 +280,8 @@ public class ConfidentialMptBatchAssembler {
     // four participant ciphertexts and the amount commitment (which is how the proof shows they encrypt the same
     // amount), so leaking it would unmask that amount for every participant at once. Generated before the try so the
     // finally can always zero them.
-    final SecretBlindingFactor amountBlindingFactor = blindingFactorGenerator.generateSecretBlindingFactor();
-    final SecretBlindingFactor balanceBlindingFactor = blindingFactorGenerator.generateSecretBlindingFactor();
+    final SecretBlindingFactor amountBlindingFactor = blindingFactorGenerator.generate();
+    final SecretBlindingFactor balanceBlindingFactor = blindingFactorGenerator.generate();
     try {
       final EncryptedAmount senderCiphertext =
         encryptor.encrypt(op.amount(), op.senderKeyPair().publicKey(), amountBlindingFactor);
@@ -348,10 +347,10 @@ public class ConfidentialMptBatchAssembler {
     final String key = ConfidentialBatchRequest.stateKey(op.account(), op.mpTokenIssuanceId());
     final ConfidentialTokenState state = predicted.getOrDefault(key, ConfidentialTokenState.builder().build());
 
-    // Disclosed: a Convert reveals a plaintext MPTAmount, so publishing the factor costs no privacy and lets
-    // validators recompute these ciphertexts deterministically instead of verifying a ZKP. Never destroyed -- the
-    // transaction below carries it. See BlindingFactor.
-    final BlindingFactor disclosedBlindingFactor = blindingFactorGenerator.generate();
+    // Generated secret like every factor, then disclosed onto the transaction below: a Convert reveals a plaintext
+    // MPTAmount, so publishing the randomness costs no privacy and lets validators recompute these ciphertexts
+    // deterministically instead of verifying a ZKP. See SecretBlindingFactor#toBlindingFactor.
+    final SecretBlindingFactor disclosedBlindingFactor = blindingFactorGenerator.generate();
     final EncryptedAmount holderCiphertext =
       encryptor.encrypt(op.amount(), op.holderKeyPair().publicKey(), disclosedBlindingFactor);
     final EncryptedAmount issuerCiphertext =
@@ -368,7 +367,7 @@ public class ConfidentialMptBatchAssembler {
       .mptAmount(MpTokenNumericAmount.of(op.amount()))
       .holderEncryptedAmount(holderCiphertext)
       .issuerEncryptedAmount(issuerCiphertext)
-      .blindingFactor(disclosedBlindingFactor);
+      .blindingFactor(disclosedBlindingFactor.toBlindingFactor());
     auditorCiphertext.ifPresent(builder::auditorEncryptedAmount);
 
     // rippled requires HolderEncryptionKey and ZKProof to be set-or-omitted together: attach both only when
@@ -404,8 +403,8 @@ public class ConfidentialMptBatchAssembler {
     final ConfidentialIssuanceInfo issuance = requireIssuance(request, op.mpTokenIssuanceId());
     final EncryptedAmount spending = requireBalance(state.spending(), "holder spending balance");
 
-    // Disclosed on the wire, like Convert: a ConvertBack reveals a plaintext MPTAmount. See BlindingFactor.
-    final BlindingFactor disclosedBlindingFactor = blindingFactorGenerator.generate();
+    // Disclosed onto the transaction below, like Convert: a ConvertBack reveals a plaintext MPTAmount.
+    final SecretBlindingFactor disclosedBlindingFactor = blindingFactorGenerator.generate();
     final EncryptedAmount holderCiphertext =
       encryptor.encrypt(op.amount(), op.holderKeyPair().publicKey(), disclosedBlindingFactor);
     final EncryptedAmount issuerCiphertext =
@@ -422,7 +421,7 @@ public class ConfidentialMptBatchAssembler {
     );
     // The balance factor never reaches the wire, so zero it in the finally. Generated before the try so the finally
     // can always destroy it.
-    final SecretBlindingFactor balanceBlindingFactor = blindingFactorGenerator.generateSecretBlindingFactor();
+    final SecretBlindingFactor balanceBlindingFactor = blindingFactorGenerator.generate();
     try {
       final PedersenProofParams balanceParams =
         convertBackService.generatePedersenProofParams(currentBalance, spending, balanceBlindingFactor);
@@ -438,7 +437,7 @@ public class ConfidentialMptBatchAssembler {
         .mptAmount(MpTokenNumericAmount.of(op.amount()))
         .holderEncryptedAmount(holderCiphertext)
         .issuerEncryptedAmount(issuerCiphertext)
-        .blindingFactor(disclosedBlindingFactor)
+        .blindingFactor(disclosedBlindingFactor.toBlindingFactor())
         .balanceCommitment(Commitment.of(balanceParams.pedersenCommitment()))
         .zkProof(proof);
       auditorCiphertext.ifPresent(builder::auditorEncryptedAmount);
@@ -508,7 +507,7 @@ public class ConfidentialMptBatchAssembler {
    *
    */
   private Optional<EncryptedAmount> encryptForAuditor(
-    final ConfidentialIssuanceInfo issuance, final UnsignedLong amount, final BlindingFactorValue blinding
+    final ConfidentialIssuanceInfo issuance, final UnsignedLong amount, final SecretBlindingFactor blinding
   ) {
     return issuance.auditorEncryptionKey().map(auditorKey -> encryptor.encrypt(amount, auditorKey, blinding));
   }

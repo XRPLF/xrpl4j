@@ -33,7 +33,9 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.BatchFlags;
 
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -138,6 +140,35 @@ public interface Batch extends Transaction {
    */
   @JsonProperty("BatchSigners")
   List<BatchSignerWrapper> batchSigners();
+
+  /**
+   * The set of accounts that must appear in {@link #batchSigners()}, derived from the inner transactions.
+   *
+   * <p>rippled builds the identical set in {@code Batch::preflightSigValidated} and rejects any {@code BatchSigners}
+   * array that does not match it exactly. Each inner contributes its <em>initiator</em> — its {@code Delegate} when
+   * one is present, otherwise its {@code Account} — plus its {@code Sponsor} when the inner also carries a
+   * {@code SponsorSignature}. The outer {@link #account()} is excluded throughout, because it authorises its own
+   * inner transactions with the signature it puts on the Batch itself.
+   *
+   * <p>rippled additionally reads an inner's {@code Counterparty}, but only {@code LoanSet} carries that field and
+   * {@code LoanSet} may not be an inner transaction, so that case cannot arise today and is not modelled here.
+   *
+   * @return An unmodifiable {@link Set} of {@link Address}es that must sign this Batch, which may be empty when every
+   *   inner transaction belongs to the outer account.
+   */
+  @JsonIgnore
+  default Set<Address> requiredSigners() {
+    final Address outerAccount = this.account();
+    return this.rawTransactions().stream()
+      .map(RawTransactionWrapper::rawTransaction)
+      .flatMap(innerTransaction -> Stream.concat(
+        Stream.of(innerTransaction.delegate().orElseGet(innerTransaction::account)),
+        innerTransaction.sponsorSignature().isPresent() ?
+          innerTransaction.sponsor().map(Stream::of).orElseGet(Stream::empty) : Stream.empty()
+      ))
+      .filter(address -> !address.equals(outerAccount))
+      .collect(Collectors.collectingAndThen(Collectors.toCollection(LinkedHashSet::new), Collections::unmodifiableSet));
+  }
 
   /**
    * Internal flag used to prevent infinite recursion when auto-sorting {@link #batchSigners()}.

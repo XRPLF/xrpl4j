@@ -40,7 +40,8 @@ import java.util.Set;
  * The inputs to {@link FeeUtils#computeFee(FeeParams)}.
  *
  * <p>Everything that can be read from the {@link #transaction()} is read from it — the transaction type and therefore
- * any per-type surcharge, an {@code EscrowFinish}'s fulfillment, a {@link Batch}'s inner transactions and the accounts
+ * any per-type surcharge, an {@code EscrowFinish}'s fulfillment, a
+ * {@link org.xrpl.xrpl4j.model.transactions.Batch Batch}'s inner transactions and the accounts
  * that must sign it. The remaining fields are the things that are not knowable from the transaction: how each party
  * intends to sign, which cannot be derived because the fee is signed over and the signatures therefore do not exist
  * yet, plus two values that {@link FeeResult} does not carry.
@@ -165,7 +166,7 @@ public interface FeeParams {
 
   /**
    * The owner reserve increment, required when pricing an {@code AccountDelete} or {@code AMMCreate} — including one
-   * that is an inner transaction of a {@link Batch}.
+   * that is an inner transaction of a {@link org.xrpl.xrpl4j.model.transactions.Batch Batch}.
    *
    * <p>Those transactions cost exactly one owner reserve increment rather than a multiple of the base fee, and that
    * increment is not carried on {@link FeeResult}. It can be read from {@code ServerInfo} (e.g.
@@ -176,14 +177,18 @@ public interface FeeParams {
   Optional<XrpCurrencyAmount> ownerReserve();
 
   /**
-   * How many signatures each {@link Batch} participant will supply, for participants that multi-sign.
+   * How many signatures each {@link org.xrpl.xrpl4j.model.transactions.Batch Batch} participant will supply, for
+   * participants that multi-sign.
    *
    * <p>This is needed only when pricing a Batch <em>before</em> its {@code BatchSigners} exist — a wallet displaying
    * a fee up front, for instance. Once signatures have been collected, the counts are read from
-   * {@link Batch#batchSigners()} and this map is neither needed nor permitted. Participants absent from the map are
+   * {@link org.xrpl.xrpl4j.model.transactions.Batch#batchSigners() Batch#batchSigners()} and this map is neither
+   * needed nor permitted. Participants absent from the map are
    * counted as signing with a single key.
    *
-   * <p>Keys must be members of {@link Batch#requiredSigners()} — the accounts that must sign, derived from the inner
+   * <p>Keys must be members of
+   * {@link org.xrpl.xrpl4j.model.transactions.Batch#requiredSigners() Batch#requiredSigners()} — the accounts that
+   * must sign, derived from the inner
    * transactions. Note that a required signer is not always an inner's {@code Account}: a delegated inner is signed by
    * its {@code Delegate}, and a sponsored inner also requires its {@code Sponsor}.
    *
@@ -243,7 +248,8 @@ public interface FeeParams {
 
   /**
    * Determines whether the transaction being priced costs an owner reserve increment, either because it is one of
-   * {@link #OWNER_RESERVE_TRANSACTION_TYPES} or because it is a {@link Batch} containing one.
+   * {@link #OWNER_RESERVE_TRANSACTION_TYPES} or because it is a {@link org.xrpl.xrpl4j.model.transactions.Batch Batch}
+   * containing one.
    *
    * @return {@code true} if {@link #ownerReserve()} is required.
    */

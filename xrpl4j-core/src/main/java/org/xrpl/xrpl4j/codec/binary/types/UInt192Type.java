@@ -8,7 +8,7 @@ import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 /**
  * Codec for XRPL UInt192 type.
  */
-public class UInt192Type extends UIntType<UInt192Type> {
+public class UInt192Type extends HashType<UInt192Type> {
 
   public static final int WIDTH_BYTES = 24;
 
@@ -17,7 +17,7 @@ public class UInt192Type extends UIntType<UInt192Type> {
   }
 
   public UInt192Type(UnsignedByteArray list) {
-    super(list, WIDTH_BYTES * 8);
+    super(list, WIDTH_BYTES);
   }
 
   @Override
@@ -28,10 +28,5 @@ public class UInt192Type extends UIntType<UInt192Type> {
   @Override
   public UInt192Type fromJson(JsonNode node) {
     return new UInt192Type(UnsignedByteArray.fromHex(node.asText()));
-  }
-
-  @Override
-  public JsonNode toJson() {
-    return new TextNode(toHex());
   }
 }

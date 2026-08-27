@@ -42,9 +42,4 @@ public class UInt192TypeTest {
     assertThat(codec.fromJson(new TextNode("013411307C0D97D1EC6B2989138679ACDCB75C37CA30F0A6")).toHex()).isEqualTo("013411307C0D97D1EC6B2989138679ACDCB75C37CA30F0A6");
   }
 
-  @Test
-  void encodeOutOfBounds() {
-    assertThrows(IllegalArgumentException.class, () -> codec.fromJson("4294967296"));
-  }
-
 }

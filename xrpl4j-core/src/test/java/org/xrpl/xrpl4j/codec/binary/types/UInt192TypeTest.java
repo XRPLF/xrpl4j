@@ -21,7 +21,6 @@ package org.xrpl.xrpl4j.codec.binary.types;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.junit.jupiter.api.Test;
@@ -32,14 +31,18 @@ public class UInt192TypeTest {
 
   @Test
   void decode() {
-    assertThat(codec.fromHex("000000000000000000000000000000000000000000000000").toHex()).isEqualTo("000000000000000000000000000000000000000000000000");
-    assertThat(codec.fromHex("00000000000000000000000000000000000000000000000F").toHex()).isEqualTo("00000000000000000000000000000000000000000000000F");
-    assertThat(codec.fromHex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").toHex()).isEqualTo("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+    assertThat(codec.fromHex("000000000000000000000000000000000000000000000000").toHex())
+      .isEqualTo("000000000000000000000000000000000000000000000000");
+    assertThat(codec.fromHex("00000000000000000000000000000000000000000000000F").toHex())
+      .isEqualTo("00000000000000000000000000000000000000000000000F");
+    assertThat(codec.fromHex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").toHex())
+      .isEqualTo("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
   }
 
   @Test
   void encode() {
-    assertThat(codec.fromJson(new TextNode("013411307C0D97D1EC6B2989138679ACDCB75C37CA30F0A6")).toHex()).isEqualTo("013411307C0D97D1EC6B2989138679ACDCB75C37CA30F0A6");
+    assertThat(codec.fromJson(new TextNode("013411307C0D97D1EC6B2989138679ACDCB75C37CA30F0A6")).toHex())
+      .isEqualTo("013411307C0D97D1EC6B2989138679ACDCB75C37CA30F0A6");
   }
 
 }

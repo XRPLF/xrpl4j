@@ -149,17 +149,11 @@ public interface Batch extends Transaction {
    * extra one. xrpl4j's own construction-time validation ({@link #checkBatchSigners()}) enforces only that no
    * required signer is missing, deferring the stricter extra-signer check to the server. Each inner contributes:
    * <ul>
-   *   <li>its <em>initiator</em> — its {@code Delegate} when one is present, otherwise its {@code Account};</li>
-   *   <li>its {@code Sponsor}, when the inner also carries a {@code SponsorSignature}; and</li>
-   *   <li>a {@code LoanSet}'s {@code Counterparty}, when present.</li>
+   *   <li>its <em>initiator</em> — its {@code Delegate} when one is present, otherwise its {@code Account}; and</li>
+   *   <li>its {@code Sponsor}, when the inner also carries a {@code SponsorSignature}.</li>
    * </ul>
    * The outer {@link #account()} is excluded throughout, because it authorises its own inner transactions with the
    * signature it puts on the Batch itself.
-   *
-   * <p>The {@code Counterparty} branch is unreachable today — {@code LoanSet} is the only type carrying that field,
-   * and rippled currently bars the entire Lending (XLS-66) and Single Asset Vault (XLS-65) families from being Batch
-   * inners via its {@code kDisabledTxTypes} list. It is modelled anyway so that this derivation matches rippled's the
-   * moment those families are permitted in Batches.
    *
    * @return An unmodifiable {@link Set} of {@link Address}es that must sign this Batch, which may be empty when every
    *   inner transaction belongs to the outer account.
@@ -176,10 +170,6 @@ public interface Batch extends Transaction {
         // A Sponsor must also sign when the inner carries a SponsorSignature.
         if (innerTransaction.sponsorSignature().isPresent()) {
           innerTransaction.sponsor().ifPresent(signers::add);
-        }
-        // A LoanSet's Counterparty must also sign (currently unreachable; see the Javadoc above).
-        if (innerTransaction instanceof LoanSet) {
-          ((LoanSet) innerTransaction).counterparty().ifPresent(signers::add);
         }
         return signers.build();
       })
@@ -356,9 +346,8 @@ public interface Batch extends Transaction {
     );
 
     // Check 4: When BatchSigners is non-empty, every account required to sign an inner transaction must have a
-    // corresponding BatchSigner entry. The required-signer set (initiator, sponsor, and — once permitted —
-    // LoanSet counterparty, with the outer account excluded) is derived by requiredSigners(), which is the single
-    // source of truth shared with fee computation.
+    // corresponding BatchSigner entry. The required-signer set (initiator and sponsor, with the outer account
+    // excluded) is derived by requiredSigners(), which is the single source of truth shared with fee computation.
     if (!this.batchSigners().isEmpty()) {
       final Set<Address> actualSignerAccounts = this.batchSigners().stream()
         .map(wrapper -> wrapper.batchSigner().account())

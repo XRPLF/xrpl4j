@@ -31,7 +31,6 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.flags.BatchFlags;
-import org.xrpl.xrpl4j.model.flags.LoanSetFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.SponsorFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
@@ -515,63 +514,6 @@ public class BatchTest {
     ).isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("BatchSigners must contain signatures from all accounts with inner transactions")
       .hasMessageContaining(delegateAccount.value());
-  }
-
-  @Test
-  void testBatchSignerRequiredForLoanSetCounterparty() {
-    // A LoanSet inner transaction's Counterparty must also sign the Batch (in addition to the LoanSet Account).
-    Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
-    Address counterpartyAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
-    PublicKey innerKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
-    PublicKey counterpartyKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
-
-    List<RawTransactionWrapper> transactions = Lists.newArrayList(
-      RawTransactionWrapper.of(createInnerLoanSet(innerAccount, counterpartyAccount, UnsignedInteger.ONE)),
-      RawTransactionWrapper.of(createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2)))
-    );
-
-    // Should fail because BatchSigners is missing a signature from the Counterparty.
-    assertThatThrownBy(() -> Batch.builder()
-      .account(ACCOUNT)
-      .fee(XrpCurrencyAmount.ofDrops(100))
-      .sequence(UnsignedInteger.ONE)
-      .flags(BatchFlags.ALL_OR_NOTHING)
-      .rawTransactions(transactions)
-      .batchSigners(Lists.newArrayList(
-        BatchSignerWrapper.of(BatchSigner.builder()
-          .account(innerAccount)
-          .signingPublicKey(innerKey)
-          .transactionSignature(Signature.fromBase16("00112233"))
-          .build()
-        )))
-      .build()
-    ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("BatchSigners must contain signatures from all accounts with inner transactions")
-      .hasMessageContaining(counterpartyAccount.value());
-
-    // Should succeed once BatchSigners includes both the Account and the Counterparty.
-    Batch batch = Batch.builder()
-      .account(ACCOUNT)
-      .fee(XrpCurrencyAmount.ofDrops(100))
-      .sequence(UnsignedInteger.ONE)
-      .flags(BatchFlags.ALL_OR_NOTHING)
-      .rawTransactions(transactions)
-      .batchSigners(Lists.newArrayList(
-        BatchSignerWrapper.of(BatchSigner.builder()
-          .account(innerAccount)
-          .signingPublicKey(innerKey)
-          .transactionSignature(Signature.fromBase16("00112233"))
-          .build()
-        ),
-        BatchSignerWrapper.of(BatchSigner.builder()
-          .account(counterpartyAccount)
-          .signingPublicKey(counterpartyKey)
-          .transactionSignature(Signature.fromBase16("44556677"))
-          .build()
-        )))
-      .build();
-
-    assertThat(batch.batchSigners()).hasSize(2);
   }
 
   @Test
@@ -1306,18 +1248,6 @@ public class BatchTest {
       .sequence(sequence)
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .flags(PaymentFlags.INNER_BATCH_TXN)
-      .build();
-  }
-
-  private LoanSet createInnerLoanSet(Address account, Address counterparty, UnsignedInteger sequence) {
-    return LoanSet.builder()
-      .account(account)
-      .counterparty(counterparty)
-      .fee(XrpCurrencyAmount.ofDrops(0))
-      .sequence(sequence)
-      .flags(LoanSetFlags.of(TransactionFlags.INNER_BATCH_TXN.getValue()))
-      .loanBrokerId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
-      .principalRequested(Amount.of("1000000"))
       .build();
   }
 

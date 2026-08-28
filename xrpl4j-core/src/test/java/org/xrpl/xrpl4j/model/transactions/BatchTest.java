@@ -1146,8 +1146,124 @@ public class BatchTest {
   }
 
   // ///////////////
+  // requiredSigners()
+  // ///////////////
+
+  @Test
+  void requiredSignersEmptyWhenAllInnersBelongToOuterAccount() {
+    Batch batch = batchWithInners(ACCOUNT,
+      createInnerPayment(ACCOUNT, UnsignedInteger.ONE),
+      createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2)));
+
+    assertThat(batch.requiredSigners()).isEmpty();
+  }
+
+  @Test
+  void requiredSignersAreTheDistinctNonOuterInnerAccounts() {
+    Address bob = randomAddress();
+    Address carol = randomAddress();
+    Batch batch = batchWithInners(ACCOUNT,
+      createInnerPayment(bob, UnsignedInteger.ONE),
+      createInnerPayment(carol, UnsignedInteger.valueOf(2)));
+
+    assertThat(batch.requiredSigners()).containsExactlyInAnyOrder(bob, carol);
+  }
+
+  @Test
+  void requiredSignersUsesDelegateRatherThanAccount() {
+    Address bob = randomAddress();
+    Address delegate = randomAddress();
+    Batch batch = batchWithInners(ACCOUNT,
+      createInnerPayment(bob, delegate, UnsignedInteger.ONE),
+      createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2)));
+
+    // A delegated inner is authorised by its delegate, so bob (the account) is not required, delegate is.
+    assertThat(batch.requiredSigners()).containsExactly(delegate);
+  }
+
+  @Test
+  void requiredSignersIncludesSponsorOnlyWhenSponsorSignatureIsPresent() {
+    Address bob = randomAddress();
+    Address sponsor = randomAddress();
+
+    Payment outerInner = createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2));
+
+    Batch withSponsorSignature = batchWithInners(ACCOUNT,
+      sponsoredInner(bob, sponsor, UnsignedInteger.ONE, true), outerInner);
+    assertThat(withSponsorSignature.requiredSigners()).containsExactlyInAnyOrder(bob, sponsor);
+
+    Batch withoutSponsorSignature = batchWithInners(ACCOUNT,
+      sponsoredInner(bob, sponsor, UnsignedInteger.ONE, false), outerInner);
+    assertThat(withoutSponsorSignature.requiredSigners()).containsExactly(bob);
+  }
+
+  @Test
+  void requiredSignersDeduplicatesAcrossInnersAndRoles() {
+    Address bob = randomAddress();
+    Batch batch = batchWithInners(ACCOUNT,
+      createInnerPayment(bob, UnsignedInteger.ONE),                  // bob as account
+      sponsoredInner(randomAddress(), bob, UnsignedInteger.valueOf(2), true)); // bob again as sponsor
+
+    // bob is required via two different inners/roles, but appears once.
+    assertThat(batch.requiredSigners()).hasSize(2).contains(bob);
+  }
+
+  @Test
+  void requiredSignersExcludesOuterAccountInEveryRole() {
+    Address other = randomAddress();
+    Batch batch = batchWithInners(ACCOUNT,
+      createInnerPayment(ACCOUNT, UnsignedInteger.ONE),                   // outer as account
+      createInnerPayment(other, ACCOUNT, UnsignedInteger.valueOf(2)),     // outer as delegate
+      sponsoredInner(other, ACCOUNT, UnsignedInteger.valueOf(3), true));  // outer as sponsor
+
+    // The outer account authorises its own inners with its Batch signature, so it is never a required signer.
+    assertThat(batch.requiredSigners()).containsExactly(other);
+  }
+
+  @Test
+  void requiredSignersIsUnmodifiable() {
+    Batch batch = batchWithInners(ACCOUNT,
+      createInnerPayment(randomAddress(), UnsignedInteger.ONE),
+      createInnerPayment(randomAddress(), UnsignedInteger.valueOf(2)));
+
+    assertThatThrownBy(() -> batch.requiredSigners().clear())
+      .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  // ///////////////
   // Private Helpers
   // ///////////////
+
+  private static Address randomAddress() {
+    return Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+  }
+
+  private Batch batchWithInners(Address outerAccount, Payment... inners) {
+    final List<RawTransactionWrapper> wrappers = Lists.newArrayList();
+    for (Payment inner : inners) {
+      wrappers.add(RawTransactionWrapper.of(inner));
+    }
+    return Batch.builder()
+      .account(outerAccount)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(wrappers)
+      .build();
+  }
+
+  private Payment sponsoredInner(
+    Address account, Address sponsor, UnsignedInteger sequence, boolean withSponsorSignature
+  ) {
+    ImmutablePayment.Builder builder = Payment.builder()
+      .from(createInnerPayment(account, sequence))
+      .sponsor(sponsor)
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE);
+    if (withSponsorSignature) {
+      builder.sponsorSignature(SponsorSignature.builder().build());
+    }
+    return builder.build();
+  }
 
   private Batch createValidBatch(BatchFlags batchFlags) {
     return Batch.builder()

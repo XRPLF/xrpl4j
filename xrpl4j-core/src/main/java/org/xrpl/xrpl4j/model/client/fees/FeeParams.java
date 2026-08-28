@@ -48,12 +48,8 @@ import java.util.Set;
  *
  * <p>Every field other than {@link #feeResult()} and {@link #transaction()} has a default, so the common case is
  * {@code FeeParams.builder().feeResult(feeResult).transaction(transaction).build()}.
- *
- * <p>This class will be marked {@link Beta} until the featureBatch and featureSponsorship amendments are enabled on
- * mainnet. Its API is subject to change.</p>
  */
 @Value.Immutable
-@Beta
 public interface FeeParams {
 
   /**

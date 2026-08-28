@@ -145,13 +145,19 @@ public interface Batch extends Transaction {
    * The set of accounts that must appear in {@link #batchSigners()}, derived from the inner transactions.
    *
    * <p>rippled builds the identical set in {@code Batch::preflightSigValidated} and rejects any {@code BatchSigners}
-   * array that does not match it exactly. Each inner contributes its <em>initiator</em> — its {@code Delegate} when
-   * one is present, otherwise its {@code Account} — plus its {@code Sponsor} when the inner also carries a
-   * {@code SponsorSignature}. The outer {@link #account()} is excluded throughout, because it authorises its own
-   * inner transactions with the signature it puts on the Batch itself.
+   * array that does not match it exactly. Each inner contributes:
+   * <ul>
+   *   <li>its <em>initiator</em> — its {@code Delegate} when one is present, otherwise its {@code Account};</li>
+   *   <li>its {@code Sponsor}, when the inner also carries a {@code SponsorSignature}; and</li>
+   *   <li>a {@code LoanSet}'s {@code Counterparty}, when present.</li>
+   * </ul>
+   * The outer {@link #account()} is excluded throughout, because it authorises its own inner transactions with the
+   * signature it puts on the Batch itself.
    *
-   * <p>rippled additionally reads an inner's {@code Counterparty}, but only {@code LoanSet} carries that field and
-   * {@code LoanSet} may not be an inner transaction, so that case cannot arise today and is not modelled here.
+   * <p>The {@code Counterparty} branch is unreachable today — {@code LoanSet} is the only type carrying that field,
+   * and rippled currently bars the entire Lending (XLS-66) and Single Asset Vault (XLS-65) families from being Batch
+   * inners via its {@code kDisabledTxTypes} list. It is modelled anyway so that this derivation matches rippled's the
+   * moment those families are permitted in Batches.
    *
    * @return An unmodifiable {@link Set} of {@link Address}es that must sign this Batch, which may be empty when every
    *   inner transaction belongs to the outer account.
@@ -161,11 +167,20 @@ public interface Batch extends Transaction {
     final Address outerAccount = this.account();
     return this.rawTransactions().stream()
       .map(RawTransactionWrapper::rawTransaction)
-      .flatMap(innerTransaction -> Stream.concat(
-        Stream.of(innerTransaction.delegate().orElseGet(innerTransaction::account)),
-        innerTransaction.sponsorSignature().isPresent() ?
-          innerTransaction.sponsor().map(Stream::of).orElseGet(Stream::empty) : Stream.empty()
-      ))
+      .flatMap(innerTransaction -> {
+        final Stream.Builder<Address> signers = Stream.builder();
+        // Initiator: the Delegate signs on behalf of the account holder when present, otherwise the Account.
+        signers.add(innerTransaction.delegate().orElseGet(innerTransaction::account));
+        // A Sponsor must also sign when the inner carries a SponsorSignature.
+        if (innerTransaction.sponsorSignature().isPresent()) {
+          innerTransaction.sponsor().ifPresent(signers::add);
+        }
+        // A LoanSet's Counterparty must also sign (currently unreachable; see the Javadoc above).
+        if (innerTransaction instanceof LoanSet) {
+          ((LoanSet) innerTransaction).counterparty().ifPresent(signers::add);
+        }
+        return signers.build();
+      })
       .filter(address -> !address.equals(outerAccount))
       .collect(Collectors.collectingAndThen(Collectors.toCollection(LinkedHashSet::new), Collections::unmodifiableSet));
   }
@@ -338,34 +353,17 @@ public interface Batch extends Transaction {
       firstSignerMatchingOuterAccount.orElse(null)
     );
 
-    // Check 4: When BatchSigners is non-empty, every account required to sign an inner transaction (excluding
-    // the outer account) must have a corresponding BatchSigner entry.
+    // Check 4: When BatchSigners is non-empty, every account required to sign an inner transaction must have a
+    // corresponding BatchSigner entry. The required-signer set (initiator, sponsor, and — once permitted —
+    // LoanSet counterparty, with the outer account excluded) is derived by requiredSigners(), which is the single
+    // source of truth shared with fee computation.
     if (!this.batchSigners().isEmpty()) {
-      // Compute the set of accounts that require signatures (excluding the outer account, which signs the Batch
-      // itself). For each inner transaction, the required signer is its Delegate if present (the delegate signs
-      // on behalf of the account holder), otherwise the transaction's Account. A LoanSet's Counterparty must also
-      // sign, if present. Note: rippled also requires a Sponsor to sign when SponsorSignature is present, but
-      // xrpl4j does not yet model sfSponsor/sfSponsorSignature, so that case cannot be checked here.
-      final Set<Address> requiredSignerAccounts = this.rawTransactions().stream()
-        .flatMap(wrapper -> {
-          final Transaction innerTransaction = wrapper.rawTransaction();
-          final Stream.Builder<Address> requiredSigners = Stream.builder();
-          requiredSigners.add(innerTransaction.delegate().orElseGet(innerTransaction::account));
-          if (innerTransaction instanceof LoanSet) {
-            ((LoanSet) innerTransaction).counterparty().ifPresent(requiredSigners::add);
-          }
-          return requiredSigners.build();
-        })
-        .filter(account -> !account.equals(this.account()))
-        .collect(Collectors.toSet());
-
-      // Compute the set of accounts that actually provided signatures
       final Set<Address> actualSignerAccounts = this.batchSigners().stream()
         .map(wrapper -> wrapper.batchSigner().account())
         .collect(Collectors.toSet());
 
-      // Find the first inner-transaction account (excluding the outer account) that has no BatchSigner entry.
-      final Optional<Address> missingSignerAccount = requiredSignerAccounts.stream()
+      // Find the first required signer that has no BatchSigner entry.
+      final Optional<Address> missingSignerAccount = this.requiredSigners().stream()
         .filter(account -> !actualSignerAccounts.contains(account))
         .findFirst();
 

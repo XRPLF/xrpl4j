@@ -59,6 +59,11 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    */
   public static final UnsignedByte SECP256K1_PREFIX = UnsignedByte.of(0x00);
 
+  /**
+   * The length, in bytes, of a private key's natural (un-prefixed) value: 32 bytes for both ed25519 and secp256k1.
+   */
+  public static final int LENGTH = 32;
+
   private final UnsignedByteArray value;
 
   private final KeyType keyType;
@@ -139,7 +144,7 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
     // We assert this precondition here because this is a private constructor that can be fully tested via unit test,
     // so this precondition should never be violated, and if it is, then it's a bug in xrpl4j.
     Preconditions.checkArgument(
-      value.length() == 32,
+      value.length() == LENGTH,
       "Byte values passed to this constructor must be 32 bytes long, with no prefix."
     );
 

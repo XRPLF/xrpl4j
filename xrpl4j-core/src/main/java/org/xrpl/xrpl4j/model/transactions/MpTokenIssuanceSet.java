@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 
@@ -52,12 +53,40 @@ public interface MpTokenIssuanceSet extends Transaction {
    * An optional XRPL Address of an individual token holder balance to lock/unlock. If omitted, this transaction will
    * apply to all accounts holding MPTs. Mutually exclusive with {@link #immutableFlags()},
    * {@link #mpTokenMetadata()}, {@link #transferFee()}, the {@code tfMPTSet*} capability-setting flags on
-   * {@link #flags()}, and {@link #domainId()}.
+   * {@link #flags()}, {@link #domainId()}, {@link #issuerEncryptionKey()}, and {@link #auditorEncryptionKey()}.
+   * Must not equal {@link #account()}.
    *
    * @return An optionally-present {@link Address}.
    */
   @JsonProperty("Holder")
   Optional<Address> holder();
+
+  /**
+   * The 33-byte EC-ElGamal public key used for the issuer's mirror balances.
+   *
+   * <p>This key is used to encrypt confidential amounts that the issuer can decrypt to monitor
+   * the total supply of confidential tokens.</p>
+   *
+   * <p>Mutually exclusive with {@link #holder()}. Requires the {@code ConfidentialTransfer} amendment.</p>
+   *
+   * @return An optionally-present {@link PublicKey}.
+   */
+  @JsonProperty("IssuerEncryptionKey")
+  Optional<PublicKey> issuerEncryptionKey();
+
+  /**
+   * The 33-byte EC-ElGamal public key used for regulatory oversight (if applicable).
+   *
+   * <p>This key is used to encrypt confidential amounts that an auditor can decrypt for
+   * compliance and regulatory purposes.</p>
+   *
+   * <p>Mutually exclusive with {@link #holder()}, and may only be present when
+   * {@link #issuerEncryptionKey()} is also present. Requires the {@code ConfidentialTransfer} amendment.</p>
+   *
+   * @return An optionally-present {@link PublicKey}.
+   */
+  @JsonProperty("AuditorEncryptionKey")
+  Optional<PublicKey> auditorEncryptionKey();
 
   /**
    * An optional set of flags declaring which fields or flags of the {@code MPTokenIssuance} should be permanently
@@ -110,6 +139,9 @@ public interface MpTokenIssuanceSet extends Transaction {
    *   <li>{@code ImmutableFlags}, {@code MPTokenMetadata}, and {@code TransferFee} are mutually exclusive with
    *       {@code Holder} and with the {@code tfMPTLock}/{@code tfMPTUnlock} flags.</li>
    *   <li>{@code DomainID} is mutually exclusive with {@code Holder}.</li>
+   *   <li>{@code Account} must not equal {@code Holder}.</li>
+   *   <li>{@code Holder} is mutually exclusive with {@code IssuerEncryptionKey} and {@code AuditorEncryptionKey}.</li>
+   *   <li>{@code AuditorEncryptionKey} may only be present when {@code IssuerEncryptionKey} is also present.</li>
    * </ul>
    */
   @Value.Check
@@ -149,5 +181,24 @@ public interface MpTokenIssuanceSet extends Transaction {
       !holder().isPresent(),
       "DomainID and Holder are mutually exclusive."
     ));
+
+    holder().ifPresent(h -> Preconditions.checkState(
+      !h.equals(account()),
+      "Account and Holder must not be the same."
+    ));
+
+    if (holder().isPresent()) {
+      Preconditions.checkState(
+        !issuerEncryptionKey().isPresent() && !auditorEncryptionKey().isPresent(),
+        "Holder is mutually exclusive with IssuerEncryptionKey and AuditorEncryptionKey."
+      );
+    }
+
+    if (auditorEncryptionKey().isPresent()) {
+      Preconditions.checkState(
+        issuerEncryptionKey().isPresent(),
+        "AuditorEncryptionKey may only be present when IssuerEncryptionKey is also present."
+      );
+    }
   }
 }

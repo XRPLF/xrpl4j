@@ -25,6 +25,11 @@
         <artifactId>xrpl4j-core</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>xrpl4j-mpt-crypto</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 </project>

@@ -23,9 +23,12 @@ package org.xrpl.xrpl4j.codec.addresses;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
+import org.xrpl.xrpl4j.crypto.keys.Entropy;
 
 /**
  * Unit tests for {@link SeedCodec}.
@@ -42,6 +45,16 @@ class SeedCodecTest extends AbstractCodecTest {
   @Test
   void getInstance() {
     assertThat(SeedCodec.getInstance()).isNotNull();
+  }
+
+  @Test
+  public void decodeSeedRejectsInvalidLength() {
+    // Only 29-, 31-, and 51-character seeds are decodable; any other length is rejected overtly, up front.
+    // Cases: empty; the 29-char secp256k1 seed minus one char (28); the 31-char ed25519 seed plus one char (32).
+    for (String badSeed : new String[] {"", "sn259rEFXrQrWyx3Q7XneWcwV6df", "sEdTM1uX8pu2do5XvTnutH6HsouMaM2X"}) {
+      DecodeException thrown = assertThrows(DecodeException.class, () -> seedCodec.decodeSeed(badSeed));
+      assertThat(thrown.getMessage()).contains("Invalid seed length");
+    }
   }
 
   @Test
@@ -123,6 +136,58 @@ class SeedCodecTest extends AbstractCodecTest {
   }
 
   @Test
+  public void encodeDecodeElGamalSeed() {
+    Entropy entropy = Entropy.of(
+      BaseEncoding.base16().decode("4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4")
+    );
+    String encoded = seedCodec.encodeSeed(unsignedByteArrayFromHex(
+      entropy.value().hexValue()), KeyType.SECP256K1);
+    String decoded = seedCodec.decodeSeed(encoded).bytes().hexValue();
+    assertThat(decoded).isEqualTo(entropy.value().hexValue());
+  }
+
+  /**
+   * 32-byte entropy exists only for ElGamal secp256k1 seeds. Under the ED25519 version prefix it encodes to a
+   * 53-character seed that {@link SeedCodec#decodeSeed(String)} cannot decode, so it must be rejected at encode time
+   * rather than returned as unrecoverable key material.
+   */
+  @Test
+  public void encodeSeedRejectsThirtyTwoByteEntropyForEd25519() {
+    // The guard is gated on SECP256K1 (not "exclude ED25519"), so any non-SECP256K1 type is rejected for 32-byte
+    // entropy; ED25519 is the only such type today. Assert the message to lock that SECP256K1-gated intent.
+    EncodeException thrown = assertThrows(
+      EncodeException.class,
+      () -> seedCodec.encodeSeed(
+        unsignedByteArrayFromHex("4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4"),
+        KeyType.ED25519
+      )
+    );
+    assertThat(thrown).hasMessageContaining("32-byte entropy is only supported for SECP256K1 seeds");
+  }
+
+  /**
+   * Guards the round-trip property this codec must hold: every seed {@link SeedCodec#encodeSeed} accepts must be
+   * decodable back to the same entropy and key type.
+   */
+  @Test
+  public void everyEncodableSeedIsDecodable() {
+    String sixteen = "CF2DE378FBDD7E2EE87D486DFB5A7BFF";
+    String thirtyTwo = "4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4";
+
+    for (Object[] testCase : new Object[][] {
+      {sixteen, KeyType.ED25519}, {sixteen, KeyType.SECP256K1}, {thirtyTwo, KeyType.SECP256K1}
+    }) {
+      String hex = (String) testCase[0];
+      KeyType keyType = (KeyType) testCase[1];
+
+      Decoded decoded = seedCodec.decodeSeed(seedCodec.encodeSeed(unsignedByteArrayFromHex(hex), keyType));
+
+      assertThat(decoded.bytes().hexValue()).isEqualTo(hex);
+      assertThat(decoded.type()).isPresent().get().isEqualTo(keyType);
+    }
+  }
+
+  @Test
   public void encodeSeedWithFewerThanSixteenBytes() {
     assertThrows(
       EncodeException.class,
@@ -138,6 +203,28 @@ class SeedCodecTest extends AbstractCodecTest {
       () -> seedCodec
         .encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFF"), KeyType.SECP256K1),
       "entropy must have length 16."
+    );
+  }
+
+  @Test
+  public void encodeElGamalSeedWithLessThanThirtyTwoBytes() {
+    assertThrows(
+      EncodeException.class,
+      () -> seedCodec
+        .encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFF"), KeyType.SECP256K1),
+      "entropy must have length 32."
+    );
+  }
+
+  @Test
+  public void encodeElGamalSeedWithMoreThanThirtyTwoBytes() {
+    assertThrows(
+      EncodeException.class,
+      () -> seedCodec
+        .encodeSeed(
+          unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFFCF2DE378FBDD7E2EE87D486DFB5A7BFFFFFF"),
+          KeyType.SECP256K1),
+      "entropy must have length 32."
     );
   }
 }

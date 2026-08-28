@@ -27,7 +27,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
@@ -46,7 +45,6 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -313,18 +311,14 @@ public class FeeUtils {
    * @return A number of extra base fees.
    */
   private static long fulfillmentUnits(final EscrowFinish escrowFinish) {
-    return escrowFinish.fulfillment()
-      .map(fulfillment -> {
-        Preconditions.checkArgument(
-          PreimageSha256Fulfillment.class.isAssignableFrom(fulfillment.getClass()),
-          "Only PreimageSha256Fulfillment is supported, but the fulfillment was a %s.",
-          fulfillment.getClass().getSimpleName()
-        );
-        final long fulfillmentByteSize = Base64.getUrlDecoder()
-          .decode(((PreimageSha256Fulfillment) fulfillment).getEncodedPreimage()).length;
-        // See rippled's EscrowFinish::calculateBaseFee: extraFee = base * (32 + (fulfillment size / 16)).
-        return 32L + (fulfillmentByteSize / 16L);
-      })
+    // rippled charges by the on-wire size of the sfFulfillment blob:
+    //   extraFee = base * (32 + fulfillmentBytes / 16)   (EscrowFinish::calculateBaseFee)
+    // fulfillmentRawValue() is that exact blob, hex-encoded — the DER-encoded crypto-condition fulfillment that
+    // EscrowFinish#normalizeFulfillment always populates. It is NOT the decoded preimage: for a PREIMAGE-SHA-256
+    // fulfillment the DER wrapper adds a few bytes, which can change the /16 term near a boundary. Measuring the
+    // blob (not the preimage) is what matches rippled.
+    return escrowFinish.fulfillmentRawValue()
+      .map(fulfillmentHex -> 32L + ((fulfillmentHex.length() / 2L) / 16L))
       .orElse(0L);
   }
 

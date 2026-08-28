@@ -656,20 +656,29 @@ public class FeeUtilsTest {
 
   @Test
   void escrowFinishWithoutFulfillmentCostsOneBaseFee() {
-    assertFeeUnits(paramsFor(escrowFinish(false)), 1);
+    assertFeeUnits(paramsFor(escrowFinish(0)), 1);
   }
 
   @Test
   void escrowFinishWithFulfillmentAddsTheSizeSurcharge() {
-    // 1 + (32 + 32/16) = 35
-    assertFeeUnits(paramsFor(escrowFinish(true)), 35);
+    // rippled charges by the on-wire fulfillment blob, not the preimage. A 32-byte preimage DER-encodes to a
+    // 36-byte blob, so the surcharge is 32 + 36/16 = 34: total 1 + 34 = 35.
+    assertFeeUnits(paramsFor(escrowFinish(32)), 35);
+  }
+
+  @Test
+  void escrowFinishSurchargeUsesTheEncodedBlobSizeNotThePreimageSize() {
+    // Boundary case exposing the difference: a 28-byte preimage DER-encodes to a 32-byte blob. Measuring the blob
+    // (correct, matches rippled) gives 32 + 32/16 = 34 -> total 35. Measuring the preimage (the old, buggy
+    // behavior) would give 32 + 28/16 = 33 -> total 34, underpaying by one base fee.
+    assertFeeUnits(paramsFor(escrowFinish(28)), 35);
   }
 
   @Test
   void escrowFinishSurchargeIsAddedToTheSignatureTerms() {
     // (1 + 2) + (32 + 32/16) = 37 — the signer terms EscrowFinish.computeFee omits.
     assertFeeUnits(
-      FeeParams.builder().feeResult(feeResultBuilder().build()).transaction(escrowFinish(true))
+      FeeParams.builder().feeResult(feeResultBuilder().build()).transaction(escrowFinish(32))
         .signersCount(UnsignedInteger.valueOf(2)),
       37
     );
@@ -1052,7 +1061,11 @@ public class FeeUtilsTest {
       .build();
   }
 
-  private EscrowFinish escrowFinish(final boolean withFulfillment) {
+  /**
+   * An {@link EscrowFinish} carrying a PREIMAGE-SHA-256 fulfillment built from a {@code preimageBytes}-byte preimage,
+   * or no fulfillment when {@code preimageBytes} is 0.
+   */
+  private EscrowFinish escrowFinish(final int preimageBytes) {
     ImmutableEscrowFinish.Builder builder = EscrowFinish.builder()
       .account(ALICE)
       .owner(BOB)
@@ -1060,8 +1073,8 @@ public class FeeUtilsTest {
       .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY);
-    return withFulfillment ?
-      builder.fulfillment(PreimageSha256Fulfillment.from(new byte[32])).build() : builder.build();
+    return preimageBytes == 0 ?
+      builder.build() : builder.fulfillment(PreimageSha256Fulfillment.from(new byte[preimageBytes])).build();
   }
 
   private Batch batch(final Address outerAccount, final Transaction... inners) {

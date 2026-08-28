@@ -21,11 +21,13 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.immutables.value.Value;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -34,53 +36,49 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 /**
- * Unit tests for {@link MpTokenMetadata}.
+ * Unit tests for {@link XAddress}.
  */
-public class MpTokenMetadataTest {
+public class XAddressTest {
 
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 
+  private static final XAddress X_ADDRESS = XAddress.of("X7AcgcsBL6XDcUb289X4mJ8djcdyKaB5hJDWMArnXr61cqZ");
+
   @Test
-  void testToString() {
-    MpTokenMetadata metadata = MpTokenMetadata.of("");
-    assertThat(metadata.toString()).isEqualTo("");
-
-    metadata = MpTokenMetadata.of("ABCD");
-    assertThat(metadata.toString()).isEqualTo("ABCD");
-
-    metadata = MpTokenMetadata.of("48656C6C6F20576F726C64");
-    assertThat(metadata.toString()).isEqualTo("48656C6C6F20576F726C64");
+  void testNull() {
+    assertThrows(NullPointerException.class, () -> XAddress.of(null));
+    AssertionsForClassTypes.assertThat(X_ADDRESS.equals(null)).isFalse();
   }
 
   @Test
   void testWithValidValue() {
-    MpTokenMetadata metadata = MpTokenMetadata.of("68747470733A2F2F6578616D706C652E636F6D");
-    assertThat(metadata.value()).isEqualTo("68747470733A2F2F6578616D706C652E636F6D");
-    assertThat(metadata.equals(null)).isFalse();
+    assertThat(X_ADDRESS.value()).isEqualTo("X7AcgcsBL6XDcUb289X4mJ8djcdyKaB5hJDWMArnXr61cqZ");
+    assertThat(X_ADDRESS.toString()).isEqualTo("X7AcgcsBL6XDcUb289X4mJ8djcdyKaB5hJDWMArnXr61cqZ");
+    assertThat(X_ADDRESS.equals(null)).isFalse();
   }
 
   @Test
   void testJsonSerialization() throws JsonProcessingException, JSONException {
-    MpTokenMetadata metadata = MpTokenMetadata.of("ABCDEF1234567890");
-    MpTokenMetadataWrapper wrapper = MpTokenMetadataWrapper.of(metadata);
+    XAddressWrapper wrapper = XAddressWrapper.of(X_ADDRESS);
 
-    String json = "{\"metadata\":\"ABCDEF1234567890\"}";
+    // XAddress uses default Immutables serialization (as an object with "value" field)
+    String json = "{\"value\":{\"value\":\"X7AcgcsBL6XDcUb289X4mJ8djcdyKaB5hJDWMArnXr61cqZ\"}}";
     String serialized = objectMapper.writeValueAsString(wrapper);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
 
-    MpTokenMetadataWrapper deserialized = objectMapper.readValue(serialized, MpTokenMetadataWrapper.class);
+    XAddressWrapper deserialized = objectMapper.readValue(serialized, XAddressWrapper.class);
     assertThat(deserialized).isEqualTo(wrapper);
   }
 
   @Value.Immutable
-  @JsonSerialize(as = ImmutableMpTokenMetadataWrapper.class)
-  @JsonDeserialize(as = ImmutableMpTokenMetadataWrapper.class)
-  public interface MpTokenMetadataWrapper {
+  @JsonSerialize(as = ImmutableXAddressWrapper.class)
+  @JsonDeserialize(as = ImmutableXAddressWrapper.class)
+  public interface XAddressWrapper {
 
-    static MpTokenMetadataWrapper of(MpTokenMetadata metadata) {
-      return ImmutableMpTokenMetadataWrapper.builder().metadata(metadata).build();
+    static XAddressWrapper of(XAddress value) {
+      return ImmutableXAddressWrapper.builder().value(value).build();
     }
 
-    MpTokenMetadata metadata();
+    XAddress value();
   }
 }

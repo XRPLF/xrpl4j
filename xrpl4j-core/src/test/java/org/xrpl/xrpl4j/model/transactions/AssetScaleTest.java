@@ -22,13 +22,34 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import org.assertj.core.api.Assertions;
+import org.immutables.value.Value;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 /**
  * Unit tests for {@link AssetScale}.
  */
 public class AssetScaleTest {
+
+  ObjectMapper objectMapper = ObjectMapperFactory.create();
+
+  @Test
+  void testBounds() {
+    AssetScale assetScale = AssetScale.of(UnsignedInteger.ZERO);
+    assertThat(assetScale.value()).isEqualTo(UnsignedInteger.ZERO);
+
+    assetScale = AssetScale.of(UnsignedInteger.MAX_VALUE);
+    assertThat(assetScale.value()).isEqualTo(UnsignedInteger.MAX_VALUE);
+  }
 
   @Test
   void testToString() {
@@ -41,5 +62,38 @@ public class AssetScaleTest {
     assetScale = AssetScale.of(UnsignedInteger.MAX_VALUE);
     assertThat(assetScale.toString()).isEqualTo(UnsignedInteger.MAX_VALUE.toString());
   }
-}
 
+  @Test
+  void testJson() throws JsonProcessingException, JSONException {
+    AssetScale assetScale = AssetScale.of(UnsignedInteger.valueOf(5));
+    AssetScaleWrapper wrapper = AssetScaleWrapper.of(assetScale);
+
+    String json = "{\"assetScale\": 5}";
+    assertSerializesAndDeserializes(wrapper, json);
+  }
+
+  private void assertSerializesAndDeserializes(
+    AssetScaleWrapper wrapper,
+    String json
+  ) throws JsonProcessingException, JSONException {
+    String serialized = objectMapper.writeValueAsString(wrapper);
+    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+    AssetScaleWrapper deserialized = objectMapper.readValue(
+      serialized, AssetScaleWrapper.class
+    );
+    Assertions.assertThat(deserialized).isEqualTo(wrapper);
+  }
+
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableAssetScaleWrapper.class)
+  @JsonDeserialize(as = ImmutableAssetScaleWrapper.class)
+  interface AssetScaleWrapper {
+
+    static AssetScaleWrapper of(AssetScale assetScale) {
+      return ImmutableAssetScaleWrapper.builder().assetScale(assetScale).build();
+    }
+
+    AssetScale assetScale();
+
+  }
+}

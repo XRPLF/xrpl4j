@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -55,7 +54,7 @@ class TransactionMetadataTest {
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
-  void deserializeMetadataFromXrplOrg() {
+  void deserializeMetadataFromXrplOrg() throws JsonProcessingException {
     String json = "{\n" +
       "  \"AffectedNodes\": [\n" +
       "    {\n" +
@@ -507,7 +506,11 @@ class TransactionMetadataTest {
       "  }\n" +
       "}";
 
-    assertThatNoException().isThrownBy(() -> objectMapper.readValue(json, TransactionMetadata.class));
+    TransactionMetadata metadata = objectMapper.readValue(json, TransactionMetadata.class);
+    assertThat(metadata.transactionResult()).isEqualTo("tesSUCCESS");
+    assertThat(metadata.transactionIndex()).isEqualTo(UnsignedInteger.valueOf(38));
+    assertThat(metadata.affectedNodes().size()).isEqualTo(15);
+    assertThat(metadata.deliveredAmount()).isPresent();
   }
 
   @Test
@@ -714,6 +717,85 @@ class TransactionMetadataTest {
     // Note that the actual file is a .zip to save space in Git. deserializeFixtures will unzip that file into
     // tx_meta_manual_fixtures.json
     deserializeFixtures("tx_meta_manual_fixtures.json");
+  }
+
+  @Test
+  void deserializeMalformedAffectedNodesAreSkipped() throws JsonProcessingException {
+    String json = "{\n" +
+      "  \"AffectedNodes\": [\n" +
+      "    {\n" +
+      "      \"ModifiedNode\": {\n" +
+      "        \"LedgerEntryType\": \"AccountRoot\",\n" +
+      "        \"LedgerIndex\": \"1E7E658C2D3DF91EFAE5A12573284AD6F526B8F64DD12F013C6F889EF45BEA97\"\n" +
+      "      }\n" +
+      "    },\n" +
+      "    {\n" +
+      "      \"CreatedNode\": {\n" +
+      "        \"SomeOtherField\": \"value\"\n" +
+      "      }\n" +
+      "    },\n" +
+      "    {\n" +
+      "      \"DeletedNode\": {\n" +
+      "        \"LedgerEntryType\": null\n" +
+      "      }\n" +
+      "    }\n" +
+      "  ],\n" +
+      "  \"TransactionIndex\": 0,\n" +
+      "  \"TransactionResult\": \"tesSUCCESS\"\n" +
+      "}";
+
+    TransactionMetadata result = objectMapper.readValue(json, TransactionMetadata.class);
+    assertThat(result.affectedNodes().size()).isEqualTo(1);
+    assertThat(result.affectedNodes().get(0)).isInstanceOf(ModifiedNode.class);
+  }
+
+  @Test
+  void deliveredAmountIsEmptyWhenAbsent() throws JsonProcessingException {
+    String json = "{\"AffectedNodes\":[],\"TransactionIndex\":0,\"TransactionResult\":\"tesSUCCESS\"}";
+    TransactionMetadata result = objectMapper.readValue(json, TransactionMetadata.class);
+    assertThat(result.deliveredAmount()).isEmpty();
+  }
+
+  @Test
+  void deserializesOfferId() throws JsonProcessingException {
+    String offerIdHex = "1E7E658C2D3DF91EFAE5A12573284AD6F526B8F64DD12F013C6F889EF45BEA97";
+    String json = "{\"AffectedNodes\":[],\"TransactionIndex\":0,\"TransactionResult\":\"tesSUCCESS\"," +
+      "\"offer_id\":\"" + offerIdHex + "\"}";
+    TransactionMetadata result = objectMapper.readValue(json, TransactionMetadata.class);
+    assertThat(result.offerId()).isPresent();
+    assertThat(result.offerId().get()).isEqualTo(Hash256.of(offerIdHex));
+  }
+
+  @Test
+  void deserializesNfTokenId() throws JsonProcessingException {
+    String tokenId = "00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD";
+    String json = "{\"AffectedNodes\":[],\"TransactionIndex\":0,\"TransactionResult\":\"tesSUCCESS\"," +
+      "\"nftoken_id\":\"" + tokenId + "\"}";
+    TransactionMetadata result = objectMapper.readValue(json, TransactionMetadata.class);
+    assertThat(result.nfTokenId()).isPresent();
+    assertThat(result.nfTokenId().get()).isEqualTo(NfTokenId.of(tokenId));
+  }
+
+  @Test
+  void deserializesNfTokenIds() throws JsonProcessingException {
+    String tokenId1 = "00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD";
+    String tokenId2 = "00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FE";
+    String json = "{\"AffectedNodes\":[],\"TransactionIndex\":0,\"TransactionResult\":\"tesSUCCESS\"," +
+      "\"nftoken_ids\":[\"" + tokenId1 + "\",\"" + tokenId2 + "\"]}";
+    TransactionMetadata result = objectMapper.readValue(json, TransactionMetadata.class);
+    assertThat(result.nfTokenIds().size()).isEqualTo(2);
+    assertThat(result.nfTokenIds().get(0)).isEqualTo(NfTokenId.of(tokenId1));
+    assertThat(result.nfTokenIds().get(1)).isEqualTo(NfTokenId.of(tokenId2));
+  }
+
+  @Test
+  void deserializesMpTokenIssuanceId() throws JsonProcessingException {
+    String issuanceId = "00002403C84A0A28E0190E208E982C352BBD5006600555CF";
+    String json = "{\"AffectedNodes\":[],\"TransactionIndex\":0,\"TransactionResult\":\"tesSUCCESS\"," +
+      "\"mpt_issuance_id\":\"" + issuanceId + "\"}";
+    TransactionMetadata result = objectMapper.readValue(json, TransactionMetadata.class);
+    assertThat(result.mpTokenIssuanceId()).isPresent();
+    assertThat(result.mpTokenIssuanceId().get()).isEqualTo(MpTokenIssuanceId.of(issuanceId));
   }
 
   @Test

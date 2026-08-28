@@ -20,7 +20,6 @@ package org.xrpl.xrpl4j.model.client.fees;
  * =========================LICENSE_END==================================
  */
 
-import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.UnsignedInteger;
@@ -211,9 +210,9 @@ public interface FeeParams {
       "The fee of an unknown transaction type cannot be computed, because its fee rules are not known."
     );
 
-    checkSignatureCount(this.signersCount(), "signersCount");
-    checkSignatureCount(this.sponsorSignersCount(), "sponsorSignersCount");
-    checkSignatureCount(this.counterpartySignatureCount(), "counterpartySignatureCount");
+    checkSignatureCount(this.signersCount(), UnsignedInteger.ZERO, "signersCount");
+    checkSignatureCount(this.sponsorSignersCount(), UnsignedInteger.ZERO, "sponsorSignersCount");
+    checkSignatureCount(this.counterpartySignatureCount(), UnsignedInteger.ONE, "counterpartySignatureCount");
 
     Preconditions.checkArgument(
       transactionType == TransactionType.LOAN_SET ||
@@ -254,6 +253,7 @@ public interface FeeParams {
     if (OWNER_RESERVE_TRANSACTION_TYPES.contains(this.transaction().transactionType())) {
       return true;
     }
+
     return this.transaction() instanceof Batch &&
       ((Batch) this.transaction()).rawTransactions().stream()
         .map(RawTransactionWrapper::rawTransaction)
@@ -292,21 +292,27 @@ public interface FeeParams {
           "inner is signed by its Delegate, and a sponsored inner also requires its Sponsor.",
         address, requiredSigners
       );
-      checkSignatureCount(count, "signaturesPerBatchSigner[" + address + "]");
+      checkSignatureCount(count, UnsignedInteger.ONE, "signaturesPerBatchSigner[" + address + "]");
     });
   }
 
   /**
-   * Asserts that a supplied signature count does not exceed the XRPL signer list limit.
+   * Asserts that a supplied signature count lies within the range a signer list allows: at least {@code minimum} —
+   * zero for a count of additional signatures, one for a total that always includes a first signature — and no more
+   * than the {@link #MAX_SIGNER_LIST_SIZE XRPL signer list limit}.
    *
    * @param signatureCount An {@link UnsignedInteger} number of signatures.
+   * @param minimum        The smallest permitted value, either {@link UnsignedInteger#ZERO} or
+   *                       {@link UnsignedInteger#ONE}.
    * @param fieldName      The name of the field being checked, for use in the failure message.
    */
-  static void checkSignatureCount(final UnsignedInteger signatureCount, final String fieldName) {
+  static void checkSignatureCount(
+    final UnsignedInteger signatureCount, final UnsignedInteger minimum, final String fieldName
+  ) {
     Preconditions.checkArgument(
-      signatureCount.compareTo(MAX_SIGNER_LIST_SIZE) <= 0,
-      "%s must not exceed %s (the XRPL signer list limit), but was %s.",
-      fieldName, MAX_SIGNER_LIST_SIZE, signatureCount
+      signatureCount.compareTo(minimum) >= 0 && signatureCount.compareTo(MAX_SIGNER_LIST_SIZE) <= 0,
+      "%s must be between %s and %s (the XRPL signer list limit), but was %s.",
+      fieldName, minimum, MAX_SIGNER_LIST_SIZE, signatureCount
     );
   }
 }

@@ -957,7 +957,24 @@ public class FeeUtilsTest {
   void rejectsSignatureCountsBeyondTheSignerListLimit() {
     assertThatThrownBy(() -> paramsFor(payment()).signersCount(UnsignedInteger.valueOf(33)).build())
       .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("must not exceed 32");
+      .hasMessageContaining("signersCount must be between 0 and 32");
+  }
+
+  @Test
+  void rejectsZeroCounterpartySignatureCount() {
+    // A LoanSet always carries a counterparty signature, so zero would understate the fee by one base fee.
+    assertThatThrownBy(() -> paramsFor(loanSet()).counterpartySignatureCount(UnsignedInteger.ZERO).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("counterpartySignatureCount must be between 1 and 32");
+  }
+
+  @Test
+  void rejectsZeroSignaturesForARequiredBatchSigner() {
+    // A participant listed in signaturesPerBatchSigner must sign, so zero would undercount the batch signatures.
+    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
+    assertThatThrownBy(() -> paramsFor(batch).putSignaturesPerBatchSigner(BOB, UnsignedInteger.ZERO).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("must be between 1 and 32");
   }
 
   // /////////////////

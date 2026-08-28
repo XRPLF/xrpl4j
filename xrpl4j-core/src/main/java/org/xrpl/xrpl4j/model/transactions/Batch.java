@@ -144,8 +144,10 @@ public interface Batch extends Transaction {
   /**
    * The set of accounts that must appear in {@link #batchSigners()}, derived from the inner transactions.
    *
-   * <p>rippled builds the identical set in {@code Batch::preflightSigValidated} and rejects any {@code BatchSigners}
-   * array that does not match it exactly. Each inner contributes:
+   * <p>rippled builds the identical set in {@code Batch::preflightSigValidated}, which requires the
+   * {@code BatchSigners} to match it exactly — rejecting an array that omits a required signer <em>or</em> carries an
+   * extra one. xrpl4j's own construction-time validation ({@link #checkBatchSigners()}) enforces only that no
+   * required signer is missing, deferring the stricter extra-signer check to the server. Each inner contributes:
    * <ul>
    *   <li>its <em>initiator</em> — its {@code Delegate} when one is present, otherwise its {@code Account};</li>
    *   <li>its {@code Sponsor}, when the inner also carries a {@code SponsorSignature}; and</li>

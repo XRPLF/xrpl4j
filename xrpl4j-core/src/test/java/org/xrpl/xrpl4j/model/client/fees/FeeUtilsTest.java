@@ -843,6 +843,15 @@ public class FeeUtilsTest {
   }
 
   @Test
+  void batchDoesNotDoubleChargeALoanSetInnerCounterparty() {
+    // The counterparty is counted once among the batchSigners; the inner adds no counterparty surcharge, so 7 not 8.
+    // 2 outer + 3 batchSigners {bob, carol, dave} + (1 payment + 1 loanSet) inners
+    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerLoanSet(CAROL, DAVE, 1));
+    assertThat(batch.requiredSigners()).containsExactlyInAnyOrder(BOB, CAROL, DAVE);
+    assertFeeUnits(paramsFor(batch), 7);
+  }
+
+  @Test
   void standaloneConfidentialSendCostsTenBaseFees() {
     assertFeeUnits(paramsFor(innerConfidentialSend(ALICE, 1)), 10);
   }
@@ -1054,6 +1063,19 @@ public class FeeUtilsTest {
       .loanBrokerId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
       .principalRequested(Amount.of("1000000"))
       .signingPublicKey(PUBLIC_KEY)
+      .build();
+  }
+
+  private LoanSet innerLoanSet(final Address account, final Address counterparty, final int sequence) {
+    return LoanSet.builder()
+      .account(account)
+      .counterparty(counterparty)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.valueOf(sequence))
+      .flags(org.xrpl.xrpl4j.model.flags.LoanSetFlags.of(
+        org.xrpl.xrpl4j.model.flags.TransactionFlags.INNER_BATCH_TXN.getValue()))
+      .loanBrokerId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
+      .principalRequested(Amount.of("1000000"))
       .build();
   }
 

@@ -197,7 +197,7 @@ public class FeeUtils {
     final long signatureUnits = signatureUnits(feeParams);
     final long feeUnits = transactionType == TransactionType.LOAN_PAY ?
       signatureUnits * feeParams.loanPaymentFeeIncrements().longValue() :
-      signatureUnits + surchargeUnits(feeParams, transaction);
+      signatureUnits + surchargeUnits(feeParams, transaction, false);
 
     return scaleByBaseFees(baseFees, feeUnits);
   }
@@ -229,7 +229,7 @@ public class FeeUtils {
       } else {
         // An inner transaction never carries signatures or fee sponsorship, so it costs one base fee plus whatever
         // surcharge its type attracts.
-        feeUnits += 1L + surchargeUnits(feeParams, inner);
+        feeUnits += 1L + surchargeUnits(feeParams, inner, true);
       }
     }
 
@@ -284,10 +284,12 @@ public class FeeUtils {
    * @param feeParams   The {@link FeeParams} being applied.
    * @param transaction The {@link Transaction} being priced, which may be an inner transaction of a Batch rather than
    *                    {@link FeeParams#transaction()} itself.
+   * @param isInner     {@code true} when {@code transaction} is a Batch inner, whose signatures are counted by the
+   *                    outer Batch rather than by the inner itself.
    *
    * @return A number of extra base fees, which is zero for most transaction types.
    */
-  private static long surchargeUnits(final FeeParams feeParams, final Transaction transaction) {
+  private static long surchargeUnits(final FeeParams feeParams, final Transaction transaction, final boolean isInner) {
     final TransactionType transactionType = transaction.transactionType();
 
     if (CONFIDENTIAL_MPT_TRANSACTION_TYPES.contains(transactionType)) {
@@ -297,7 +299,8 @@ public class FeeUtils {
       return fulfillmentUnits((EscrowFinish) transaction);
     }
     if (transactionType == TransactionType.LOAN_SET) {
-      return feeParams.counterpartySignatureCount().longValue();
+      // Charge the counterparty only for a standalone LoanSet; a Batch inner's is counted via the BatchSigners.
+      return isInner ? 0L : feeParams.counterpartySignatureCount().longValue();
     }
     return 0L;
   }

@@ -40,6 +40,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.AccountObjectType;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.fees.FeeParams;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
@@ -60,6 +61,7 @@ import org.xrpl.xrpl4j.model.ledger.SponsorshipObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.ImmutableSponsorshipTransfer;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
@@ -863,21 +865,27 @@ public class SponsorshipIT extends AbstractIT {
       // Create unsigned SponsorshipTransfer
       AccountInfoResult updatedSponseeInfo = scanForResult(() -> getValidatedAccountInfo(sponseeAddress));
 
-      // Fee must cover baseFee * (1 + sponseeSigners + sponsorSigners). With 2 sponsee
-      // signers + 2 sponsor signers that's 5x the reference base fee.
-      XrpCurrencyAmount multiSignFee = FeeUtils.computeSponsorshipTransferNetworkFees(
-        feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.valueOf(2)
-      ).recommendedFee();
-
-      SponsorshipTransfer unsignedTransfer = SponsorshipTransfer.builder()
+      // The fee must cover baseFee * (1 + sponseeSigners + sponsorSigners), so it is computed from the transaction
+      // once it exists, then applied. With 2 sponsee signers and 2 sponsor signers that is 5x the reference base fee.
+      SponsorshipTransfer unpricedTransfer = SponsorshipTransfer.builder()
         .account(sponseeAddress)
-        .fee(multiSignFee)
+        .fee(XrpCurrencyAmount.ofDrops(0))
         .sequence(updatedSponseeInfo.accountData().sequence())
         .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
         .sponsor(sponsorAddress)
         .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
         .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
         .build();
+
+      XrpCurrencyAmount multiSignFee = FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedTransfer)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .sponsorSignersCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee();
+
+      SponsorshipTransfer unsignedTransfer = ImmutableSponsorshipTransfer.copyOf(unpricedTransfer)
+        .withFee(multiSignFee);
 
       // Alice and Bob multi-sign as sponsee
       List<Signer> sponseeSigners = Lists.newArrayList(alice, bob).stream()

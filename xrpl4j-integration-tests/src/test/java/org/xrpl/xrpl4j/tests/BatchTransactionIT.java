@@ -34,6 +34,7 @@ import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeParams;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
@@ -48,6 +49,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.BatchSigner;
 import org.xrpl.xrpl4j.model.transactions.BatchSignerWrapper;
+import org.xrpl.xrpl4j.model.transactions.ImmutableBatch;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
@@ -236,10 +238,10 @@ public class BatchTransactionIT extends AbstractIT {
     );
 
     // Build the Batch transaction - account1 is the batch submitter
-    final Batch unsignedBatch = Batch.builder()
+    final Batch unpricedUnsignedBatch = Batch.builder()
       .account(account1KeyPair.publicKey().deriveAddress())
       .signingPublicKey(account1KeyPair.publicKey())
-      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(account1Info.accountData().sequence())
       .flags(batchFlags)
       .addRawTransactions(
@@ -247,6 +249,13 @@ public class BatchTransactionIT extends AbstractIT {
         RawTransactionWrapper.of(innerPayment2)
       )
       .build();
+
+    final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedUnsignedBatch)
+        .build()).recommendedFee()
+    );
 
     // ///////////////
     // Inner Sign (account2 is the inner signer)
@@ -367,9 +376,9 @@ public class BatchTransactionIT extends AbstractIT {
     );
 
     // Build the Batch transaction with Independent mode
-    Batch unsignedBatch = Batch.builder()
+    Batch unpricedUnsignedBatch = Batch.builder()
       .account(account1KeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(account1Result.accountData().sequence())
       .flags(batchFlags)
       .addRawTransactions(
@@ -377,6 +386,14 @@ public class BatchTransactionIT extends AbstractIT {
         RawTransactionWrapper.of(innerPayment2)
       )
       .build();
+
+    Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedUnsignedBatch)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // ///////////////
     // Outer MultiSign (account1Signer1 and account1Signer2 are the outer multi-signers)
@@ -516,9 +533,9 @@ public class BatchTransactionIT extends AbstractIT {
     );
 
     // Build the Batch transaction - account1 is the batch submitter
-    Batch unsignedBatch = Batch.builder()
+    Batch unpricedUnsignedBatch = Batch.builder()
       .account(account1KeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(account1Result.accountData().sequence())
       .flags(batchFlags)
       .addRawTransactions(
@@ -526,6 +543,15 @@ public class BatchTransactionIT extends AbstractIT {
         RawTransactionWrapper.of(innerPayment2)
       )
       .build();
+
+    Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedUnsignedBatch)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .putSignaturesPerBatchSigner(account2KeyPair.publicKey().deriveAddress(), UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // ///////////////
     // Inner Multisign (account2Signer1 and account2Signer2 are the inner multi-signers)
@@ -700,9 +726,9 @@ public class BatchTransactionIT extends AbstractIT {
     );
 
     // Build the Batch transaction - account1 is the batch submitter
-    Batch unsignedBatch = Batch.builder()
+    Batch unpricedUnsignedBatch = Batch.builder()
       .account(account1KeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(account1Result.accountData().sequence())
       .flags(batchFlags)
       .addRawTransactions(
@@ -710,6 +736,14 @@ public class BatchTransactionIT extends AbstractIT {
         RawTransactionWrapper.of(innerPayment2)
       )
       .build();
+
+    Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedUnsignedBatch)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // ///////////////
     // Inner Sign (account2 is the inner single-signer)
@@ -882,9 +916,9 @@ public class BatchTransactionIT extends AbstractIT {
     );
 
     // Build the Batch transaction - account1 is the batch submitter
-    Batch unsignedBatch = Batch.builder()
+    Batch unpricedUnsignedBatch = Batch.builder()
       .account(account1KeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(account1Result.accountData().sequence())
       .flags(batchFlags)
       .addRawTransactions(
@@ -892,6 +926,14 @@ public class BatchTransactionIT extends AbstractIT {
         RawTransactionWrapper.of(innerPayment2)
       )
       .build();
+
+    Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedUnsignedBatch)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // ///////////////
     // Inner Multisign (account2Signer1 and account2Signer2 are the inner multi-signers)
@@ -1044,10 +1086,10 @@ public class BatchTransactionIT extends AbstractIT {
     );
 
     // Build the Batch transaction with Independent mode
-    final Batch unsignedBatch = Batch.builder()
+    final Batch unpricedUnsignedBatch = Batch.builder()
       .account(outerSignerKeyPair.publicKey().deriveAddress())
       .signingPublicKey(outerSignerKeyPair.publicKey())
-      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(outerSignerInfo.accountData().sequence())
       .flags(batchFlags) // <-- One crux of the test
       .addRawTransactions(
@@ -1055,6 +1097,13 @@ public class BatchTransactionIT extends AbstractIT {
         RawTransactionWrapper.of(innerPayment2)
       )
       .build();
+
+    final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedUnsignedBatch)
+        .build()).recommendedFee()
+    );
 
     // ///////////////
     // Inner Sign (innerSigner1 and innerSigner2 are the inner signers)
@@ -1216,10 +1265,10 @@ public class BatchTransactionIT extends AbstractIT {
     );
 
     // Build the Batch transaction - outerSigner is the batch submitter (no inner transactions)
-    final Batch unsignedBatch = Batch.builder()
+    final Batch unpricedUnsignedBatch = Batch.builder()
       .account(outerSignerKeyPair.publicKey().deriveAddress())
       .signingPublicKey(outerSignerKeyPair.publicKey())
-      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(outerSignerInfo.accountData().sequence())
       .flags(batchFlags)
       .addRawTransactions(
@@ -1227,6 +1276,15 @@ public class BatchTransactionIT extends AbstractIT {
         RawTransactionWrapper.of(innerPayment2)
       )
       .build();
+
+    final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedUnsignedBatch)
+        .putSignaturesPerBatchSigner(account1KeyPair.publicKey().deriveAddress(), UnsignedInteger.valueOf(2))
+        .putSignaturesPerBatchSigner(account2KeyPair.publicKey().deriveAddress(), UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // ///////////////
     // Inner Multisign - BatchSigner Group 1 (account1Signer1 and account1Signer2 sign for account1)
@@ -1371,14 +1429,21 @@ public class BatchTransactionIT extends AbstractIT {
     );
 
     // Build Batch
-    Batch unsignedBatch = Batch.builder()
+    Batch unpricedUnsignedBatch = Batch.builder()
       .account(outerSignerKeyPair.publicKey().deriveAddress())
       .signingPublicKey(outerSignerKeyPair.publicKey())
-      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(1L)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(outerSignerInfo.accountData().sequence())
       .flags(BatchFlags.ofAllOrNothing())
       .addRawTransactions(RawTransactionWrapper.of(innerPayment1), RawTransactionWrapper.of(innerPayment2))
       .build();
+
+    Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedUnsignedBatch)
+        .build()).recommendedFee()
+    );
 
     // Sign inner with regular key - BatchSigner.account is account1's real (master-key) address, even though the
     // signature itself is produced using the regular key's private key.
@@ -1470,10 +1535,10 @@ public class BatchTransactionIT extends AbstractIT {
     );
 
     // Build the Batch transaction, submitted via a Ticket instead of a Sequence (Sequence defaults to 0).
-    final Batch unsignedBatch = Batch.builder()
+    final Batch unpricedUnsignedBatch = Batch.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .signingPublicKey(sourceKeyPair.publicKey())
-      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .ticketSequence(ticketSequence) // <-- outer Batch tx uses a Ticket, not a Sequence
       .flags(BatchFlags.ofAllOrNothing())
       .addRawTransactions(
@@ -1481,6 +1546,13 @@ public class BatchTransactionIT extends AbstractIT {
         RawTransactionWrapper.of(innerPayment2)
       )
       .build();
+
+    final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedUnsignedBatch)
+        .build()).recommendedFee()
+    );
 
     assertThat(unsignedBatch.sequence()).isEqualTo(UnsignedInteger.ZERO);
 
@@ -1548,10 +1620,10 @@ public class BatchTransactionIT extends AbstractIT {
     );
 
     // Build the Batch transaction - account1 is the batch submitter, using a Ticket instead of a Sequence.
-    final Batch unsignedBatch = Batch.builder()
+    final Batch unpricedUnsignedBatch = Batch.builder()
       .account(account1KeyPair.publicKey().deriveAddress())
       .signingPublicKey(account1KeyPair.publicKey())
-      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .ticketSequence(account1TicketSequence) // <-- outer Batch tx uses a Ticket, not a Sequence
       .flags(BatchFlags.ofAllOrNothing())
       .addRawTransactions(
@@ -1559,6 +1631,13 @@ public class BatchTransactionIT extends AbstractIT {
         RawTransactionWrapper.of(innerPayment2)
       )
       .build();
+
+    final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedUnsignedBatch)
+        .build()).recommendedFee()
+    );
 
     // ///////////////
     // Inner Sign (account2 is the inner signer). Because account1's Sequence is 0 on this outer transaction, the
@@ -1640,10 +1719,10 @@ public class BatchTransactionIT extends AbstractIT {
     );
 
     // Build the Batch transaction (outer tx uses a normal Sequence).
-    final Batch batch = Batch.builder()
+    final Batch unpricedBatch = Batch.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .signingPublicKey(sourceKeyPair.publicKey())
-      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(sourceAccountInfo.accountData().sequence())
       .flags(BatchFlags.ofAllOrNothing())
       .addRawTransactions(
@@ -1651,6 +1730,13 @@ public class BatchTransactionIT extends AbstractIT {
         RawTransactionWrapper.of(innerPayment2)
       )
       .build();
+
+    final Batch batch = ImmutableBatch.copyOf(unpricedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedBatch)
+        .build()).recommendedFee()
+    );
 
     // Only outer needs to be signed because the same account authorizes both inner transactions.
     final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(sourceKeyPair.privateKey(), batch);
@@ -1854,9 +1940,9 @@ public class BatchTransactionIT extends AbstractIT {
     final KeyPair sourceKeyPair, final FeeResult feeResult, final UnsignedInteger accountSequence,
     final Payment innerPayment1, final Payment innerPayment2, final BatchFlags batchFlags
   ) {
-    return Batch.builder()
+    final Batch unpricedBatch = Batch.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(2L)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(accountSequence)
       .signingPublicKey(sourceKeyPair.publicKey())
       .flags(batchFlags)
@@ -1865,6 +1951,13 @@ public class BatchTransactionIT extends AbstractIT {
         RawTransactionWrapper.of(innerPayment2)
       )
       .build();
+
+    return ImmutableBatch.copyOf(unpricedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedBatch)
+        .build()).recommendedFee()
+    );
   }
 
   /**

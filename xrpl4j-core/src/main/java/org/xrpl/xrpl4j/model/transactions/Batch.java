@@ -33,7 +33,9 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.BatchFlags;
 
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -138,6 +140,47 @@ public interface Batch extends Transaction {
    */
   @JsonProperty("BatchSigners")
   List<BatchSignerWrapper> batchSigners();
+
+  /**
+   * The set of accounts that must appear in {@link #batchSigners()}, derived from the inner transactions.
+   *
+   * <p>rippled builds the identical set in {@code Batch::preflightSigValidated}, which requires the
+   * {@code BatchSigners} to match it exactly — rejecting an array that omits a required signer <em>or</em> carries an
+   * extra one. xrpl4j's own construction-time validation ({@link #checkBatchSigners()}) enforces only that no
+   * required signer is missing, deferring the stricter extra-signer check to the server. Each inner contributes:
+   * <ul>
+   *   <li>its <em>initiator</em> — its {@code Delegate} when one is present, otherwise its {@code Account};</li>
+   *   <li>its {@code Sponsor}, when the inner also carries a {@code SponsorSignature}; and</li>
+   *   <li>a {@code LoanSet}'s {@code Counterparty}, when present.</li>
+   * </ul>
+   * The outer {@link #account()} is excluded throughout, because it authorises its own inner transactions with the
+   * signature it puts on the Batch itself.
+   *
+   * @return An unmodifiable {@link Set} of {@link Address}es that must sign this Batch, which may be empty when every
+   *   inner transaction belongs to the outer account.
+   */
+  @JsonIgnore
+  default Set<Address> requiredSigners() {
+    final Address outerAccount = this.account();
+    return this.rawTransactions().stream()
+      .map(RawTransactionWrapper::rawTransaction)
+      .flatMap(innerTransaction -> {
+        final Stream.Builder<Address> signers = Stream.builder();
+        // Initiator: the Delegate signs on behalf of the account holder when present, otherwise the Account.
+        signers.add(innerTransaction.delegate().orElseGet(innerTransaction::account));
+        // A Sponsor must also sign when the inner carries a SponsorSignature.
+        if (innerTransaction.sponsorSignature().isPresent()) {
+          innerTransaction.sponsor().ifPresent(signers::add);
+        }
+        // A LoanSet's Counterparty must also sign.
+        if (innerTransaction instanceof LoanSet) {
+          ((LoanSet) innerTransaction).counterparty().ifPresent(signers::add);
+        }
+        return signers.build();
+      })
+      .filter(address -> !address.equals(outerAccount))
+      .collect(Collectors.collectingAndThen(Collectors.toCollection(LinkedHashSet::new), Collections::unmodifiableSet));
+  }
 
   /**
    * Internal flag used to prevent infinite recursion when auto-sorting {@link #batchSigners()}.
@@ -307,34 +350,16 @@ public interface Batch extends Transaction {
       firstSignerMatchingOuterAccount.orElse(null)
     );
 
-    // Check 4: When BatchSigners is non-empty, every account required to sign an inner transaction (excluding
-    // the outer account) must have a corresponding BatchSigner entry.
+    // Check 4: When BatchSigners is non-empty, every account required to sign an inner transaction must have a
+    // corresponding BatchSigner entry. The required-signer set (initiator, sponsor, and LoanSet counterparty, with
+    // the outer account excluded) is derived by requiredSigners(), which is the single source of truth.
     if (!this.batchSigners().isEmpty()) {
-      // Compute the set of accounts that require signatures (excluding the outer account, which signs the Batch
-      // itself). For each inner transaction, the required signer is its Delegate if present (the delegate signs
-      // on behalf of the account holder), otherwise the transaction's Account. A LoanSet's Counterparty must also
-      // sign, if present. Note: rippled also requires a Sponsor to sign when SponsorSignature is present, but
-      // xrpl4j does not yet model sfSponsor/sfSponsorSignature, so that case cannot be checked here.
-      final Set<Address> requiredSignerAccounts = this.rawTransactions().stream()
-        .flatMap(wrapper -> {
-          final Transaction innerTransaction = wrapper.rawTransaction();
-          final Stream.Builder<Address> requiredSigners = Stream.builder();
-          requiredSigners.add(innerTransaction.delegate().orElseGet(innerTransaction::account));
-          if (innerTransaction instanceof LoanSet) {
-            ((LoanSet) innerTransaction).counterparty().ifPresent(requiredSigners::add);
-          }
-          return requiredSigners.build();
-        })
-        .filter(account -> !account.equals(this.account()))
-        .collect(Collectors.toSet());
-
-      // Compute the set of accounts that actually provided signatures
       final Set<Address> actualSignerAccounts = this.batchSigners().stream()
         .map(wrapper -> wrapper.batchSigner().account())
         .collect(Collectors.toSet());
 
-      // Find the first inner-transaction account (excluding the outer account) that has no BatchSigner entry.
-      final Optional<Address> missingSignerAccount = requiredSignerAccounts.stream()
+      // Find the first required signer that has no BatchSigner entry.
+      final Optional<Address> missingSignerAccount = this.requiredSigners().stream()
         .filter(account -> !actualSignerAccounts.contains(account))
         .findFirst();
 

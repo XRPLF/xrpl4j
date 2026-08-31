@@ -16,6 +16,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.AccountObjectType;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.fees.FeeParams;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
@@ -42,6 +43,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.CounterpartySignature;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.ImmutableLoanSet;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.LoanBrokerCoverClawback;
 import org.xrpl.xrpl4j.model.transactions.LoanBrokerCoverDeposit;
@@ -103,9 +105,9 @@ public class LendingProtocolIT extends AbstractIT {
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
-    final LoanSet unsignedLoanSet = LoanSet.builder()
+    final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO).recommendedFee())
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
@@ -113,6 +115,13 @@ public class LendingProtocolIT extends AbstractIT {
       .paymentTotal(UnsignedInteger.valueOf(3))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
+
+    final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedLoanSet)
+        .build()).recommendedFee()
+    );
 
     // Broker (first-party) single-signs the unsigned transaction
     final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
@@ -191,9 +200,9 @@ public class LendingProtocolIT extends AbstractIT {
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
-    final LoanSet unsignedLoanSet = LoanSet.builder()
+    final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO).recommendedFee())
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
@@ -201,6 +210,13 @@ public class LendingProtocolIT extends AbstractIT {
       .paymentTotal(UnsignedInteger.valueOf(3))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
+
+    final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedLoanSet)
+        .build()).recommendedFee()
+    );
 
     // Broker (first-party) single-signs the unsigned transaction
     final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
@@ -257,11 +273,9 @@ public class LendingProtocolIT extends AbstractIT {
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
-    final LoanSet unsignedLoanSet = LoanSet.builder()
+    final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeLoanSetNetworkFees(
-        feeResult, UnsignedInteger.ZERO, UnsignedInteger.valueOf(2)
-      ).recommendedFee())
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
@@ -269,6 +283,14 @@ public class LendingProtocolIT extends AbstractIT {
       .paymentTotal(UnsignedInteger.valueOf(3))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
+
+    final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedLoanSet)
+        .counterpartySignatureCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // Broker (first-party) single-signs the unsigned transaction
     final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
@@ -327,17 +349,23 @@ public class LendingProtocolIT extends AbstractIT {
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
-    final LoanSet unsignedLoanSet = LoanSet.builder()
+    final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeLoanSetNetworkFees(
-        feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.ZERO
-      ).recommendedFee())
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
       .build();
+
+    final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedLoanSet)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // Broker (first-party) multi-signs the unsigned transaction
     final Set<Signer> brokerSigners = Lists.newArrayList(
@@ -395,17 +423,24 @@ public class LendingProtocolIT extends AbstractIT {
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
-    final LoanSet unsignedLoanSet = LoanSet.builder()
+    final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeLoanSetNetworkFees(
-        feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.valueOf(2)
-      ).recommendedFee())
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
       .build();
+
+    final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedLoanSet)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .counterpartySignatureCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // Broker (first-party) multi-signs the unsigned transaction
     final Set<Signer> brokerSigners = Lists.newArrayList(
@@ -698,12 +733,9 @@ public class LendingProtocolIT extends AbstractIT {
     );
 
     // Build the LoanSet transaction with broker's signing key
-    XrpCurrencyAmount loanSetFee = FeeUtils.computeLoanSetNetworkFees(
-      feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO
-    ).recommendedFee();
-    LoanSet loanSetBase = LoanSet.builder()
+    LoanSet unpricedLoanSetBase = LoanSet.builder()
       .account(loanBrokerKeyPair.publicKey().deriveAddress())
-      .fee(loanSetFee)
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(loanBrokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("50000"))
@@ -712,6 +744,13 @@ public class LendingProtocolIT extends AbstractIT {
       .data(LoanData.of("AABBCC"))
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
+
+    LoanSet loanSetBase = ImmutableLoanSet.copyOf(unpricedLoanSetBase).withFee(
+      FeeUtils.computeFee(FeeParams.builder()
+        .feeResult(feeResult)
+        .transaction(unpricedLoanSetBase)
+        .build()).recommendedFee()
+    );
 
     // Borrower counterparty-signs the transaction
     Signature borrowerCounterpartySig = signatureService.counterpartySign(

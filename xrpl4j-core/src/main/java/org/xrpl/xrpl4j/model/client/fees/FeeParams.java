@@ -107,8 +107,9 @@ public interface FeeParams {
   /**
    * The number of signatures the transaction's own account will supply in its {@code Signers} array.
    *
-   * <p>Zero for a single-signed transaction: rippled charges only for the <em>additional</em> signatures of a
-   * multi-signature, since the first is already covered by the base fee.
+   * <p>Zero for a single-signed transaction: rippled counts only {@code Signers} entries, and a lone signature is
+   * carried in {@code TxnSignature} instead. For a multi-signature this is the full size of the {@code Signers}
+   * array (e.g. 4 for a 4-of-N signer list), not one fewer — rippled charges {@code base × (1 + signersCount)}.
    *
    * @return An {@link UnsignedInteger} number of signatures, defaulting to zero.
    */
@@ -134,9 +135,10 @@ public interface FeeParams {
   /**
    * The total number of signatures in a {@code LoanSet}'s {@code CounterpartySignature}.
    *
-   * <p>Unlike {@link #signersCount()} and {@link #sponsorSignersCount()}, this is a total rather than a count of
-   * additional signatures: rippled charges a base fee even for a single counterparty signature. One is therefore the
-   * correct value for a counterparty signing with a single key, and is the default.
+   * <p>Unlike {@link #signersCount()} and {@link #sponsorSignersCount()} — which are zero when the lone signature
+   * rides in {@code TxnSignature} — a single counterparty signature is itself charged: rippled counts
+   * {@code CounterpartySignature.TxnSignature} as one. One is therefore the correct value for a counterparty signing
+   * with a single key, and is the default.
    *
    * @return An {@link UnsignedInteger} number of signatures, defaulting to one.
    */

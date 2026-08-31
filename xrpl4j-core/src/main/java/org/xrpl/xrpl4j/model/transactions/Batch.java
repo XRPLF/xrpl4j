@@ -352,8 +352,7 @@ public interface Batch extends Transaction {
 
     // Check 4: When BatchSigners is non-empty, every account required to sign an inner transaction must have a
     // corresponding BatchSigner entry. The required-signer set (initiator, sponsor, and LoanSet counterparty, with
-    // the outer account excluded) is derived by requiredSigners(), which is the single source of truth shared with
-    // fee computation.
+    // the outer account excluded) is derived by requiredSigners(), which is the single source of truth.
     if (!this.batchSigners().isEmpty()) {
       final Set<Address> actualSignerAccounts = this.batchSigners().stream()
         .map(wrapper -> wrapper.batchSigner().account())

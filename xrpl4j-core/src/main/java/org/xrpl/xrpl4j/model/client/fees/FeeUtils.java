@@ -47,7 +47,6 @@ import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -130,12 +129,17 @@ public class FeeUtils {
    * Calculate a suggested fee to be used for submitting a transaction to the XRPL. The calculated value depends on the
    * current size of the job queue as compared to its total capacity.
    *
+   * <p>This returns the base fee levels for a plain, single-signed transaction, and is correct on its own only for
+   * transaction types that cost exactly the base fee. For anything with a different fee shape — a multi-signed or
+   * sponsored transaction, or a type with its own rule ({@link Batch}, {@code EscrowFinish} with a fulfillment,
+   * confidential MPT, {@code LoanSet}, {@code LoanPay}, {@code AccountDelete}, {@code AMMCreate}) — use
+   * {@link #computeFee(FeeParams)}, which starts from these same levels and applies the type's rule.
+   *
    * @param feeResult {@link FeeResult} object obtained by querying the ledger (e.g., via an `XrplClient#fee()` call).
    *
    * @return {@link ComputedNetworkFees} with low, medium and high fee levels to choose from for the transaction.
    *
    * @see "https://xrpl.org/fee.html"
-   * @see "https://github.com/XRPL-Labs/XUMM-App/blob/master/src/services/LedgerService.ts#L244"
    */
   public static ComputedNetworkFees computeNetworkFees(final FeeResult feeResult) {
     Objects.requireNonNull(feeResult);
@@ -150,11 +154,6 @@ public class FeeUtils {
       .queuePercentage(decomposedFees.queuePercentage())
       .build();
   }
-
-
-
-
-
 
   /**
    * Computes the fee for any transaction, applying whichever of rippled's fee rules its type calls for.

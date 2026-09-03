@@ -22,6 +22,16 @@ public class VaultFlags extends Flags {
   public static final VaultFlags VAULT_PRIVATE = new VaultFlags(0x00010000);
 
   /**
+   * Constant {@link VaultFlags} for the {@code lsfVaultDepositBlocked} flag.
+   */
+  public static final VaultFlags VAULT_DEPOSIT_BLOCKED = new VaultFlags(0x00020000);
+
+  /**
+   * Constant {@link VaultFlags} for the {@code lsfVaultOwnerCanBlockDeposit} flag.
+   */
+  public static final VaultFlags VAULT_OWNER_CAN_BLOCK_DEPOSIT = new VaultFlags(0x00040000);
+
+  /**
    * Required-args Constructor.
    *
    * @param value The long-number encoded flags value of this {@link VaultFlags}.
@@ -48,6 +58,24 @@ public class VaultFlags extends Flags {
    */
   public boolean lsfVaultPrivate() {
     return this.isSet(VaultFlags.VAULT_PRIVATE);
+  }
+
+  /**
+   * If set, indicates that deposits into the vault are blocked.
+   *
+   * @return {@code true} if {@code lsfVaultDepositBlocked} is set, otherwise {@code false}.
+   */
+  public boolean lsfVaultDepositBlocked() {
+    return this.isSet(VaultFlags.VAULT_DEPOSIT_BLOCKED);
+  }
+
+  /**
+   * If set, indicates that the vault owner can block and unblock deposits into the vault.
+   *
+   * @return {@code true} if {@code lsfVaultOwnerCanBlockDeposit} is set, otherwise {@code false}.
+   */
+  public boolean lsfVaultOwnerCanBlockDeposit() {
+    return this.isSet(VaultFlags.VAULT_OWNER_CAN_BLOCK_DEPOSIT);
   }
 
 }

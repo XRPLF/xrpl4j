@@ -31,54 +31,48 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-public class VaultCreateFlagsTests extends AbstractFlagsTest {
+public class VaultSetFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(3);
+    return getBooleanCombinations(2);
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testFlagsConstructionWithIndividualFlags(
-    boolean tfVaultPrivate,
-    boolean tfVaultShareNonTransferable,
-    boolean tfVaultOwnerCanBlockDeposit
+    boolean tfVaultDepositBlock,
+    boolean tfVaultDepositUnblock
   ) {
-    VaultCreateFlags flags = VaultCreateFlags.builder()
-      .tfVaultPrivate(tfVaultPrivate)
-      .tfVaultShareNonTransferable(tfVaultShareNonTransferable)
-      .tfVaultOwnerCanBlockDeposit(tfVaultOwnerCanBlockDeposit)
+    VaultSetFlags flags = VaultSetFlags.builder()
+      .tfVaultDepositBlock(tfVaultDepositBlock)
+      .tfVaultDepositUnblock(tfVaultDepositUnblock)
       .build();
 
-    assertThat(flags.getValue())
-      .isEqualTo(getExpectedFlags(tfVaultPrivate, tfVaultShareNonTransferable, tfVaultOwnerCanBlockDeposit));
+    assertThat(flags.getValue()).isEqualTo(getExpectedFlags(tfVaultDepositBlock, tfVaultDepositUnblock));
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(
-    boolean tfVaultPrivate,
-    boolean tfVaultShareNonTransferable,
-    boolean tfVaultOwnerCanBlockDeposit
+    boolean tfVaultDepositBlock,
+    boolean tfVaultDepositUnblock
   ) {
-    long expectedFlags = getExpectedFlags(tfVaultPrivate, tfVaultShareNonTransferable, tfVaultOwnerCanBlockDeposit);
-    VaultCreateFlags flags = VaultCreateFlags.of(expectedFlags);
+    long expectedFlags = getExpectedFlags(tfVaultDepositBlock, tfVaultDepositUnblock);
+    VaultSetFlags flags = VaultSetFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(true);
-    assertThat(flags.tfVaultPrivate()).isEqualTo(tfVaultPrivate);
-    assertThat(flags.tfVaultShareNonTransferable()).isEqualTo(tfVaultShareNonTransferable);
-    assertThat(flags.tfVaultOwnerCanBlockDeposit()).isEqualTo(tfVaultOwnerCanBlockDeposit);
+    assertThat(flags.tfVaultDepositBlock()).isEqualTo(tfVaultDepositBlock);
+    assertThat(flags.tfVaultDepositUnblock()).isEqualTo(tfVaultDepositUnblock);
   }
 
   @Test
   void testEmptyFlags() {
-    VaultCreateFlags flags = VaultCreateFlags.empty();
+    VaultSetFlags flags = VaultSetFlags.empty();
     assertThat(flags.isEmpty()).isTrue();
 
-    assertThat(flags.tfVaultPrivate()).isFalse();
-    assertThat(flags.tfVaultShareNonTransferable()).isFalse();
-    assertThat(flags.tfVaultOwnerCanBlockDeposit()).isFalse();
+    assertThat(flags.tfVaultDepositBlock()).isFalse();
+    assertThat(flags.tfVaultDepositUnblock()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
     assertThat(flags.getValue()).isEqualTo(0L);
   }
@@ -86,14 +80,12 @@ public class VaultCreateFlagsTests extends AbstractFlagsTest {
   @ParameterizedTest
   @MethodSource("data")
   void testJson(
-    boolean tfVaultPrivate,
-    boolean tfVaultShareNonTransferable,
-    boolean tfVaultOwnerCanBlockDeposit
+    boolean tfVaultDepositBlock,
+    boolean tfVaultDepositUnblock
   ) throws JSONException, JsonProcessingException {
-    VaultCreateFlags flags = VaultCreateFlags.builder()
-      .tfVaultPrivate(tfVaultPrivate)
-      .tfVaultShareNonTransferable(tfVaultShareNonTransferable)
-      .tfVaultOwnerCanBlockDeposit(tfVaultOwnerCanBlockDeposit)
+    VaultSetFlags flags = VaultSetFlags.builder()
+      .tfVaultDepositBlock(tfVaultDepositBlock)
+      .tfVaultDepositUnblock(tfVaultDepositUnblock)
       .build();
 
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
@@ -106,7 +98,7 @@ public class VaultCreateFlagsTests extends AbstractFlagsTest {
 
   @Test
   void testEmptyJson() throws JSONException, JsonProcessingException {
-    VaultCreateFlags flags = VaultCreateFlags.empty();
+    VaultSetFlags flags = VaultSetFlags.empty();
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
     String json = "{" +
       "}";
@@ -115,14 +107,11 @@ public class VaultCreateFlagsTests extends AbstractFlagsTest {
   }
 
   private long getExpectedFlags(
-    boolean tfVaultPrivate,
-    boolean tfVaultShareNonTransferable,
-    boolean tfVaultOwnerCanBlockDeposit
+    boolean tfVaultDepositBlock,
+    boolean tfVaultDepositUnblock
   ) {
-    return (VaultCreateFlags.FULLY_CANONICAL_SIG.getValue()) |
-      (tfVaultPrivate ? VaultCreateFlags.VAULT_PRIVATE.getValue() : 0L) |
-      (tfVaultShareNonTransferable ? VaultCreateFlags.VAULT_SHARE_NON_TRANSFERABLE.getValue() : 0L) |
-      (tfVaultOwnerCanBlockDeposit ? VaultCreateFlags.VAULT_OWNER_CAN_BLOCK_DEPOSIT.getValue() : 0L);
+    return (VaultSetFlags.FULLY_CANONICAL_SIG.getValue()) |
+      (tfVaultDepositBlock ? VaultSetFlags.VAULT_DEPOSIT_BLOCK.getValue() : 0L) |
+      (tfVaultDepositUnblock ? VaultSetFlags.VAULT_DEPOSIT_UNBLOCK.getValue() : 0L);
   }
 }
-

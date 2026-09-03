@@ -22,6 +22,11 @@ public class VaultCreateFlags extends TransactionFlags {
    */
   public static final VaultCreateFlags VAULT_SHARE_NON_TRANSFERABLE = new VaultCreateFlags(0x00020000L);
 
+  /**
+   * Constant {@link VaultCreateFlags} for the {@code tfVaultOwnerCanBlockDeposit} flag.
+   */
+  public static final VaultCreateFlags VAULT_OWNER_CAN_BLOCK_DEPOSIT = new VaultCreateFlags(0x00040000L);
+
   private VaultCreateFlags(long value) {
     super(value);
   }
@@ -52,12 +57,14 @@ public class VaultCreateFlags extends TransactionFlags {
   private static VaultCreateFlags of(
     boolean tfFullyCanonicalSig,
     boolean tfVaultPrivate,
-    boolean tfVaultShareNonTransferable
+    boolean tfVaultShareNonTransferable,
+    boolean tfVaultOwnerCanBlockDeposit
   ) {
     long value = Flags.of(
       tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
       tfVaultPrivate ? VAULT_PRIVATE : UNSET,
-      tfVaultShareNonTransferable ? VAULT_SHARE_NON_TRANSFERABLE : UNSET
+      tfVaultShareNonTransferable ? VAULT_SHARE_NON_TRANSFERABLE : UNSET,
+      tfVaultOwnerCanBlockDeposit ? VAULT_OWNER_CAN_BLOCK_DEPOSIT : UNSET
     ).getValue();
     return new VaultCreateFlags(value);
   }
@@ -91,12 +98,24 @@ public class VaultCreateFlags extends TransactionFlags {
   }
 
   /**
+   * If enabled, the vault owner may block and unblock deposits into the vault via a
+   * {@link org.xrpl.xrpl4j.model.transactions.VaultSet} transaction. This flag can only be set when the vault is
+   * created.
+   *
+   * @return {@code true} if {@code tfVaultOwnerCanBlockDeposit} is set, otherwise {@code false}.
+   */
+  public boolean tfVaultOwnerCanBlockDeposit() {
+    return this.isSet(VaultCreateFlags.VAULT_OWNER_CAN_BLOCK_DEPOSIT);
+  }
+
+  /**
    * A builder class for {@link VaultCreateFlags} flags.
    */
   public static class Builder {
 
     private boolean tfVaultPrivate = false;
     private boolean tfVaultShareNonTransferable = false;
+    private boolean tfVaultOwnerCanBlockDeposit = false;
 
     /**
      * Set {@code tfVaultPrivate} to the given value.
@@ -123,6 +142,18 @@ public class VaultCreateFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfVaultOwnerCanBlockDeposit} to the given value.
+     *
+     * @param tfVaultOwnerCanBlockDeposit A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfVaultOwnerCanBlockDeposit(boolean tfVaultOwnerCanBlockDeposit) {
+      this.tfVaultOwnerCanBlockDeposit = tfVaultOwnerCanBlockDeposit;
+      return this;
+    }
+
+    /**
      * Build a new {@link VaultCreateFlags} from the current boolean values.
      *
      * @return A new {@link VaultCreateFlags}.
@@ -131,7 +162,8 @@ public class VaultCreateFlags extends TransactionFlags {
       return VaultCreateFlags.of(
         true,
         tfVaultPrivate,
-        tfVaultShareNonTransferable
+        tfVaultShareNonTransferable,
+        tfVaultOwnerCanBlockDeposit
       );
     }
   }

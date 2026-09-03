@@ -156,6 +156,11 @@ public interface Batch extends Transaction {
    * The outer {@link #account()} is excluded throughout, because it authorises its own inner transactions with the
    * signature it puts on the Batch itself.
    *
+   * <p>Each account in this set also contributes at least one base fee to the Batch's transaction cost. When pricing
+   * a Batch before its signatures exist, use
+   * {@link org.xrpl.xrpl4j.model.client.fees.FeeParams#forBatch(org.xrpl.xrpl4j.model.client.fees.FeeResult, Batch)}
+   * to declare how many signatures each of these accounts will supply.
+   *
    * @return An unmodifiable {@link Set} of {@link Address}es that must sign this Batch, which may be empty when every
    *   inner transaction belongs to the outer account.
    */

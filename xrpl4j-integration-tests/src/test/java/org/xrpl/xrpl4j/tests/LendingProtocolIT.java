@@ -117,10 +117,7 @@ public class LendingProtocolIT extends AbstractIT {
       .build();
 
     final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedLoanSet)
-        .build()).recommendedFee()
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSet).build()).recommendedFee()
     );
 
     // Broker (first-party) single-signs the unsigned transaction
@@ -212,10 +209,7 @@ public class LendingProtocolIT extends AbstractIT {
       .build();
 
     final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedLoanSet)
-        .build()).recommendedFee()
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSet).build()).recommendedFee()
     );
 
     // Broker (first-party) single-signs the unsigned transaction
@@ -285,9 +279,7 @@ public class LendingProtocolIT extends AbstractIT {
       .build();
 
     final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedLoanSet)
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSet)
         .counterpartySignatureCount(UnsignedInteger.valueOf(2))
         .build()).recommendedFee()
     );
@@ -360,9 +352,7 @@ public class LendingProtocolIT extends AbstractIT {
       .build();
 
     final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedLoanSet)
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSet)
         .signersCount(UnsignedInteger.valueOf(2))
         .build()).recommendedFee()
     );
@@ -434,9 +424,7 @@ public class LendingProtocolIT extends AbstractIT {
       .build();
 
     final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedLoanSet)
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSet)
         .signersCount(UnsignedInteger.valueOf(2))
         .counterpartySignatureCount(UnsignedInteger.valueOf(2))
         .build()).recommendedFee()
@@ -746,10 +734,7 @@ public class LendingProtocolIT extends AbstractIT {
       .build();
 
     LoanSet loanSetBase = ImmutableLoanSet.copyOf(unpricedLoanSetBase).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedLoanSetBase)
-        .build()).recommendedFee()
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSetBase).build()).recommendedFee()
     );
 
     // Borrower counterparty-signs the transaction

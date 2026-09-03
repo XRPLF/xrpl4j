@@ -23,11 +23,15 @@ public class VaultFlags extends Flags {
 
   /**
    * Constant {@link VaultFlags} for the {@code lsfVaultDepositBlocked} flag.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/pull/469"
    */
   public static final VaultFlags VAULT_DEPOSIT_BLOCKED = new VaultFlags(0x00020000);
 
   /**
    * Constant {@link VaultFlags} for the {@code lsfVaultOwnerCanBlockDeposit} flag.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/pull/469"
    */
   public static final VaultFlags VAULT_OWNER_CAN_BLOCK_DEPOSIT = new VaultFlags(0x00040000);
 

@@ -45,7 +45,8 @@ public class VaultCreateJsonTest extends AbstractJsonTest {
       .data(VaultData.of("48656C6C6F"))
       .scale(AssetScale.of(UnsignedInteger.valueOf(8)))
       .flags(VaultCreateFlags.of(VaultCreateFlags.VAULT_PRIVATE.getValue() |
-        VaultCreateFlags.VAULT_SHARE_NON_TRANSFERABLE.getValue()))
+        VaultCreateFlags.VAULT_SHARE_NON_TRANSFERABLE.getValue() |
+        VaultCreateFlags.VAULT_OWNER_CAN_BLOCK_DEPOSIT.getValue()))
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
@@ -63,7 +64,7 @@ public class VaultCreateJsonTest extends AbstractJsonTest {
       "  \"WithdrawalPolicy\": 1," +
       "  \"Data\": \"48656C6C6F\"," +
       "  \"Scale\": 8," +
-      "  \"Flags\": 196608," +
+      "  \"Flags\": 458752," +
       "  \"Fee\": \"10\"," +
       "  \"Sequence\": 1," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +

@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.flags;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
@@ -33,37 +34,59 @@ import java.util.stream.Stream;
 
 public class VaultSetFlagsTests extends AbstractFlagsTest {
 
+  /**
+   * Every combination of the three flags, except the mutually exclusive {@code tfVaultDepositBlock} +
+   * {@code tfVaultDepositUnblock} pair, which is asserted separately in {@link #blockAndUnblockCannotBothBeSet()}.
+   *
+   * @return A {@link Stream} of {@link Arguments}.
+   */
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(2);
+    return getBooleanCombinations(3)
+      .filter(args -> !((boolean) args.get()[0] && (boolean) args.get()[1]));
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testFlagsConstructionWithIndividualFlags(
     boolean tfVaultDepositBlock,
-    boolean tfVaultDepositUnblock
+    boolean tfVaultDepositUnblock,
+    boolean tfInnerBatchTxn
   ) {
     VaultSetFlags flags = VaultSetFlags.builder()
       .tfVaultDepositBlock(tfVaultDepositBlock)
       .tfVaultDepositUnblock(tfVaultDepositUnblock)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
-    assertThat(flags.getValue()).isEqualTo(getExpectedFlags(tfVaultDepositBlock, tfVaultDepositUnblock));
+    assertThat(flags.getValue())
+      .isEqualTo(getExpectedFlags(tfVaultDepositBlock, tfVaultDepositUnblock, tfInnerBatchTxn));
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(
     boolean tfVaultDepositBlock,
-    boolean tfVaultDepositUnblock
+    boolean tfVaultDepositUnblock,
+    boolean tfInnerBatchTxn
   ) {
-    long expectedFlags = getExpectedFlags(tfVaultDepositBlock, tfVaultDepositUnblock);
+    long expectedFlags = getExpectedFlags(tfVaultDepositBlock, tfVaultDepositUnblock, tfInnerBatchTxn);
     VaultSetFlags flags = VaultSetFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(true);
     assertThat(flags.tfVaultDepositBlock()).isEqualTo(tfVaultDepositBlock);
     assertThat(flags.tfVaultDepositUnblock()).isEqualTo(tfVaultDepositUnblock);
+    assertThat(flags.tfInnerBatchTxn()).isEqualTo(tfInnerBatchTxn);
+  }
+
+  @Test
+  void blockAndUnblockCannotBothBeSet() {
+    assertThatThrownBy(() -> VaultSetFlags.builder()
+      .tfVaultDepositBlock(true)
+      .tfVaultDepositUnblock(true)
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessage("tfVaultDepositBlock and tfVaultDepositUnblock must not both be set");
   }
 
   @Test
@@ -73,6 +96,7 @@ public class VaultSetFlagsTests extends AbstractFlagsTest {
 
     assertThat(flags.tfVaultDepositBlock()).isFalse();
     assertThat(flags.tfVaultDepositUnblock()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
     assertThat(flags.getValue()).isEqualTo(0L);
   }
@@ -81,11 +105,13 @@ public class VaultSetFlagsTests extends AbstractFlagsTest {
   @MethodSource("data")
   void testJson(
     boolean tfVaultDepositBlock,
-    boolean tfVaultDepositUnblock
+    boolean tfVaultDepositUnblock,
+    boolean tfInnerBatchTxn
   ) throws JSONException, JsonProcessingException {
     VaultSetFlags flags = VaultSetFlags.builder()
       .tfVaultDepositBlock(tfVaultDepositBlock)
       .tfVaultDepositUnblock(tfVaultDepositUnblock)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
@@ -108,10 +134,12 @@ public class VaultSetFlagsTests extends AbstractFlagsTest {
 
   private long getExpectedFlags(
     boolean tfVaultDepositBlock,
-    boolean tfVaultDepositUnblock
+    boolean tfVaultDepositUnblock,
+    boolean tfInnerBatchTxn
   ) {
     return (VaultSetFlags.FULLY_CANONICAL_SIG.getValue()) |
       (tfVaultDepositBlock ? VaultSetFlags.VAULT_DEPOSIT_BLOCK.getValue() : 0L) |
-      (tfVaultDepositUnblock ? VaultSetFlags.VAULT_DEPOSIT_UNBLOCK.getValue() : 0L);
+      (tfVaultDepositUnblock ? VaultSetFlags.VAULT_DEPOSIT_UNBLOCK.getValue() : 0L) |
+      (tfInnerBatchTxn ? VaultSetFlags.INNER_BATCH_TXN.getValue() : 0L);
   }
 }

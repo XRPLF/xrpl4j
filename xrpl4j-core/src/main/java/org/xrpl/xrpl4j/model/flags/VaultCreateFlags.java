@@ -24,6 +24,8 @@ public class VaultCreateFlags extends TransactionFlags {
 
   /**
    * Constant {@link VaultCreateFlags} for the {@code tfVaultOwnerCanBlockDeposit} flag.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/pull/469"
    */
   public static final VaultCreateFlags VAULT_OWNER_CAN_BLOCK_DEPOSIT = new VaultCreateFlags(0x00040000L);
 

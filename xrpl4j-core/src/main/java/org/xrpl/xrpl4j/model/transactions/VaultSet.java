@@ -73,4 +73,16 @@ public interface VaultSet extends Transaction {
   @JsonProperty("Data")
   Optional<VaultData> data();
 
+  /**
+   * Validate VaultSet preconditions.
+   */
+  @Value.Check
+  default void check() {
+    if (flags().tfVaultDepositBlock() && flags().tfVaultDepositUnblock()) {
+      throw new IllegalArgumentException(
+        "tfVaultDepositBlock and tfVaultDepositUnblock cannot both be set."
+      );
+    }
+  }
+
 }

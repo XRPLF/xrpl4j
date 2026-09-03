@@ -34,28 +34,30 @@ import java.util.stream.Stream;
 public class VaultDepositFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(1);
+    return getBooleanCombinations(2);
   }
 
   @ParameterizedTest
   @MethodSource("data")
-  public void testFlagsConstructionWithIndividualFlags(boolean tfVaultDonate) {
+  public void testFlagsConstructionWithIndividualFlags(boolean tfVaultDonate, boolean tfInnerBatchTxn) {
     VaultDepositFlags flags = VaultDepositFlags.builder()
       .tfVaultDonate(tfVaultDonate)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
-    assertThat(flags.getValue()).isEqualTo(getExpectedFlags(tfVaultDonate));
+    assertThat(flags.getValue()).isEqualTo(getExpectedFlags(tfVaultDonate, tfInnerBatchTxn));
   }
 
   @ParameterizedTest
   @MethodSource("data")
-  public void testDeriveIndividualFlagsFromFlags(boolean tfVaultDonate) {
-    long expectedFlags = getExpectedFlags(tfVaultDonate);
+  public void testDeriveIndividualFlagsFromFlags(boolean tfVaultDonate, boolean tfInnerBatchTxn) {
+    long expectedFlags = getExpectedFlags(tfVaultDonate, tfInnerBatchTxn);
     VaultDepositFlags flags = VaultDepositFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(true);
     assertThat(flags.tfVaultDonate()).isEqualTo(tfVaultDonate);
+    assertThat(flags.tfInnerBatchTxn()).isEqualTo(tfInnerBatchTxn);
   }
 
   @Test
@@ -64,15 +66,17 @@ public class VaultDepositFlagsTests extends AbstractFlagsTest {
     assertThat(flags.isEmpty()).isTrue();
 
     assertThat(flags.tfVaultDonate()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
     assertThat(flags.getValue()).isEqualTo(0L);
   }
 
   @ParameterizedTest
   @MethodSource("data")
-  void testJson(boolean tfVaultDonate) throws JSONException, JsonProcessingException {
+  void testJson(boolean tfVaultDonate, boolean tfInnerBatchTxn) throws JSONException, JsonProcessingException {
     VaultDepositFlags flags = VaultDepositFlags.builder()
       .tfVaultDonate(tfVaultDonate)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
@@ -93,8 +97,9 @@ public class VaultDepositFlagsTests extends AbstractFlagsTest {
     assertCanSerializeAndDeserialize(wrapper, json);
   }
 
-  private long getExpectedFlags(boolean tfVaultDonate) {
+  private long getExpectedFlags(boolean tfVaultDonate, boolean tfInnerBatchTxn) {
     return (VaultDepositFlags.FULLY_CANONICAL_SIG.getValue()) |
-      (tfVaultDonate ? VaultDepositFlags.VAULT_DONATE.getValue() : 0L);
+      (tfVaultDonate ? VaultDepositFlags.VAULT_DONATE.getValue() : 0L) |
+      (tfInnerBatchTxn ? VaultDepositFlags.INNER_BATCH_TXN.getValue() : 0L);
   }
 }

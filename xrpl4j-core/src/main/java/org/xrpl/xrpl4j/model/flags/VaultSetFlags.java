@@ -115,6 +115,7 @@ public class VaultSetFlags extends TransactionFlags {
    *
    * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
    */
+  @Override
   public boolean tfInnerBatchTxn() {
     return this.isSet(VaultSetFlags.INNER_BATCH_TXN);
   }

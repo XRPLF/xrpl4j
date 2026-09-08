@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.ledger;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.xrpl.xrpl4j.crypto.TestConstants.HASH_256;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -91,6 +92,57 @@ class VaultObjectTest extends AbstractJsonTest {
     String json = String.format("{\n" +
       "    \"LedgerEntryType\" : \"Vault\",\n" +
       "    \"Flags\" : 0,\n" +
+      "    \"PreviousTxnID\" : \"0000000000000000000000000000000000000000000000000000000000000010\",\n" +
+      "    \"PreviousTxnLgrSeq\" : 100,\n" +
+      "    \"Sequence\" : 5,\n" +
+      "    \"OwnerNode\" : \"0\",\n" +
+      "    \"Owner\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
+      "    \"Account\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
+      "    \"Asset\" : {\n" +
+      "        \"currency\" : \"XRP\"\n" +
+      "    },\n" +
+      "    \"AssetsTotal\" : \"0\",\n" +
+      "    \"AssetsAvailable\" : \"0\",\n" +
+      "    \"AssetsMaximum\" : \"0\",\n" +
+      "    \"LossUnrealized\" : \"0\",\n" +
+      "    \"ShareMPTID\" : \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\",\n" +
+      "    \"WithdrawalPolicy\" : 1,\n" +
+      "    \"Scale\" : 0,\n" +
+      "    \"index\" : %s\n" +
+      "}", HASH_256);
+
+    assertCanSerializeAndDeserialize(vault, json);
+  }
+
+  @Test
+  void testJsonWithDepositBlockingFlags() throws JSONException, JsonProcessingException {
+    VaultFlags flags = VaultFlags.of(
+      VaultFlags.VAULT_PRIVATE.getValue() |
+        VaultFlags.VAULT_DEPOSIT_BLOCKED.getValue() |
+        VaultFlags.VAULT_OWNER_CAN_BLOCK_DEPOSIT.getValue()
+    );
+
+    VaultObject vault = VaultObject.builder()
+      .previousTransactionId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000010"))
+      .previousTransactionLedgerSequence(UnsignedInteger.valueOf(100))
+      .sequence(UnsignedInteger.valueOf(5))
+      .ownerNode("0")
+      .owner(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .account(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
+      .asset(Issue.XRP)
+      .shareMptId(MpTokenIssuanceId.of("00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836"))
+      .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
+      .flags(flags)
+      .index(HASH_256)
+      .build();
+
+    assertThat(vault.flags().lsfVaultPrivate()).isTrue();
+    assertThat(vault.flags().lsfVaultDepositBlocked()).isTrue();
+    assertThat(vault.flags().lsfVaultOwnerCanBlockDeposit()).isTrue();
+
+    String json = String.format("{\n" +
+      "    \"LedgerEntryType\" : \"Vault\",\n" +
+      "    \"Flags\" : 458752,\n" +
       "    \"PreviousTxnID\" : \"0000000000000000000000000000000000000000000000000000000000000010\",\n" +
       "    \"PreviousTxnLgrSeq\" : 100,\n" +
       "    \"Sequence\" : 5,\n" +

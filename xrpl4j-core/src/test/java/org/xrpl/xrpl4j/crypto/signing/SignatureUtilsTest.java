@@ -58,6 +58,8 @@ import org.xrpl.xrpl4j.model.flags.BatchFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.flags.VaultDepositFlags;
+import org.xrpl.xrpl4j.model.flags.VaultSetFlags;
 import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
 import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
@@ -134,6 +136,7 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.VaultClawback;
 import org.xrpl.xrpl4j.model.transactions.VaultCreate;
+import org.xrpl.xrpl4j.model.transactions.VaultData;
 import org.xrpl.xrpl4j.model.transactions.VaultDelete;
 import org.xrpl.xrpl4j.model.transactions.VaultDeposit;
 import org.xrpl.xrpl4j.model.transactions.VaultSet;
@@ -1437,6 +1440,7 @@ public class SignatureUtilsTest {
     VaultSet transaction = VaultSet.builder()
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .flags(VaultSetFlags.builder().tfVaultDepositBlock(true).build())
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))
       .signingPublicKey(sourcePublicKey)
@@ -1450,6 +1454,7 @@ public class SignatureUtilsTest {
     VaultDelete transaction = VaultDelete.builder()
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .memoData(VaultData.of("48656C6C6F"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))
       .signingPublicKey(sourcePublicKey)
@@ -1463,6 +1468,7 @@ public class SignatureUtilsTest {
     VaultDeposit transaction = VaultDeposit.builder()
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .flags(VaultDepositFlags.builder().tfVaultDonate(true).build())
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))
@@ -2007,6 +2013,7 @@ public class SignatureUtilsTest {
     VaultSet transaction = VaultSet.builder()
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .flags(VaultSetFlags.builder().tfVaultDepositBlock(true).build())
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))
       .build();
@@ -2019,6 +2026,7 @@ public class SignatureUtilsTest {
     VaultDelete transaction = VaultDelete.builder()
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .memoData(VaultData.of("48656C6C6F"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))
       .build();
@@ -2031,6 +2039,7 @@ public class SignatureUtilsTest {
     VaultDeposit transaction = VaultDeposit.builder()
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .flags(VaultDepositFlags.builder().tfVaultDonate(true).build())
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))

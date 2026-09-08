@@ -152,4 +152,25 @@ class ServerInfoLedgerTest extends AbstractJsonTest {
 
     assertCanSerializeAndDeserialize(result, json);
   }
+
+  @Test
+  public void testJsonWithoutAge() throws JsonProcessingException, JSONException {
+    ValidatedLedger result = ValidatedLedger.builder()
+      .sequence(LedgerIndex.of(UnsignedInteger.ONE))
+      .hash(Hash256.of("0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9"))
+      .baseFeeXrp(new BigDecimal("0.00001"))
+      .reserveBaseXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5)))
+      .reserveIncXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2)))
+      .build();
+
+    String json = "{\n" +
+      "        \"seq\": 1,\n" +
+      "        \"hash\": \"0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9\",\n" +
+      "        \"base_fee_xrp\": 0.00001,\n" +
+      "        \"reserve_base_xrp\": 5,\n" +
+      "        \"reserve_inc_xrp\": 2\n" +
+      "      }";
+
+    assertCanSerializeAndDeserialize(result, json);
+  }
 }

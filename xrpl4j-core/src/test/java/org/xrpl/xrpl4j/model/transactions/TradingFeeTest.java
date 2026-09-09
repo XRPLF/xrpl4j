@@ -2,7 +2,7 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,15 +19,32 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.math.BigDecimal;
 
+/**
+ * Unit tests for {@link TradingFee}.
+ */
 public class TradingFeeTest {
 
+  private static final TradingFee TRADING_FEE = TradingFee.of(UnsignedInteger.ONE);
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
+  void testNull() {
+    assertThrows(NullPointerException.class, () -> TradingFee.of(null));
+    assertThatThrownBy(() -> TradingFee.ofPercent(null))
+      .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  void testEquality() {
+    assertThat(TRADING_FEE).isEqualTo(TRADING_FEE);
+    assertThat(TRADING_FEE).isNotEqualTo(new Object());
+    assertThat(TRADING_FEE.equals(null)).isFalse();
+  }
+
+  @Test
   void fromUnsignedInteger() {
-    TradingFee fee = TradingFee.of(UnsignedInteger.ONE);
-    assertThat(fee.toString()).isEqualTo("1");
-    assertThat(fee.value()).isEqualTo(UnsignedInteger.ONE);
+    assertThat(TRADING_FEE.toString()).isEqualTo("1");
+    assertThat(TRADING_FEE.value()).isEqualTo(UnsignedInteger.ONE);
   }
 
   @Test

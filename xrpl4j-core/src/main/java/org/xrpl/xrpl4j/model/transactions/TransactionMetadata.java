@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.jackson.modules.AffectedNodeListDeserializer;
 import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
 
 import java.util.List;
@@ -96,8 +97,8 @@ public interface TransactionMetadata {
   List<NfTokenId> nfTokenIds();
 
   /**
-   * The {@link MpTokenIssuanceId} of the {@link org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject} created
-   * via an {@link MpTokenIssuanceCreate} transaction.
+   * The {@link MpTokenIssuanceId} of the {@link org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject} created via an
+   * {@link MpTokenIssuanceCreate} transaction.
    *
    * @return An {@link Optional} {@link MpTokenIssuanceId}.
    */
@@ -114,5 +115,6 @@ public interface TransactionMetadata {
   Optional<Hash256> offerId();
 
   @JsonProperty("AffectedNodes")
+  @JsonDeserialize(using = AffectedNodeListDeserializer.class)
   List<AffectedNode> affectedNodes();
 }

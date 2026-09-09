@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.CreatedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.DeletedNode;
@@ -56,9 +57,13 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
     Map.Entry<String, JsonNode> nodeFieldAndValue = jsonNode.fields().next();
     String affectedNodeType = nodeFieldAndValue.getKey();
 
-    MetaLedgerEntryType ledgerEntryType = MetaLedgerEntryType.of(
-      nodeFieldAndValue.getValue().get("LedgerEntryType").asText()
-    );
+    JsonNode ledgerEntryTypeNode = nodeFieldAndValue.getValue().get("LedgerEntryType");
+    if (ledgerEntryTypeNode == null || ledgerEntryTypeNode.isNull()) {
+      throw MismatchedInputException.from(
+        jsonParser, AffectedNode.class, "AffectedNode is missing required 'LedgerEntryType' field"
+      );
+    }
+    MetaLedgerEntryType ledgerEntryType = MetaLedgerEntryType.of(ledgerEntryTypeNode.asText());
     Class<? extends MetaLedgerObject> ledgerObjectClass = ledgerEntryType.ledgerObjectType();
 
     switch (affectedNodeType) {

@@ -176,8 +176,8 @@ public class SignatureUtils {
    * role via the {@code CPT\0} prefix, so the resulting signature cannot be replayed as any other role.
    *
    * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. The produced
-   * signature is only valid on a network where the {@code fixCleanup3_4_0} amendment (rippled PR #8162) is enabled. Its
-   * API is subject to change.</p>
+   * signature is only valid on a network where the {@code fixCleanup3_4_0} amendment is enabled. Its API is subject to
+   * change.</p>
    *
    * @param transaction A {@link LoanSet} to be counterparty single-signed.
    *
@@ -202,8 +202,8 @@ public class SignatureUtils {
    * cannot be replayed as any other role.
    *
    * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. The produced
-   * signature is only valid on a network where the {@code fixCleanup3_4_0} amendment (rippled PR #8162) is enabled. Its
-   * API is subject to change.</p>
+   * signature is only valid on a network where the {@code fixCleanup3_4_0} amendment is enabled. Its API is subject to
+   * change.</p>
    *
    * @param transaction   A {@link LoanSet} to be counterparty multi-signed.
    * @param signerAddress The {@link Address} of the counterparty signer.
@@ -253,8 +253,8 @@ public class SignatureUtils {
    * the resulting signature cannot be replayed as any other role.
    *
    * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet. The
-   * produced signature is only valid on a network where the {@code fixCleanup3_4_0} amendment (rippled PR #8162) is
-   * enabled. Its API is subject to change.</p>
+   * produced signature is only valid on a network where the {@code fixCleanup3_4_0} amendment is enabled. Its API is
+   * subject to change.</p>
    *
    * @param transaction A {@link Transaction} to be sponsor single-signed.
    *
@@ -283,8 +283,8 @@ public class SignatureUtils {
    * where the first-party signer's {@code SigningPubKey} must remain intact in the signed data.</p>
    *
    * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet. The
-   * produced signature is only valid on a network where the {@code fixCleanup3_4_0} amendment (rippled PR #8162) is
-   * enabled. Its API is subject to change.</p>
+   * produced signature is only valid on a network where the {@code fixCleanup3_4_0} amendment is enabled. Its API is
+   * subject to change.</p>
    *
    * @param transaction   A {@link Transaction} to be sponsor multi-signed.
    * @param signerAddress The {@link Address} of the sponsor signer.

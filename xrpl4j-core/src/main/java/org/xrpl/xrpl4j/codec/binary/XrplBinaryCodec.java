@@ -55,9 +55,9 @@ public class XrplBinaryCodec {
   public static final String PAYMENT_CHANNEL_CLAIM_SIGNATURE_PREFIX = "434C4D00";
   public static final String BATCH_SIGNATURE_PREFIX = "42434800"; // "BCH\0" per XLS-0056
 
-  // Role-specific signing prefixes introduced by rippled's fixCleanup3_4_0 amendment (PR #8162). Each role signs a
-  // distinct prefix so a signature made for one role cannot be replayed in another. These signatures are only valid
-  // on a network where fixCleanup3_4_0 is enabled.
+  // Role-specific signing prefixes introduced by the fixCleanup3_4_0 amendment. Each role signs under a distinct
+  // prefix so a signature made for one role cannot be replayed in another, and is only valid on a network where that
+  // amendment is enabled.
   public static final String COUNTERPARTY_SIGNATURE_PREFIX = "43505400"; // "CPT\0" - CounterpartySignature single-sign
   public static final String COUNTERPARTY_MULTI_SIGNATURE_PREFIX = "43504D00"; // "CPM\0" - CounterpartySignature multi
   public static final String SPONSOR_SIGNATURE_PREFIX = "53504E00"; // "SPN\0" - SponsorSignature single-sign
@@ -143,7 +143,7 @@ public class XrplBinaryCodec {
    * Encodes JSON to canonical XRPL binary as a hex string for signing a {@code CounterpartySignature} (e.g. the
    * lender's signature on a {@code LoanSet}). Identical to {@link #encodeForSigning(String)} except that the payload is
    * bound to the counterparty role via the {@code CPT\0} prefix, so the resulting signature cannot be replayed as any
-   * other role. Requires the {@code fixCleanup3_4_0} amendment (rippled PR #8162).
+   * other role. Requires the {@code fixCleanup3_4_0} amendment.
    *
    * @param json String containing JSON to be encoded.
    *
@@ -159,7 +159,7 @@ public class XrplBinaryCodec {
    * Encodes JSON to canonical XRPL binary as a hex string for signing a {@code SponsorSignature}. Identical to
    * {@link #encodeForSigning(String)} except that the payload is bound to the sponsor role via the {@code SPN\0}
    * prefix, so the resulting signature cannot be replayed as any other role. Requires the {@code fixCleanup3_4_0}
-   * amendment (rippled PR #8162).
+   * amendment.
    *
    * @param json String containing JSON to be encoded.
    *
@@ -299,8 +299,7 @@ public class XrplBinaryCodec {
   /**
    * Encodes JSON to canonical XRPL binary as a hex string for a counterparty multi-signature (e.g. a multi-signing
    * lender on a {@code LoanSet}). The payload is bound to the counterparty role via the {@code CPM\0} prefix, so the
-   * resulting signature cannot be replayed as any other role. Requires the {@code fixCleanup3_4_0} amendment (rippled
-   * PR #8162).
+   * resulting signature cannot be replayed as any other role. Requires the {@code fixCleanup3_4_0} amendment.
    *
    * <p>Like sponsor multi-signing (and unlike {@link #encodeForMultiSigning(String, String)}), this preserves the
    * first-party signer's {@code SigningPubKey} in the signed data rather than clearing it.</p>
@@ -319,7 +318,7 @@ public class XrplBinaryCodec {
   /**
    * Encodes JSON to canonical XRPL binary as a hex string for a sponsor multi-signature. The payload is bound to the
    * sponsor role via the {@code SPM\0} prefix, so the resulting signature cannot be replayed as any other role.
-   * Requires the {@code fixCleanup3_4_0} amendment (rippled PR #8162).
+   * Requires the {@code fixCleanup3_4_0} amendment.
    *
    * <p>Like counterparty multi-signing (and unlike {@link #encodeForMultiSigning(String, String)}), this preserves the
    * first-party signer's {@code SigningPubKey} in the signed data rather than clearing it.</p>
@@ -419,8 +418,7 @@ public class XrplBinaryCodec {
   }
 
   // Every signing prefix is a 4-byte (8 hex char) value with no suffix on single-sign payloads, so they can be
-  // stripped uniformly. The counterparty/sponsor role prefixes (fixCleanup3_4_0, PR #8162) are handled alongside the
-  // plain transaction prefix.
+  // stripped uniformly. The counterparty/sponsor role prefixes are handled alongside the plain transaction prefix.
   private boolean isSingleSignPrefix(String encodedTransaction) {
     return encodedTransaction.startsWith(TRX_SIGNATURE_PREFIX) ||
       encodedTransaction.startsWith(COUNTERPARTY_SIGNATURE_PREFIX) ||

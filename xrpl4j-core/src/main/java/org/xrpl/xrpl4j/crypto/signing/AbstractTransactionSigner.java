@@ -128,8 +128,8 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
 
-    // Per fixCleanup3_4_0 (rippled PR #8162), the counterparty signs the CPT-prefixed payload so its signature is
-    // bound to the counterparty role and cannot be replayed as the transaction's own or the sponsor's signature.
+    // The counterparty signs a payload bound to its own role, so its signature cannot be replayed as the
+    // transaction's own or the sponsor's signature.
     final UnsignedByteArray signableBytes = this.signatureUtils.toCounterpartySignableBytes(transaction);
     return this.signatureHelper(privateKeyable, signableBytes);
   }
@@ -151,9 +151,8 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
 
-    // Per fixCleanup3_4_0 (rippled PR #8162), the sponsor signs the SPN-prefixed payload so its signature is bound to
-    // the sponsor role and cannot be replayed as the transaction's own or the counterparty's signature. Before this
-    // fix all roles shared HashPrefix::txSign, which let a role signature be copied into another role.
+    // The sponsor signs a payload bound to its own role, so its signature cannot be replayed as the transaction's
+    // own or the counterparty's signature.
     final UnsignedByteArray signableBytes = this.signatureUtils.toSponsorSignableBytes(transaction);
     return this.signatureHelper(privateKeyable, signableBytes);
   }

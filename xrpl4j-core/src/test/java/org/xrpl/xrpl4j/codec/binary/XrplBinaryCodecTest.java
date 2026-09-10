@@ -749,7 +749,7 @@ class XrplBinaryCodecTest {
   }
 
   // /////////////////
-  // Role-specific signing prefixes (fixCleanup3_4_0, rippled PR #8162)
+  // Role-specific signing prefixes (fixCleanup3_4_0)
   // /////////////////
 
   @Test

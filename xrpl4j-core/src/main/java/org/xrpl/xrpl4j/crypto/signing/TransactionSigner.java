@@ -145,11 +145,11 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   Signature multiSignInner(P privateKeyable, Batch batchTransaction, Address batchSignerAddress);
 
   /**
-   * Obtain a counterparty single-signature for the supplied {@link LoanSet} transaction. Per {@code fixCleanup3_4_0}
-   * (rippled PR #8162), the counterparty signs a payload bound to the counterparty role via the {@code CPT\0} prefix,
-   * so its signature cannot be replayed as the transaction's own or the sponsor's signature. This method returns only
-   * the raw {@link Signature} rather than a {@link SingleSignedTransaction} wrapper, since the counterparty's signature
-   * is placed into the {@link org.xrpl.xrpl4j.model.transactions.CounterpartySignature} field, not the transaction's
+   * Obtain a counterparty single-signature for the supplied {@link LoanSet} transaction. The counterparty signs a
+   * payload bound to the counterparty role via the {@code CPT\0} prefix, so its signature cannot be replayed as the
+   * transaction's own or the sponsor's signature. This method returns only the raw {@link Signature} rather than a
+   * {@link SingleSignedTransaction} wrapper, since the counterparty's signature is placed into the
+   * {@link org.xrpl.xrpl4j.model.transactions.CounterpartySignature} field, not the transaction's
    * {@code TxnSignature}.
    *
    * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. The produced
@@ -164,9 +164,9 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   Signature counterpartySign(P privateKeyable, LoanSet transaction);
 
   /**
-   * Obtain a counterparty multi-signature for the supplied {@link LoanSet} transaction. Per {@code fixCleanup3_4_0}
-   * (rippled PR #8162), the resulting bytes use the counterparty multi-signing prefix ({@code CPM\0}) so the signature
-   * cannot be replayed as any other role, followed by the counterparty signer's account ID suffix. Unlike
+   * Obtain a counterparty multi-signature for the supplied {@link LoanSet} transaction. The resulting bytes use the
+   * counterparty multi-signing prefix ({@code CPM\0}) so the signature cannot be replayed as any other role, followed
+   * by the counterparty signer's account ID suffix. Unlike
    * {@link #multiSign(PrivateKeyable, Transaction)}, this method does <b>not</b> clear the {@code SigningPubKey} field,
    * preserving the first-party signer's public key in the signed data.
    *
@@ -182,9 +182,9 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   Signature counterpartyMultiSign(P privateKeyable, LoanSet transaction);
 
   /**
-   * Obtain a sponsor single-signature for the supplied transaction. Per {@code fixCleanup3_4_0} (rippled PR #8162),
-   * the sponsor signs a payload bound to the sponsor role via the {@code SPN\0} prefix, so its signature cannot be
-   * replayed as the transaction's own or the counterparty's signature. The sponsor's signature is placed into the
+   * Obtain a sponsor single-signature for the supplied transaction. The sponsor signs a payload bound to the sponsor
+   * role via the {@code SPN\0} prefix, so its signature cannot be replayed as the transaction's own or the
+   * counterparty's signature. The sponsor's signature is placed into the
    * {@link Transaction#sponsorSignature()} field rather than the transaction's {@code TxnSignature}.
    *
    * <p>This method returns only the raw {@link Signature} rather than a {@link SingleSignedTransaction}
@@ -204,9 +204,9 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   <T extends Transaction> Signature sponsorSign(P privateKeyable, T transaction);
 
   /**
-   * Obtain a sponsor multi-signature for the supplied transaction. Per {@code fixCleanup3_4_0} (rippled PR #8162), the
-   * resulting bytes use the sponsor multi-signing prefix ({@code SPM\0}) so the signature cannot be replayed as any
-   * other role, followed by the sponsor signer's account ID suffix. Unlike
+   * Obtain a sponsor multi-signature for the supplied transaction. The resulting bytes use the sponsor multi-signing
+   * prefix ({@code SPM\0}) so the signature cannot be replayed as any other role, followed by the sponsor signer's
+   * account ID suffix. Unlike
    * {@link #multiSign(PrivateKeyable, Transaction)}, this method does <b>not</b> clear the {@code SigningPubKey}
    * field, preserving the first-party signer's public key in the signed data.
    *

@@ -63,13 +63,16 @@ public interface LoanSet extends Transaction {
   /**
    * The signature of the counterparty over the transaction.
    *
-   * <p>This field is {@link Optional} because both parties must sign the same serialized transaction bytes,
-   * and {@code CounterpartySignature} is excluded from those bytes by design. The dual-signing flow is:
+   * <p>This field is {@link Optional} because the dual-signing flow needs an intermediate transaction that does not
+   * carry it yet, and because {@code CounterpartySignature} is not itself a signing field — attaching it does not
+   * change what either party signs. The flow is:
    * <ol>
    *   <li>The broker constructs a {@link LoanSet} with this field absent and signs it — the absent field
-   *       produces the canonical bytes that both parties will sign.</li>
-   *   <li>The counterparty signs the same bytes (over the same absent-field transaction) and returns their
-   *       signature.</li>
+   *       produces the canonical transaction content that both parties sign over.</li>
+   *   <li>The counterparty signs that same transaction content and returns their signature. Note that the two
+   *       signatures do not cover identical bytes: each is prefixed according to the role that made it — and, within
+   *       a role, according to whether it is a single- or multi-signature — so neither can be replayed in the other's
+   *       role. See the counterparty signing methods on {@code TransactionSigner} for the exact prefixes.</li>
    *   <li>The broker/counterparty assembles the final transaction by adding the counterparty signature here and
    *      submits it.</li>
    * </ol>

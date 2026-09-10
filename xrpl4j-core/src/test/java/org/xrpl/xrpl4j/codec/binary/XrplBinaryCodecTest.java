@@ -749,80 +749,121 @@ class XrplBinaryCodecTest {
   }
 
   // /////////////////
-  // encodeForMultiSigningWithSigningPubKey
+  // Role-specific signing prefixes (fixCleanup3_4_0)
   // /////////////////
 
   @Test
-  void encodeForMultiSigningWithSigningPubKey() throws JsonProcessingException {
+  void encodeForSigningCounterpartyUsesCptPrefix() throws JsonProcessingException {
+    String json = objectMapper.writeValueAsString(createLoanSet());
+
+    String counterparty = encoder.encodeForSigningCounterparty(json);
+    String base = encoder.encodeForSigning(json);
+
+    // Bound to the counterparty role via the CPT ("CPT\0") prefix.
+    assertThat(counterparty).startsWith("43505400");
+    // Security invariant: only the 4-byte (8 hex char) prefix differs from a plain single-sign payload.
+    assertThat(counterparty.substring(8)).isEqualTo(base.substring(8));
+    assertThat(counterparty).doesNotStartWith(XrplBinaryCodec.TRX_SIGNATURE_PREFIX);
+  }
+
+  @Test
+  void encodeForSigningSponsorUsesSpnPrefix() throws JsonProcessingException {
+    String json = objectMapper.writeValueAsString(createLoanSet());
+
+    String sponsor = encoder.encodeForSigningSponsor(json);
+    String base = encoder.encodeForSigning(json);
+
+    // Bound to the sponsor role via the SPN ("SPN\0") prefix.
+    assertThat(sponsor).startsWith("53504E00");
+    // Security invariant: only the 4-byte (8 hex char) prefix differs from a plain single-sign payload.
+    assertThat(sponsor.substring(8)).isEqualTo(base.substring(8));
+    assertThat(sponsor).doesNotStartWith(XrplBinaryCodec.TRX_SIGNATURE_PREFIX);
+  }
+
+  @Test
+  void singleSignCounterpartyAndSponsorDifferOnlyByPrefix() throws JsonProcessingException {
+    String json = objectMapper.writeValueAsString(createLoanSet());
+
+    String counterparty = encoder.encodeForSigningCounterparty(json);
+    String sponsor = encoder.encodeForSigningSponsor(json);
+
+    // A signature made for one role cannot be replayed as another, yet the signed payloads differ only in the prefix.
+    assertThat(counterparty).isNotEqualTo(sponsor);
+    assertThat(counterparty.substring(8)).isEqualTo(sponsor.substring(8));
+  }
+
+  @Test
+  void encodeForMultiSigningCounterpartyUsesCpmPrefix() throws JsonProcessingException {
     String signerAccountId = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
     LoanSet loanSet = createLoanSet();
     String json = objectMapper.writeValueAsString(loanSet);
 
-    String withPubKeyResult = encoder.encodeForMultiSigningWithSigningPubKey(json, signerAccountId);
-    String multiSignResult = encoder.encodeForMultiSigning(json, signerAccountId);
+    String counterparty = encoder.encodeForMultiSigningCounterparty(json, signerAccountId);
+    String clearedMultiSign = encoder.encodeForMultiSigning(json, signerAccountId);
 
-    // Both should start with SMT prefix (4 bytes)
-    assertThat(withPubKeyResult).startsWith("534D5400");
-    assertThat(multiSignResult).startsWith("534D5400");
-
-    // Both should end with the same 20-byte account ID suffix
-    assertThat(withPubKeyResult.substring(withPubKeyResult.length() - 40))
-      .isEqualTo(multiSignResult.substring(multiSignResult.length() - 40));
-
-    // But they should differ because withPubKey preserves SigningPubKey while multiSign clears it
-    assertThat(withPubKeyResult).isNotEqualTo(multiSignResult);
-
-    // withPubKey result should be longer because it includes the non-empty SigningPubKey
-    assertThat(withPubKeyResult.length()).isGreaterThan(multiSignResult.length());
+    // Bound to the counterparty role via the CPM ("CPM\0") prefix.
+    assertThat(counterparty).startsWith("43504D00");
+    // Same account ID suffix as a plain multi-sign.
+    assertThat(counterparty.substring(counterparty.length() - 40))
+      .isEqualTo(clearedMultiSign.substring(clearedMultiSign.length() - 40));
+    // Preserves the first-party SigningPubKey, unlike encodeForMultiSigning which clears it.
+    assertThat(encoder.decode(counterparty)).contains(loanSet.signingPublicKey().base16Value());
   }
 
   @Test
-  void encodeForMultiSigningWithSigningPubKeyPreservesSigningPubKey() throws JsonProcessingException {
+  void encodeForMultiSigningSponsorUsesSpmPrefix() throws JsonProcessingException {
     String signerAccountId = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
     LoanSet loanSet = createLoanSet();
-    String signingPubKey = loanSet.signingPublicKey().base16Value();
     String json = objectMapper.writeValueAsString(loanSet);
 
-    String result = encoder.encodeForMultiSigningWithSigningPubKey(json, signerAccountId);
+    String sponsor = encoder.encodeForMultiSigningSponsor(json, signerAccountId);
+    String clearedMultiSign = encoder.encodeForMultiSigning(json, signerAccountId);
 
-    // Decode the result and verify SigningPubKey is present
-    String decoded = encoder.decode(result);
-    assertThat(decoded).contains(signingPubKey);
+    // Bound to the sponsor role via the SPM ("SPM\0") prefix.
+    assertThat(sponsor).startsWith("53504D00");
+    // Same account ID suffix as a plain multi-sign.
+    assertThat(sponsor.substring(sponsor.length() - 40))
+      .isEqualTo(clearedMultiSign.substring(clearedMultiSign.length() - 40));
+    // Preserves the first-party SigningPubKey, unlike encodeForMultiSigning which clears it.
+    assertThat(encoder.decode(sponsor)).contains(loanSet.signingPublicKey().base16Value());
   }
 
   @Test
-  void encodeForMultiSigningWithSigningPubKeyWithNonObjectJsonThrowsException() {
+  void multiSignCounterpartyAndSponsorDifferOnlyByPrefix() throws JsonProcessingException {
+    String signerAccountId = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
+    String json = objectMapper.writeValueAsString(createLoanSet());
+
+    String counterparty = encoder.encodeForMultiSigningCounterparty(json, signerAccountId);
+    String sponsor = encoder.encodeForMultiSigningSponsor(json, signerAccountId);
+
+    // A signature made for one role cannot be replayed as another, yet the signed payloads differ only in the prefix.
+    assertThat(counterparty).isNotEqualTo(sponsor);
+    assertThat(counterparty.substring(8)).isEqualTo(sponsor.substring(8));
+  }
+
+  @Test
+  void encodeForMultiSigningRolesWithNonObjectJsonThrowsException() {
     String signerAccountId = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
 
-    // Test with JSON array
-    String jsonArray = "[\"value1\", \"value2\"]";
-    Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigningWithSigningPubKey(jsonArray, signerAccountId))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("JSON object required for signing");
-
-    // Test with JSON primitive (string)
-    String jsonString = "\"just a string\"";
-    Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigningWithSigningPubKey(jsonString, signerAccountId))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("JSON object required for signing");
-
-    // Test with JSON primitive (number)
-    String jsonNumber = "12345";
-    Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigningWithSigningPubKey(jsonNumber, signerAccountId))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("JSON object required for signing");
+    for (String badJson : new String[] {"[\"value1\", \"value2\"]", "\"just a string\"", "12345"}) {
+      Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigningCounterparty(badJson, signerAccountId))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("JSON object required for signing");
+      Assertions.assertThatThrownBy(() -> encoder.encodeForMultiSigningSponsor(badJson, signerAccountId))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("JSON object required for signing");
+    }
   }
 
   @Test
-  void encodeForMultiSigningWithSigningPubKeyWithDifferentSigners() throws JsonProcessingException {
-    LoanSet loanSet = createLoanSet();
-    String json = objectMapper.writeValueAsString(loanSet);
+  void encodeForMultiSigningRolesWithDifferentSigners() throws JsonProcessingException {
+    String json = objectMapper.writeValueAsString(createLoanSet());
 
     String signer1 = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
     String signer2 = "rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw";
 
-    String result1 = encoder.encodeForMultiSigningWithSigningPubKey(json, signer1);
-    String result2 = encoder.encodeForMultiSigningWithSigningPubKey(json, signer2);
+    String result1 = encoder.encodeForMultiSigningCounterparty(json, signer1);
+    String result2 = encoder.encodeForMultiSigningCounterparty(json, signer2);
 
     // The body should be the same (everything except the 20-byte account ID suffix)
     assertThat(result1.substring(0, result1.length() - 40))

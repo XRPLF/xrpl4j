@@ -1,10 +1,13 @@
 package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.given;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
+import org.awaitility.Durations;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -62,6 +65,8 @@ import org.xrpl.xrpl4j.model.transactions.VaultDeposit;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -726,7 +731,9 @@ public class LendingProtocolIT extends AbstractIT {
       .counterpartySignature(counterpartySig)
       .build();
 
-    // Broker signs the final transaction (same signable bytes since CounterpartySignature is excluded)
+    // Broker signs the final transaction. CounterpartySignature is excluded from the signing fields, so attaching
+    // it above does not change what the broker signs. The two signatures still cover different bytes, though: the
+    // broker signs under the STX prefix and the counterparty under the role-bound CPT prefix (fixCleanup3_4_0).
     SingleSignedTransaction<LoanSet> signedLoanSet = signatureService.sign(
       loanBrokerKeyPair.privateKey(), loanSetFinal
     );
@@ -792,65 +799,6 @@ public class LendingProtocolIT extends AbstractIT {
     );
     LoanObject paidLoan = loanEntry.node();
     assertThat(paidLoan.paymentRemaining()).isEqualTo(UnsignedInteger.valueOf(2));
-
-    // ========== LOAN MANAGE - Impair ==========
-    loanBrokerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
-    );
-
-    LoanManage loanManageImpair = LoanManage.builder()
-      .account(loanBrokerKeyPair.publicKey().deriveAddress())
-      .fee(fee)
-      .sequence(loanBrokerAccountInfo.accountData().sequence())
-      .loanId(loanId)
-      .flags(LoanManageFlags.of(LoanManageFlags.LOAN_IMPAIR.getValue()))
-      .signingPublicKey(loanBrokerKeyPair.publicKey())
-      .build();
-
-    SingleSignedTransaction<LoanManage> signedImpair = signatureService.sign(
-      loanBrokerKeyPair.privateKey(), loanManageImpair
-    );
-    SubmitResult<LoanManage> impairResult =
-      xrplClient.submit(signedImpair);
-    assertThat(impairResult.engineResult()).isEqualTo(SUCCESS_STATUS);
-    this.scanForResult(
-      () -> this.getValidatedTransaction(signedImpair.hash(), LoanManage.class)
-    );
-
-    // Verify loan is impaired
-    loanEntry = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
-    );
-    assertThat(loanEntry.node().flags().lsfLoanImpaired()).isTrue();
-
-    // ========== LOAN MANAGE - Unimpair ==========
-    loanBrokerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
-    );
-
-    LoanManage loanManageUnimpair = LoanManage.builder()
-      .account(loanBrokerKeyPair.publicKey().deriveAddress())
-      .fee(fee)
-      .sequence(loanBrokerAccountInfo.accountData().sequence())
-      .loanId(loanId)
-      .flags(LoanManageFlags.of(LoanManageFlags.LOAN_UNIMPAIR.getValue()))
-      .signingPublicKey(loanBrokerKeyPair.publicKey())
-      .build();
-
-    SingleSignedTransaction<LoanManage> signedUnimpair = signatureService.sign(
-      loanBrokerKeyPair.privateKey(), loanManageUnimpair
-    );
-    SubmitResult<LoanManage> unimpairResult = xrplClient.submit(signedUnimpair);
-    assertThat(unimpairResult.engineResult()).isEqualTo(SUCCESS_STATUS);
-    this.scanForResult(
-      () -> this.getValidatedTransaction(signedUnimpair.hash(), LoanManage.class)
-    );
-
-    // Verify loan is no longer impaired
-    loanEntry = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
-    );
-    assertThat(loanEntry.node().flags().lsfLoanImpaired()).isFalse();
 
     // ========== LOAN PAY - Full payment ==========
     borrowerAccountInfo = this.scanForResult(
@@ -1016,6 +964,156 @@ public class LendingProtocolIT extends AbstractIT {
   /**
    * Helper method to verify that the LoanBroker from ledger_entry matches account_objects.
    */
+  // //////////////////////
+  // LoanManage impair/unimpair (kept separate from the lifecycle test because it requires an overdue loan)
+  // //////////////////////
+
+  @Test
+  void loanManageImpairAndUnimpair() throws JsonRpcClientErrorException, JsonProcessingException {
+    final KeyPair brokerKeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerKeyPair = createRandomAccountEd25519();
+
+    final FeeResult feeResult = xrplClient.fee();
+    final XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
+
+    final Hash256 loanBrokerId = setupLoanBrokerAndXrpVault(brokerKeyPair, fee);
+    final UnsignedInteger loanSequence = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(loanBrokerId, LoanBrokerObject.class, LedgerSpecifier.VALIDATED)
+    ).node().loanSequence();
+
+    // PaymentInterval is pinned to rippled's 60-second minimum so the loan falls overdue almost immediately. That is
+    // safe here only because this test makes no payments after impairing — see awaitLoanPaymentLate().
+    final AccountInfoResult brokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
+    );
+    final LoanSet unsignedLoanSet = LoanSet.builder()
+      .account(brokerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO).recommendedFee())
+      .sequence(brokerAccountInfo.accountData().sequence())
+      .loanBrokerId(loanBrokerId)
+      .principalRequested(Amount.of("1000000"))
+      .counterparty(borrowerKeyPair.publicKey().deriveAddress())
+      .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
+      .signingPublicKey(brokerKeyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
+      brokerKeyPair.privateKey(), unsignedLoanSet
+    );
+    final Signature counterpartySig = signatureService.counterpartySign(
+      borrowerKeyPair.privateKey(), unsignedLoanSet
+    );
+    final CounterpartySignature counterpartySignature = CounterpartySignature.of(
+      borrowerKeyPair.publicKey(), counterpartySig
+    );
+    final LoanSet unsignedWithCounterparty = LoanSet.builder().from(unsignedLoanSet)
+      .counterpartySignature(counterpartySignature)
+      .build();
+    submitSingleSignedLoanSet(
+      SingleSignedTransaction.<LoanSet>builder()
+        .unsignedTransaction(unsignedWithCounterparty)
+        .signature(brokerSigned.signature())
+        .signedTransaction(
+          LoanSet.builder().from(unsignedWithCounterparty)
+            .transactionSignature(brokerSigned.signature())
+            .build()
+        )
+        .build()
+    );
+
+    final Hash256 loanId = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.loan(
+        LoanLedgerEntryParams.builder().loanBrokerId(loanBrokerId).loanSeq(loanSequence).build(),
+        LedgerSpecifier.VALIDATED
+      )
+    ).node().index();
+
+    // ========== LOAN MANAGE - Impair ==========
+    // Under fixCleanup3_4_0 a loan can only be impaired once its payment is actually late; impairing a current loan
+    // returns tecTOO_SOON (see rippled's LoanManage::impairLoan).
+    awaitLoanPaymentLate(loanId);
+
+    final LoanManage impair = LoanManage.builder()
+      .account(brokerKeyPair.publicKey().deriveAddress())
+      .fee(fee)
+      .sequence(this.scanForResult(
+        () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
+      ).accountData().sequence())
+      .loanId(loanId)
+      .flags(LoanManageFlags.of(LoanManageFlags.LOAN_IMPAIR.getValue()))
+      .signingPublicKey(brokerKeyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<LoanManage> signedImpair = signatureService.sign(
+      brokerKeyPair.privateKey(), impair
+    );
+    assertThat(xrplClient.submit(signedImpair).engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedImpair.hash(), LoanManage.class));
+
+    assertThat(
+      xrplClient.ledgerEntry(
+        LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
+      ).node().flags().lsfLoanImpaired()
+    ).isTrue();
+
+    // ========== LOAN MANAGE - Unimpair ==========
+    final LoanManage unimpair = LoanManage.builder()
+      .account(brokerKeyPair.publicKey().deriveAddress())
+      .fee(fee)
+      .sequence(this.scanForResult(
+        () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
+      ).accountData().sequence())
+      .loanId(loanId)
+      .flags(LoanManageFlags.of(LoanManageFlags.LOAN_UNIMPAIR.getValue()))
+      .signingPublicKey(brokerKeyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<LoanManage> signedUnimpair = signatureService.sign(
+      brokerKeyPair.privateKey(), unimpair
+    );
+    assertThat(xrplClient.submit(signedUnimpair).engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedUnimpair.hash(), LoanManage.class));
+
+    assertThat(
+      xrplClient.ledgerEntry(
+        LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
+      ).node().flags().lsfLoanImpaired()
+    ).isFalse();
+  }
+
+  /**
+   * Waits until the given loan's next payment is overdue, i.e. until the validated ledger's close time has advanced
+   * strictly past the loan's {@code NextPaymentDueDate}.
+   *
+   * <p>Under the {@code fixCleanup3_4_0} amendment, rippled only permits impairing a loan whose payment is actually
+   * late (see rippled's {@code LoanManage::impairLoan}, which otherwise returns {@code tecTOO_SOON}). A standalone
+   * rippled's close time advances much faster than wall-clock time, so pinning the loan to the 60-second minimum
+   * {@code PaymentInterval} keeps this wait well under a second.</p>
+   *
+   * @param loanId The {@link Hash256} identifying the loan to wait on.
+   *
+   * @throws JsonRpcClientErrorException If the loan cannot be read from the ledger.
+   */
+  private void awaitLoanPaymentLate(final Hash256 loanId) throws JsonRpcClientErrorException {
+    final UnsignedLong nextPaymentDueDate = UnsignedLong.valueOf(
+      xrplClient.ledgerEntry(
+        LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
+      ).node().nextPaymentDueDate()
+        .orElseThrow(() -> new IllegalStateException("Loan must have a NextPaymentDueDate in order to become late."))
+        .longValue()
+    );
+
+    given()
+      .pollInterval(Durations.ONE_HUNDRED_MILLISECONDS)
+      .atMost(Duration.of(1, ChronoUnit.MINUTES))
+      .await()
+      .until(() -> getValidatedLedger().ledger().closeTime()
+        .map(closeTime -> closeTime.compareTo(nextPaymentDueDate) > 0)
+        .orElse(false)
+      );
+  }
+
   private void assertLoanBrokerEntryEqualsObjectFromAccountObjects(
     Address owner,
     UnsignedInteger ownerSequence

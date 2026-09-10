@@ -171,11 +171,39 @@ public class SignatureUtils {
   }
 
   /**
-   * Helper method to convert a {@link LoanSet} transaction into bytes that can be multi-signed by a counterparty
-   * signer.
+   * Helper method to convert a {@link LoanSet} transaction into bytes that can be single-signed by a counterparty
+   * signer (e.g. the lender). Unlike {@link #toSignableBytes(Transaction)}, the payload is bound to the counterparty
+   * role via the {@code CPT\0} prefix, so the resulting signature cannot be replayed as any other role.
    *
-   * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
-   * is subject to change.</p>
+   * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. The produced
+   * signature is only valid on a network where the {@code fixCleanup3_4_0} amendment (rippled PR #8162) is enabled. Its
+   * API is subject to change.</p>
+   *
+   * @param transaction A {@link LoanSet} to be counterparty single-signed.
+   *
+   * @return An {@link UnsignedByteArray}.
+   */
+  @Beta
+  public UnsignedByteArray toCounterpartySignableBytes(final LoanSet transaction) {
+    Objects.requireNonNull(transaction);
+
+    try {
+      final String unsignedJson = objectMapper.writeValueAsString(transaction);
+      final String unsignedBinaryHex = binaryCodec.encodeForSigningCounterparty(unsignedJson);
+      return UnsignedByteArray.fromHex(unsignedBinaryHex);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Helper method to convert a {@link LoanSet} transaction into bytes that can be multi-signed by a counterparty
+   * signer. The payload is bound to the counterparty role via the {@code CPM\0} prefix, so the resulting signature
+   * cannot be replayed as any other role.
+   *
+   * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. The produced
+   * signature is only valid on a network where the {@code fixCleanup3_4_0} amendment (rippled PR #8162) is enabled. Its
+   * API is subject to change.</p>
    *
    * @param transaction   A {@link LoanSet} to be counterparty multi-signed.
    * @param signerAddress The {@link Address} of the counterparty signer.
@@ -189,7 +217,7 @@ public class SignatureUtils {
 
     try {
       final String unsignedJson = objectMapper.writeValueAsString(transaction);
-      final String unsignedBinaryHex = binaryCodec.encodeForMultiSigningWithSigningPubKey(
+      final String unsignedBinaryHex = binaryCodec.encodeForMultiSigningCounterparty(
         unsignedJson, signerAddress.value()
       );
       return UnsignedByteArray.fromHex(unsignedBinaryHex);
@@ -220,14 +248,43 @@ public class SignatureUtils {
   }
 
   /**
-   * Helper method to convert a {@link Transaction} into bytes that can be multi-signed by a sponsor.
+   * Helper method to convert a {@link Transaction} into bytes that can be single-signed by a sponsor. Unlike
+   * {@link #toSignableBytes(Transaction)}, the payload is bound to the sponsor role via the {@code SPN\0} prefix, so
+   * the resulting signature cannot be replayed as any other role.
+   *
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet. The
+   * produced signature is only valid on a network where the {@code fixCleanup3_4_0} amendment (rippled PR #8162) is
+   * enabled. Its API is subject to change.</p>
+   *
+   * @param transaction A {@link Transaction} to be sponsor single-signed.
+   *
+   * @return An {@link UnsignedByteArray}.
+   */
+  @Beta
+  public UnsignedByteArray toSponsorSignableBytes(final Transaction transaction) {
+    Objects.requireNonNull(transaction);
+
+    try {
+      final String unsignedJson = objectMapper.writeValueAsString(transaction);
+      final String unsignedBinaryHex = binaryCodec.encodeForSigningSponsor(unsignedJson);
+      return UnsignedByteArray.fromHex(unsignedBinaryHex);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Helper method to convert a {@link Transaction} into bytes that can be multi-signed by a sponsor. The payload is
+   * bound to the sponsor role via the {@code SPM\0} prefix, so the resulting signature cannot be replayed as any other
+   * role.
    *
    * <p>Unlike {@link #toMultiSignableBytes(Transaction, Address)}, this method preserves the existing
    * {@code SigningPubKey} field in the encoded bytes. This is necessary when a sponsor multi-signs a transaction
    * where the first-party signer's {@code SigningPubKey} must remain intact in the signed data.</p>
    *
-   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
-   * Its API is subject to change.</p>
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet. The
+   * produced signature is only valid on a network where the {@code fixCleanup3_4_0} amendment (rippled PR #8162) is
+   * enabled. Its API is subject to change.</p>
    *
    * @param transaction   A {@link Transaction} to be sponsor multi-signed.
    * @param signerAddress The {@link Address} of the sponsor signer.
@@ -241,7 +298,7 @@ public class SignatureUtils {
 
     try {
       final String unsignedJson = objectMapper.writeValueAsString(transaction);
-      final String unsignedBinaryHex = binaryCodec.encodeForMultiSigningWithSigningPubKey(
+      final String unsignedBinaryHex = binaryCodec.encodeForMultiSigningSponsor(
         unsignedJson, signerAddress.value()
       );
       return UnsignedByteArray.fromHex(unsignedBinaryHex);

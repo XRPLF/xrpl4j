@@ -3,10 +3,13 @@ package org.xrpl.xrpl4j.model.ledger;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -115,6 +118,37 @@ public interface MpTokenIssuanceObject extends LedgerObject {
   Optional<MpTokenNumericAmount> lockedAmount();
 
   /**
+   * The total amount of this token that is currently held in confidential balances. This value is adjusted with
+   * every {@code ConfidentialMPTConvert}, {@code ConfidentialMPTConvertBack}, and {@code ConfidentialMPTClawback}
+   * transaction.
+   *
+   * @return An optionally-present {@link MpTokenNumericAmount}.
+   */
+  @JsonProperty("ConfidentialOutstandingAmount")
+  @Value.Default
+  default MpTokenNumericAmount confidentialOutstandingAmount() {
+    return MpTokenNumericAmount.of(0);
+  }
+
+  /**
+   * A 33-byte compressed ElGamal public key for the issuer. Required to use the confidential transfer feature.
+   * Used for the issuer's mirror balances, enabling supply consistency checks and issuer-level auditing.
+   *
+   * @return An optionally-present {@link PublicKey}.
+   */
+  @JsonProperty("IssuerEncryptionKey")
+  Optional<PublicKey> issuerEncryptionKey();
+
+  /**
+   * A 33-byte compressed ElGamal public key for an optional on-chain auditor. When set, confidential balances
+   * are additionally encrypted under this key, enabling selective disclosure for regulatory oversight.
+   *
+   * @return An optionally-present {@link PublicKey}.
+   */
+  @JsonProperty("AuditorEncryptionKey")
+  Optional<PublicKey> auditorEncryptionKey();
+
+  /**
    * Arbitrary hex-encoded metadata about this issuance.
    *
    * @return An optionally-present {@link MpTokenMetadata}.
@@ -174,4 +208,36 @@ public interface MpTokenIssuanceObject extends LedgerObject {
    */
   @JsonProperty("mpt_issuance_id")
   Optional<MpTokenIssuanceId> mpTokenIssuanceId();
+
+  /**
+   * An optional set of flags indicating which fields or flags of this issuance have been made permanently immutable
+   * via {@code MPTokenIssuanceCreate} or {@code MPTokenIssuanceSet}. Fields and flags are mutable by default; only
+   * present when the {@code DynamicMPT} amendment is enabled and at least one field or flag has been locked.
+   *
+   * @return An optionally-present {@link MpTokenIssuanceImmutableFlags}.
+   */
+  @JsonProperty("ImmutableFlags")
+  Optional<MpTokenIssuanceImmutableFlags> immutableFlags();
+
+  /**
+   * The account that is sponsoring the reserve for this MPTokenIssuance object. If present, the sponsor is
+   * responsible for the reserve requirement of this object instead of the owner.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An optionally-present {@link Address} of the sponsoring account.
+   */
+  @Beta
+  @JsonProperty("Sponsor")
+  Optional<Address> sponsor();
+
+  /**
+   * {@link Hash256} pointing to the vault pseudo-account's holding for the underlying asset. Present for IOU and
+   * MPT-backed vaults. Absent for XRP-backed vaults.
+   *
+   * @return An optionally-present {@link Hash256}.
+   */
+  @JsonProperty("ReferenceHolding")
+  Optional<Hash256> referenceHolding();
 }

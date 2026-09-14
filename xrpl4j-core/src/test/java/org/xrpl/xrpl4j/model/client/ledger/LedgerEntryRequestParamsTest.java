@@ -20,12 +20,15 @@ import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.BridgeObject;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.CredentialObject;
+import org.xrpl.xrpl4j.model.ledger.DelegateObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.DidObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.LoanBrokerObject;
+import org.xrpl.xrpl4j.model.ledger.LoanObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
@@ -34,6 +37,7 @@ import org.xrpl.xrpl4j.model.ledger.OracleObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
+import org.xrpl.xrpl4j.model.ledger.SponsorshipObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -840,6 +844,51 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
   }
 
   @Test
+  void testDelegateParams() throws JSONException, JsonProcessingException {
+    DelegateLedgerEntryParams delegateParams = DelegateLedgerEntryParams.builder()
+      .account(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMtthP4"))
+      .authorize(Address.of("rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8"))
+      .build();
+    LedgerEntryRequestParams<DelegateObject> params = LedgerEntryRequestParams.delegate(
+      delegateParams,
+      LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.delegate()).isNotEmpty().get().isEqualTo(delegateParams);
+    assertThat(params.ledgerObjectClass()).isEqualTo(DelegateObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.amm()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.rippleState()).isEmpty();
+    assertThat(params.check()).isEmpty();
+    assertThat(params.escrow()).isEmpty();
+    assertThat(params.paymentChannel()).isEmpty();
+    assertThat(params.ticket()).isEmpty();
+    assertThat(params.nftPage()).isEmpty();
+    assertThat(params.depositPreAuth()).isEmpty();
+    assertThat(params.did()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
+    assertThat(params.mptIssuance()).isEmpty();
+    assertThat(params.mpToken()).isEmpty();
+    assertThat(params.permissionedDomain()).isEmpty();
+    assertThat(params.vault()).isEmpty();
+
+    String json = "{" +
+      "  \"delegate\": {" +
+      "    \"account\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMtthP4\"," +
+      "    \"authorize\": \"rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8\"" +
+      "  }," +
+      "  \"binary\": false," +
+      "  \"ledger_index\": \"validated\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
   void testVaultParams() throws JSONException, JsonProcessingException {
     VaultLedgerEntryParams vaultParams = VaultLedgerEntryParams.builder()
       .owner(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMgk5j"))
@@ -867,10 +916,95 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.credential()).isEmpty();
     assertThat(params.permissionedDomain()).isEmpty();
+    assertThat(params.delegate()).isEmpty();
     assertThat(params.vault()).isNotEmpty().get().isEqualTo(vaultParams);
 
     String json = "{" +
       "  \"vault\" : " + objectMapper.writeValueAsString(vaultParams) + "," +
+      "  \"binary\": false," +
+      "  \"ledger_index\": \"validated\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  void testLoanBrokerParams() throws JSONException, JsonProcessingException {
+    LoanBrokerLedgerEntryParams loanBrokerParams = LoanBrokerLedgerEntryParams.builder()
+      .owner(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMgk5j"))
+      .seq(UnsignedInteger.valueOf(5))
+      .build();
+    LedgerEntryRequestParams<LoanBrokerObject> params = LedgerEntryRequestParams.loanBroker(
+      loanBrokerParams,
+      LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.ledgerObjectClass()).isEqualTo(LoanBrokerObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.vault()).isEmpty();
+    assertThat(params.loan()).isEmpty();
+    assertThat(params.loanBroker()).isNotEmpty().get().isEqualTo(loanBrokerParams);
+
+    String json = "{" +
+      "  \"loan_broker\" : " + objectMapper.writeValueAsString(loanBrokerParams) + "," +
+      "  \"binary\": false," +
+      "  \"ledger_index\": \"validated\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  void testLoanParams() throws JSONException, JsonProcessingException {
+    LoanLedgerEntryParams loanParams = LoanLedgerEntryParams.builder()
+      .loanBrokerId(HASH_256)
+      .loanSeq(UnsignedInteger.valueOf(3))
+      .build();
+    LedgerEntryRequestParams<LoanObject> params = LedgerEntryRequestParams.loan(
+      loanParams,
+      LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.ledgerObjectClass()).isEqualTo(LoanObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.vault()).isEmpty();
+    assertThat(params.loanBroker()).isEmpty();
+    assertThat(params.loan()).isNotEmpty().get().isEqualTo(loanParams);
+
+    String json = "{" +
+      "  \"loan\" : " + objectMapper.writeValueAsString(loanParams) + "," +
+      "  \"binary\": false," +
+      "  \"ledger_index\": \"validated\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  void testSponsorshipParams() throws JSONException, JsonProcessingException {
+    SponsorshipLedgerEntryParams sponsorshipParams = SponsorshipLedgerEntryParams.builder()
+      .sponsor(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMgk5j"))
+      .sponsee(Address.of("rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"))
+      .build();
+    LedgerEntryRequestParams<SponsorshipObject> params = LedgerEntryRequestParams.sponsorship(
+      sponsorshipParams,
+      LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.ledgerObjectClass()).isEqualTo(SponsorshipObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.vault()).isEmpty();
+    assertThat(params.loan()).isEmpty();
+    assertThat(params.sponsorship()).isNotEmpty().get().isEqualTo(sponsorshipParams);
+
+    String json = "{" +
+      "  \"sponsorship\" : " + objectMapper.writeValueAsString(sponsorshipParams) + "," +
       "  \"binary\": false," +
       "  \"ledger_index\": \"validated\"" +
       "}";

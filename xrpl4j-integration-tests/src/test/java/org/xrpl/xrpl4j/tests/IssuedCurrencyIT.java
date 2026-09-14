@@ -625,8 +625,12 @@ public class IssuedCurrencyIT extends AbstractIT {
     Address peerAddress,
     String currency
   ) throws JsonRpcClientErrorException {
+    // Use VALIDATED ledger specifier to match the ledger version used by the ledger_entry call below.
     RippleStateObject rippleStateObject = (RippleStateObject) xrplClient.accountObjects(
-        AccountObjectsRequestParams.of(trustLine.account())
+        AccountObjectsRequestParams.builder()
+          .account(trustLine.account())
+          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+          .build()
       ).accountObjects().stream()
       .filter(object -> RippleStateObject.class.isAssignableFrom(object.getClass()))
       .findFirst()

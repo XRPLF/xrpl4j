@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -24,13 +26,16 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.MpTokenAuthorizeFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
+import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
+import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
@@ -40,8 +45,10 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
 import org.xrpl.xrpl4j.model.transactions.MpTokenMetadata;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
 
@@ -389,6 +396,600 @@ public class MpTokenIT extends AbstractIT {
   }
 
   @Test
+  void createDynamicIssuanceThenMutateMetadata()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    // Fields and flags are mutable by default under the opt-in-immutable model, so no declaration is
+    // needed at creation time for MPTokenMetadata, TransferFee, or lsfMPTCanLock to remain mutable.
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptCanTransfer(true)
+        .build()
+      )
+      .mpTokenMetadata(MpTokenMetadata.of("464F4F"))
+      .transferFee(TransferFee.ofPercent(BigDecimal.valueOf(0.01)))
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedCreate = signatureService.sign(
+      issuerKeyPair.privateKey(), issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> createResult = xrplClient.submit(signedCreate);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(createResult.engineResult()),
+      "Skipping: DynamicMPT amendment not enabled on this node"
+    );
+    assertThat(createResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedCreate.hash(),
+        createResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("missing issuance ID in metadata"));
+
+    // Nothing was locked at creation, so ImmutableFlags is absent.
+    MpTokenIssuanceObject issuanceObject = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    assertThat(issuanceObject.immutableFlags()).isEmpty();
+    assertThat(issuanceObject.mpTokenMetadata()).contains(MpTokenMetadata.of("464F4F"));
+
+    // Mutate MPTokenMetadata via MPTokenIssuanceSet
+    AccountInfoResult issuerInfoAfterCreate = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenIssuanceSet metadataUpdate = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterCreate.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterCreate.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .mpTokenMetadata(MpTokenMetadata.of("575C5C"))
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedMetadataUpdate = signatureService.sign(
+      issuerKeyPair.privateKey(), metadataUpdate
+    );
+    SubmitResult<MpTokenIssuanceSet> metadataUpdateResult = xrplClient.submit(signedMetadataUpdate);
+    assertThat(metadataUpdateResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedMetadataUpdate.hash(),
+        metadataUpdateResult.validatedLedgerIndex(),
+        metadataUpdate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        metadataUpdate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceObject updatedIssuance = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    assertThat(updatedIssuance.mpTokenMetadata()).contains(MpTokenMetadata.of("575C5C"));
+  }
+
+  @Test
+  void createDynamicIssuanceThenMutateTransferFee()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptCanTransfer(true)
+        .build()
+      )
+      .transferFee(TransferFee.ofPercent(BigDecimal.valueOf(0.01)))
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedCreate = signatureService.sign(
+      issuerKeyPair.privateKey(), issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> createResult = xrplClient.submit(signedCreate);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(createResult.engineResult()),
+      "Skipping: DynamicMPT amendment not enabled on this node"
+    );
+    assertThat(createResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedCreate.hash(),
+        createResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("missing issuance ID"));
+
+    // Update TransferFee via MPTokenIssuanceSet
+    AccountInfoResult issuerInfoAfterCreate = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    TransferFee newFee = TransferFee.ofPercent(BigDecimal.valueOf(1.0));
+    MpTokenIssuanceSet feeUpdate = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterCreate.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterCreate.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .transferFee(newFee)
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedFeeUpdate = signatureService.sign(
+      issuerKeyPair.privateKey(), feeUpdate
+    );
+    SubmitResult<MpTokenIssuanceSet> feeUpdateResult = xrplClient.submit(signedFeeUpdate);
+    assertThat(feeUpdateResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedFeeUpdate.hash(),
+        feeUpdateResult.validatedLedgerIndex(),
+        feeUpdate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        feeUpdate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceObject updatedIssuance = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    assertThat(updatedIssuance.transferFee()).isEqualTo(newFee);
+  }
+
+  @Test
+  void createDynamicIssuanceThenEnableCanLockViaSetFlags()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    // lsfMPTCanLock is mutable by default; it does not need to be declared at creation time.
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedCreate = signatureService.sign(
+      issuerKeyPair.privateKey(), issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> createResult = xrplClient.submit(signedCreate);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(createResult.engineResult()),
+      "Skipping: DynamicMPT amendment not enabled on this node"
+    );
+    assertThat(createResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedCreate.hash(),
+        createResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("missing issuance ID"));
+
+    MpTokenIssuanceObject beforeSet = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    assertThat(beforeSet.flags().lsfMptCanLock()).isFalse();
+
+    // Enable lsfMPTCanLock via MPTokenIssuanceSet's standard Flags field.
+    AccountInfoResult issuerInfoAfterCreate = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenIssuanceSet flagSet = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterCreate.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterCreate.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .flags(MpTokenIssuanceSetFlags.builder()
+        .tfMptSetCanLock(true)
+        .build()
+      )
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedFlagSet = signatureService.sign(
+      issuerKeyPair.privateKey(), flagSet
+    );
+    SubmitResult<MpTokenIssuanceSet> flagSetResult = xrplClient.submit(signedFlagSet);
+    assertThat(flagSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedFlagSet.hash(),
+        flagSetResult.validatedLedgerIndex(),
+        flagSet.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        flagSet.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceObject afterSet = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    assertThat(afterSet.flags().lsfMptCanLock()).isTrue();
+  }
+
+  /**
+   * Verifies the one-way "enable-once" semantic on {@code MPTokenIssuanceSet}: a capability (here
+   * {@code CanTransfer}) starts disabled by default, can be enabled via the standard {@code Flags} field, and stays
+   * enabled afterward. There is no corresponding "clear" flag in the protocol, so once enabled the capability cannot
+   * be disabled; re-submitting the same enable flag is a harmless no-op.
+   */
+  @Test
+  void createDynamicIssuanceThenEnableCanTransferIsOneWay()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    // lsfMPTCanTransfer is mutable by default; it does not need to be declared at creation time.
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedCreate = signatureService.sign(
+      issuerKeyPair.privateKey(), issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> createResult = xrplClient.submit(signedCreate);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(createResult.engineResult()),
+      "Skipping: DynamicMPT amendment not enabled on this node"
+    );
+    assertThat(createResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedCreate.hash(),
+        createResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("missing issuance ID"));
+
+    // Before the set: CanTransfer is disabled, and nothing has been locked.
+    MpTokenIssuanceObject beforeSet = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    assertThat(beforeSet.flags().lsfMptCanTransfer()).isFalse();
+    assertThat(beforeSet.immutableFlags()).isEmpty();
+
+    // Enable lsfMPTCanTransfer via MPTokenIssuanceSet's standard Flags field.
+    AccountInfoResult issuerInfoAfterCreate = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenIssuanceSet enableTransfer = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterCreate.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterCreate.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .flags(MpTokenIssuanceSetFlags.builder()
+        .tfMptSetCanTransfer(true)
+        .build()
+      )
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedEnable = signatureService.sign(
+      issuerKeyPair.privateKey(), enableTransfer
+    );
+    SubmitResult<MpTokenIssuanceSet> enableResult = xrplClient.submit(signedEnable);
+    assertThat(enableResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedEnable.hash(),
+        enableResult.validatedLedgerIndex(),
+        enableTransfer.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        enableTransfer.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    // After the set: CanTransfer is enabled.
+    MpTokenIssuanceObject afterSet = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    assertThat(afterSet.flags().lsfMptCanTransfer()).isTrue();
+
+    // Re-submitting the same enable flag is a harmless no-op (there is no "clear" flag to disable it again).
+    AccountInfoResult issuerInfoAfterEnable = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenIssuanceSet reEnableTransfer = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterEnable.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterEnable.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .flags(MpTokenIssuanceSetFlags.builder()
+        .tfMptSetCanTransfer(true)
+        .build()
+      )
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedReEnable = signatureService.sign(
+      issuerKeyPair.privateKey(), reEnableTransfer
+    );
+    SubmitResult<MpTokenIssuanceSet> reEnableResult = xrplClient.submit(signedReEnable);
+    assertThat(reEnableResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+  }
+
+  /**
+   * Verifies the core new behavior introduced by the opt-in-immutable model: setting a bit in
+   * {@code MPTokenIssuanceSet.ImmutableFlags} permanently locks the corresponding capability, so that a subsequent
+   * attempt to enable it via the standard {@code Flags} field fails with {@code tecNO_PERMISSION}. Also verifies that
+   * bits set across multiple {@code MPTokenIssuanceSet} transactions merge together on the ledger object rather than
+   * overwriting one another.
+   */
+  @Test
+  void createDynamicIssuanceThenLockCapabilityViaImmutableFlags()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedCreate = signatureService.sign(
+      issuerKeyPair.privateKey(), issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> createResult = xrplClient.submit(signedCreate);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(createResult.engineResult()),
+      "Skipping: DynamicMPT amendment not enabled on this node"
+    );
+    assertThat(createResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedCreate.hash(),
+        createResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("missing issuance ID"));
+
+    // Lock lsfMPTCanClawback via MPTokenIssuanceSet.ImmutableFlags.
+    AccountInfoResult issuerInfoAfterCreate = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenIssuanceSet lockCanClawback = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterCreate.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterCreate.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .immutableFlags(MpTokenIssuanceImmutableFlags.builder()
+        .lsifMptCanClawback(true)
+        .build()
+      )
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedLock = signatureService.sign(
+      issuerKeyPair.privateKey(), lockCanClawback
+    );
+    SubmitResult<MpTokenIssuanceSet> lockResult = xrplClient.submit(signedLock);
+    assertThat(lockResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedLock.hash(),
+        lockResult.validatedLedgerIndex(),
+        lockCanClawback.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        lockCanClawback.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceObject afterLock = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    assertThat(afterLock.immutableFlags()).isPresent();
+    assertThat(afterLock.immutableFlags().orElseThrow(RuntimeException::new).lsifMptCanClawback()).isTrue();
+
+    // Attempting to enable lsfMPTCanClawback now fails, since it has been permanently locked.
+    AccountInfoResult issuerInfoAfterLock = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenIssuanceSet enableCanClawback = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterLock.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterLock.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .flags(MpTokenIssuanceSetFlags.builder()
+        .tfMptSetCanClawback(true)
+        .build()
+      )
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedEnable = signatureService.sign(
+      issuerKeyPair.privateKey(), enableCanClawback
+    );
+    SubmitResult<MpTokenIssuanceSet> enableResult = xrplClient.submit(signedEnable);
+    assertThat(enableResult.engineResult()).isEqualTo("tecNO_PERMISSION");
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedEnable.hash(),
+        enableResult.validatedLedgerIndex(),
+        enableCanClawback.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        enableCanClawback.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_FAILURE
+    );
+
+    // Locking a second, distinct capability merges with (rather than overwrites) the first.
+    AccountInfoResult issuerInfoAfterFailedEnable = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+    MpTokenIssuanceSet lockCanTrade = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerInfoAfterFailedEnable.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(
+        issuerInfoAfterFailedEnable.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .immutableFlags(MpTokenIssuanceImmutableFlags.builder()
+        .lsifMptCanTrade(true)
+        .build()
+      )
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedLockCanTrade = signatureService.sign(
+      issuerKeyPair.privateKey(), lockCanTrade
+    );
+    SubmitResult<MpTokenIssuanceSet> lockCanTradeResult = xrplClient.submit(signedLockCanTrade);
+    assertThat(lockCanTradeResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedLockCanTrade.hash(),
+        lockCanTradeResult.validatedLedgerIndex(),
+        lockCanTrade.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        lockCanTrade.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceObject afterSecondLock = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node();
+    MpTokenIssuanceImmutableFlags mergedFlags = afterSecondLock.immutableFlags()
+      .orElseThrow(RuntimeException::new);
+    assertThat(mergedFlags.lsifMptCanClawback()).isTrue();
+    assertThat(mergedFlags.lsifMptCanTrade()).isTrue();
+  }
+
+  @Test
   void mptIssuanceWithPermissionedDomainSuccessAndFailure()
     throws JsonRpcClientErrorException, JsonProcessingException {
 
@@ -606,5 +1207,322 @@ public class MpTokenIT extends AbstractIT {
     SubmitResult<Payment> mintToUnauthorizedHolderSubmitResult = xrplClient.submit(signedMintToUnauthorizedHolder);
     assertThat(mintToUnauthorizedHolderSubmitResult.engineResult()).isEqualTo("tecNO_AUTH");
   }
-}
 
+  @Test
+  void paymentWithNegativeMptAmountFailsWithTemBadAmount()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair holderKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedIssuanceCreate = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> issuanceCreateSubmitResult = xrplClient.submit(signedIssuanceCreate);
+    assertThat(issuanceCreateSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedIssuanceCreate.hash(),
+        issuanceCreateSubmitResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedIssuanceCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("issuance create metadata did not contain issuance ID"));
+
+    AccountInfoResult updatedIssuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    Payment paymentWithNegativeAmount = Payment.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(updatedIssuerAccountInfo.accountData().sequence())
+      .destination(holderKeyPair.publicKey().deriveAddress())
+      .amount(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mpTokenIssuanceId)
+          .value("-100")
+          .build()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .lastLedgerSequence(
+        updatedIssuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .build();
+
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      paymentWithNegativeAmount
+    );
+    SubmitResult<Payment> submitResult = xrplClient.submit(signedPayment);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(submitResult.engineResult()),
+      "Skipping: fixCleanup3_2_0 not enabled on this node"
+    );
+    assertThat(submitResult.engineResult()).isEqualTo("temBAD_AMOUNT");
+  }
+
+  @Test
+  void offerCreateWithNegativeMptTakerPaysFailsWithTemBadAmount()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedIssuanceCreate = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> issuanceCreateSubmitResult = xrplClient.submit(signedIssuanceCreate);
+    assertThat(issuanceCreateSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedIssuanceCreate.hash(),
+        issuanceCreateSubmitResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedIssuanceCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("issuance create metadata did not contain issuance ID"));
+
+    AccountInfoResult updatedIssuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    // preflightUniversal (fixCleanup3_2_0) must reject a negative MPT TakerPays before
+    // any offer-specific checks run, so temBAD_AMOUNT rather than temBAD_OFFER.
+    OfferCreate offerWithNegativeTakerPays = OfferCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(updatedIssuerAccountInfo.accountData().sequence())
+      .takerPays(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mpTokenIssuanceId)
+          .value("-100")
+          .build()
+      )
+      .takerGets(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .lastLedgerSequence(
+        updatedIssuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .build();
+
+    SingleSignedTransaction<OfferCreate> signedOffer = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      offerWithNegativeTakerPays
+    );
+    SubmitResult<OfferCreate> submitResult = xrplClient.submit(signedOffer);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(submitResult.engineResult()),
+      "Skipping: fixCleanup3_2_0 not enabled on this node"
+    );
+    assertThat(submitResult.engineResult()).isEqualTo("temBAD_AMOUNT");
+  }
+
+  @Test
+  void checkCreateWithNegativeMptSendMaxFailsWithTemBadAmount()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedIssuanceCreate = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> issuanceCreateSubmitResult = xrplClient.submit(signedIssuanceCreate);
+    assertThat(issuanceCreateSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedIssuanceCreate.hash(),
+        issuanceCreateSubmitResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedIssuanceCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("issuance create metadata did not contain issuance ID"));
+
+    AccountInfoResult updatedIssuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    // preflightUniversal (fixCleanup3_2_0) must reject a negative MPT SendMax before the
+    // Check enters the ledger.
+    CheckCreate checkWithNegativeSendMax = CheckCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(updatedIssuerAccountInfo.accountData().sequence())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
+      .sendMax(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mpTokenIssuanceId)
+          .value("-100")
+          .build()
+      )
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .lastLedgerSequence(
+        updatedIssuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .build();
+
+    SingleSignedTransaction<CheckCreate> signedCheck = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      checkWithNegativeSendMax
+    );
+    SubmitResult<CheckCreate> submitResult = xrplClient.submit(signedCheck);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(submitResult.engineResult()),
+      "Skipping: fixCleanup3_2_0 not enabled on this node"
+    );
+    assertThat(submitResult.engineResult()).isEqualTo("temBAD_AMOUNT");
+  }
+
+  @Test
+  void escrowCreateWithNegativeMptAmountFailsWithTemBadAmount()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedIssuanceCreate = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> issuanceCreateSubmitResult = xrplClient.submit(signedIssuanceCreate);
+    assertThat(issuanceCreateSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedIssuanceCreate.hash(),
+        issuanceCreateSubmitResult.validatedLedgerIndex(),
+        issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedIssuanceCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("issuance create metadata did not contain issuance ID"));
+
+    AccountInfoResult updatedIssuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    // preflightUniversal (fixCleanup3_2_0) must reject a negative MPT escrow amount
+    // before any escrow-specific amendment checks run.
+    EscrowCreate escrowWithNegativeAmount = EscrowCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(updatedIssuerAccountInfo.accountData().sequence())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
+      .amount(
+        MptCurrencyAmount.builder()
+          .mptIssuanceId(mpTokenIssuanceId)
+          .value("-100")
+          .build()
+      )
+      .finishAfter(UnsignedLong.valueOf(802742400L))
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .lastLedgerSequence(
+        updatedIssuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .build();
+
+    SingleSignedTransaction<EscrowCreate> signedEscrow = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      escrowWithNegativeAmount
+    );
+    SubmitResult<EscrowCreate> submitResult = xrplClient.submit(signedEscrow);
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(submitResult.engineResult()),
+      "Skipping: fixCleanup3_2_0 not enabled on this node"
+    );
+    assertThat(submitResult.engineResult()).isEqualTo("temBAD_AMOUNT");
+  }
+}

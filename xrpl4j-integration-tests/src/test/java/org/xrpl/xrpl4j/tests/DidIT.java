@@ -90,11 +90,13 @@ public class DidIT extends AbstractIT {
     assertThat(finalFields.account()).isNotEmpty().get().isEqualTo(sourceAccountInfo.accountData().account());
     assertThat(finalFields.flags()).isEqualTo(Flags.UNSET);
 
-    List<DidObject> accountObjects = this.getValidatedAccountObjects(
-      did.ownerKeyPair().publicKey().deriveAddress(),
-      DidObject.class
+    List<DidObject> accountObjects = this.scanForResult(
+      () -> this.getValidatedAccountObjects(
+        did.ownerKeyPair().publicKey().deriveAddress(),
+        DidObject.class
+      ),
+      objects -> objects.size() == 1
     );
-    assertThat(accountObjects.size()).isEqualTo(1);
     DidObject didFromAccountObjects = accountObjects.get(0);
     assertThat(didFromAccountObjects.account()).isEqualTo(sourceAccountInfo.accountData().account());
     assertThat(didFromAccountObjects.didDocument()).isEmpty();
@@ -158,12 +160,13 @@ public class DidIT extends AbstractIT {
     assertThat(finalFields.account()).isNotEmpty().get().isEqualTo(sourceAccountInfo.accountData().account());
     assertThat(finalFields.flags()).isEqualTo(Flags.UNSET);
 
-    List<DidObject> accountObjects = this.getValidatedAccountObjects(
-      sourceAccountInfo.accountData().account(),
-      DidObject.class
+    this.scanForResult(
+      () -> this.getValidatedAccountObjects(
+        sourceAccountInfo.accountData().account(),
+        DidObject.class
+      ),
+      objects -> objects.isEmpty()
     );
-
-    assertThat(accountObjects).asList().isEmpty();
   }
 
   private TestDid createNewDid() throws JsonRpcClientErrorException, JsonProcessingException {
@@ -204,11 +207,13 @@ public class DidIT extends AbstractIT {
     assertThat(createdDid.account()).isNotEmpty().get().isEqualTo(sourceAccountInfo.accountData().account());
     assertThat(createdDid.flags()).isEqualTo(Flags.UNSET);
 
-    List<DidObject> accountObjects = this.getValidatedAccountObjects(
-      sourceKeyPair.publicKey().deriveAddress(),
-      DidObject.class
+    List<DidObject> accountObjects = this.scanForResult(
+      () -> this.getValidatedAccountObjects(
+        sourceKeyPair.publicKey().deriveAddress(),
+        DidObject.class
+      ),
+      objects -> objects.size() == 1
     );
-    assertThat(accountObjects.size()).isEqualTo(1);
     DidObject didFromAccountObjects = accountObjects.get(0);
     assertThat(didFromAccountObjects.account()).isEqualTo(sourceAccountInfo.accountData().account());
     assertThat(didFromAccountObjects.didDocument()).isNotEmpty().isEqualTo(createdDid.didDocument());

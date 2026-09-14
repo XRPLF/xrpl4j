@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.transactions.metadata;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -207,5 +208,57 @@ public interface MetaAccountRootObject extends MetaLedgerObject {
    */
   @JsonProperty("NFTokenMinter")
   Optional<Address> nfTokenMinter();
+
+  /**
+   * The number of objects this account owns that are sponsored by another account, as represented in transaction
+   * metadata. This count contributes to the sponsor's reserve requirement instead of this account's.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An optionally-present {@link UnsignedInteger} representing the number of sponsored objects.
+   */
+  @Beta
+  @JsonProperty("SponsoredOwnerCount")
+  Optional<UnsignedInteger> sponsoredOwnerCount();
+
+  /**
+   * The number of objects owned by other accounts that this account is sponsoring, as represented in transaction
+   * metadata. Each sponsored object contributes to this account's reserve requirement.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An optionally-present {@link UnsignedInteger} representing the number of objects being sponsored.
+   */
+  @Beta
+  @JsonProperty("SponsoringOwnerCount")
+  Optional<UnsignedInteger> sponsoringOwnerCount();
+
+  /**
+   * The number of accounts that this account is sponsoring, as represented in transaction metadata. Each sponsored
+   * account contributes to this account's reserve requirement.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An optionally-present {@link UnsignedInteger} representing the number of accounts being sponsored.
+   */
+  @Beta
+  @JsonProperty("SponsoringAccountCount")
+  Optional<UnsignedInteger> sponsoringAccountCount();
+
+  /**
+   * The account that is sponsoring the reserve for this ledger object, as represented in transaction metadata.
+   * If present, the sponsor is responsible for the reserve requirement of this object instead of the owner.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An optionally-present {@link Address} of the sponsoring account.
+   */
+  @Beta
+  @JsonProperty("Sponsor")
+  Optional<Address> sponsor();
 
 }

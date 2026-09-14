@@ -42,6 +42,7 @@ public class SeedTest {
 
   private final Seed edSeed = Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"));
   private final Seed ecSeed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("hello"));
+  private final Seed elGamalSeed = Seed.elGamalSecp256k1SeedFromPassphrase(Passphrase.of("hello"));
 
   @Test
   void constructorWithNullSeed() {
@@ -89,6 +90,14 @@ public class SeedTest {
   }
 
   @Test
+  void testRandomElGamalSecp256k1SeedGeneration() {
+    Seed originalSeed = Seed.elGamalSecp256k1Seed();
+    Seed copiedSeed = new DefaultSeed((DefaultSeed) originalSeed);
+    assertThat(originalSeed.equals(copiedSeed)).isTrue();
+    assertThat(originalSeed.decodedSeed().bytes().hexValue()).isEqualTo(copiedSeed.decodedSeed().bytes().hexValue());
+  }
+
+  @Test
   void testSecp256k1SeedFromNullEntropy() {
     assertThrows(NullPointerException.class, () -> {
       Seed.secp256k1SeedFromEntropy(null);
@@ -96,9 +105,25 @@ public class SeedTest {
   }
 
   @Test
+  void testSecp256k1SeedFrom32BytesEntropy() {
+    Entropy entropy = Entropy.newInstance(32);
+    assertThrows(IllegalArgumentException.class, () -> {
+      Seed.secp256k1SeedFromEntropy(entropy);
+    });
+  }
+
+  @Test
   void testEd25519SeedFromEntropyNullEntropy() {
     assertThrows(NullPointerException.class, () -> {
       Seed.ed25519SeedFromEntropy(null);
+    });
+  }
+
+  @Test
+  void testEd25519SeedFrom32BytesEntropy() {
+    Entropy entropy = Entropy.newInstance(32);
+    assertThrows(IllegalArgumentException.class, () -> {
+      Seed.ed25519SeedFromEntropy(entropy);
     });
   }
 
@@ -136,6 +161,15 @@ public class SeedTest {
     assertThat(ecSeed.isDestroyed()).isFalse();
     ecSeed.destroy();
     assertThat(ecSeed.isDestroyed()).isTrue();
+  }
+
+  @Test
+  public void testElGamalSecp256k1SeedFromPassphrase() throws DestroyFailedException {
+    //noinspection OptionalGetWithoutIsPresent
+    assertThat(elGamalSeed.decodedSeed().type().get()).isEqualTo(KeyType.SECP256K1);
+    assertThat(elGamalSeed.isDestroyed()).isFalse();
+    elGamalSeed.destroy();
+    assertThat(elGamalSeed.isDestroyed()).isTrue();
   }
 
   @Test
@@ -277,6 +311,21 @@ public class SeedTest {
     assertThat(edSeed.toString()).isEqualTo("Seed{value=[redacted], destroyed=false}");
   }
 
+  @Test
+  void testElGamalSecp256k1SeedFromNullEntropy() {
+    assertThrows(NullPointerException.class, () -> {
+      Seed.elGamalSecp256k1SeedFromEntropy(null);
+    });
+  }
+
+  @Test
+  void testElGamalSecp256k1SeedFrom16BytesEntropy() {
+    Entropy entropy = Entropy.of(new byte[16]);
+    assertThrows(IllegalArgumentException.class, () -> {
+      Seed.elGamalSecp256k1SeedFromEntropy(entropy);
+    });
+  }
+
   ///////////////////
   // Tests for Ed25519KeyService
   ///////////////////
@@ -335,6 +384,24 @@ public class SeedTest {
       .build();
     assertThat(keyPair).isEqualTo(expectedKeyPair);
     assertThat(keyPair.publicKey().deriveAddress().value()).isEqualTo("rU6K7V3Po4snVhBBaU29sesqs2qTQJWDw1");
+  }
+
+  @Test
+  public void deriveElGamalSecp256k1KeyPair() {
+    Entropy entropy = Entropy.of(
+      BaseEncoding.base16().decode("4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4")
+    );
+    Seed seed = Seed.elGamalSecp256k1SeedFromEntropy(entropy);
+    KeyPair keyPair = Seed.DefaultSeed.Secp256k1KeyPairService.deriveKeyPair(seed);
+    KeyPair expectedKeyPair = KeyPair.builder()
+      .privateKey(PrivateKey.fromPrefixedBytes(UnsignedByteArray.of(
+        BaseEncoding.base16().decode("003DEC9EA8274A9B17696B56AF549F1B760C6621CE6F8C50C6E3978A057E3C65C0"
+        ))))
+      .publicKey(
+        PublicKey.fromBase16EncodedPublicKey("02FE37E210C01F3A43C7E28919ECC84612780921E35A3E795D6ED2752F5DF46F99")
+      )
+      .build();
+    assertThat(keyPair).isEqualTo(expectedKeyPair);
   }
 
   @Test

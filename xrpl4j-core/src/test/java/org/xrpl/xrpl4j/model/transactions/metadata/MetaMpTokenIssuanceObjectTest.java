@@ -6,9 +6,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceMutableFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -56,10 +57,10 @@ class MetaMpTokenIssuanceObjectTest extends AbstractJsonTest {
   }
 
   @Test
-  void testJsonWithMutableFlags() throws JsonProcessingException, JSONException {
-    MpTokenIssuanceMutableFlags lsmf = MpTokenIssuanceMutableFlags.builder()
-      .lsmfMptCanMutateCanLock(true)
-      .lsmfMptCanMutateMetadata(true)
+  void testJsonWithImmutableFlags() throws JsonProcessingException, JSONException {
+    MpTokenIssuanceImmutableFlags lsif = MpTokenIssuanceImmutableFlags.builder()
+      .lsifMptCanLock(true)
+      .lsifMptMetadata(true)
       .build();
 
     MetaMpTokenIssuanceObject object = ImmutableMetaMpTokenIssuanceObject.builder()
@@ -69,7 +70,7 @@ class MetaMpTokenIssuanceObjectTest extends AbstractJsonTest {
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(420))
       .sequence(UnsignedInteger.valueOf(7))
       .ownerNode("0")
-      .mutableFlags(lsmf)
+      .immutableFlags(lsif)
       .build();
 
     String json = "{\n" +
@@ -79,15 +80,15 @@ class MetaMpTokenIssuanceObjectTest extends AbstractJsonTest {
       "  \"PreviousTxnLgrSeq\": 420,\n" +
       "  \"Sequence\": 7,\n" +
       "  \"OwnerNode\": \"0\",\n" +
-      "  \"MutableFlags\": " + lsmf.getValue() + "\n" +
+      "  \"ImmutableFlags\": " + lsif.getValue() + "\n" +
       "}";
 
     assertCanSerializeAndDeserialize(object, json, MetaMpTokenIssuanceObject.class);
-    assertThat(object.mutableFlags()).isPresent().get().isEqualTo(lsmf);
+    assertThat(object.immutableFlags()).isPresent().get().isEqualTo(lsif);
   }
 
   @Test
-  void testMutableFlagsIsOptional() {
+  void testImmutableFlagsIsOptional() {
     MetaMpTokenIssuanceObject object = ImmutableMetaMpTokenIssuanceObject.builder()
       .flags(MpTokenIssuanceFlags.of(0))
       .issuer(Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c"))
@@ -97,6 +98,49 @@ class MetaMpTokenIssuanceObjectTest extends AbstractJsonTest {
       .ownerNode("0")
       .build();
 
-    assertThat(object.mutableFlags()).isEmpty();
+    assertThat(object.immutableFlags()).isEmpty();
+  }
+
+  @Test
+  void testJsonWithConfidentialFields() throws JsonProcessingException, JSONException {
+    MetaMpTokenIssuanceObject object = ImmutableMetaMpTokenIssuanceObject.builder()
+      .assetScale(AssetScale.of(UnsignedInteger.valueOf(2)))
+      .flags(MpTokenIssuanceFlags.of(128))
+      .issuer(Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c"))
+      .maximumAmount(MpTokenNumericAmount.of(5000000))
+      .outstandingAmount(MpTokenNumericAmount.of(1000000))
+      .confidentialOutstandingAmount(MpTokenNumericAmount.of(500000))
+      .issuerEncryptionKey(PublicKey.fromBase16EncodedPublicKey(
+        "028D7500BFCD792B487E4E51664037AB543E76CEBACF0E7E17AD4B83057E1F2B30"
+      ))
+      .auditorEncryptionKey(PublicKey.fromBase16EncodedPublicKey(
+        "037C0863E64B648BFA3C89B921C57B11757E2B2054EE094E2CD05BFBFF0ED28CA4"
+      ))
+      .transferFee(TransferFee.of(UnsignedInteger.valueOf(10)))
+      .previousTransactionId(Hash256.of("8C20A85CE9EA44CEF32C8B06209890154D8810A8409D8582884566CD24DE694F"))
+      .previousTransactionLedgerSequence(UnsignedInteger.valueOf(420))
+      .sequence(UnsignedInteger.valueOf(377))
+      .ownerNode("0")
+      .build();
+
+    String json = "{\n" +
+      "  \"AssetScale\": 2,\n" +
+      "  \"Flags\": 128,\n" +
+      "  \"Issuer\": \"rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c\",\n" +
+      "  \"MaximumAmount\": \"5000000\",\n" +
+      "  \"OutstandingAmount\": \"1000000\",\n" +
+      "  \"ConfidentialOutstandingAmount\": \"500000\",\n" +
+      "  \"IssuerEncryptionKey\": " +
+      "\"028D7500BFCD792B487E4E51664037AB543E76CEBACF0E7E17AD4B83057E1F2B30\",\n" +
+      "  \"AuditorEncryptionKey\": " +
+      "\"037C0863E64B648BFA3C89B921C57B11757E2B2054EE094E2CD05BFBFF0ED28CA4\",\n" +
+      "  \"TransferFee\": 10,\n" +
+      "  \"PreviousTxnID\": \"8C20A85CE9EA44CEF32C8B06209890154D8810A8409D8582884566CD24DE694F\",\n" +
+      "  \"PreviousTxnLgrSeq\": 420,\n" +
+      "  \"Sequence\": 377,\n" +
+      "  \"OwnerNode\": \"0\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(object, json, MetaMpTokenIssuanceObject.class);
   }
 }

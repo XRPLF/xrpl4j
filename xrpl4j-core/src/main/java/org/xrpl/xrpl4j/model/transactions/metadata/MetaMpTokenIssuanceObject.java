@@ -3,10 +3,12 @@ package org.xrpl.xrpl4j.model.transactions.metadata;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceMutableFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceImmutableFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -52,6 +54,30 @@ public interface MetaMpTokenIssuanceObject extends MetaLedgerObject {
   Optional<Hash256> domainId();
 
   /**
+   * The total amount of this token that is currently held in confidential balances.
+   *
+   * @return An {@link Optional} {@link MpTokenNumericAmount}.
+   */
+  @JsonProperty("ConfidentialOutstandingAmount")
+  Optional<MpTokenNumericAmount> confidentialOutstandingAmount();
+
+  /**
+   * A 33-byte compressed ElGamal public key for the issuer.
+   *
+   * @return An {@link Optional} {@link PublicKey}.
+   */
+  @JsonProperty("IssuerEncryptionKey")
+  Optional<PublicKey> issuerEncryptionKey();
+
+  /**
+   * A 33-byte compressed ElGamal public key for an optional on-chain auditor.
+   *
+   * @return An {@link Optional} {@link PublicKey}.
+   */
+  @JsonProperty("AuditorEncryptionKey")
+  Optional<PublicKey> auditorEncryptionKey();
+
+  /**
    * The identifying hash of the transaction that most recently modified this object.
    *
    * @return A {@link Hash256} containing the previous transaction hash.
@@ -90,8 +116,8 @@ public interface MetaMpTokenIssuanceObject extends MetaLedgerObject {
   @JsonProperty("OwnerNode")
   Optional<String> ownerNode();
 
-  @JsonProperty("MutableFlags")
-  Optional<MpTokenIssuanceMutableFlags> mutableFlags();
+  @JsonProperty("ImmutableFlags")
+  Optional<MpTokenIssuanceImmutableFlags> immutableFlags();
 
   /**
    * {@link Hash256} pointing to the vault pseudo-account's holding for the underlying asset. Present for IOU and
@@ -101,5 +127,18 @@ public interface MetaMpTokenIssuanceObject extends MetaLedgerObject {
    */
   @JsonProperty("ReferenceHolding")
   Optional<Hash256> referenceHolding();
+
+  /**
+   * The account that is sponsoring the reserve for this ledger object, as represented in transaction metadata.
+   * If present, the sponsor is responsible for the reserve requirement of this object instead of the owner.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An optionally-present {@link Address} of the sponsoring account.
+   */
+  @Beta
+  @JsonProperty("Sponsor")
+  Optional<Address> sponsor();
 
 }

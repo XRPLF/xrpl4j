@@ -64,8 +64,10 @@ public interface BatchSigner {
   }
 
   /**
-   * The account address of the signer. This must match either the outer transaction's Account or one of the inner
-   * transaction accounts.
+   * The account address of the signer. Must be an account that has at least one inner transaction in the enclosing
+   * {@link Batch}, <em>or</em> an account that would ordinarily have to sign at least one of the inner transactions
+   * (e.g., a co-signer or delegate). Pseudo-accounts (e.g., vault or MPT-issuance accounts) cannot appear here;
+   * rippled rejects such entries with {@code tefBAD_AUTH}.
    *
    * @return An {@link Address}.
    */

@@ -87,10 +87,14 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   }
 
   @Override
-  public Signature signInner(final P privateKeyable, final Batch batchTransaction) {
+  public Signature signInner(
+    final P privateKeyable, final Batch batchTransaction, final Address batchSignerAddress
+  ) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(batchTransaction);
-    final UnsignedByteArray signableBytes = this.signatureUtils.toSignableInnerBytes(batchTransaction);
+    Objects.requireNonNull(batchSignerAddress);
+    final UnsignedByteArray signableBytes = this.signatureUtils.toSignableInnerBytes(batchTransaction,
+      batchSignerAddress);
     return this.signatureHelper(privateKeyable, signableBytes);
   }
 
@@ -105,12 +109,16 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   }
 
   @Override
-  public Signature multiSignInner(final P privateKeyable, final Batch batchTransaction) {
+  public Signature multiSignInner(final P privateKeyable, final Batch batchTransaction,
+    final Address batchSignerAddress) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(batchTransaction);
+    Objects.requireNonNull(batchSignerAddress);
 
-    final Address address = derivePublicKey(privateKeyable).deriveAddress();
-    final UnsignedByteArray signableBytes = this.signatureUtils.toMultiSignableInnerBytes(batchTransaction, address);
+    final Address nestedSignerAddress = derivePublicKey(privateKeyable).deriveAddress();
+    final UnsignedByteArray signableBytes = this.signatureUtils.toMultiSignableInnerBytes(
+      batchTransaction, batchSignerAddress, nestedSignerAddress
+    );
 
     return this.signatureHelper(privateKeyable, signableBytes);
   }
@@ -130,6 +138,33 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
 
     final Address address = derivePublicKey(privateKeyable).deriveAddress();
     final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toCounterpartyMultiSignableBytes(
+      transaction, address
+    );
+    return this.signatureHelper(privateKeyable, signableTransactionBytes);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorSign(final P privateKeyable, final T transaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(transaction);
+
+    // Per the rippled implementation of the Sponsorship amendment, sponsor single-signing uses the same
+    // HashPrefix::txSign (STX, 0x53545800) prefix and serialization as regular single-signing. Domain separation
+    // between the account-owner and sponsor roles is not required at the signing-bytes level because the resulting
+    // signatures are placed in distinct transaction fields (TxnSignature vs SponsorSignature.TxnSignature), and the
+    // account-owner and sponsor use different key pairs. So this can safely reuse the regular signing path.
+    return this.signatureHelper(privateKeyable, transaction);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorMultiSign(final P privateKeyable, final T transaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(transaction);
+
+    // Sponsor multi-signing preserves the first-party signer's SigningPubKey in the signed data.
+    // This differs from regular multi-signing which clears the SigningPubKey.
+    final Address address = derivePublicKey(privateKeyable).deriveAddress();
+    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSponsorMultiSignableBytes(
       transaction, address
     );
     return this.signatureHelper(privateKeyable, signableTransactionBytes);

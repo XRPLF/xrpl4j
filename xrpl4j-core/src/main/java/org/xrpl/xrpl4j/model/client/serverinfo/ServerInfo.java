@@ -346,11 +346,14 @@ public interface ServerInfo {
     }
 
     /**
-     * The time since the ledger was closed, in seconds.
+     * The time since the ledger was closed, in seconds. Per xrpl.org docs, this field is optionally present in any
+     * server response and may be omitted, for example if the server cannot compute a valid age because it is
+     * syncing, disconnected, or reconnecting.
      *
-     * @return An {@link UnsignedInteger} representing the age, in seconds.
+     * @return An optionally-present {@link UnsignedInteger} representing the age, in seconds.
      */
-    UnsignedInteger age();
+    @JsonProperty("age")
+    Optional<UnsignedInteger> age();
 
     /**
      * Unique hash for the ledger, as hexadecimal.

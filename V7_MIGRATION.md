@@ -14,6 +14,10 @@ Version 7.0.0 introduces several breaking changes:
    `SignatureUtils.addMultiSignaturesToTransaction()` have been removed. Transaction signing now uses Immutables-generated
    `withTransactionSignature()` and `withSigners()` methods on `Transaction`, and validation has moved to `@Check`
    methods on `SingleSignedTransaction` and `MultiSignedTransaction`.
+3. **`MetaMpTokenIssuanceObject.mpTokenMetadata()` type change** — now returns `Optional<MpTokenMetadata>` instead of
+   `Optional<String>`.
+4. **`ValidatedLedger.age()` type change** — now returns `Optional<UnsignedInteger>` instead of `UnsignedInteger`,
+   since rippled omits this field when it cannot compute a valid age.
 
 ## Breaking Changes
 
@@ -193,6 +197,39 @@ Optional<String> metadata = metaMpTokenIssuanceObject.mpTokenMetadata();
 Optional<MpTokenMetadata> metadata = metaMpTokenIssuanceObject.mpTokenMetadata();
 // To get the raw hex string:
 Optional<String> hexString = metadata.map(MpTokenMetadata::value);
+```
+
+### 4. `ValidatedLedger.age()` type change
+
+The return type of `ServerInfo.ValidatedLedger#age()` changed from `UnsignedInteger` to `Optional<UnsignedInteger>`.
+rippled omits the `age` field from `closed_ledger` and `validated_ledger` in `server_info` responses when it cannot
+compute a valid age — for example while the server is syncing, disconnected, or reconnecting. Previously, xrpl4j
+modeled `age` as required, so `XrplClient.serverInformation()` would throw a `JsonRpcClientErrorException` in exactly
+those situations, making it unusable as a health check during incomplete synchronization.
+
+**Migration:**
+
+```java
+// Before (v6.x.x)
+UnsignedInteger age = validatedLedger.age();
+
+// After (v7.0.0)
+Optional<UnsignedInteger> age = validatedLedger.age();
+
+// Idiomatic ways to use the optional value:
+// Option 1: Check if present and use it
+if (validatedLedger.age().isPresent()) {
+    UnsignedInteger ageValue = validatedLedger.age().get();
+    // Use ageValue here
+}
+
+// Option 2: Use ifPresent for a functional style
+validatedLedger.age().ifPresent(ageValue -> {
+    // Use ageValue here
+});
+
+// Option 3: Provide a default value
+UnsignedInteger ageValue = validatedLedger.age().orElse(UnsignedInteger.ZERO);
 ```
 
 ## Backward Compatibility

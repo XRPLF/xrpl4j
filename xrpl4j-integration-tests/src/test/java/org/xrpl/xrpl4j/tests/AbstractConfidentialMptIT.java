@@ -53,6 +53,7 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.fees.FeeParams;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
@@ -65,11 +66,15 @@ import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvertBack;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptMergeInbox;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMptSend;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.ImmutableConfidentialMptClawback;
 import org.xrpl.xrpl4j.model.transactions.ImmutableConfidentialMptConvert;
+import org.xrpl.xrpl4j.model.transactions.ImmutableConfidentialMptConvertBack;
+import org.xrpl.xrpl4j.model.transactions.ImmutableConfidentialMptMergeInbox;
 import org.xrpl.xrpl4j.model.transactions.ImmutableConfidentialMptSend;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
+import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Arrays;
@@ -107,10 +112,20 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
   }
 
   /**
-   * The recommended fee for a single-signed confidential MPT transaction (carries rippled's fee multiplier).
+   * The recommended fee for the supplied transaction. Fees are derived from the transaction itself, so callers
+   * build with a placeholder fee of zero, price the result, then reprice it via the generated {@code withFee}.
+   *
+   * @param transaction The {@link Transaction} to price.
+   *
+   * @return The recommended {@link XrpCurrencyAmount} fee for {@code transaction}.
+   *
+   * @throws JsonRpcClientErrorException If the current fee levels cannot be fetched.
    */
-  protected XrpCurrencyAmount confidentialFee() throws JsonRpcClientErrorException {
-    return FeeUtils.computeConfidentialMptNetworkFees(xrplClient.fee(), UnsignedInteger.ZERO).recommendedFee();
+  protected XrpCurrencyAmount feeFor(final Transaction transaction) throws JsonRpcClientErrorException {
+    return FeeUtils.computeFee(FeeParams.builder()
+      .feeResult(xrplClient.fee())
+      .transaction(transaction)
+      .build()).recommendedFee();
   }
 
   // ===========================================================================
@@ -238,7 +253,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
 
     final ImmutableConfidentialMptConvert.Builder builder = ConfidentialMptConvert.builder()
       .account(holder.address())
-      .fee(confidentialFee())
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(sequence)
       .signingPublicKey(holder.account.publicKey())
       .mpTokenIssuanceId(issuance.issuanceId)
@@ -258,7 +273,10 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
       builder.holderEncryptionKey(holder.elGamal.publicKey()).zkProof(proof);
     }
 
-    return signatureService.sign(holder.account.privateKey(), builder.build());
+    final ConfidentialMptConvert convert = builder.build();
+    return signatureService.sign(
+      holder.account.privateKey(), ImmutableConfidentialMptConvert.copyOf(convert).withFee(feeFor(convert))
+    );
   }
 
   // ===========================================================================
@@ -280,12 +298,14 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
   ) throws Exception {
     final ConfidentialMptMergeInbox merge = ConfidentialMptMergeInbox.builder()
       .account(holder.address())
-      .fee(confidentialFee())
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(currentSequence(holder.address()))
       .signingPublicKey(holder.account.publicKey())
       .mpTokenIssuanceId(issuance.issuanceId)
       .build();
-    return signatureService.sign(holder.account.privateKey(), merge);
+    return signatureService.sign(
+      holder.account.privateKey(), ImmutableConfidentialMptMergeInbox.copyOf(merge).withFee(feeFor(merge))
+    );
   }
 
   // ===========================================================================
@@ -348,7 +368,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
 
     final ImmutableConfidentialMptSend.Builder builder = ConfidentialMptSend.builder()
       .account(sender.address())
-      .fee(confidentialFee())
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(sequence)
       .signingPublicKey(sender.account.publicKey())
       .destination(destination.address())
@@ -364,7 +384,10 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
       builder.credentialIds(credentialIds);
     }
 
-    return signatureService.sign(sender.account.privateKey(), builder.build());
+    final ConfidentialMptSend send = builder.build();
+    return signatureService.sign(
+      sender.account.privateKey(), ImmutableConfidentialMptSend.copyOf(send).withFee(feeFor(send))
+    );
   }
 
   // ===========================================================================
@@ -412,7 +435,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
 
     final ConfidentialMptConvertBack convertBack = ConfidentialMptConvertBack.builder()
       .account(holder.address())
-      .fee(confidentialFee())
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(sequence)
       .signingPublicKey(holder.account.publicKey())
       .mpTokenIssuanceId(issuance.issuanceId)
@@ -424,7 +447,10 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
       .balanceCommitment(Commitment.of(balanceParams.pedersenCommitment().hexValue()))
       .zkProof(proof)
       .build();
-    return signatureService.sign(holder.account.privateKey(), convertBack);
+    return signatureService.sign(
+      holder.account.privateKey(),
+      ImmutableConfidentialMptConvertBack.copyOf(convertBack).withFee(feeFor(convertBack))
+    );
   }
 
   // ===========================================================================
@@ -467,7 +493,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
 
     final ConfidentialMptClawback clawback = ConfidentialMptClawback.builder()
       .account(issuance.issuer.publicKey().deriveAddress())
-      .fee(confidentialFee())
+      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(sequence)
       .signingPublicKey(issuance.issuer.publicKey())
       .mpTokenIssuanceId(issuance.issuanceId)
@@ -475,7 +501,9 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
       .mptAmount(MpTokenNumericAmount.of(value))
       .zkProof(proof)
       .build();
-    return signatureService.sign(issuance.issuer.privateKey(), clawback);
+    return signatureService.sign(
+      issuance.issuer.privateKey(), ImmutableConfidentialMptClawback.copyOf(clawback).withFee(feeFor(clawback))
+    );
   }
 
   // ===========================================================================

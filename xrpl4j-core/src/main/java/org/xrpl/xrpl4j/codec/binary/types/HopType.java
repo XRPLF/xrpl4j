@@ -114,7 +114,7 @@ public class HopType extends SerializedType<HopType> {
     }
 
     if ((type & TYPE_ISSUER) > 0) {
-      builder.account(new AccountIdType().fromParser(parser).toJson());
+      builder.issuer(new AccountIdType().fromParser(parser).toJson());
     }
 
     return objectMapper.valueToTree(builder.build());

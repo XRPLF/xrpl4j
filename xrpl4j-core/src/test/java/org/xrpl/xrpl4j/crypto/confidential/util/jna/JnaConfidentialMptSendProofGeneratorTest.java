@@ -12,11 +12,11 @@ import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -40,7 +40,7 @@ class JnaConfidentialMptSendProofGeneratorTest {
     Seed.ed25519SeedFromPassphrase(Passphrase.of("send-proof-gen")).deriveKeyPair();
   private static final PublicKey PUBLIC_KEY = SECP_KEY_PAIR.publicKey();
   private static final UnsignedLong AMOUNT = UnsignedLong.valueOf(100);
-  private static final BlindingFactor BLINDING_FACTOR = BlindingFactor.of(Strings.repeat("11", 32));
+  private static final SecretBlindingFactor BLINDING_FACTOR = SecretBlindingFactor.of(Strings.repeat("11", 32));
   private static final Commitment AMOUNT_COMMITMENT = Commitment.of(Strings.repeat("02", 33));
   private static final EncryptedAmount CIPHERTEXT = EncryptedAmount.of(Strings.repeat("03", 66));
   private static final ConfidentialMptSendContext CONTEXT =
@@ -83,6 +83,39 @@ class JnaConfidentialMptSendProofGeneratorTest {
     );
 
     assertThat(proof.value().toByteArray()).isEqualTo(expected);
+  }
+
+  @Test
+  void generateProofRejectsDestroyedPrivateKey() {
+    KeyPair destroyed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("send-destroyed-key")).deriveKeyPair();
+    destroyed.privateKey().destroy();
+
+    assertThatThrownBy(() -> generator.generateProof(
+      destroyed, AMOUNT, PARTICIPANTS, BLINDING_FACTOR, CONTEXT, AMOUNT_COMMITMENT, BALANCE_PARAMS
+    )).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("privateKey has been destroyed");
+  }
+
+  @Test
+  void generateProofRejectsDestroyedTxBlindingFactor() {
+    SecretBlindingFactor destroyed = SecretBlindingFactor.of(Strings.repeat("22", 32));
+    destroyed.destroy();
+
+    assertThatThrownBy(() -> generator.generateProof(
+      SECP_KEY_PAIR, AMOUNT, PARTICIPANTS, destroyed, CONTEXT, AMOUNT_COMMITMENT, BALANCE_PARAMS
+    )).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("txBlindingFactor has been destroyed");
+  }
+
+  @Test
+  void generateProofRejectsDestroyedBalanceBlindingFactor() {
+    SecretBlindingFactor destroyed = SecretBlindingFactor.of(Strings.repeat("33", 32));
+    destroyed.destroy();
+    PedersenProofParams params = PedersenProofParams.builder().from(BALANCE_PARAMS)
+      .blindingFactor(destroyed).build();
+
+    assertThatThrownBy(() -> generator.generateProof(
+      SECP_KEY_PAIR, AMOUNT, PARTICIPANTS, BLINDING_FACTOR, CONTEXT, AMOUNT_COMMITMENT, params
+    )).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("balanceParams' blindingFactor has been destroyed");
   }
 
   @Test

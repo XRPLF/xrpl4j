@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,8 @@ public class JnaConfidentialMptConvertBackProofVerifier implements ConfidentialM
 
     // keyType() is content-derived and does not by itself guarantee length; the native call needs exactly 33 bytes.
     byte[] senderPublicKeyBytes = senderPublicKey.value().toByteArray();
-    Preconditions.checkArgument(senderPublicKeyBytes.length == 33, "senderPublicKey must be 33 bytes");
+    Preconditions.checkArgument(
+      senderPublicKeyBytes.length == PublicKey.LENGTH, "senderPublicKey must be %s bytes", PublicKey.LENGTH);
 
     return lib.mpt_verify_convert_back_proof(
       proof.value().toByteArray(),

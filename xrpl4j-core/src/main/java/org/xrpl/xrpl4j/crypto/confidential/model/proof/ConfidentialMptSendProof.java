@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.model.proof;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptSendProofSerializer;
 @Value.Immutable
 @JsonSerialize(as = ImmutableConfidentialMptSendProof.class, using = ConfidentialMptSendProofSerializer.class)
 @JsonDeserialize(as = ImmutableConfidentialMptSendProof.class, using = ConfidentialMptSendProofDeserializer.class)
-public interface ConfidentialMptSendProof {
+public abstract class ConfidentialMptSendProof {
 
   /**
    * Creates a proof from an {@link UnsignedByteArray}.
@@ -49,7 +49,7 @@ public interface ConfidentialMptSendProof {
    *
    * @return A {@link ConfidentialMptSendProof}.
    */
-  static ConfidentialMptSendProof of(final UnsignedByteArray value) {
+  public static ConfidentialMptSendProof of(final UnsignedByteArray value) {
     return ImmutableConfidentialMptSendProof.builder().value(value).build();
   }
 
@@ -60,7 +60,7 @@ public interface ConfidentialMptSendProof {
    *
    * @return A {@link ConfidentialMptSendProof}.
    */
-  static ConfidentialMptSendProof fromHex(final String hex) {
+  public static ConfidentialMptSendProof fromHex(final String hex) {
     return of(UnsignedByteArray.fromHex(hex));
   }
 
@@ -69,13 +69,13 @@ public interface ConfidentialMptSendProof {
    *
    * @return An {@link UnsignedByteArray}.
    */
-  UnsignedByteArray value();
+  public abstract UnsignedByteArray value();
 
   /**
    * Validates that the proof is exactly 946 bytes: compact sigma (192) + double bulletproof (754).
    */
   @Value.Check
-  default void check() {
+  void check() {
     final int compactSigmaSize = 192;
     final int doubleBulletproofSize = 754;
     final int expectedSize = compactSigmaSize + doubleBulletproofSize;
@@ -93,7 +93,17 @@ public interface ConfidentialMptSendProof {
    */
   @JsonIgnore
   @Value.Lazy
-  default String hexValue() {
+  public String hexValue() {
     return BaseEncoding.base16().encode(value().toByteArray());
+  }
+
+  /**
+   * A debug-friendly representation showing the value as hex rather than the raw byte array.
+   *
+   * @return A {@link String}.
+   */
+  @Override
+  public String toString() {
+    return "ConfidentialMptSendProof{value=" + hexValue() + "}";
   }
 }

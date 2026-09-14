@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,10 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * =========================LICENSE_END==================================
  */
 
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -33,8 +34,6 @@ import java.util.Objects;
  * a 32-byte random blinding factor suitable for ElGamal encryption.</p>
  */
 public class JnaBlindingFactorGenerator implements BlindingFactorGenerator {
-
-  private static final int BLINDING_FACTOR_SIZE = 32;
 
   private final MptCryptoLibrary lib;
 
@@ -57,12 +56,28 @@ public class JnaBlindingFactorGenerator implements BlindingFactorGenerator {
   }
 
   @Override
-  public BlindingFactor generate() {
-    byte[] outFactor = new byte[BLINDING_FACTOR_SIZE];
+  public SecretBlindingFactor generate() {
+    byte[] outFactor = generateBytes();
+    try {
+      return SecretBlindingFactor.fromBytes(outFactor);
+    } finally {
+      Arrays.fill(outFactor, (byte) 0);
+    }
+  }
+
+  /**
+   * Draws 32 random bytes from the native CSPRNG. Callers scrub the returned array in a {@code finally} -- safe
+   * because {@code fromBytes} copies it.
+   *
+   * @return A newly generated 32-byte scalar, which the caller is responsible for scrubbing.
+   */
+  private byte[] generateBytes() {
+    byte[] outFactor = new byte[SecretBlindingFactor.LENGTH];
     int result = lib.mpt_generate_blinding_factor(outFactor);
     if (result != 0) {
+      Arrays.fill(outFactor, (byte) 0);
       throw new IllegalStateException("mpt_generate_blinding_factor failed with error code: " + result);
     }
-    return BlindingFactor.fromBytes(outFactor);
+    return outFactor;
   }
 }

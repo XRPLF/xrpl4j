@@ -1,5 +1,25 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: core
+ * %%
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -127,6 +147,8 @@ public interface ConfidentialMptConvert extends Transaction {
    * {@code temBAD_AMOUNT} checks in {@code rippled}'s {@code ConfidentialMPTConvert} preflight.
    *
    * <ul>
+   *   <li>The issuer of the {@code MPTokenIssuanceID} must not be the {@code Account} — the issuer cannot convert its
+   *       own issuance ({@code temMALFORMED} in {@code rippled}).</li>
    *   <li>{@code MPTAmount} must be no greater than the maximum allowable supply ({@code temBAD_AMOUNT} in
    *       {@code rippled}). A zero amount is permitted, since a zero-amount conversion is the opt-in mechanism used to
    *       register a {@code HolderEncryptionKey}.</li>
@@ -138,6 +160,11 @@ public interface ConfidentialMptConvert extends Transaction {
    */
   @Value.Check
   default void validateFieldCombinations() {
+    Preconditions.checkState(
+      !mpTokenIssuanceId().isIssuer(account()),
+      "The issuer cannot convert its own issuance."
+    );
+
     Preconditions.checkState(
       mptAmount().value().compareTo(MpTokenNumericAmount.MAX_AMOUNT) <= 0,
       "MPTAmount must not exceed the maximum allowable supply (%s).", MpTokenNumericAmount.MAX_AMOUNT

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
@@ -64,6 +65,16 @@ class JnaMptAmountEncryptorTest {
   }
 
   @Test
+  void encryptRejectsDestroyedBlindingFactor() {
+    // isDestroyed() is queryable on BlindingFactorValue, so this guard works for either kind of factor.
+    SecretBlindingFactor destroyed = SecretBlindingFactor.of(Strings.repeat("11", 32));
+    destroyed.destroy();
+
+    assertThatThrownBy(() -> encryptor.encrypt(AMOUNT, SECP_PUBLIC_KEY, destroyed))
+      .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("blindingFactor has been destroyed");
+  }
+
+  @Test
   void encryptThrowsOnNativeError() {
     when(lib.mpt_encrypt_amount(anyLong(), any(), any(), any())).thenReturn(-1);
 
@@ -80,7 +91,7 @@ class JnaMptAmountEncryptorTest {
     assertThatThrownBy(() -> encryptor.encrypt(AMOUNT, null, BLINDING_FACTOR))
       .isInstanceOf(NullPointerException.class)
       .hasMessageContaining("publicKey");
-    assertThatThrownBy(() -> encryptor.encrypt(AMOUNT, SECP_PUBLIC_KEY, null))
+    assertThatThrownBy(() -> encryptor.encrypt(AMOUNT, SECP_PUBLIC_KEY, (SecretBlindingFactor) null))
       .isInstanceOf(NullPointerException.class)
       .hasMessageContaining("blindingFactor");
   }

@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,17 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,9 +49,6 @@ import java.util.Objects;
  */
 public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSendProofGenerator {
 
-  private static final int PUBLIC_KEY_SIZE = 33;
-  private static final int PRIVATE_KEY_SIZE = 32;
-  private static final int CIPHERTEXT_SIZE = 66;
   private static final int SEND_PROOF_SIZE = 946;
   private static final int MIN_PARTICIPANTS = 3;
   private static final int MAX_PARTICIPANTS = 4;
@@ -78,7 +78,7 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     final KeyPair senderKeyPair,
     final UnsignedLong amount,
     final List<MptConfidentialParty> participants,
-    final BlindingFactor txBlindingFactor,
+    final SecretBlindingFactor txBlindingFactor,
     final ConfidentialMptSendContext context,
     final Commitment amountCommitment,
     final PedersenProofParams balanceParams
@@ -90,6 +90,11 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     Objects.requireNonNull(context, "context must not be null");
     Objects.requireNonNull(amountCommitment, "amountCommitment must not be null");
     Objects.requireNonNull(balanceParams, "balanceParams must not be null");
+    Preconditions.checkArgument(
+      !senderKeyPair.privateKey().isDestroyed(), "senderKeyPair's privateKey has been destroyed");
+    Preconditions.checkArgument(!txBlindingFactor.isDestroyed(), "txBlindingFactor has been destroyed");
+    Preconditions.checkArgument(
+      !balanceParams.blindingFactor().isDestroyed(), "balanceParams' blindingFactor has been destroyed");
 
     Preconditions.checkArgument(
       senderKeyPair.publicKey().keyType() == KeyType.SECP256K1,
@@ -99,8 +104,8 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     // wrong-length key fails before, not after, a scrubbed buffer is populated. keyType() does not guarantee length.
     byte[] publicKeyBytes = senderKeyPair.publicKey().value().toByteArray();
     Preconditions.checkArgument(
-      publicKeyBytes.length == PUBLIC_KEY_SIZE,
-      "senderKeyPair public key must be %s bytes, but was %s bytes", PUBLIC_KEY_SIZE, publicKeyBytes.length
+      publicKeyBytes.length == PublicKey.LENGTH,
+      "senderKeyPair public key must be %s bytes, but was %s bytes", PublicKey.LENGTH, publicKeyBytes.length
     );
     Preconditions.checkArgument(
       participants.size() >= MIN_PARTICIPANTS && participants.size() <= MAX_PARTICIPANTS,
@@ -119,15 +124,16 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
       byte[] partyCiphertext = party.encryptedAmount().value().toByteArray();
       // keyType() does not guarantee byte length; validate before the fixed-size arraycopy silently truncates.
       Preconditions.checkArgument(
-        partyPublicKey.length == PUBLIC_KEY_SIZE,
-        "participant %s public key must be %s bytes, but was %s bytes", i, PUBLIC_KEY_SIZE, partyPublicKey.length
+        partyPublicKey.length == PublicKey.LENGTH,
+        "participant %s public key must be %s bytes, but was %s bytes", i, PublicKey.LENGTH, partyPublicKey.length
       );
       Preconditions.checkArgument(
-        partyCiphertext.length == CIPHERTEXT_SIZE,
-        "participant %s ciphertext must be %s bytes, but was %s bytes", i, CIPHERTEXT_SIZE, partyCiphertext.length
+        partyCiphertext.length == EncryptedAmount.LENGTH,
+        "participant %s ciphertext must be %s bytes, but was %s bytes",
+        i, EncryptedAmount.LENGTH, partyCiphertext.length
       );
-      System.arraycopy(partyPublicKey, 0, participantArray[i].publicKey, 0, PUBLIC_KEY_SIZE);
-      System.arraycopy(partyCiphertext, 0, participantArray[i].ciphertext, 0, CIPHERTEXT_SIZE);
+      System.arraycopy(partyPublicKey, 0, participantArray[i].publicKey, 0, PublicKey.LENGTH);
+      System.arraycopy(partyCiphertext, 0, participantArray[i].ciphertext, 0, EncryptedAmount.LENGTH);
     }
 
     byte[] outProof = new byte[SEND_PROOF_SIZE];
@@ -139,31 +145,30 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
     MptCryptoLibrary.MptPedersenProofParams balanceStruct = new MptCryptoLibrary.MptPedersenProofParams();
     byte[] privateKeyBytes = null;
     byte[] txBlindingFactorBytes = null;
+    byte[] balanceBlindingBytes = null;
 
     int result;
     try {
       // Populate the balance struct and extract the sender's secrets inside the try, so every error path reaches the
       // finally scrub. A blinding factor is secret like the private key: an ElGamal ciphertext plus its blinding factor
-      // reveals the amount. This clears only these Java copies -- the caller's own BlindingFactor instances and any
-      // buffers JNA marshals into native memory are outside this method's control.
+      // reveals the amount. This clears only these Java copies -- the caller's own SecretBlindingFactor instances and
+      // any buffers JNA marshals into native memory are outside this method's control.
       System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, balanceStruct.pedersenCommitment, 0, 33);
       balanceStruct.amount = balanceParams.amount().longValue();
       System.arraycopy(
         balanceParams.encryptedAmount().value().toByteArray(), 0,
-        balanceStruct.encryptedAmount, 0, 66
+        balanceStruct.encryptedAmount, 0, EncryptedAmount.LENGTH
       );
-      System.arraycopy(
-        balanceParams.blindingFactor().value().toByteArray(), 0,
-        balanceStruct.blindingFactor, 0, 32
-      );
+      balanceBlindingBytes = balanceParams.blindingFactor().value().toByteArray();
+      System.arraycopy(balanceBlindingBytes, 0, balanceStruct.blindingFactor, 0, SecretBlindingFactor.LENGTH);
 
       privateKeyBytes = senderKeyPair.privateKey().naturalBytes().toByteArray();
       txBlindingFactorBytes = txBlindingFactor.value().toByteArray();
 
       // Validate after extraction (still inside the try) so a failed check still scrubs the private key.
       Preconditions.checkArgument(
-        privateKeyBytes.length == PRIVATE_KEY_SIZE,
-        "senderKeyPair private key must be %s bytes, but was %s bytes", PRIVATE_KEY_SIZE, privateKeyBytes.length
+        privateKeyBytes.length == PrivateKey.LENGTH,
+        "senderKeyPair private key must be %s bytes, but was %s bytes", PrivateKey.LENGTH, privateKeyBytes.length
       );
       result = lib.mpt_get_confidential_send_proof(
         privateKeyBytes, publicKeyBytes, amount.longValue(),
@@ -178,6 +183,9 @@ public class JnaConfidentialMptSendProofGenerator implements ConfidentialMptSend
       }
       if (txBlindingFactorBytes != null) {
         Arrays.fill(txBlindingFactorBytes, (byte) 0);
+      }
+      if (balanceBlindingBytes != null) {
+        Arrays.fill(balanceBlindingBytes, (byte) 0);
       }
       Arrays.fill(balanceStruct.blindingFactor, (byte) 0);
     }

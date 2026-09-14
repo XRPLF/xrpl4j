@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,26 @@ package org.xrpl.xrpl4j.crypto.confidential.util;
  * =========================LICENSE_END==================================
  */
 
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 
 /**
  * Interface for generating blinding factors used in ElGamal encryption and zero-knowledge proofs.
  *
- * @see BlindingFactor
+ * <p>Every factor is generated secret. Convert and ConvertBack publish theirs by calling
+ * {@link SecretBlindingFactor#toBlindingFactor()}, so disclosure is always an explicit, greppable act rather than a
+ * property chosen at generation time.</p>
+ *
+ * @see SecretBlindingFactor
  */
 public interface BlindingFactorGenerator {
 
   /**
-   * Generates a new blinding factor.
+   * Generates a blinding factor. The caller must {@link SecretBlindingFactor#destroy()} it once finished with, unless
+   * it was disclosed via {@link SecretBlindingFactor#toBlindingFactor()}.
    *
    * <p>The generated value must be a valid secp256k1 scalar (0 &lt; value &lt; curve order).</p>
    *
-   * @return A newly generated {@link BlindingFactor}.
+   * @return A newly generated {@link SecretBlindingFactor}.
    */
-  BlindingFactor generate();
+  SecretBlindingFactor generate();
 }

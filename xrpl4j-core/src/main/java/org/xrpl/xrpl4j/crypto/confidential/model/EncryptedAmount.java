@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.model;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,12 @@ import org.xrpl.xrpl4j.model.jackson.modules.EncryptedAmountSerializer;
 @Value.Immutable
 @JsonSerialize(as = ImmutableEncryptedAmount.class, using = EncryptedAmountSerializer.class)
 @JsonDeserialize(as = ImmutableEncryptedAmount.class, using = EncryptedAmountDeserializer.class)
-public interface EncryptedAmount {
+public abstract class EncryptedAmount {
+
+  /**
+   * The length, in bytes, of an ElGamal ciphertext (two 33-byte compressed points).
+   */
+  public static final int LENGTH = 66;
 
   /**
    * Creates an encrypted amount from an {@link UnsignedByteArray}.
@@ -47,7 +52,7 @@ public interface EncryptedAmount {
    *
    * @return An {@link EncryptedAmount}.
    */
-  static EncryptedAmount of(final UnsignedByteArray value) {
+  public static EncryptedAmount of(final UnsignedByteArray value) {
     return ImmutableEncryptedAmount.builder().value(value).build();
   }
 
@@ -58,7 +63,7 @@ public interface EncryptedAmount {
    *
    * @return An {@link EncryptedAmount}.
    */
-  static EncryptedAmount of(final String hex) {
+  public static EncryptedAmount of(final String hex) {
     return of(UnsignedByteArray.fromHex(hex));
   }
 
@@ -69,7 +74,7 @@ public interface EncryptedAmount {
    *
    * @return An {@link EncryptedAmount}.
    */
-  static EncryptedAmount fromBytes(final byte[] bytes) {
+  public static EncryptedAmount fromBytes(final byte[] bytes) {
     return of(UnsignedByteArray.of(bytes));
   }
 
@@ -78,18 +83,17 @@ public interface EncryptedAmount {
    *
    * @return An {@link UnsignedByteArray}.
    */
-  UnsignedByteArray value();
+  public abstract UnsignedByteArray value();
 
   /**
    * Validates that the ciphertext is exactly 66 bytes.
    */
   @Value.Check
-  default void check() {
-    final int expectedLength = 66;
+  void check() {
     Preconditions.checkArgument(
-      value().length() == expectedLength,
+      value().length() == LENGTH,
       "EncryptedAmount must be %s bytes, but was %s bytes",
-      expectedLength, value().length()
+      LENGTH, value().length()
     );
   }
 
@@ -100,7 +104,17 @@ public interface EncryptedAmount {
    */
   @JsonIgnore
   @Value.Lazy
-  default String hexValue() {
+  public String hexValue() {
     return BaseEncoding.base16().encode(value().toByteArray());
+  }
+
+  /**
+   * A debug-friendly representation showing the value as hex rather than the raw byte array.
+   *
+   * @return A {@link String}.
+   */
+  @Override
+  public String toString() {
+    return "EncryptedAmount{value=" + hexValue() + "}";
   }
 }

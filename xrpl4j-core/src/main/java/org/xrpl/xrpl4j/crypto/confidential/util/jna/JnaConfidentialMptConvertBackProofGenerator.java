@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,15 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertBackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertBackProofGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -75,6 +79,10 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(context, "context must not be null");
     Objects.requireNonNull(balanceParams, "balanceParams must not be null");
+    Preconditions.checkArgument(
+      !senderKeyPair.privateKey().isDestroyed(), "senderKeyPair's privateKey has been destroyed");
+    Preconditions.checkArgument(
+      !balanceParams.blindingFactor().isDestroyed(), "balanceParams' blindingFactor has been destroyed");
 
     Preconditions.checkArgument(
       senderKeyPair.publicKey().keyType() == KeyType.SECP256K1,
@@ -84,7 +92,8 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     // Validate the (public) sender key before copying out any secret, so a failure leaves no unscrubbed secret.
     // keyType() is content-derived and does not by itself guarantee length.
     byte[] publicKeyBytes = senderKeyPair.publicKey().value().toByteArray();
-    Preconditions.checkArgument(publicKeyBytes.length == 33, "senderKeyPair public key must be 33 bytes");
+    Preconditions.checkArgument(
+      publicKeyBytes.length == PublicKey.LENGTH, "senderKeyPair public key must be %s bytes", PublicKey.LENGTH);
     byte[] contextHash = context.value().toByteArray();
 
     byte[] outProof = new byte[PROOF_SIZE];
@@ -93,15 +102,20 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     // The balance blinding factor is secret like the private key: an ElGamal ciphertext plus its blinding factor
     // reveals the amount. Populate the params struct (which copies it) inside the try, so any failure — including the
     // length check — still scrubs it in the finally. This clears only these Java copies; the caller's own
-    // BlindingFactor instance and any buffers JNA marshals into native memory are outside this method's control.
+    // SecretBlindingFactor instance and any buffers JNA marshals into native memory are outside this method's control.
     MptCryptoLibrary.MptPedersenProofParams params = new MptCryptoLibrary.MptPedersenProofParams();
+    byte[] balanceBlindingBytes = null;
     int result;
     try {
-      Preconditions.checkArgument(privateKeyBytes.length == 32, "senderKeyPair private key must be 32 bytes");
+      Preconditions.checkArgument(
+        privateKeyBytes.length == PrivateKey.LENGTH, "senderKeyPair private key must be %s bytes", PrivateKey.LENGTH);
       System.arraycopy(balanceParams.pedersenCommitment().toByteArray(), 0, params.pedersenCommitment, 0, 33);
       params.amount = balanceParams.amount().longValue();
-      System.arraycopy(balanceParams.encryptedAmount().value().toByteArray(), 0, params.encryptedAmount, 0, 66);
-      System.arraycopy(balanceParams.blindingFactor().value().toByteArray(), 0, params.blindingFactor, 0, 32);
+      System.arraycopy(
+        balanceParams.encryptedAmount().value().toByteArray(), 0, params.encryptedAmount, 0, EncryptedAmount.LENGTH);
+      // Copy the secret blinding factor via a named local so the finally can scrub it too — not just the struct field.
+      balanceBlindingBytes = balanceParams.blindingFactor().value().toByteArray();
+      System.arraycopy(balanceBlindingBytes, 0, params.blindingFactor, 0, SecretBlindingFactor.LENGTH);
       result = lib.mpt_get_convert_back_proof(
         privateKeyBytes, publicKeyBytes, contextHash, amount.longValue(),
         params, outProof
@@ -109,6 +123,9 @@ public class JnaConfidentialMptConvertBackProofGenerator implements Confidential
     } finally {
       Arrays.fill(privateKeyBytes, (byte) 0);
       Arrays.fill(params.blindingFactor, (byte) 0);
+      if (balanceBlindingBytes != null) {
+        Arrays.fill(balanceBlindingBytes, (byte) 0);
+      }
     }
 
     if (result != 0) {

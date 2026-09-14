@@ -8,13 +8,13 @@ import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 
 import java.util.Arrays;
 
 /**
  * Unit tests for {@link JnaBlindingFactorGenerator} using a mocked {@link MptCryptoLibrary}. Verifies that the 32-byte
- * native blinding factor is returned as a wire {@link BlindingFactor} and that native errors are surfaced.
+ * native scalar is returned as a {@link SecretBlindingFactor} and that native errors are surfaced.
  */
 class JnaBlindingFactorGeneratorTest {
 
@@ -28,18 +28,31 @@ class JnaBlindingFactorGeneratorTest {
   }
 
   @Test
-  void generateReturnsWireBlindingFactor() {
-    byte[] expected = new byte[32]; // 32-byte scalar.
+  void generateReturnsSecretBlindingFactor() {
+    byte[] expected = new byte[SecretBlindingFactor.LENGTH];
     Arrays.fill(expected, (byte) 0x05);
-    when(lib.mpt_generate_blinding_factor(any())).thenAnswer(invocation -> {
-      byte[] out = invocation.getArgument(0);
-      System.arraycopy(expected, 0, out, 0, expected.length);
-      return 0;
-    });
+    stubNativeToWrite(expected);
 
-    BlindingFactor blindingFactor = generator.generate();
+    SecretBlindingFactor blindingFactor = generator.generate();
 
+    // Survives the finally that scrubs the native buffer, i.e. fromBytes really copied.
     assertThat(blindingFactor.value().toByteArray()).isEqualTo(expected);
+    assertThat(blindingFactor.isDestroyed()).isFalse();
+  }
+
+  @Test
+  void generateReturnsADistinctInstanceEachCall() {
+    // Callers destroy the factors they receive, so a shared instance would leave later callers holding a dead one.
+    byte[] expected = new byte[SecretBlindingFactor.LENGTH];
+    Arrays.fill(expected, (byte) 0x05);
+    stubNativeToWrite(expected);
+
+    SecretBlindingFactor first = generator.generate();
+    SecretBlindingFactor second = generator.generate();
+    first.destroy();
+
+    assertThat(second.isDestroyed()).isFalse();
+    assertThat(second.value().toByteArray()).isEqualTo(expected);
   }
 
   @Test
@@ -49,5 +62,19 @@ class JnaBlindingFactorGeneratorTest {
     assertThatThrownBy(() -> generator.generate())
       .isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("mpt_generate_blinding_factor failed");
+  }
+
+  @Test
+  void rejectsNullLibrary() {
+    assertThatThrownBy(() -> new JnaBlindingFactorGenerator(null))
+      .isInstanceOf(NullPointerException.class);
+  }
+
+  private void stubNativeToWrite(final byte[] scalar) {
+    when(lib.mpt_generate_blinding_factor(any())).thenAnswer(invocation -> {
+      byte[] out = invocation.getArgument(0);
+      System.arraycopy(scalar, 0, out, 0, scalar.length);
+      return 0;
+    });
   }
 }

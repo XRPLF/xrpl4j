@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertC
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertProofGenerator;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -40,8 +42,6 @@ import java.util.Objects;
  */
 public class JnaConfidentialMptConvertProofGenerator implements ConfidentialMptConvertProofGenerator {
 
-  private static final int PUBLIC_KEY_SIZE = 33;
-  private static final int PRIVATE_KEY_SIZE = 32;
   private static final int PROOF_SIZE = 64;
 
   private final MptCryptoLibrary lib;
@@ -71,6 +71,7 @@ public class JnaConfidentialMptConvertProofGenerator implements ConfidentialMptC
   ) {
     Objects.requireNonNull(keyPair, "keyPair must not be null");
     Objects.requireNonNull(context, "context must not be null");
+    Preconditions.checkArgument(!keyPair.privateKey().isDestroyed(), "keyPair's privateKey has been destroyed");
 
     Preconditions.checkArgument(
       keyPair.publicKey().keyType() == KeyType.SECP256K1,
@@ -80,9 +81,9 @@ public class JnaConfidentialMptConvertProofGenerator implements ConfidentialMptC
 
     byte[] publicKeyBytes = keyPair.publicKey().value().toByteArray();
     Preconditions.checkArgument(
-      publicKeyBytes.length == PUBLIC_KEY_SIZE,
+      publicKeyBytes.length == PublicKey.LENGTH,
       "publicKey must be %s bytes, but was %s bytes",
-      PUBLIC_KEY_SIZE, publicKeyBytes.length
+      PublicKey.LENGTH, publicKeyBytes.length
     );
 
     byte[] contextHash = context.value().toByteArray();
@@ -91,9 +92,9 @@ public class JnaConfidentialMptConvertProofGenerator implements ConfidentialMptC
     byte[] privateKeyBytes = keyPair.privateKey().naturalBytes().toByteArray();
     try {
       Preconditions.checkArgument(
-        privateKeyBytes.length == PRIVATE_KEY_SIZE,
+        privateKeyBytes.length == PrivateKey.LENGTH,
         "privateKey must be %s bytes, but was %s bytes",
-        PRIVATE_KEY_SIZE, privateKeyBytes.length
+        PrivateKey.LENGTH, privateKeyBytes.length
       );
 
       byte[] outProof = new byte[PROOF_SIZE];

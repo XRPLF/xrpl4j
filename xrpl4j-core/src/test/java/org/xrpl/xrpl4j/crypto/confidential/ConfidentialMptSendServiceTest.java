@@ -11,11 +11,11 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.MptConfidentialParty;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptSendContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptSendProofGenerator;
@@ -40,7 +40,7 @@ class ConfidentialMptSendServiceTest {
   private static final KeyPair KEY_PAIR =
     Seed.secp256k1SeedFromPassphrase(Passphrase.of("send-service")).deriveKeyPair();
   private static final UnsignedLong AMOUNT = UnsignedLong.valueOf(100);
-  private static final BlindingFactor BLINDING_FACTOR = BlindingFactor.of(Strings.repeat("11", 32));
+  private static final SecretBlindingFactor BLINDING_FACTOR = SecretBlindingFactor.of(Strings.repeat("11", 32));
   private static final Commitment COMMITMENT = Commitment.of(Strings.repeat("02", 33));
   private static final EncryptedAmount CIPHERTEXT = EncryptedAmount.of(Strings.repeat("03", 66));
   private static final ConfidentialMptSendContext CONTEXT =

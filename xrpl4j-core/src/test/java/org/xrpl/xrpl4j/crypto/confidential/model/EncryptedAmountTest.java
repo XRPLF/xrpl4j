@@ -56,4 +56,10 @@ class EncryptedAmountTest {
     assertThat(EncryptedAmount.of(Strings.repeat("ab", 66)))
       .isEqualTo(EncryptedAmount.of(Strings.repeat("AB", 66)));
   }
+
+  @Test
+  void toStringRendersHex() {
+    assertThat(EncryptedAmount.of(HEX))
+      .hasToString("EncryptedAmount{value=" + HEX + "}");
+  }
 }

@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.model;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,9 +76,10 @@ public interface PedersenProofParams {
   EncryptedAmount encryptedAmount();
 
   /**
-   * The 32-byte secret random value used to blind the Pedersen commitment.
+   * The 32-byte secret random value used to blind the Pedersen commitment. The caller destroys it once the proof built
+   * from these params is complete.
    *
-   * @return The blinding factor.
+   * @return The secret blinding factor.
    */
-  BlindingFactor blindingFactor();
+  SecretBlindingFactor blindingFactor();
 }

@@ -5,14 +5,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 
 import java.util.Arrays;
 
@@ -23,7 +24,7 @@ import java.util.Arrays;
 class JnaPedersenCommitmentGeneratorTest {
 
   private static final UnsignedLong AMOUNT = UnsignedLong.valueOf(1000);
-  private static final BlindingFactor BLINDING_FACTOR = BlindingFactor.of(Strings.repeat("11", 32));
+  private static final SecretBlindingFactor BLINDING_FACTOR = SecretBlindingFactor.of(Strings.repeat("11", 32));
 
   private MptCryptoLibrary lib;
   private JnaPedersenCommitmentGenerator generator;
@@ -47,6 +48,18 @@ class JnaPedersenCommitmentGeneratorTest {
     Commitment commitment = generator.generateCommitment(AMOUNT, BLINDING_FACTOR);
 
     assertThat(commitment.value().toByteArray()).isEqualTo(expected);
+  }
+
+  @Test
+  void generateCommitmentRejectsDestroyedBlindingFactor() {
+    // Previously unguarded here: a destroyed factor yields a zero-length array, which reached the native call and
+    // would be read as 32 bytes.
+    SecretBlindingFactor destroyed = SecretBlindingFactor.of(Strings.repeat("11", 32));
+    destroyed.destroy();
+
+    assertThatThrownBy(() -> generator.generateCommitment(AMOUNT, destroyed))
+      .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("blindingFactor has been destroyed");
+    verifyNoInteractions(lib);
   }
 
   @Test

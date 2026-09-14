@@ -7,6 +7,7 @@ import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
@@ -99,6 +100,19 @@ class ConfidentialMptConvertTest {
     assertThat(convert.mptAmount().value()).isEqualTo(UnsignedLong.ZERO);
   }
 
+  @Test
+  void issuerCannotConvertOwnIssuance() {
+    // Build an issuance ID whose embedded issuer is the account, which rippled rejects (temMALFORMED).
+    String accountIdHex = AddressCodec.getInstance()
+      .decodeAccountId(Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c")).hexValue();
+    MpTokenIssuanceId issuerOwned = MpTokenIssuanceId.of("00000179" + accountIdHex);
+    assertThatThrownBy(() -> baseBuilder()
+      .mpTokenIssuanceId(issuerOwned)
+      .build()
+    ).isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("issuer cannot convert its own issuance");
+  }
+
   /**
    * A builder pre-populated with the required fields (and no {@code HolderEncryptionKey}/{@code ZKProof}).
    *
@@ -112,7 +126,8 @@ class ConfidentialMptConvertTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710")
       )
-      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179C3493FFEB0869853DDEC0705800595424710FA7A"))
+      // An issuance ID whose embedded issuer is not the account (the issuer cannot convert its own issuance).
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179" + Strings.repeat("11", 20)))
       .mptAmount(MpTokenNumericAmount.of(1000))
       .holderEncryptedAmount(EncryptedAmount.of(Strings.repeat("AB", 66)))
       .issuerEncryptedAmount(EncryptedAmount.of(Strings.repeat("CD", 66)))

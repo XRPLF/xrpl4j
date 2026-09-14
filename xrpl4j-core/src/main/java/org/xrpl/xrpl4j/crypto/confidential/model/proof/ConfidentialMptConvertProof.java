@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.model.proof;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import org.xrpl.xrpl4j.model.jackson.modules.ConfidentialMptConvertProofSerializ
 @Value.Immutable
 @JsonSerialize(as = ImmutableConfidentialMptConvertProof.class, using = ConfidentialMptConvertProofSerializer.class)
 @JsonDeserialize(as = ImmutableConfidentialMptConvertProof.class, using = ConfidentialMptConvertProofDeserializer.class)
-public interface ConfidentialMptConvertProof {
+public abstract class ConfidentialMptConvertProof {
 
   /**
    * Creates a proof from an {@link UnsignedByteArray}.
@@ -47,7 +47,7 @@ public interface ConfidentialMptConvertProof {
    *
    * @return A {@link ConfidentialMptConvertProof}.
    */
-  static ConfidentialMptConvertProof of(final UnsignedByteArray value) {
+  public static ConfidentialMptConvertProof of(final UnsignedByteArray value) {
     return ImmutableConfidentialMptConvertProof.builder().value(value).build();
   }
 
@@ -58,7 +58,7 @@ public interface ConfidentialMptConvertProof {
    *
    * @return A {@link ConfidentialMptConvertProof}.
    */
-  static ConfidentialMptConvertProof fromHex(final String hex) {
+  public static ConfidentialMptConvertProof fromHex(final String hex) {
     return of(UnsignedByteArray.fromHex(hex));
   }
 
@@ -67,13 +67,13 @@ public interface ConfidentialMptConvertProof {
    *
    * @return An {@link UnsignedByteArray}.
    */
-  UnsignedByteArray value();
+  public abstract UnsignedByteArray value();
 
   /**
    * Validates that the proof is exactly 64 bytes (kMPT_SCHNORR_PROOF_SIZE).
    */
   @Value.Check
-  default void check() {
+  void check() {
     final int expectedSize = 64;
     Preconditions.checkArgument(
       value().length() == expectedSize,
@@ -89,7 +89,17 @@ public interface ConfidentialMptConvertProof {
    */
   @JsonIgnore
   @Value.Lazy
-  default String hexValue() {
+  public String hexValue() {
     return BaseEncoding.base16().encode(value().toByteArray());
+  }
+
+  /**
+   * A debug-friendly representation showing the value as hex rather than the raw byte array.
+   *
+   * @return A {@link String}.
+   */
+  @Override
+  public String toString() {
+    return "ConfidentialMptConvertProof{value=" + hexValue() + "}";
   }
 }

@@ -11,10 +11,10 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
 import org.xrpl.xrpl4j.crypto.confidential.model.PedersenProofParams;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertBackContext;
 import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertBackProof;
 import org.xrpl.xrpl4j.crypto.confidential.util.ConfidentialMptConvertBackProofGenerator;
@@ -72,7 +72,7 @@ class ConfidentialMptConvertBackServiceTest {
 
   @Test
   void generatePedersenProofParamsBundlesCommitment() {
-    BlindingFactor blindingFactor = BlindingFactor.of(Strings.repeat("11", 32));
+    SecretBlindingFactor blindingFactor = SecretBlindingFactor.of(Strings.repeat("11", 32));
     when(commitmentGenerator.generateCommitment(AMOUNT, blindingFactor)).thenReturn(COMMITMENT);
 
     PedersenProofParams params = service.generatePedersenProofParams(AMOUNT, CIPHERTEXT, blindingFactor);
@@ -93,7 +93,7 @@ class ConfidentialMptConvertBackServiceTest {
       .pedersenCommitment(COMMITMENT.value())
       .amount(UnsignedLong.valueOf(500))
       .encryptedAmount(CIPHERTEXT)
-      .blindingFactor(BlindingFactor.of(Strings.repeat("11", 32)))
+      .blindingFactor(SecretBlindingFactor.of(Strings.repeat("11", 32)))
       .build();
     when(proofGenerator.generateProof(keyPair, AMOUNT, CONTEXT, balanceParams)).thenReturn(proof);
 

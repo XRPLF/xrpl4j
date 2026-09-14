@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,8 @@ public class JnaConfidentialMptClawbackProofVerifier implements ConfidentialMptC
 
     // keyType() is content-derived and does not by itself guarantee length; the native call needs exactly 33 bytes.
     byte[] publicKeyBytes = issuerPublicKey.value().toByteArray();
-    Preconditions.checkArgument(publicKeyBytes.length == 33, "issuerPublicKey must be 33 bytes");
+    Preconditions.checkArgument(
+      publicKeyBytes.length == PublicKey.LENGTH, "issuerPublicKey must be %s bytes", PublicKey.LENGTH);
 
     return lib.mpt_verify_clawback_proof(
       proof.value().toByteArray(),

@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,6 @@ import java.util.Objects;
  */
 public class JnaMptAmountDecryptor implements MptAmountDecryptor {
 
-  private static final int CIPHERTEXT_SIZE = 66;
-  private static final int PRIVATE_KEY_SIZE = 32;
 
   private final MptCryptoLibrary lib;
 
@@ -74,6 +72,7 @@ public class JnaMptAmountDecryptor implements MptAmountDecryptor {
     Objects.requireNonNull(privateKey, "privateKey must not be null");
     Objects.requireNonNull(minAmount, "minAmount must not be null");
     Objects.requireNonNull(maxAmount, "maxAmount must not be null");
+    Preconditions.checkArgument(!privateKey.isDestroyed(), "privateKey has been destroyed");
 
     Preconditions.checkArgument(
       privateKey.keyType() == KeyType.SECP256K1,
@@ -88,18 +87,18 @@ public class JnaMptAmountDecryptor implements MptAmountDecryptor {
 
     byte[] ciphertextBytes = ciphertext.value().toByteArray();
     Preconditions.checkArgument(
-      ciphertextBytes.length == CIPHERTEXT_SIZE,
+      ciphertextBytes.length == EncryptedAmount.LENGTH,
       "ciphertext must be %s bytes, but was %s bytes",
-      CIPHERTEXT_SIZE, ciphertextBytes.length
+      EncryptedAmount.LENGTH, ciphertextBytes.length
     );
 
     // Extract the private key just before use; zero the copy when done
     byte[] privateKeyBytes = privateKey.naturalBytes().toByteArray();
     try {
       Preconditions.checkArgument(
-        privateKeyBytes.length == PRIVATE_KEY_SIZE,
+        privateKeyBytes.length == PrivateKey.LENGTH,
         "privateKey must be %s bytes, but was %s bytes",
-        PRIVATE_KEY_SIZE, privateKeyBytes.length
+        PrivateKey.LENGTH, privateKeyBytes.length
       );
 
       long[] outAmount = new long[1];

@@ -1,444 +1,613 @@
 package org.xrpl.xrpl4j.tests;
 
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: integration-tests
+ * %%
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialBatchInner;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialBatchRequest;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialClawbackOp;
+import org.xrpl.xrpl4j.crypto.confidential.ConfidentialConvertBackOp;
+import org.xrpl.xrpl4j.crypto.confidential.ConfidentialConvertOp;
+import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMergeInboxOp;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptBatchAssembler;
-import org.xrpl.xrpl4j.crypto.confidential.ConfidentialMptConvertService;
 import org.xrpl.xrpl4j.crypto.confidential.ConfidentialSendOp;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.ConfidentialIssuanceInfo;
 import org.xrpl.xrpl4j.crypto.confidential.model.ConfidentialTokenState;
-import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
-import org.xrpl.xrpl4j.crypto.confidential.model.context.ConfidentialMptConvertContext;
-import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptConvertProof;
-import org.xrpl.xrpl4j.crypto.confidential.util.BlindingFactorGenerator;
-import org.xrpl.xrpl4j.crypto.confidential.util.MptAmountDecryptor;
-import org.xrpl.xrpl4j.crypto.confidential.util.MptAmountEncryptor;
-import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaBlindingFactorGenerator;
-import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaMptAmountDecryptor;
-import org.xrpl.xrpl4j.crypto.confidential.util.jna.JnaMptAmountEncryptor;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
-import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
-import org.xrpl.xrpl4j.model.client.fees.FeeResult;
-import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
-import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
+import org.xrpl.xrpl4j.model.ledger.SignerEntry;
+import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.BatchSigner;
 import org.xrpl.xrpl4j.model.transactions.BatchSignerWrapper;
-import org.xrpl.xrpl4j.model.transactions.ConfidentialMptConvert;
-import org.xrpl.xrpl4j.model.transactions.ConfidentialMptMergeInbox;
-import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
-import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
-import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
-import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.Signer;
+import org.xrpl.xrpl4j.model.transactions.SignerListSet;
+import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
- * End-to-end integration test for {@link ConfidentialMptBatchAssembler} against a real rippled node: it assembles a
- * Batch of chained Confidential MPT sends (combo 1 — same account, same token), submits it, and asserts the decrypted
- * on-ledger balances. The atomic all-or-nothing Batch is accepted only if every chained proof was built against
- * correctly predicted balance/version state, so a passing balance assertion is a strong end-to-end statement.
+ * Integration tests for {@link ConfidentialMptBatchAssembler} against a real rippled node, covering atomic XLS-56
+ * Batches of Confidential MPT (XLS-0096) inners. Non-batch coverage lives in {@link ConfidentialMptIT}.
  */
 @DisabledIf(
   value = "shouldNotRun",
   disabledReason = "ConfidentialMptBatchIT only runs on a local rippled node or Devnet."
 )
-public class ConfidentialMptBatchIT extends AbstractIT {
+public class ConfidentialMptBatchIT extends AbstractConfidentialMptIT {
 
-  private static ConfidentialMptConvertService convertService;
-  private static BlindingFactorGenerator blindingFactorGenerator;
-  private static MptAmountEncryptor encryptor;
-  private static MptAmountDecryptor decryptor;
-  private static ConfidentialMptBatchAssembler assembler;
-
-  // A decrypt upper bound comfortably above any balance used in this test.
-  private static final UnsignedLong OUTSTANDING_BOUND = UnsignedLong.valueOf(100_000);
-  // A generous outer-Batch fee; overpaying is harmless and avoids fee-estimation fragility on a standalone node.
+  /** A generous outer-Batch fee; overpaying is harmless and avoids fee-estimation fragility on a standalone node. */
   private static final XrpCurrencyAmount OUTER_FEE = XrpCurrencyAmount.ofDrops(1_000_000);
-  // Confidential transactions carry a base-fee multiplier (kConfidentialFeeMultiplier = 9) in rippled; use a generous
-  // flat fee for the standalone convert/merge setup steps rather than tracking the exact multiplier.
-  private static final XrpCurrencyAmount CONFIDENTIAL_FEE = XrpCurrencyAmount.ofDrops(100_000);
+
+  private final ConfidentialMptBatchAssembler assembler = new ConfidentialMptBatchAssembler();
 
   static boolean shouldNotRun() {
     return System.getProperty("useTestnet") != null || System.getProperty("useClioTestnet") != null;
   }
 
-  @BeforeAll
-  static void initServices() {
-    convertService = new ConfidentialMptConvertService();
-    blindingFactorGenerator = new JnaBlindingFactorGenerator();
-    encryptor = new JnaMptAmountEncryptor();
-    decryptor = new JnaMptAmountDecryptor();
-    assembler = new ConfidentialMptBatchAssembler();
-  }
+  // ===========================================================================
+  // Batch composition scenarios
+  // ===========================================================================
 
   @Test
-  public void chainedMultiSendInOneBatch() throws Exception {
-    final FeeResult feeResult = xrplClient.fee();
-    final XrpCurrencyAmount fee = feeResult.drops().openLedgerFee();
-
-    // Issuer + confidential issuance with issuer/auditor ElGamal keys.
-    final KeyPair issuer = createRandomAccountEd25519();
-    final MpTokenIssuanceId issuanceId = createConfidentialIssuance(issuer, fee);
-    final KeyPair issuerElGamal = Seed.elGamalSecp256k1Seed().deriveKeyPair();
-    final KeyPair auditorElGamal = Seed.elGamalSecp256k1Seed().deriveKeyPair();
-    registerIssuanceKeys(issuer, issuanceId, issuerElGamal, auditorElGamal, fee);
-
-    // Alice holds 500 spendable confidential MPT; Bob and Carol have only registered their keys (send destinations).
-    final ConfidentialHolder alice = fundedHolder(issuer, issuanceId, issuerElGamal, auditorElGamal, 500L, fee);
-    final ConfidentialHolder bob = registeredHolder(issuanceId, issuerElGamal, auditorElGamal, fee);
-    final ConfidentialHolder carol = registeredHolder(issuanceId, issuerElGamal, auditorElGamal, fee);
-
-    assertThat(spendable(alice, issuanceId)).isEqualTo(UnsignedLong.valueOf(500));
-
-    // Assemble: Alice sends 30 to Bob then 20 to Carol (chained on Alice's spending balance) AND pays Carol 5 drops of
-    // XRP with a plain Payment — all interleaved in one atomic Batch.
-    final AccountInfoResult aliceInfo = accountInfo(alice.account);
-    final UnsignedInteger aliceSequence = aliceInfo.accountData().sequence();
-    final UnsignedLong carolXrpBefore = accountInfo(carol.account).accountData().balance().value();
-    final Map<Address, UnsignedInteger> sequences = new HashMap<>();
-    sequences.put(alice.address(), aliceSequence);
-
-    // A plain (non-confidential) inner, caller-shaped as an inner-batch transaction. Its sequence follows the two
-    // confidential sends the assembler assigns (aliceSequence + 1 and + 2), so it takes aliceSequence + 3.
-    final Payment plainPayment = Payment.builder()
-      .account(alice.address())
-      .fee(XrpCurrencyAmount.ofDrops(0))
-      .sequence(aliceSequence.plus(UnsignedInteger.valueOf(3)))
-      .flags(PaymentFlags.INNER_BATCH_TXN)
-      .destination(carol.address())
-      .amount(XrpCurrencyAmount.ofDrops(5))
-      .build();
-
-    final Map<String, ConfidentialTokenState> states = new HashMap<>();
-    states.put(stateKey(alice, issuanceId), stateOf(alice, issuanceId));
-    states.put(stateKey(bob, issuanceId), stateOf(bob, issuanceId));
-    states.put(stateKey(carol, issuanceId), stateOf(carol, issuanceId));
-
-    final Map<MpTokenIssuanceId, ConfidentialIssuanceInfo> issuances = new HashMap<>();
-    issuances.put(issuanceId, ConfidentialIssuanceInfo.builder()
-      .issuerEncryptionKey(issuerElGamal.publicKey())
-      .auditorEncryptionKey(auditorElGamal.publicKey())
-      .outstandingAmount(OUTSTANDING_BOUND)
-      .build());
+  void chainsTwoSendsOnOneBalance() throws Exception {
+    final ConfidentialIssuance issuance = createConfidentialIssuance();
+    final ConfidentialHolder alice = holderWithBalance(issuance, 100);
+    final ConfidentialHolder bob = registerHolderKey(issuance);
+    final ConfidentialHolder carol = registerHolderKey(issuance);
 
     final Batch batch = assembler.assemble(ConfidentialBatchRequest.builder()
       .accountPublicKey(alice.account.publicKey())
       .addInners(
-        ConfidentialBatchInner.of(ConfidentialSendOp.builder().account(alice.address()).destination(bob.address())
-          .amount(UnsignedLong.valueOf(30)).senderKeyPair(alice.elGamal).mpTokenIssuanceId(issuanceId).build()),
-        ConfidentialBatchInner.of(ConfidentialSendOp.builder().account(alice.address()).destination(carol.address())
-          .amount(UnsignedLong.valueOf(20)).senderKeyPair(alice.elGamal).mpTokenIssuanceId(issuanceId).build()),
-        ConfidentialBatchInner.ofPlain(plainPayment))
-      .accountSequences(sequences)
-      .states(states)
-      .issuances(issuances)
+        ConfidentialBatchInner.of(sendOp(alice, bob, 30, issuance)),
+        ConfidentialBatchInner.of(sendOp(alice, carol, 20, issuance)))
+      .accountSequences(sequences(alice))
+      .states(states(pair(alice, issuance), pair(bob, issuance), pair(carol, issuance)))
+      .issuances(issuances(issuance))
       .outerFee(OUTER_FEE)
       .build());
+    submitBatch(batch, alice.account);
 
-    // Alice owns and signs the outer Batch; all inners are hers, so no BatchSigners are needed.
-    final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(alice.account.privateKey(), batch);
-    final SubmitResult<Batch> submitResult = xrplClient.submit(signedBatch);
-    assertThat(submitResult.engineResult()).isEqualTo("tesSUCCESS");
-    this.scanForResult(() -> this.getValidatedTransaction(signedBatch.hash(), Batch.class));
-
-    // Both chained proofs validated iff Alice's spendable balance dropped by exactly 30 + 20.
-    assertThat(spendable(alice, issuanceId)).isEqualTo(UnsignedLong.valueOf(450));
-    // The plain Payment inner applied atomically alongside the confidential sends: Carol's XRP balance rose by 5 drops.
-    final UnsignedLong carolXrpAfter = accountInfo(carol.account).accountData().balance().value();
-    assertThat(carolXrpAfter.minus(carolXrpBefore)).isEqualTo(UnsignedLong.valueOf(5));
+    assertThat(spendable(alice, issuance)).isEqualTo(UnsignedLong.valueOf(50));
+    assertThat(inboxBalance(bob, issuance)).isEqualTo(UnsignedLong.valueOf(30));
+    assertThat(inboxBalance(carol, issuance)).isEqualTo(UnsignedLong.valueOf(20));
   }
 
   @Test
-  public void clawsBackRecipientAfterSameBatchSend() throws Exception {
-    final FeeResult feeResult = xrplClient.fee();
-    final XrpCurrencyAmount fee = feeResult.drops().openLedgerFee();
+  void sendsOnTwoTokensFromOneAccount() throws Exception {
+    final ConfidentialIssuance tokenA = createConfidentialIssuance();
+    final ConfidentialIssuance tokenB = createConfidentialIssuance();
+    final ConfidentialHolder alice = new ConfidentialHolder(createRandomAccountEd25519(), elGamalKeyPair());
+    fundHolderOnToken(alice, tokenA, 100);
+    fundHolderOnToken(alice, tokenB, 100);
+    final ConfidentialHolder recipientA = registerHolderKey(tokenA);
+    final ConfidentialHolder recipientB = registerHolderKey(tokenB);
 
-    final KeyPair issuer = createRandomAccountEd25519();
-    final MpTokenIssuanceId issuanceId = createConfidentialIssuance(issuer, fee);
-    final KeyPair issuerElGamal = Seed.elGamalSecp256k1Seed().deriveKeyPair();
-    final KeyPair auditorElGamal = Seed.elGamalSecp256k1Seed().deriveKeyPair();
-    registerIssuanceKeys(issuer, issuanceId, issuerElGamal, auditorElGamal, fee);
-
-    // Both hold spendable balances. Alice sends 30 to Bob (crediting Bob's inbox and issuer/auditor mirrors 50 -> 80),
-    // then the issuer claws back Bob's entire post-send balance — all in one atomic Batch.
-    final ConfidentialHolder alice = fundedHolder(issuer, issuanceId, issuerElGamal, auditorElGamal, 100L, fee);
-    final ConfidentialHolder bob = fundedHolder(issuer, issuanceId, issuerElGamal, auditorElGamal, 50L, fee);
-
-    // The issuer owns the outer Batch (it submits the clawback); Alice authorizes her send inner via a BatchSigner.
-    final Map<Address, UnsignedInteger> sequences = new HashMap<>();
-    sequences.put(issuer.publicKey().deriveAddress(), accountInfo(issuer).accountData().sequence());
-    sequences.put(alice.address(), accountInfo(alice.account).accountData().sequence());
-
-    final Map<String, ConfidentialTokenState> states = new HashMap<>();
-    states.put(stateKey(alice, issuanceId), stateOf(alice, issuanceId));
-    states.put(stateKey(bob, issuanceId), stateOf(bob, issuanceId));
-
-    final Map<MpTokenIssuanceId, ConfidentialIssuanceInfo> issuances = new HashMap<>();
-    issuances.put(issuanceId, ConfidentialIssuanceInfo.builder()
-      .issuerEncryptionKey(issuerElGamal.publicKey())
-      .auditorEncryptionKey(auditorElGamal.publicKey())
-      .outstandingAmount(OUTSTANDING_BOUND)
-      .build());
-
-    final Batch unsigned = assembler.assemble(ConfidentialBatchRequest.builder()
-      .accountPublicKey(issuer.publicKey())
+    final Batch batch = assembler.assemble(ConfidentialBatchRequest.builder()
+      .accountPublicKey(alice.account.publicKey())
       .addInners(
-        ConfidentialBatchInner.of(ConfidentialSendOp.builder().account(alice.address()).destination(bob.address())
-          .amount(UnsignedLong.valueOf(30)).senderKeyPair(alice.elGamal).mpTokenIssuanceId(issuanceId).build()),
-        ConfidentialBatchInner.of(ConfidentialClawbackOp.builder()
-          .account(issuer.publicKey().deriveAddress())
-          .holder(bob.address())
-          .amount(UnsignedLong.valueOf(80))
-          .issuerKeyPair(issuerElGamal)
-          .mpTokenIssuanceId(issuanceId)
-          .build()))
+        ConfidentialBatchInner.of(sendOp(alice, recipientA, 30, tokenA)),
+        ConfidentialBatchInner.of(sendOp(alice, recipientB, 40, tokenB)))
+      .accountSequences(sequences(alice))
+      .states(states(pair(alice, tokenA), pair(alice, tokenB), pair(recipientA, tokenA), pair(recipientB, tokenB)))
+      .issuances(issuances(tokenA, tokenB))
+      .outerFee(OUTER_FEE)
+      .build());
+    submitBatch(batch, alice.account);
+
+    assertThat(spendable(alice, tokenA)).isEqualTo(UnsignedLong.valueOf(70));
+    assertThat(spendable(alice, tokenB)).isEqualTo(UnsignedLong.valueOf(60));
+    assertThat(inboxBalance(recipientA, tokenA)).isEqualTo(UnsignedLong.valueOf(30));
+    assertThat(inboxBalance(recipientB, tokenB)).isEqualTo(UnsignedLong.valueOf(40));
+  }
+
+  @Test
+  void sendsOnOneTokenFromTwoAccounts() throws Exception {
+    final ConfidentialIssuance issuance = createConfidentialIssuance();
+    final ConfidentialHolder alice = holderWithBalance(issuance, 100);
+    final ConfidentialHolder bob = holderWithBalance(issuance, 100);
+
+    final Batch batch = assembler.assemble(ConfidentialBatchRequest.builder()
+      .accountPublicKey(alice.account.publicKey())
+      .addInners(
+        ConfidentialBatchInner.of(sendOp(alice, bob, 10, issuance)),
+        ConfidentialBatchInner.of(sendOp(bob, alice, 20, issuance)))
+      .accountSequences(sequences(alice, bob))
+      .states(states(pair(alice, issuance), pair(bob, issuance)))
+      .issuances(issuances(issuance))
+      .outerFee(OUTER_FEE)
+      .build());
+    submitBatch(batch, alice.account, bob);
+
+    assertThat(spendable(alice, issuance)).isEqualTo(UnsignedLong.valueOf(90));
+    assertThat(spendable(bob, issuance)).isEqualTo(UnsignedLong.valueOf(80));
+    // Each account also received the other's send into its inbox.
+    assertThat(inboxBalance(alice, issuance)).isEqualTo(UnsignedLong.valueOf(20));
+    assertThat(inboxBalance(bob, issuance)).isEqualTo(UnsignedLong.valueOf(10));
+  }
+
+  @Test
+  void sendsOnTwoTokensFromTwoAccounts() throws Exception {
+    final ConfidentialIssuance tokenA = createConfidentialIssuance();
+    final ConfidentialIssuance tokenB = createConfidentialIssuance();
+    final ConfidentialHolder alice = holderWithBalance(tokenA, 100);
+    final ConfidentialHolder carol = registerHolderKey(tokenA);
+    final ConfidentialHolder bob = holderWithBalance(tokenB, 100);
+    final ConfidentialHolder dave = registerHolderKey(tokenB);
+
+    final Batch batch = assembler.assemble(ConfidentialBatchRequest.builder()
+      .accountPublicKey(alice.account.publicKey())
+      .addInners(
+        ConfidentialBatchInner.of(sendOp(alice, carol, 30, tokenA)),
+        ConfidentialBatchInner.of(sendOp(bob, dave, 40, tokenB)))
+      .accountSequences(sequences(alice, bob))
+      .states(states(pair(alice, tokenA), pair(carol, tokenA), pair(bob, tokenB), pair(dave, tokenB)))
+      .issuances(issuances(tokenA, tokenB))
+      .outerFee(OUTER_FEE)
+      .build());
+    submitBatch(batch, alice.account, bob);
+
+    assertThat(spendable(alice, tokenA)).isEqualTo(UnsignedLong.valueOf(70));
+    assertThat(spendable(bob, tokenB)).isEqualTo(UnsignedLong.valueOf(60));
+    assertThat(inboxBalance(carol, tokenA)).isEqualTo(UnsignedLong.valueOf(30));
+    assertThat(inboxBalance(dave, tokenB)).isEqualTo(UnsignedLong.valueOf(40));
+  }
+
+  @Test
+  void recipientRespendsReceivedFundsInSameBatch() throws Exception {
+    final ConfidentialIssuance issuance = createConfidentialIssuance();
+    final ConfidentialHolder alice = holderWithBalance(issuance, 100);
+    // Bob needs an established balance for MergeInbox; a small nonzero start (a 0-MPT Payment is temBAD_AMOUNT).
+    final ConfidentialHolder bob = holderWithBalance(issuance, 5);
+    final ConfidentialHolder carol = registerHolderKey(issuance);
+
+    final Batch batch = assembler.assemble(ConfidentialBatchRequest.builder()
+      .accountPublicKey(alice.account.publicKey())
+      .addInners(
+        ConfidentialBatchInner.of(sendOp(alice, bob, 40, issuance)),
+        ConfidentialBatchInner.of(ConfidentialMergeInboxOp.builder()
+          .account(bob.address()).mpTokenIssuanceId(issuance.issuanceId).build()),
+        ConfidentialBatchInner.of(sendOp(bob, carol, 15, issuance)))
+      .accountSequences(sequences(alice, bob))
+      .states(states(pair(alice, issuance), pair(bob, issuance), pair(carol, issuance)))
+      .issuances(issuances(issuance))
+      .outerFee(OUTER_FEE)
+      .build());
+    submitBatch(batch, alice.account, bob);
+
+    // Bob spent 15 from (his 5 + the 40 he received and merged) in the same batch.
+    assertThat(spendable(alice, issuance)).isEqualTo(UnsignedLong.valueOf(60));
+    assertThat(spendable(bob, issuance)).isEqualTo(UnsignedLong.valueOf(30));
+    // Bob's inbox was folded into his spending balance by the mid-batch merge; carol holds the 15 he forwarded.
+    assertThat(inboxBalance(bob, issuance)).isEqualTo(UnsignedLong.ZERO);
+    assertThat(inboxBalance(carol, issuance)).isEqualTo(UnsignedLong.valueOf(15));
+  }
+
+  @Test
+  void clawsBackSenderAfterSameBatchSend() throws Exception {
+    final ConfidentialIssuance issuance = createConfidentialIssuance();
+    final ConfidentialHolder alice = holderWithBalance(issuance, 100);
+    final ConfidentialHolder bob = registerHolderKey(issuance);
+
+    final Batch batch = assembler.assemble(ConfidentialBatchRequest.builder()
+      // The issuer owns the outer Batch; alice authorizes her send inner.
+      .accountPublicKey(issuance.issuer.publicKey())
+      .addInners(
+        ConfidentialBatchInner.of(sendOp(alice, bob, 30, issuance)),
+        ConfidentialBatchInner.of(clawbackOp(issuance, alice, 70)))
+      .accountSequences(sequences(issuance.issuer, alice))
+      .states(states(pair(alice, issuance), pair(bob, issuance)))
+      .issuances(issuances(issuance))
+      .outerFee(OUTER_FEE)
+      .build());
+    submitBatch(batch, issuance.issuer, alice);
+
+    // Alice sent 30 (balance -> 70), then the issuer clawed back her full post-send remainder.
+    assertThat(spendable(alice, issuance)).isEqualTo(UnsignedLong.ZERO);
+    assertThat(inboxBalance(bob, issuance)).isEqualTo(UnsignedLong.valueOf(30));
+  }
+
+  @Test
+  void clawsBackRecipientAfterSameBatchSend() throws Exception {
+    final ConfidentialIssuance issuance = createConfidentialIssuance();
+    final ConfidentialHolder alice = holderWithBalance(issuance, 100);
+    final ConfidentialHolder bob = holderWithBalance(issuance, 50);
+
+    final Batch batch = assembler.assemble(ConfidentialBatchRequest.builder()
+      .accountPublicKey(issuance.issuer.publicKey())
+      .addInners(
+        ConfidentialBatchInner.of(sendOp(alice, bob, 30, issuance)),
+        ConfidentialBatchInner.of(clawbackOp(issuance, bob, 80)))
+      .accountSequences(sequences(issuance.issuer, alice))
+      .states(states(pair(alice, issuance), pair(bob, issuance)))
+      .issuances(issuances(issuance))
+      .outerFee(OUTER_FEE)
+      .build());
+    submitBatch(batch, issuance.issuer, alice);
+
+    // The send credits bob's issuer-encrypted mirror (50 -> 80); the clawback burns that predicted total,
+    // clearing both his spending balance and the 30 that landed in his inbox.
+    assertThat(spendable(bob, issuance)).isEqualTo(UnsignedLong.ZERO);
+    assertThat(inboxBalance(bob, issuance)).isEqualTo(UnsignedLong.ZERO);
+    assertThat(spendable(alice, issuance)).isEqualTo(UnsignedLong.valueOf(70));
+  }
+
+  @Test
+  void chainsSendAndConvertBackAsTwoDebits() throws Exception {
+    final ConfidentialIssuance issuance = createConfidentialIssuance();
+    final ConfidentialHolder alice = holderWithBalance(issuance, 100);
+    final ConfidentialHolder bob = registerHolderKey(issuance);
+
+    final Batch batch = assembler.assemble(ConfidentialBatchRequest.builder()
+      .accountPublicKey(alice.account.publicKey())
+      .addInners(
+        ConfidentialBatchInner.of(sendOp(alice, bob, 30, issuance)),
+        ConfidentialBatchInner.of(ConfidentialConvertBackOp.builder()
+          .account(alice.address()).amount(UnsignedLong.valueOf(20))
+          .holderKeyPair(alice.elGamal).mpTokenIssuanceId(issuance.issuanceId).build()))
+      .accountSequences(sequences(alice))
+      .states(states(pair(alice, issuance), pair(bob, issuance)))
+      .issuances(issuances(issuance))
+      .outerFee(OUTER_FEE)
+      .build());
+    submitBatch(batch, alice.account);
+
+    // Two debits on one balance: 100 - 30 (send) - 20 (convert-back) = 50; the revealed 20 lands in public MPT.
+    assertThat(spendable(alice, issuance)).isEqualTo(UnsignedLong.valueOf(50));
+    assertThat(inboxBalance(bob, issuance)).isEqualTo(UnsignedLong.valueOf(30));
+    assertThat(getMpToken(alice.address(), issuance.issuanceId).mptAmount())
+      .isEqualTo(MpTokenNumericAmount.of(UnsignedLong.valueOf(20)));
+  }
+
+  @Test
+  void mixesPlainPaymentWithConfidentialSend() throws Exception {
+    final ConfidentialIssuance issuance = createConfidentialIssuance();
+    final ConfidentialHolder alice = holderWithBalance(issuance, 100);
+    final ConfidentialHolder bob = registerHolderKey(issuance);
+    final KeyPair carol = createRandomAccountEd25519();
+    final UnsignedLong carolBefore = xrpBalance(carol);
+
+    final UnsignedInteger aliceSequence = currentSequence(alice.address());
+    // The outer Batch consumes aliceSequence and the confidential send inner takes +1, so this plain inner takes +2.
+    final Payment plainPayment = Payment.builder()
+      .account(alice.address())
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(aliceSequence.plus(UnsignedInteger.valueOf(2)))
+      .flags(PaymentFlags.INNER_BATCH_TXN)
+      .destination(carol.publicKey().deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(1_000_000))
+      .build();
+
+    final Map<Address, UnsignedInteger> sequences = new HashMap<>();
+    sequences.put(alice.address(), aliceSequence);
+
+    final Batch batch = assembler.assemble(ConfidentialBatchRequest.builder()
+      .accountPublicKey(alice.account.publicKey())
+      .addInners(
+        ConfidentialBatchInner.of(sendOp(alice, bob, 30, issuance)),
+        ConfidentialBatchInner.ofPlain(plainPayment))
       .accountSequences(sequences)
-      .states(states)
-      .issuances(issuances)
+      .states(states(pair(alice, issuance), pair(bob, issuance)))
+      .issuances(issuances(issuance))
+      .outerFee(OUTER_FEE)
+      .build());
+    submitBatch(batch, alice.account);
+
+    assertThat(spendable(alice, issuance)).isEqualTo(UnsignedLong.valueOf(70));
+    assertThat(inboxBalance(bob, issuance)).isEqualTo(UnsignedLong.valueOf(30));
+    assertThat(xrpBalance(carol).minus(carolBefore)).isEqualTo(UnsignedLong.valueOf(1_000_000));
+  }
+
+  @Test
+  void registersDestinationKeyViaConvertThenSends() throws Exception {
+    final ConfidentialIssuance issuance = createConfidentialIssuance();
+    final ConfidentialHolder alice = holderWithBalance(issuance, 100);
+    // Bob is authorized but has NOT registered his ElGamal key on-ledger yet.
+    final ConfidentialHolder bob = setupHolder(issuance);
+
+    final Batch batch = assembler.assemble(ConfidentialBatchRequest.builder()
+      .accountPublicKey(alice.account.publicKey())
+      .addInners(
+        ConfidentialBatchInner.of(ConfidentialConvertOp.builder()
+          .account(bob.address()).amount(UnsignedLong.ZERO)
+          .holderKeyPair(bob.elGamal).mpTokenIssuanceId(issuance.issuanceId).build()),
+        ConfidentialBatchInner.of(sendOp(alice, bob, 30, issuance)))
+      .accountSequences(sequences(alice, bob))
+      .states(states(pair(alice, issuance), pair(bob, issuance)))
+      .issuances(issuances(issuance))
+      .outerFee(OUTER_FEE)
+      .build());
+    submitBatch(batch, alice.account, bob);
+
+    // The send applied only because it encrypted to bob's key, threaded from the in-batch Convert.
+    assertThat(spendable(alice, issuance)).isEqualTo(UnsignedLong.valueOf(70));
+    assertThat(inboxBalance(bob, issuance)).isEqualTo(UnsignedLong.valueOf(30));
+    assertThat(getMpToken(bob.address(), issuance.issuanceId).holderEncryptionKey()).isPresent();
+  }
+
+  @Test
+  void convertsMergesThenSpendsToppedUpBalance() throws Exception {
+    final ConfidentialIssuance issuance = createConfidentialIssuance();
+    final ConfidentialHolder alice = holderWithBalance(issuance, 100);
+    final ConfidentialHolder bob = registerHolderKey(issuance);
+    // Fresh public MPT for alice to convert inside the Batch.
+    payMpt(issuance.issuer, alice.address(), issuance.issuanceId, 100);
+
+    final Batch batch = assembler.assemble(ConfidentialBatchRequest.builder()
+      .accountPublicKey(alice.account.publicKey())
+      .addInners(
+        ConfidentialBatchInner.of(ConfidentialConvertOp.builder()
+          .account(alice.address()).amount(UnsignedLong.valueOf(100))
+          .holderKeyPair(alice.elGamal).mpTokenIssuanceId(issuance.issuanceId).registerKey(false).build()),
+        ConfidentialBatchInner.of(ConfidentialMergeInboxOp.builder()
+          .account(alice.address()).mpTokenIssuanceId(issuance.issuanceId).build()),
+        ConfidentialBatchInner.of(sendOp(alice, bob, 150, issuance)))
+      .accountSequences(sequences(alice))
+      .states(states(pair(alice, issuance), pair(bob, issuance)))
+      .issuances(issuances(issuance))
+      .outerFee(OUTER_FEE)
+      .build());
+    submitBatch(batch, alice.account);
+
+    // Convert (+100) and merge lift alice 100 -> 200, then she sends 150 -> 50.
+    assertThat(spendable(alice, issuance)).isEqualTo(UnsignedLong.valueOf(50));
+    assertThat(inboxBalance(bob, issuance)).isEqualTo(UnsignedLong.valueOf(150));
+  }
+
+  @Test
+  void sendsFromTwoMultiSignedAccounts() throws Exception {
+    final ConfidentialIssuance issuance = createConfidentialIssuance();
+    final ConfidentialHolder alice = holderWithBalance(issuance, 100);  // owns the outer Batch
+    final ConfidentialHolder bob = holderWithBalance(issuance, 100);    // authorizes its own inner
+    final ConfidentialHolder carol = registerHolderKey(issuance);
+
+    // Give alice and bob each a 2-of-2 signer list; their master keys stay enabled, so the confidential
+    // funding above (single-signed) was fine. Done last, so the sequences the assembler gets are post-setup.
+    final KeyPair aliceSigner1 = createRandomAccountEd25519();
+    final KeyPair aliceSigner2 = createRandomAccountEd25519();
+    final KeyPair bobSigner1 = createRandomAccountEd25519();
+    final KeyPair bobSigner2 = createRandomAccountEd25519();
+    enableMultiSig(alice.account, aliceSigner1, aliceSigner2);
+    enableMultiSig(bob.account, bobSigner1, bobSigner2);
+
+    final Batch assembled = assembler.assemble(ConfidentialBatchRequest.builder()
+      .accountPublicKey(alice.account.publicKey())
+      .addInners(
+        ConfidentialBatchInner.of(sendOp(alice, carol, 30, issuance)),
+        ConfidentialBatchInner.of(sendOp(bob, carol, 40, issuance)))
+      .accountSequences(sequences(alice, bob))
+      .states(states(pair(alice, issuance), pair(bob, issuance), pair(carol, issuance)))
+      .issuances(issuances(issuance))
       .outerFee(OUTER_FEE)
       .build());
 
-    // Multi-account Batch: Alice signs her inner as a BatchSigner; the issuer signs the outer Batch.
-    final Signature aliceInnerSignature =
-      signatureService.signInner(alice.account.privateKey(), unsigned, alice.address());
-    final Batch withSigners = Batch.builder().from(unsigned)
-      .batchSigners(Collections.singletonList(BatchSignerWrapper.of(BatchSigner.builder()
-        .account(alice.address())
-        .signingPublicKey(alice.account.publicKey())
-        .transactionSignature(aliceInnerSignature)
-        .build())))
+    // The assembler sets the outer SigningPubKey for single-sig; multi-signing it requires the field empty.
+    final Batch base = Batch.builder().from(assembled).signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY).build();
+
+    // Inner multi-sign: bob's account authorizes its own inner (a multi-sig BatchSigner carries `signers`).
+    final List<SignerWrapper> bobInnerSigners = Stream.of(bobSigner1, bobSigner2)
+      .map(kp -> SignerWrapper.of(Signer.builder()
+        .signingPublicKey(kp.publicKey())
+        .transactionSignature(signatureService.multiSignInner(kp.privateKey(), base, bob.address()))
+        .build()))
+      .collect(Collectors.toList());
+    final Batch withBobSigner = Batch.builder()
+      .from(base)
+      .addBatchSigners(BatchSignerWrapper.of(BatchSigner.builder()
+        .account(bob.address())
+        .signers(bobInnerSigners)
+        .build()))
       .build();
-    final SingleSignedTransaction<Batch> signed = signatureService.sign(issuer.privateKey(), withSigners);
+
+    // Outer multi-sign: alice's signers sign the whole Batch, which now commits to bob's BatchSigner.
+    final List<Signer> aliceOuterSigners = Stream.of(aliceSigner1, aliceSigner2)
+      .map(kp -> Signer.builder()
+        .signingPublicKey(kp.publicKey())
+        .transactionSignature(signatureService.multiSign(kp.privateKey(), withBobSigner))
+        .build())
+      .collect(Collectors.toList());
+    final MultiSignedTransaction<Batch> multiSigned = MultiSignedTransaction.<Batch>builder()
+      .unsignedTransaction(withBobSigner)
+      .signerSet(aliceOuterSigners)
+      .build();
+
+    final SubmitMultiSignedResult<Batch> result = xrplClient.submitMultisigned(multiSigned);
+    assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
+    this.scanForResult(() -> this.getValidatedTransaction(result.transaction().hash(), Batch.class));
+
+    assertThat(spendable(alice, issuance)).isEqualTo(UnsignedLong.valueOf(70));
+    assertThat(spendable(bob, issuance)).isEqualTo(UnsignedLong.valueOf(60));
+    assertThat(inboxBalance(carol, issuance)).isEqualTo(UnsignedLong.valueOf(70));
+  }
+
+  // ===========================================================================
+  // Batch plumbing helpers
+  // ===========================================================================
+
+  private ConfidentialSendOp sendOp(final ConfidentialHolder from, final ConfidentialHolder to, final long amount,
+    final ConfidentialIssuance issuance) {
+    return ConfidentialSendOp.builder()
+      .account(from.address())
+      .destination(to.address())
+      .amount(UnsignedLong.valueOf(amount))
+      .senderKeyPair(from.elGamal)
+      .mpTokenIssuanceId(issuance.issuanceId)
+      .build();
+  }
+
+  private ConfidentialClawbackOp clawbackOp(final ConfidentialIssuance issuance, final ConfidentialHolder holder,
+    final long amount) {
+    return ConfidentialClawbackOp.builder()
+      .account(issuance.issuer.publicKey().deriveAddress())
+      .holder(holder.address())
+      .amount(UnsignedLong.valueOf(amount))
+      .issuerKeyPair(issuance.issuerElGamal)
+      .mpTokenIssuanceId(issuance.issuanceId)
+      .build();
+  }
+
+  /** Give an existing (already-created) holder a spendable balance on a token — for one account holding many tokens. */
+  private void fundHolderOnToken(final ConfidentialHolder holder, final ConfidentialIssuance issuance,
+    final long amount) throws Exception {
+    authorizeHolder(holder.account, issuance.issuanceId);
+    payMpt(issuance.issuer, holder.address(), issuance.issuanceId, amount);
+    convert(holder, issuance, amount, true);
+    mergeInbox(holder, issuance);
+  }
+
+  private ConfidentialIssuanceInfo issuanceInfo(final ConfidentialIssuance issuance) {
+    return ConfidentialIssuanceInfo.builder()
+      .issuerEncryptionKey(issuance.issuerElGamal.publicKey())
+      .auditorEncryptionKey(issuance.auditorElGamal.publicKey())
+      .outstandingAmount(DECRYPT_BOUND)
+      .build();
+  }
+
+  private ConfidentialTokenState stateOf(final ConfidentialHolder holder, final ConfidentialIssuance issuance)
+    throws Exception {
+    final MpTokenObject token = getMpToken(holder.address(), issuance.issuanceId);
+    return ConfidentialTokenState.builder()
+      .spending(token.confidentialBalanceSpending())
+      .inbox(token.confidentialBalanceInbox())
+      .issuerEncrypted(token.issuerEncryptedBalance())
+      .auditorEncrypted(token.auditorEncryptedBalance())
+      .version(token.confidentialBalanceVersion())
+      .holderKey(token.holderEncryptionKey())
+      .build();
+  }
+
+  private HolderOnToken pair(final ConfidentialHolder holder, final ConfidentialIssuance issuance) {
+    return new HolderOnToken(holder, issuance);
+  }
+
+  private Map<String, ConfidentialTokenState> states(final HolderOnToken... entries) throws Exception {
+    final Map<String, ConfidentialTokenState> states = new HashMap<>();
+    for (final HolderOnToken entry : entries) {
+      states.put(
+        ConfidentialBatchRequest.stateKey(entry.holder.address(), entry.issuance.issuanceId),
+        stateOf(entry.holder, entry.issuance)
+      );
+    }
+    return states;
+  }
+
+  private Map<MpTokenIssuanceId, ConfidentialIssuanceInfo> issuances(final ConfidentialIssuance... issuances) {
+    final Map<MpTokenIssuanceId, ConfidentialIssuanceInfo> map = new HashMap<>();
+    for (final ConfidentialIssuance issuance : issuances) {
+      map.put(issuance.issuanceId, issuanceInfo(issuance));
+    }
+    return map;
+  }
+
+  private Map<Address, UnsignedInteger> sequences(final ConfidentialHolder... holders) {
+    final Map<Address, UnsignedInteger> sequences = new HashMap<>();
+    for (final ConfidentialHolder holder : holders) {
+      sequences.put(holder.address(), currentSequence(holder.address()));
+    }
+    return sequences;
+  }
+
+  private Map<Address, UnsignedInteger> sequences(final KeyPair outer, final ConfidentialHolder... holders) {
+    final Map<Address, UnsignedInteger> sequences = new HashMap<>();
+    sequences.put(outer.publicKey().deriveAddress(), currentSequence(outer.publicKey().deriveAddress()));
+    for (final ConfidentialHolder holder : holders) {
+      sequences.put(holder.address(), currentSequence(holder.address()));
+    }
+    return sequences;
+  }
+
+  /** Sign the assembled Batch (each inner participant adds a BatchSigner, then the outer account signs) and submit. */
+  private void submitBatch(final Batch unsigned, final KeyPair outer, final ConfidentialHolder... innerSigners)
+    throws Exception {
+    Batch toSign = unsigned;
+    if (innerSigners.length > 0) {
+      final List<BatchSignerWrapper> signers = new ArrayList<>();
+      for (final ConfidentialHolder signer : innerSigners) {
+        final Signature signature = signatureService.signInner(signer.account.privateKey(), unsigned, signer.address());
+        signers.add(BatchSignerWrapper.of(BatchSigner.builder()
+          .account(signer.address())
+          .signingPublicKey(signer.account.publicKey())
+          .transactionSignature(signature)
+          .build()));
+      }
+      toSign = Batch.builder().from(unsigned).batchSigners(signers).build();
+    }
+    final SingleSignedTransaction<Batch> signed = signatureService.sign(outer.privateKey(), toSign);
     assertThat(xrplClient.submit(signed).engineResult()).isEqualTo("tesSUCCESS");
     this.scanForResult(() -> this.getValidatedTransaction(signed.hash(), Batch.class));
-
-    // The clawback proof binds Bob's post-send issuer-encrypted balance (50 -> 80); the atomic Batch succeeds only if
-    // that recipient mirror was predicted correctly. It burns Bob's entire balance while Alice's send still applied.
-    assertThat(spendable(bob, issuanceId)).isEqualTo(UnsignedLong.ZERO);
-    assertThat(spendable(alice, issuanceId)).isEqualTo(UnsignedLong.valueOf(70));
-  }
-
-  // =========================================================================
-  // Setup helpers
-  // =========================================================================
-
-  /** Fetch an account's validated info, retrying until the account appears (e.g. just after funding). */
-  private AccountInfoResult accountInfo(final KeyPair account) {
-    return this.scanForResult(() -> this.getValidatedAccountInfo(account.publicKey().deriveAddress()));
-  }
-
-  private MpTokenIssuanceId createConfidentialIssuance(final KeyPair issuer, final XrpCurrencyAmount fee)
-    throws Exception {
-    final AccountInfoResult info = accountInfo(issuer);
-    final MpTokenIssuanceCreate create = MpTokenIssuanceCreate.builder()
-      .account(issuer.publicKey().deriveAddress())
-      .sequence(info.accountData().sequence())
-      .fee(fee)
-      .signingPublicKey(issuer.publicKey())
-      .maximumAmount(MpTokenNumericAmount.of(Long.MAX_VALUE))
-      .flags(MpTokenIssuanceCreateFlags.builder()
-        .tfMptCanTransfer(true).tfMptCanClawback(true).tfMptCanHoldConfidentialBalance(true).build())
-      .build();
-    final SingleSignedTransaction<MpTokenIssuanceCreate> signed = signatureService.sign(issuer.privateKey(), create);
-    assertThat(xrplClient.submit(signed).engineResult()).isEqualTo("tesSUCCESS");
-    return this.scanForResult(() -> this.getValidatedTransaction(signed.hash(), MpTokenIssuanceCreate.class))
-      .metadata().orElseThrow(RuntimeException::new)
-      .mpTokenIssuanceId().orElseThrow(() -> new RuntimeException("no issuance id"));
-  }
-
-  private void registerIssuanceKeys(
-    final KeyPair issuer, final MpTokenIssuanceId issuanceId,
-    final KeyPair issuerElGamal, final KeyPair auditorElGamal, final XrpCurrencyAmount fee
-  ) throws Exception {
-    final AccountInfoResult info = accountInfo(issuer);
-    final MpTokenIssuanceSet set = MpTokenIssuanceSet.builder()
-      .account(issuer.publicKey().deriveAddress())
-      .fee(fee)
-      .sequence(info.accountData().sequence())
-      .signingPublicKey(issuer.publicKey())
-      .mpTokenIssuanceId(issuanceId)
-      .issuerEncryptionKey(issuerElGamal.publicKey())
-      .auditorEncryptionKey(auditorElGamal.publicKey())
-      .build();
-    final SingleSignedTransaction<MpTokenIssuanceSet> signed = signatureService.sign(issuer.privateKey(), set);
-    assertThat(xrplClient.submit(signed).engineResult()).isEqualTo("tesSUCCESS");
-    this.scanForResult(() -> this.getValidatedTransaction(signed.hash(), MpTokenIssuanceSet.class));
-  }
-
-  private void authorize(final KeyPair holder, final MpTokenIssuanceId issuanceId, final XrpCurrencyAmount fee)
-    throws Exception {
-    final AccountInfoResult info = accountInfo(holder);
-    final MpTokenAuthorize authorize = MpTokenAuthorize.builder()
-      .account(holder.publicKey().deriveAddress())
-      .sequence(info.accountData().sequence())
-      .fee(fee)
-      .signingPublicKey(holder.publicKey())
-      .mpTokenIssuanceId(issuanceId)
-      .build();
-    final SingleSignedTransaction<MpTokenAuthorize> signed = signatureService.sign(holder.privateKey(), authorize);
-    assertThat(xrplClient.submit(signed).engineResult()).isEqualTo("tesSUCCESS");
-    this.scanForResult(() -> this.getValidatedTransaction(signed.hash(), MpTokenAuthorize.class));
   }
 
   /**
-   * Build a Convert transaction that moves {@code amount} (possibly zero, to only register a key) of a holder's public
-   * MPT into confidential form, standalone-signed and submitted.
+   * Give {@code account} a 2-of-2 signer list (its master key stays enabled).
    */
-  private void convert(
-    final KeyPair holder, final KeyPair holderElGamal, final MpTokenIssuanceId issuanceId,
-    final KeyPair issuerElGamal, final KeyPair auditorElGamal, final UnsignedLong amount
-  ) throws Exception {
-    final AccountInfoResult info = accountInfo(holder);
-    final ConfidentialMptConvertContext context =
-      convertService.generateContext(holder.publicKey().deriveAddress(), info.accountData().sequence(), issuanceId);
-    final ConfidentialMptConvertProof proof = convertService.generateProof(holderElGamal, context);
-    final BlindingFactor blinding = blindingFactorGenerator.generate();
-    final ConfidentialMptConvert tx = ConfidentialMptConvert.builder()
-      .account(holder.publicKey().deriveAddress())
-      .fee(CONFIDENTIAL_FEE)
-      .sequence(info.accountData().sequence())
-      .signingPublicKey(holder.publicKey())
-      .mpTokenIssuanceId(issuanceId)
-      .mptAmount(MpTokenNumericAmount.of(amount))
-      .holderEncryptionKey(holderElGamal.publicKey())
-      .holderEncryptedAmount(encryptor.encrypt(amount, holderElGamal.publicKey(), blinding))
-      .issuerEncryptedAmount(encryptor.encrypt(amount, issuerElGamal.publicKey(), blinding))
-      .auditorEncryptedAmount(encryptor.encrypt(amount, auditorElGamal.publicKey(), blinding))
-      .blindingFactor(blinding)
-      .zkProof(proof)
+  private void enableMultiSig(final KeyPair account, final KeyPair signer1, final KeyPair signer2) throws Exception {
+    final SignerListSet signerListSet = SignerListSet.builder()
+      .account(account.publicKey().deriveAddress())
+      .fee(networkFee())
+      .sequence(currentSequence(account.publicKey().deriveAddress()))
+      .signerQuorum(UnsignedInteger.valueOf(2))
+      .addSignerEntries(
+        SignerEntryWrapper.of(SignerEntry.builder()
+          .account(signer1.publicKey().deriveAddress()).signerWeight(UnsignedInteger.ONE).build()),
+        SignerEntryWrapper.of(SignerEntry.builder()
+          .account(signer2.publicKey().deriveAddress()).signerWeight(UnsignedInteger.ONE).build()))
+      .signingPublicKey(account.publicKey())
       .build();
-    final SingleSignedTransaction<ConfidentialMptConvert> signed = signatureService.sign(holder.privateKey(), tx);
-    assertThat(xrplClient.submit(signed).engineResult()).isEqualTo("tesSUCCESS");
-    this.scanForResult(() -> this.getValidatedTransaction(signed.hash(), ConfidentialMptConvert.class));
+    submitAndWait(signatureService.sign(account.privateKey(), signerListSet), SignerListSet.class);
   }
 
-  private void mergeInbox(final KeyPair holder, final MpTokenIssuanceId issuanceId) throws Exception {
-    final AccountInfoResult info = accountInfo(holder);
-    final ConfidentialMptMergeInbox merge = ConfidentialMptMergeInbox.builder()
-      .account(holder.publicKey().deriveAddress())
-      .fee(CONFIDENTIAL_FEE)
-      .sequence(info.accountData().sequence())
-      .signingPublicKey(holder.publicKey())
-      .mpTokenIssuanceId(issuanceId)
-      .build();
-    final SingleSignedTransaction<ConfidentialMptMergeInbox> signed = signatureService.sign(holder.privateKey(), merge);
-    assertThat(xrplClient.submit(signed).engineResult()).isEqualTo("tesSUCCESS");
-    this.scanForResult(() -> this.getValidatedTransaction(signed.hash(), ConfidentialMptMergeInbox.class));
+  private UnsignedLong xrpBalance(final KeyPair account) {
+    return this.scanForResult(() -> this.getValidatedAccountInfo(account.publicKey().deriveAddress()))
+      .accountData().balance().value();
   }
 
-  /**
-   * A holder that has authorized, received {@code amount} public MPT, converted it, and merged it — fully spendable.
-   */
-  private ConfidentialHolder fundedHolder(
-    final KeyPair issuer, final MpTokenIssuanceId issuanceId, final KeyPair issuerElGamal,
-    final KeyPair auditorElGamal, final long amount, final XrpCurrencyAmount fee
-  ) throws Exception {
-    final KeyPair holder = createRandomAccountEd25519();
-    final KeyPair holderElGamal = Seed.elGamalSecp256k1Seed().deriveKeyPair();
-    authorize(holder, issuanceId, fee);
+  /** A (holder, issuance) pairing for building the assembler's per-(account, token) state map. */
+  private static final class HolderOnToken {
+    private final ConfidentialHolder holder;
+    private final ConfidentialIssuance issuance;
 
-    final AccountInfoResult issuerInfo = accountInfo(issuer);
-    final Payment payment = Payment.builder()
-      .account(issuer.publicKey().deriveAddress())
-      .fee(fee)
-      .sequence(issuerInfo.accountData().sequence())
-      .destination(holder.publicKey().deriveAddress())
-      .amount(MptCurrencyAmount.builder().mptIssuanceId(issuanceId).value(Long.toString(amount)).build())
-      .signingPublicKey(issuer.publicKey())
-      .build();
-    final SingleSignedTransaction<Payment> signedPayment = signatureService.sign(issuer.privateKey(), payment);
-    assertThat(xrplClient.submit(signedPayment).engineResult()).isEqualTo("tesSUCCESS");
-    this.scanForResult(() -> this.getValidatedTransaction(signedPayment.hash(), Payment.class));
-
-    convert(holder, holderElGamal, issuanceId, issuerElGamal, auditorElGamal, UnsignedLong.valueOf(amount));
-    mergeInbox(holder, issuanceId);
-    return new ConfidentialHolder(holder, holderElGamal);
-  }
-
-  /** A holder that has authorized and registered its ElGamal key (via a zero-amount convert) — a send destination. */
-  private ConfidentialHolder registeredHolder(
-    final MpTokenIssuanceId issuanceId, final KeyPair issuerElGamal,
-    final KeyPair auditorElGamal, final XrpCurrencyAmount fee
-  ) throws Exception {
-    final KeyPair holder = createRandomAccountEd25519();
-    final KeyPair holderElGamal = Seed.elGamalSecp256k1Seed().deriveKeyPair();
-    authorize(holder, issuanceId, fee);
-    convert(holder, holderElGamal, issuanceId, issuerElGamal, auditorElGamal, UnsignedLong.ZERO);
-    return new ConfidentialHolder(holder, holderElGamal);
-  }
-
-  // =========================================================================
-  // State + balance helpers
-  // =========================================================================
-
-  private String stateKey(final ConfidentialHolder holder, final MpTokenIssuanceId issuanceId) {
-    return ConfidentialBatchRequest.stateKey(holder.address(), issuanceId);
-  }
-
-  private ConfidentialTokenState stateOf(final ConfidentialHolder holder, final MpTokenIssuanceId issuanceId)
-    throws Exception {
-    final MpTokenObject mpToken = getMpToken(holder.account, issuanceId);
-    return ConfidentialTokenState.builder()
-      .spending(mpToken.confidentialBalanceSpending())
-      .inbox(mpToken.confidentialBalanceInbox())
-      .issuerEncrypted(mpToken.issuerEncryptedBalance())
-      .auditorEncrypted(mpToken.auditorEncryptedBalance())
-      .version(mpToken.confidentialBalanceVersion())
-      .holderKey(mpToken.holderEncryptionKey())
-      .build();
-  }
-
-  private UnsignedLong spendable(final ConfidentialHolder holder, final MpTokenIssuanceId issuanceId) throws Exception {
-    final EncryptedAmount spending = getMpToken(holder.account, issuanceId).confidentialBalanceSpending()
-      .orElseThrow(() -> new RuntimeException("no spending balance"));
-    return decryptor.decrypt(spending, holder.elGamal.privateKey(), UnsignedLong.ZERO, OUTSTANDING_BOUND);
-  }
-
-  private MpTokenObject getMpToken(final KeyPair holder, final MpTokenIssuanceId issuanceId) throws Exception {
-    return xrplClient.ledgerEntry(LedgerEntryRequestParams.mpToken(
-      org.xrpl.xrpl4j.model.client.ledger.MpTokenLedgerEntryParams.builder()
-        .account(holder.publicKey().deriveAddress())
-        .mpTokenIssuanceId(issuanceId)
-        .build(),
-      org.xrpl.xrpl4j.model.client.common.LedgerSpecifier.VALIDATED
-    )).node();
-  }
-
-  /** A funded/registered confidential holder: its account keypair and its ElGamal keypair. */
-  private static final class ConfidentialHolder {
-    private final KeyPair account;
-    private final KeyPair elGamal;
-
-    private ConfidentialHolder(final KeyPair account, final KeyPair elGamal) {
-      this.account = account;
-      this.elGamal = elGamal;
-    }
-
-    private Address address() {
-      return account.publicKey().deriveAddress();
+    private HolderOnToken(final ConfidentialHolder holder, final ConfidentialIssuance issuance) {
+      this.holder = holder;
+      this.issuance = issuance;
     }
   }
 }

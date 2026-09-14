@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
  * ========================LICENSE_START=================================
  * xrpl4j :: core
  * %%
- * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2026 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ package org.xrpl.xrpl4j.crypto.confidential.util.jna;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
-import org.xrpl.xrpl4j.crypto.confidential.model.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.SecretBlindingFactor;
 import org.xrpl.xrpl4j.crypto.confidential.util.MptAmountEncryptor;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
@@ -39,10 +39,6 @@ import java.util.Objects;
  * encryption of an amount using a secp256k1 public key.</p>
  */
 public class JnaMptAmountEncryptor implements MptAmountEncryptor {
-
-  private static final int PUBLIC_KEY_SIZE = 33;
-  private static final int BLINDING_FACTOR_SIZE = 32;
-  private static final int CIPHERTEXT_SIZE = 66;
 
   private final MptCryptoLibrary lib;
 
@@ -68,11 +64,12 @@ public class JnaMptAmountEncryptor implements MptAmountEncryptor {
   public EncryptedAmount encrypt(
     final UnsignedLong amount,
     final PublicKey publicKey,
-    final BlindingFactor blindingFactor
+    final SecretBlindingFactor blindingFactor
   ) {
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(publicKey, "publicKey must not be null");
     Objects.requireNonNull(blindingFactor, "blindingFactor must not be null");
+    Preconditions.checkArgument(!blindingFactor.isDestroyed(), "blindingFactor has been destroyed");
 
     Preconditions.checkArgument(
       publicKey.keyType() == KeyType.SECP256K1,
@@ -82,21 +79,21 @@ public class JnaMptAmountEncryptor implements MptAmountEncryptor {
 
     byte[] publicKeyBytes = publicKey.value().toByteArray();
     Preconditions.checkArgument(
-      publicKeyBytes.length == PUBLIC_KEY_SIZE,
+      publicKeyBytes.length == PublicKey.LENGTH,
       "publicKey must be %s bytes, but was %s bytes",
-      PUBLIC_KEY_SIZE, publicKeyBytes.length
+      PublicKey.LENGTH, publicKeyBytes.length
     );
 
     // Extract the blinding factor just before use; zero the copy when done
     byte[] blindingBytes = blindingFactor.value().toByteArray();
     try {
       Preconditions.checkArgument(
-        blindingBytes.length == BLINDING_FACTOR_SIZE,
+        blindingBytes.length == SecretBlindingFactor.LENGTH,
         "blindingFactor must be %s bytes, but was %s bytes",
-        BLINDING_FACTOR_SIZE, blindingBytes.length
+        SecretBlindingFactor.LENGTH, blindingBytes.length
       );
 
-      byte[] outCiphertext = new byte[CIPHERTEXT_SIZE];
+      byte[] outCiphertext = new byte[EncryptedAmount.LENGTH];
       int result = lib.mpt_encrypt_amount(amount.longValue(), publicKeyBytes, blindingBytes, outCiphertext);
       if (result != 0) {
         throw new IllegalStateException("mpt_encrypt_amount failed with error code: " + result);

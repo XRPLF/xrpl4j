@@ -1,2 +1,89 @@
+# --- What this file does ---------------------------------------------------------------------------------------
+# JaCoCo is the Java tool that instruments test runs and records which lines of code actually executed ("exec
+# data"). Maven produces jacoco XML reports per module, and this project also has an `xrpl4j-coverage` module
+# that merges (aggregates) exec data from unit tests AND integration tests (ITs) together into one combined
+# report.
+#
+# We upload TWO separate reports to Codecov instead of one:
+#   1. "unittests" - only the per-module unit-test reports (xrpl4j-core, xrpl4j-client). This is what actually
+#      gates PRs. (xrpl4j-mpt-crypto ships no Java sources of its own - it only bundles downloaded native
+#      tarballs as resources - so it has nothing for JaCoCo to instrument and is excluded here.)
+#   2. "aggregate" - the combined unit+IT report from xrpl4j-coverage. Informational only. Lets us see the
+#      fuller picture without letting IT coverage (which can look high without meaningfully unit-testing
+#      anything) count toward the merge-blocking number.
+# ---------------------------------------------------------------------------------------------------------------
+
+coverage:
+  status:
+    # "project" status = coverage of the whole codebase (as opposed to "patch" status below, which only looks
+    # at lines changed in a PR).
+    project:
+      unittests-gate:
+        # Only reads uploads tagged with the `unittests` flag (see `flags:` below) - so IT-derived hits never
+        # factor into this number.
+        flags:
+          - unittests
+        # `target: auto` = don't require a fixed percentage; just don't let coverage drop below what the base
+        # branch already has.
+        target: auto
+        # Allow up to a 1% drop before failing - avoids false failures from noise/rounding on small PRs.
+        threshold: 1%
+        # THIS is the one that should be set as a required GitHub status check in branch protection. It's the
+        # actual quality gate.
+
+      aggregate-visibility:
+        # Reads the combined unit+IT report instead.
+        flags:
+          - aggregate
+        target: auto
+        # `informational: true` means this check always shows as passing/visible on the PR, but can never block
+        # a merge - it's there so reviewers can see "here's what IT coverage adds on top of unit coverage,"
+        # without that number having any teeth.
+        informational: true
+
+    # "patch" status = coverage of only the NEW/changed lines in a PR. This is what usually catches "you added
+    # a function with no test."
+    patch:
+      unittests-gate:
+        flags:
+          - unittests
+        target: auto
+        # No aggregate-visibility patch check on purpose: patch coverage is exactly the "did you unit test what
+        # you just wrote" question, which is the one place blending in IT coverage would be most likely to mask
+        # a real gap.
+
+# Flags are labels attached to a coverage upload (set in the GitHub Actions workflow via `flags: unittests` /
+# `flags: aggregate` on the codecov-action step). They're what let the `status:` checks above tell the two
+# reports apart, even though both cover the same source files.
+#
+# NOTE: `paths:` below are identical for both flags on purpose - this is NOT a copy-paste mistake. A flag's
+# `paths:` is a real filter on which files get attributed to it, but here both lists cover every module either
+# report could ever contain, so neither one actually excludes anything. The unit-vs-aggregate split happens
+# entirely in workflow.yml, via which jacoco.xml file each codecov-action step's `files:` argument points at
+# (per-module unit reports vs. the xrpl4j-coverage aggregate report).
+flags:
+  unittests:
+    paths:
+      - xrpl4j-core/
+      - xrpl4j-client/
+    # `carryforward: false` = don't reuse a previous commit's coverage data if this flag doesn't get a fresh
+    # upload on some commit. We always upload fresh on every build, so there's nothing to carry forward.
+    carryforward: false
+
+  aggregate:
+    paths:
+      - xrpl4j-core/
+      - xrpl4j-client/
+    carryforward: false
+
+# Controls the PR comment Codecov posts: show the per-flag breakdown, the diff coverage, and a file-by-file
+# table.
+comment:
+  layout: "flags, diff, files"
+  require_changes: false
+
+# Rewrites absolute CI build paths (e.g. /home/runner/work/xrpl4j/xrpl4j/...) down to paths relative to the
+# repo root, so Codecov can match reported files to the actual repo structure. Unrelated to the unit/aggregate
+# split above.
 fixes:
   - "/home/runner/work/xrpl4j/xrpl4j/::"

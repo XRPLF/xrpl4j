@@ -96,6 +96,8 @@ public class AbstractSignatureServiceTest {
     when(signatureUtilsMock.toSignableInnerBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableInnerBytes(any(), any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toCounterpartyMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toCounterpartySignableBytes(any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toSponsorSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
 
     // Mock signatures need to return valid values for serialization
     UnsignedByteArray ed25519SigBytes = UnsignedByteArray.of(new byte[64]);
@@ -584,7 +586,7 @@ public class AbstractSignatureServiceTest {
     Signature actualSignature = signatureService.counterpartySign(TestConstants.getEdPrivateKey(), loanSetMock);
     assertThat(actualSignature).isEqualTo(ed25519SignatureMock);
 
-    verify(signatureUtilsMock).toSignableBytes(loanSetMock);
+    verify(signatureUtilsMock).toCounterpartySignableBytes(loanSetMock);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -593,7 +595,7 @@ public class AbstractSignatureServiceTest {
     Signature actualSignature = signatureService.counterpartySign(TestConstants.getEcPrivateKey(), loanSetMock);
     assertThat(actualSignature).isEqualTo(secp256k1SignatureMock);
 
-    verify(signatureUtilsMock).toSignableBytes(loanSetMock);
+    verify(signatureUtilsMock).toCounterpartySignableBytes(loanSetMock);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 

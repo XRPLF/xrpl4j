@@ -84,7 +84,7 @@ jobs:
       - name: Build
         run: mvn clean install
       - name: Upload unit coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: >-
@@ -94,7 +94,7 @@ jobs:
           disable_search: true
           fail_ci_if_error: true
       - name: Upload aggregate coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: xrpl4j-coverage/target/site/jacoco-aggregate/jacoco.xml
@@ -322,7 +322,7 @@ jobs:
         run: mvn -pl xrpl4j-coverage -am verify -DskipTests -DskipITs -Dmaven.javadoc.skip=true
       - name: Upload confidential-mpt aggregate coverage to Codecov
         if: matrix.platform == 'linux-x86-64'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: xrpl4j-coverage/target/site/jacoco-aggregate/jacoco.xml

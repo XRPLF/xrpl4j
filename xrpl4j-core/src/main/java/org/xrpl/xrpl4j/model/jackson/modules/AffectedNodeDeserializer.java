@@ -57,7 +57,7 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
     Map.Entry<String, JsonNode> nodeFieldAndValue = jsonNode.fields().next();
     String affectedNodeType = nodeFieldAndValue.getKey();
     JsonNode nodeValue = nodeFieldAndValue.getValue();
-    if (nodeValue == null || nodeValue.isNull()) {
+    if (nodeValue.isNull()) {
       throw MismatchedInputException.from(
         jsonParser, AffectedNode.class, "AffectedNode entry value is missing or null"
       );

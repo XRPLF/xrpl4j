@@ -102,8 +102,8 @@ public class AbstractTransactionSignerTest {
 
     when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
-    when(signatureUtilsMock.toSignableInnerBytes(any())).thenReturn(UnsignedByteArray.empty());
-    when(signatureUtilsMock.toMultiSignableInnerBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toSignableInnerBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toMultiSignableInnerBytes(any(), any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toCounterpartyMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
     when(signerMock.signingPublicKey()).thenReturn(publicKeyMock);
@@ -357,22 +357,32 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void signInnerWithNullMetadata() {
-    assertThrows(NullPointerException.class, () -> transactionSigner.signInner(null, batchMock));
+    assertThrows(
+      NullPointerException.class,
+      () -> transactionSigner.signInner(null, batchMock, TestConstants.EC_ADDRESS)
+    );
   }
 
   @Test
   void signInnerWithNullBatch() {
-    assertThrows(NullPointerException.class, () -> transactionSigner.signInner(privateKeyableMock, null));
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.signInner(privateKeyableMock, null, TestConstants.EC_ADDRESS));
+  }
+
+  @Test
+  void signInnerWithNullBatchSignerAddress() {
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.signInner(privateKeyableMock, batchMock, null));
   }
 
   @Test
   void signInnerEd25519() {
     keyType = KeyType.ED25519;
 
-    Signature signature = transactionSigner.signInner(privateKeyableMock, batchMock);
+    Signature signature = transactionSigner.signInner(privateKeyableMock, batchMock, TestConstants.ED_ADDRESS);
     assertThat(signature).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toSignableInnerBytes(batchMock);
+    verify(signatureUtilsMock).toSignableInnerBytes(batchMock, TestConstants.ED_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -380,10 +390,10 @@ public class AbstractTransactionSignerTest {
   void signInnerSecp256k1() {
     keyType = KeyType.SECP256K1;
 
-    Signature signature = transactionSigner.signInner(privateKeyableMock, batchMock);
+    Signature signature = transactionSigner.signInner(privateKeyableMock, batchMock, TestConstants.EC_ADDRESS);
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toSignableInnerBytes(batchMock);
+    verify(signatureUtilsMock).toSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -393,22 +403,30 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void multiSignInnerWithNullMetadata() {
-    assertThrows(NullPointerException.class, () -> transactionSigner.multiSignInner(null, batchMock));
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.multiSignInner(null, batchMock, TestConstants.EC_ADDRESS));
   }
 
   @Test
   void multiSignInnerWithNullBatch() {
-    assertThrows(NullPointerException.class, () -> transactionSigner.multiSignInner(privateKeyableMock, null));
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.multiSignInner(privateKeyableMock, null, TestConstants.EC_ADDRESS));
+  }
+
+  @Test
+  void multiSignInnerWithNullBatchSignerAddress() {
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.multiSignInner(privateKeyableMock, batchMock, null));
   }
 
   @Test
   void multiSignInnerEd25519() {
     keyType = KeyType.ED25519;
 
-    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock);
+    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock, TestConstants.EC_ADDRESS);
     assertThat(signature).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.ED_ADDRESS);
+    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS, TestConstants.ED_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -416,10 +434,10 @@ public class AbstractTransactionSignerTest {
   void multiSignInnerSecp256k1() {
     keyType = KeyType.SECP256K1;
 
-    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock);
+    Signature signature = transactionSigner.multiSignInner(privateKeyableMock, batchMock, TestConstants.EC_ADDRESS);
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS);
+    verify(signatureUtilsMock).toMultiSignableInnerBytes(batchMock, TestConstants.EC_ADDRESS, TestConstants.EC_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -494,6 +512,98 @@ public class AbstractTransactionSignerTest {
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
     verify(signatureUtilsMock).toCounterpartyMultiSignableBytes(loanSetMock, TestConstants.EC_ADDRESS);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  // /////////////////
+  // SponsorSign
+  // /////////////////
+
+  @Test
+  void sponsorSignWithNullMetadata() {
+    assertThrows(NullPointerException.class, () -> transactionSigner.sponsorSign(null, transactionMock));
+  }
+
+  @Test
+  void sponsorSignWithNullTransaction() {
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.sponsorSign(privateKeyableMock, null));
+  }
+
+  @Test
+  void sponsorSignEd25519() {
+    final Payment payment = Payment.builder()
+      .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(ED_PUBLIC_KEY)
+      .build();
+
+    keyType = KeyType.ED25519;
+
+    Signature signature = transactionSigner.sponsorSign(privateKeyableMock, payment);
+    assertThat(signature).isEqualTo(fauxEd25519Signature);
+
+    verify(signatureUtilsMock).toSignableBytes(payment);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  @Test
+  void sponsorSignSecp256k1() {
+    final Payment payment = Payment.builder()
+      .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(EC_PUBLIC_KEY)
+      .build();
+
+    keyType = KeyType.SECP256K1;
+
+    Signature signature = transactionSigner.sponsorSign(privateKeyableMock, payment);
+    assertThat(signature).isEqualTo(fauxSecp256k1Signature);
+
+    verify(signatureUtilsMock).toSignableBytes(payment);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  // /////////////////
+  // SponsorMultiSign
+  // /////////////////
+
+  @Test
+  void sponsorMultiSignWithNullMetadata() {
+    assertThrows(NullPointerException.class, () -> transactionSigner.sponsorMultiSign(null, transactionMock));
+  }
+
+  @Test
+  void sponsorMultiSignWithNullTransaction() {
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.sponsorMultiSign(privateKeyableMock, null));
+  }
+
+  @Test
+  void sponsorMultiSignEd25519() {
+    keyType = KeyType.ED25519;
+    when(signatureUtilsMock.toSponsorMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+
+    Signature signature = transactionSigner.sponsorMultiSign(privateKeyableMock, transactionMock);
+    assertThat(signature).isEqualTo(fauxEd25519Signature);
+
+    verify(signatureUtilsMock).toSponsorMultiSignableBytes(transactionMock, TestConstants.ED_ADDRESS);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  @Test
+  void sponsorMultiSignSecp256k1() {
+    keyType = KeyType.SECP256K1;
+    when(signatureUtilsMock.toSponsorMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+
+    Signature signature = transactionSigner.sponsorMultiSign(privateKeyableMock, transactionMock);
+    assertThat(signature).isEqualTo(fauxSecp256k1Signature);
+
+    verify(signatureUtilsMock).toSponsorMultiSignableBytes(transactionMock, TestConstants.EC_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 

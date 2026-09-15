@@ -47,6 +47,7 @@ import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Signer;
@@ -145,17 +146,22 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   }
 
   @Override
-  public Signature signInner(final PrivateKeyReference privateKeyable, final Batch batchTransaction) {
+  public Signature signInner(
+    final PrivateKeyReference privateKeyable, final Batch batchTransaction, final Address batchSignerAddress
+  ) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(batchTransaction);
-    return getTransactionSigner(privateKeyable).signInner(batchTransaction);
+    Objects.requireNonNull(batchSignerAddress);
+    return getTransactionSigner(privateKeyable).signInner(batchTransaction, batchSignerAddress);
   }
 
   @Override
-  public Signature multiSignInner(final PrivateKeyReference privateKeyable, final Batch batchTransaction) {
+  public Signature multiSignInner(final PrivateKeyReference privateKeyable, final Batch batchTransaction,
+    final Address batchSignerAddress) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(batchTransaction);
-    return getTransactionSigner(privateKeyable).multiSignInner(batchTransaction);
+    Objects.requireNonNull(batchSignerAddress);
+    return getTransactionSigner(privateKeyable).multiSignInner(batchTransaction, batchSignerAddress);
   }
 
   @Override
@@ -170,6 +176,24 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
     Objects.requireNonNull(privateKeyReference);
     Objects.requireNonNull(transaction);
     return getTransactionSigner(privateKeyReference).counterpartyMultiSign(transaction);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorSign(
+    final PrivateKeyReference privateKeyReference, final T transaction
+  ) {
+    Objects.requireNonNull(privateKeyReference);
+    Objects.requireNonNull(transaction);
+    return getTransactionSigner(privateKeyReference).sponsorSign(transaction);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorMultiSign(
+    final PrivateKeyReference privateKeyReference, final T transaction
+  ) {
+    Objects.requireNonNull(privateKeyReference);
+    Objects.requireNonNull(transaction);
+    return getTransactionSigner(privateKeyReference).sponsorMultiSign(transaction);
   }
 
   @Override
@@ -350,12 +374,12 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
       return bcSignatureService.multiSignToSigner(this.privateKey, transaction);
     }
 
-    public final Signature signInner(final Batch transaction) {
-      return bcSignatureService.signInner(this.privateKey, transaction);
+    public final Signature signInner(final Batch transaction, final Address batchSignerAddress) {
+      return bcSignatureService.signInner(this.privateKey, transaction, batchSignerAddress);
     }
 
-    public final Signature multiSignInner(final Batch transaction) {
-      return bcSignatureService.multiSignInner(this.privateKey, transaction);
+    public final Signature multiSignInner(final Batch transaction, final Address batchSignerAddress) {
+      return bcSignatureService.multiSignInner(this.privateKey, transaction, batchSignerAddress);
     }
 
     public final Signature counterpartySign(final LoanSet transaction) {
@@ -364,6 +388,14 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
 
     public final Signature counterpartyMultiSign(final LoanSet transaction) {
       return bcSignatureService.counterpartyMultiSign(this.privateKey, transaction);
+    }
+
+    public <T extends Transaction> Signature sponsorSign(final T transaction) {
+      return bcSignatureService.sponsorSign(this.privateKey, transaction);
+    }
+
+    public <T extends Transaction> Signature sponsorMultiSign(final T transaction) {
+      return bcSignatureService.sponsorMultiSign(this.privateKey, transaction);
     }
 
     public PublicKey getPublicKey() {

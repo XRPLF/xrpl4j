@@ -74,6 +74,15 @@ public enum TransactionType {
   DEPOSIT_PRE_AUTH("DepositPreauth"),
 
   /**
+   * The {@link TransactionType} for the {@link DelegateSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   */
+  @Beta
+  DELEGATE_SET("DelegateSet"),
+
+  /**
    * The {@link TransactionType} for the {@link EnableAmendment} transaction.
    */
   ENABLE_AMENDMENT("EnableAmendment"),
@@ -363,6 +372,7 @@ public enum TransactionType {
    * The {@link TransactionType} for the {@link AmmClawback} transaction.
    */
   AMM_CLAWBACK("AMMClawback"),
+
   @Beta
   MPT_ISSUANCE_CREATE("MPTokenIssuanceCreate"),
   @Beta
@@ -517,6 +527,68 @@ public enum TransactionType {
   LOAN_PAY("LoanPay"),
 
   /**
+   * The {@link TransactionType} for the {@link ConfidentialMptConvert} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   */
+  @Beta
+  CONFIDENTIAL_MPT_CONVERT("ConfidentialMPTConvert"),
+
+  /**
+   * The {@link TransactionType} for the {@link ConfidentialMptSend} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   */
+  @Beta
+  CONFIDENTIAL_MPT_SEND("ConfidentialMPTSend"),
+
+  /**
+   * The {@link TransactionType} for the {@link ConfidentialMptMergeInbox} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   */
+  @Beta
+  CONFIDENTIAL_MPT_MERGE_INBOX("ConfidentialMPTMergeInbox"),
+
+  /**
+   * The {@link TransactionType} for the {@link ConfidentialMptConvertBack} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
+   * </p>
+   */
+  @Beta
+  CONFIDENTIAL_MPT_CONVERT_BACK("ConfidentialMPTConvertBack"),
+
+  /**
+   * The {@link TransactionType} for the {@link ConfidentialMptClawback} transaction.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/discussions/241"
+   */
+  @Beta
+  CONFIDENTIAL_MPT_CLAWBACK("ConfidentialMPTClawback"),
+
+  /**
+   * The {@link TransactionType} for the {@link SponsorshipTransfer} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  SPONSORSHIP_TRANSFER("SponsorshipTransfer"),
+
+  /**
+   * The {@link TransactionType} for the {@link SponsorshipSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  SPONSORSHIP_SET("SponsorshipSet"),
+
+  /**
    * The {@link TransactionType} for any transaction that is unrecognized/unsupported by xrpl4j.
    */
   UNKNOWN("Unknown");
@@ -530,13 +602,15 @@ public enum TransactionType {
   /**
    * Gets an instance of {@link TransactionType} for the given string value.
    *
+   * <p>The comparison is case-insensitive to handle variations in transaction type formatting.</p>
+   *
    * @param value The {@link String} value corresponding to a {@link TransactionType}.
    *
    * @return The {@link TransactionType} with the corresponding value.
    */
   public static TransactionType forValue(String value) {
     for (TransactionType transactionType : TransactionType.values()) {
-      if (transactionType.value.equals(value)) {
+      if (transactionType.value.equalsIgnoreCase(value)) {
         return transactionType;
       }
     }

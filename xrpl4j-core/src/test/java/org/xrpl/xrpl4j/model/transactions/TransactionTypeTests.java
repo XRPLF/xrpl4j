@@ -99,4 +99,38 @@ public class TransactionTypeTests {
     assertThat(TransactionType.XCHAIN_MODIFY_BRIDGE.value()).isEqualTo("XChainModifyBridge");
     assertThat(TransactionType.UNKNOWN.value()).isEqualTo("Unknown");
   }
+
+  @Test
+  public void testForValueIsCaseInsensitive() {
+    // Test lowercase variations
+    assertThat(TransactionType.forValue("accountset")).isEqualTo(TransactionType.ACCOUNT_SET);
+    assertThat(TransactionType.forValue("payment")).isEqualTo(TransactionType.PAYMENT);
+    assertThat(TransactionType.forValue("trustset")).isEqualTo(TransactionType.TRUST_SET);
+    assertThat(TransactionType.forValue("offercreate")).isEqualTo(TransactionType.OFFER_CREATE);
+    assertThat(TransactionType.forValue("delegateset")).isEqualTo(TransactionType.DELEGATE_SET);
+
+    // Test uppercase variations
+    assertThat(TransactionType.forValue("ACCOUNTSET")).isEqualTo(TransactionType.ACCOUNT_SET);
+    assertThat(TransactionType.forValue("PAYMENT")).isEqualTo(TransactionType.PAYMENT);
+    assertThat(TransactionType.forValue("TRUSTSET")).isEqualTo(TransactionType.TRUST_SET);
+    assertThat(TransactionType.forValue("OFFERCREATE")).isEqualTo(TransactionType.OFFER_CREATE);
+    assertThat(TransactionType.forValue("DELEGATESET")).isEqualTo(TransactionType.DELEGATE_SET);
+
+    // Test mixed case variations
+    assertThat(TransactionType.forValue("aCcOuNtSeT")).isEqualTo(TransactionType.ACCOUNT_SET);
+    assertThat(TransactionType.forValue("PaYmEnT")).isEqualTo(TransactionType.PAYMENT);
+    assertThat(TransactionType.forValue("tRuStSeT")).isEqualTo(TransactionType.TRUST_SET);
+    assertThat(TransactionType.forValue("oFfErCrEaTe")).isEqualTo(TransactionType.OFFER_CREATE);
+    assertThat(TransactionType.forValue("dElEgAtEsEt")).isEqualTo(TransactionType.DELEGATE_SET);
+  }
+
+  @ParameterizedTest
+  @EnumSource
+  public void testForValueIsCaseInsensitiveForAllTypes(TransactionType type) {
+    String lowerCase = type.value().toLowerCase();
+    String upperCase = type.value().toUpperCase();
+
+    assertThat(TransactionType.forValue(lowerCase)).isEqualTo(type);
+    assertThat(TransactionType.forValue(upperCase)).isEqualTo(type);
+  }
 }

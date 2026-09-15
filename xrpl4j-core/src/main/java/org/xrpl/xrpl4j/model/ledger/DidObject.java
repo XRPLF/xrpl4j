@@ -132,4 +132,5 @@ public interface DidObject extends LedgerObject {
    * @return A {@link Hash256} containing the ID.
    */
   Hash256 index();
+
 }

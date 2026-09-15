@@ -275,7 +275,7 @@ public interface FeeParams {
 
   /**
    * The total number of signatures in a {@code LoanSet}'s {@code CounterpartySignature}, applicable only when
-   * {@link #transaction()} is a {@link LoanSet}.
+   * {@link #transaction()} is a {@link org.xrpl.xrpl4j.model.transactions.LoanSet}.
    *
    * <p>Unlike {@link #signersCount()} and {@link #sponsorSignersCount()} — which are zero when the lone signature
    * rides in {@code TxnSignature} — a single counterparty signature is itself charged: rippled counts
@@ -291,7 +291,7 @@ public interface FeeParams {
   /**
    * The number of fee increments a {@code LoanPay} transaction will be charged, being one increment per
    * {@code kLoanPaymentsPerFeeIncrement} payments the transaction is estimated to make. Applicable only when
-   * {@link #transaction()} is a {@link LoanPay}.
+   * {@link #transaction()} is a {@link org.xrpl.xrpl4j.model.transactions.LoanPay}.
    *
    * <p>Deriving this requires the {@code Loan}, {@code LoanBroker} and {@code Vault} ledger objects, so it is
    * supplied rather than computed. An absent value is priced as one — a single payment. Leaving the value absent

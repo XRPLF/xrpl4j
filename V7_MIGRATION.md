@@ -225,19 +225,28 @@ unaffected: a Batch inner transaction is required to carry a `Fee` of exactly ze
 
 #### New fee-computation API: `FeeParams`, `FeeTerm`, `FeeBreakdown`
 
-`FeeUtils` gains `computeFee(FeeParams)` and `computeFeeBreakdown(FeeParams)`, which replace the narrower, per-type
-`computeFee()` static methods (e.g., `EscrowFinish.computeFee(XrpCurrencyAmount, Fulfillment)`, now deprecated) with a
-single entry point that correctly prices every transaction type, including Batch (per-inner and per-signer costs),
-LoanSet/LoanPay, sponsored transactions, and confidential MPT transactions.
+`FeeUtils` gains `computeFee(FeeParams)` and `computeFeeBreakdown(FeeParams)`. Unlike the existing
+`computeNetworkFees(FeeResult)` / `computeMultisigNetworkFees(FeeResult, SignerListObject)` — which remain and still
+return a flat, per-base-fee estimate — the new methods take the transaction itself (via `FeeParams`) and price it
+exactly, including Batch (per-inner and per-signer costs), LoanSet/LoanPay, sponsored transactions, and confidential
+MPT transactions. A few transaction types also had their own narrow `computeFee()` static method (e.g.
+`EscrowFinish.computeFee(XrpCurrencyAmount, Fulfillment)`); those are now deprecated in favor of `FeeUtils.computeFee(FeeParams)`.
 
 **Migration:**
 
 ```java
-// Before (v6.x.x): only correct for a single-signed, unsponsored EscrowFinish
-XrpCurrencyAmount fee = EscrowFinish.computeFee(currentLedgerBaseFeeDrops, fulfillment);
+// Before (v6.x.x): a flat, per-base-fee estimate that ignores the transaction; multi-signing required a separate
+// call plus a SignerListObject fetched from the ledger just to get a signer count
+ComputedNetworkFees fees = signerList.isPresent()
+    ? FeeUtils.computeMultisigNetworkFees(feeResult, signerList.get())
+    : FeeUtils.computeNetworkFees(feeResult);
+XrpCurrencyAmount fee = fees.feeLow();
 
-// After (v7.0.0): correct for every transaction type and signing scenario
-FeeParams feeParams = FeeParams.of(feeResult, escrowFinish).build();
+// After (v7.0.0): one call, accurate for this specific transaction; pass signersCount directly instead of
+// fetching a SignerListObject
+FeeParams feeParams = FeeParams.of(feeResult, payment)
+    .signersCount(UnsignedInteger.valueOf(2)) // omit for a single-signed transaction
+    .build();
 ComputedNetworkFees fees = FeeUtils.computeFee(feeParams);
 XrpCurrencyAmount fee = fees.feeLow();
 ```

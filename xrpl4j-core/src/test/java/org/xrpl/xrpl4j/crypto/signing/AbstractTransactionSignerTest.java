@@ -143,6 +143,21 @@ public class AbstractTransactionSignerTest {
   }
 
   @Test
+  void signWithZeroFeeThrows() {
+    final Payment payment = Payment.builder()
+      .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(ED_PUBLIC_KEY)
+      .build();
+
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> transactionSigner.sign(privateKeyableMock, payment)
+    );
+    assertThat(exception.getMessage()).contains("Refusing to sign a transaction with a Fee of 0");
+  }
+
+  @Test
   void signEd25519() {
     final Payment payment = Payment.builder()
       .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
@@ -528,6 +543,21 @@ public class AbstractTransactionSignerTest {
   void sponsorSignWithNullTransaction() {
     assertThrows(NullPointerException.class,
       () -> transactionSigner.sponsorSign(privateKeyableMock, null));
+  }
+
+  @Test
+  void sponsorSignWithZeroFeeThrows() {
+    final Payment payment = Payment.builder()
+      .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(ED_PUBLIC_KEY)
+      .build();
+
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> transactionSigner.sponsorSign(privateKeyableMock, payment)
+    );
+    assertThat(exception.getMessage()).contains("Refusing to sign a transaction with a Fee of 0");
   }
 
   @Test

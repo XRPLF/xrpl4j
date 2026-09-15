@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.crypto.signing;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.base.Preconditions;
+import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
@@ -56,6 +58,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   public <T extends Transaction> SingleSignedTransaction<T> sign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
+    requireNonZeroFee(transaction);
 
     final Signature signature = signatureHelper(privateKeyable, transaction);
 
@@ -147,6 +150,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   public <T extends Transaction> Signature sponsorSign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
+    requireNonZeroFee(transaction);
 
     // Per the rippled implementation of the Sponsorship amendment, sponsor single-signing uses the same
     // HashPrefix::txSign (STX, 0x53545800) prefix and serialization as regular single-signing. Domain separation
@@ -168,6 +172,30 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
       transaction, address
     );
     return this.signatureHelper(privateKeyable, signableTransactionBytes);
+  }
+
+  /**
+   * Guards against signing a transaction whose {@link Transaction#fee()} was left at its zero default (see
+   * {@link Transaction#fee()}) rather than set to a real, computed value. Signing such a transaction would produce a
+   * signature that rippled will reject as underpriced, so this fails fast instead of letting a caller discover the
+   * mistake at submission time.
+   *
+   * <p>This is intentionally scoped to {@link #sign(PrivateKeyable, Transaction)} and
+   * {@link #sponsorSign(PrivateKeyable, Transaction)} — the paths that sign a transaction's own {@code Fee} field for
+   * eventual submission. It does not apply to multi-signing or to a Batch inner transaction, which rippled requires
+   * to carry a {@code Fee} of exactly zero.
+   *
+   * @param transaction The {@link Transaction} about to be signed.
+   *
+   * @throws IllegalArgumentException if {@code transaction}'s {@link Transaction#fee()} is zero.
+   */
+  private static void requireNonZeroFee(final Transaction transaction) {
+    Preconditions.checkArgument(
+      !transaction.fee().value().equals(UnsignedLong.ZERO),
+      "Refusing to sign a transaction with a Fee of 0. Transaction#fee() now defaults to 0 rather than being " +
+        "required, so compute a real fee before signing, e.g. via " +
+        "org.xrpl.xrpl4j.model.client.fees.FeeUtils#computeFee(FeeParams)."
+    );
   }
 
   /**

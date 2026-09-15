@@ -14,6 +14,10 @@ Version 7.0.0 introduces several breaking changes:
    `SignatureUtils.addMultiSignaturesToTransaction()` have been removed. Transaction signing now uses Immutables-generated
    `withTransactionSignature()` and `withSigners()` methods on `Transaction`, and validation has moved to `@Check`
    methods on `SingleSignedTransaction` and `MultiSignedTransaction`.
+3. **Transaction Fee Model Refactor** — `Transaction.fee()` is no longer a required field; it now defaults to zero
+   drops. A new fee-computation API (`FeeParams`, `FeeTerm`, `FeeBreakdown`, and an expanded `FeeUtils`) replaces the
+   old per-transaction-type `computeFee()` helpers for computing an accurate fee. To guard against the new default,
+   `TransactionSigner.sign()` and `sponsorSign()` now reject a transaction whose `fee()` is still zero.
 
 ## Breaking Changes
 
@@ -178,7 +182,72 @@ for every transaction subclass:
 - `Transaction withSigners(Iterable<? extends SignerWrapper> signers)` — returns a copy of the transaction with the
   specified signers applied.
 
-### 3. `MetaMpTokenIssuanceObject.mpTokenMetadata()` type change
+### 3. Transaction Fee Model
+
+`Transaction.fee()` and the fee-computation helpers have been reworked to support the new fee rules introduced by
+Batch, LoanSet/LoanPay, sponsored transactions, and confidential MPT transactions — none of which the old
+per-transaction-type `computeFee()` methods could price correctly.
+
+#### `Transaction.fee()` is no longer a required field
+
+Previously, building any `Transaction` without calling `.fee(...)` threw an `IllegalStateException` at `build()` time.
+`fee()` is now annotated `@Value.Default` and defaults to `XrpCurrencyAmount.ofDrops(0)`, consistent with how
+`sequence()` already defaulted to zero. This lets you build a transaction first and compute its fee afterward with the
+new `FeeUtils` API, but it also means a transaction that never had its fee set will silently build with `Fee: 0`
+instead of failing fast.
+
+**Migration:**
+
+If you had code relying on the old fail-fast behavior (for example, a test asserting that a missing `fee()` throws),
+switch it to assert on a field that is still required, or explicitly assert `transaction.fee()` equals zero:
+
+```java
+// Before (v6.x.x): omitting fee() threw IllegalStateException
+assertThrows(IllegalStateException.class, () -> Payment.builder()
+    .account(account)
+    .destination(destination)
+    .amount(amount)
+    .build());
+
+// After (v7.0.0): omitting fee() no longer throws; it defaults instead
+Payment payment = Payment.builder()
+    .account(account)
+    .destination(destination)
+    .amount(amount)
+    .build();
+assertThat(payment.fee()).isEqualTo(XrpCurrencyAmount.ofDrops(0));
+```
+
+As a safety net for this relaxed validation, `TransactionSigner.sign()` and `TransactionSigner.sponsorSign()` (e.g., on
+`BcSignatureService`) now throw `IllegalArgumentException` if `transaction.fee()` is still zero when signing. Compute a
+real fee first — see below — before calling `sign()`/`sponsorSign()`. (`multiSign()` and Batch inner-signing are
+unaffected: a Batch inner transaction is required to carry a `Fee` of exactly zero.)
+
+#### New fee-computation API: `FeeParams`, `FeeTerm`, `FeeBreakdown`
+
+`FeeUtils` gains `computeFee(FeeParams)` and `computeFeeBreakdown(FeeParams)`, which replace the narrower, per-type
+`computeFee()` static methods (e.g., `EscrowFinish.computeFee(XrpCurrencyAmount, Fulfillment)`, now deprecated) with a
+single entry point that correctly prices every transaction type, including Batch (per-inner and per-signer costs),
+LoanSet/LoanPay, sponsored transactions, and confidential MPT transactions.
+
+**Migration:**
+
+```java
+// Before (v6.x.x): only correct for a single-signed, unsponsored EscrowFinish
+XrpCurrencyAmount fee = EscrowFinish.computeFee(currentLedgerBaseFeeDrops, fulfillment);
+
+// After (v7.0.0): correct for every transaction type and signing scenario
+FeeParams feeParams = FeeParams.of(feeResult, escrowFinish).build();
+ComputedNetworkFees fees = FeeUtils.computeFee(feeParams);
+XrpCurrencyAmount fee = fees.feeLow();
+```
+
+`ComputedNetworkFees` also gains an auxiliary `feeBreakdown()` field: an optionally-present `FeeBreakdown` populated by
+`computeFee(FeeParams)` (empty when the fees came from the per-base-fee `computeNetworkFees(FeeResult)` instead).
+Inspect `feeBreakdown().get().summary()` while developing to see which parts of a computed fee were assumed defaults
+versus derived facts.
+
+### 4. `MetaMpTokenIssuanceObject.mpTokenMetadata()` type change
 
 The return type of `MetaMpTokenIssuanceObject.mpTokenMetadata()` changed from `Optional<String>` to
 `Optional<MpTokenMetadata>`. This aligns the meta object with `MpTokenIssuanceObject`.
@@ -199,9 +268,9 @@ Optional<String> hexString = metadata.map(MpTokenMetadata::value);
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.
 - The `Issue.XRP` constant is still available and works the same way.
-- The `TransactionSigner.sign()` and `TransactionSigner.multiSign()` APIs are unchanged — only the internal
-  implementation has changed. If you use these high-level APIs (e.g., via `BcSignatureService`), no migration is needed
-  for signing.
+- The `TransactionSigner.sign()` and `TransactionSigner.multiSign()` method signatures are unchanged. `multiSign()`'s
+  behavior is unchanged. `sign()` and `sponsorSign()` now additionally reject a transaction with a zero `fee()` — see
+  [Transaction Fee Model](#3-transaction-fee-model) above.
 
 ## Additional Resources
 

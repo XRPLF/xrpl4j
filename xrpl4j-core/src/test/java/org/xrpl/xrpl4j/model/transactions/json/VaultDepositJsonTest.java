@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.flags.VaultDepositFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -107,6 +108,34 @@ public class VaultDepositJsonTest extends AbstractJsonTest {
       "    \"value\": \"5000\"" +
       "  }," +
       "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultDeposit\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(vaultDeposit, json);
+  }
+
+  @Test
+  public void testVaultDepositJsonWithDonateFlag() throws JsonProcessingException, JSONException {
+    VaultDeposit vaultDeposit = VaultDeposit.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(1))
+      .vaultId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000001"))
+      .amount(XrpCurrencyAmount.ofDrops(1000000))
+      .flags(VaultDepositFlags.builder().tfVaultDonate(true).build())
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    String json = "{" +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"VaultID\": \"0000000000000000000000000000000000000000000000000000000000000001\"," +
+      "  \"Amount\": \"1000000\"," +
+      "  \"Fee\": \"10\"," +
+      "  \"Flags\": " + VaultDepositFlags.builder().tfVaultDonate(true).build().getValue() + "," +
       "  \"Sequence\": 1," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
       "  \"TransactionType\": \"VaultDeposit\"" +

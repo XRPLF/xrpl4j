@@ -33,6 +33,8 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.flags.VaultDepositFlags;
+import org.xrpl.xrpl4j.model.flags.VaultSetFlags;
 
 /**
  * Unit tests for {@link Transaction}.
@@ -177,6 +179,37 @@ public class TransactionTest {
 
     assertThat(payment.transactionFlags()).isEqualTo(payment.flags());
     assertThat(((PaymentFlags) payment.transactionFlags()).tfPartialPayment()).isTrue();
+  }
+
+  @Test
+  void transactionFlagsReturnsVaultSetFlags() {
+    VaultSetFlags flags = VaultSetFlags.builder().tfVaultDepositBlock(true).build();
+    VaultSet vaultSet = VaultSet.builder()
+      .account(Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .vaultId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000001"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .flags(flags)
+      .build();
+
+    assertThat(vaultSet.transactionFlags()).isInstanceOf(VaultSetFlags.class);
+    assertThat(((VaultSetFlags) vaultSet.transactionFlags()).tfVaultDepositBlock()).isTrue();
+  }
+
+  @Test
+  void transactionFlagsReturnsVaultDepositFlags() {
+    VaultDepositFlags flags = VaultDepositFlags.builder().tfVaultDonate(true).build();
+    VaultDeposit vaultDeposit = VaultDeposit.builder()
+      .account(Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .vaultId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000001"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .flags(flags)
+      .build();
+
+    assertThat(vaultDeposit.transactionFlags()).isInstanceOf(VaultDepositFlags.class);
+    assertThat(((VaultDepositFlags) vaultDeposit.transactionFlags()).tfVaultDonate()).isTrue();
   }
 
   @Test

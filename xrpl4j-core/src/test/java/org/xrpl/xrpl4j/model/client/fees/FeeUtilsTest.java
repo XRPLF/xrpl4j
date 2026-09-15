@@ -943,6 +943,20 @@ public class FeeUtilsTest {
   }
 
   @Test
+  void batchPricesAnEscrowFinishInnerWithItsFulfillmentSurcharge() {
+    // 2 outer + 0 batchSigners + (1 base + (32 + 36/16) surcharge) EscrowFinish inner + 1 payment inner = 2 + 35 + 1
+    Batch batch = batch(ALICE, innerEscrowFinish(ALICE, 1, 32), innerPayment(ALICE, 2));
+    assertFeeUnits(paramsFor(batch), 38);
+  }
+
+  @Test
+  void batchPricesAnEscrowFinishInnerWithoutFulfillmentAtOneBaseFee() {
+    // 2 outer + 0 batchSigners + 1 EscrowFinish inner (no surcharge) + 1 payment inner
+    Batch batch = batch(ALICE, innerEscrowFinish(ALICE, 1, 0), innerPayment(ALICE, 2));
+    assertFeeUnits(paramsFor(batch), 4);
+  }
+
+  @Test
   void batchAddsAnOwnerReserveForEachOwnerReserveInner() {
     // 2 outer + 0 batchSigners + 1 payment inner = 3 base fees, plus one flat owner reserve.
     Batch batch = batch(ALICE, innerPayment(ALICE, 1), innerAccountDelete(ALICE, 2));
@@ -1225,6 +1239,23 @@ public class FeeUtilsTest {
       .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY);
+    return preimageBytes == 0 ?
+      builder.build() : builder.fulfillment(PreimageSha256Fulfillment.from(new byte[preimageBytes])).build();
+  }
+
+  /**
+   * An {@link EscrowFinish} valid as a Batch inner (empty SigningPublicKey, tfInnerBatchTxn), carrying a
+   * PREIMAGE-SHA-256 fulfillment built from a {@code preimageBytes}-byte preimage, or no fulfillment when
+   * {@code preimageBytes} is 0.
+   */
+  private EscrowFinish innerEscrowFinish(final Address account, final int sequence, final int preimageBytes) {
+    ImmutableEscrowFinish.Builder builder = EscrowFinish.builder()
+      .account(account)
+      .owner(BOB)
+      .offerSequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.valueOf(sequence))
+      .flags(org.xrpl.xrpl4j.model.flags.TransactionFlags.INNER_BATCH_TXN);
     return preimageBytes == 0 ?
       builder.build() : builder.fulfillment(PreimageSha256Fulfillment.from(new byte[preimageBytes])).build();
   }

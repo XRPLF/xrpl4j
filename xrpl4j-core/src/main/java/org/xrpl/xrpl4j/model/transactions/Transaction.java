@@ -31,7 +31,9 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Default;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
@@ -168,7 +170,10 @@ public interface Transaction {
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Fee")
-  XrpCurrencyAmount fee();
+  @Default
+  default XrpCurrencyAmount fee() {
+    return XrpCurrencyAmount.of(UnsignedLong.ZERO);
+  }
 
   /**
    * The sequence number of the account submitting the {@link Transaction}. A {@link Transaction} is only valid if the
@@ -268,8 +273,8 @@ public interface Transaction {
   Optional<NetworkId> networkId();
 
   /**
-   * The account that is sponsoring the transaction fee and/or reserve requirements. If specified, the sponsor
-   * will pay the transaction fee and/or cover reserve requirements instead of the transaction sender.
+   * The account that is sponsoring the transaction fee and/or reserve requirements. If specified, the sponsor will pay
+   * the transaction fee and/or cover reserve requirements instead of the transaction sender.
    *
    * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
    * is enabled on mainnet. Its API is subject to change.</p>
@@ -297,9 +302,9 @@ public interface Transaction {
   Optional<SponsorFlags> sponsorFlags();
 
   /**
-   * Contains the signing information for the sponsor. This field is required if the transaction is sponsored
-   * and the sponsor is not using a pre-funded Sponsorship object. The sponsor can sign with either a single
-   * signature or multi-signature.
+   * Contains the signing information for the sponsor. This field is required if the transaction is sponsored and the
+   * sponsor is not using a pre-funded Sponsorship object. The sponsor can sign with either a single signature or
+   * multi-signature.
    *
    * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship amendment
    * is enabled on mainnet. Its API is subject to change.</p>
@@ -343,12 +348,12 @@ public interface Transaction {
   );
 
   /**
-   * Validates the sponsorship fields ({@link #sponsor()} and {@link #sponsorFlags()}) on this transaction per
-   * XLS-0068. This runs on every concrete {@link Transaction} construction (including JSON deserialization).
+   * Validates the sponsorship fields ({@link #sponsor()} and {@link #sponsorFlags()}) on this transaction per XLS-0068.
+   * This runs on every concrete {@link Transaction} construction (including JSON deserialization).
    *
    * <p>{@link SponsorshipSet} and {@link SponsorshipTransfer} transactions are exempt from this validation
-   * because they use the {@code Sponsor} field differently - to specify the new sponsor in a sponsorship
-   * management operation, not to indicate who is sponsoring this transaction's fee/reserve.</p>
+   * because they use the {@code Sponsor} field differently - to specify the new sponsor in a sponsorship management
+   * operation, not to indicate who is sponsoring this transaction's fee/reserve.</p>
    *
    * <p>Per the spec:</p>
    * <ul>

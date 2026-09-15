@@ -44,9 +44,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -171,98 +174,254 @@ public class FeeUtils {
    *       does not permit an inner transaction to carry signatures or fee sponsorship.</li>
    * </ul>
    *
-   * @param feeParams The {@link FeeParams} describing the transaction and how it will be signed.
+   * <p>Because the fee is signed over, it must be computed before signing, and the intended flow is therefore: build
+   * the transaction with a placeholder fee of zero (the {@code Fee} field is ignored while pricing), price it, attach
+   * the fee, then sign:
+   * <pre>{@code
+   * Payment unpriced = Payment.builder()
+   *   // ... every other field ...
+   *   .fee(XrpCurrencyAmount.ofDrops(0)) // placeholder; ignored while pricing
+   *   .build();
+   * XrpCurrencyAmount fee = FeeUtils.computeFee(FeeParams.of(feeResult, unpriced).build()).recommendedFee();
+   * Payment payment = ImmutablePayment.copyOf(unpriced).withFee(fee);
+   * // sign and submit `payment`
+   * }</pre>
    *
-   * @return A {@link ComputedNetworkFees} whose low, medium and high levels are each priced for this transaction.
+   * <p>A {@link Batch} is the one exception to "price before signing": {@code serializeBatch} excludes the outer
+   * {@code Fee} from what the participants sign, so a Batch may be priced <em>after</em> the inner and batch
+   * signatures are collected — at which point every signature count is read from the transaction and nothing need be
+   * forecast. When a Batch must be priced up front instead (a wallet displaying the fee, say), the returned
+   * {@link ComputedNetworkFees#feeBreakdown()} itemizes every assumption made; review its {@code [assumed]} lines to
+   * find the inputs still worth supplying.
+   *
+   * @param feeParams The {@link FeeParams} describing the transaction and how it will be signed. Prefer the
+   *                  type-scoped entry points ({@link FeeParams#of}, {@link FeeParams#forBatch},
+   *                  {@link FeeParams#forLoanSet}, {@link FeeParams#forLoanPay},
+   *                  {@link FeeParams#forOwnerReserve}), which expose exactly the inputs the transaction's type
+   *                  prices by.
+   *
+   * @return A {@link ComputedNetworkFees} whose low, medium and high levels are each priced for this transaction, and
+   *   whose {@link ComputedNetworkFees#feeBreakdown()} itemizes how.
    *
    * @see "https://github.com/XRPLF/rippled/blob/develop/src/libxrpl/tx/Transactor.cpp"
    */
   public static ComputedNetworkFees computeFee(final FeeParams feeParams) {
     Objects.requireNonNull(feeParams);
 
+    final FeeBreakdown feeBreakdown = computeFeeBreakdown(feeParams);
     final ComputedNetworkFees baseFees = computeNetworkFees(feeParams.feeResult());
+
+    final long feeUnits = feeBreakdown.totalFeeUnits();
+    final Optional<XrpCurrencyAmount> flatAmount = feeBreakdown.totalFlatAmount();
+
+    // An owner-reserve transaction has no base-fee term at all; everything else is a base-fee multiple plus any flat
+    // owner reserves its Batch inners contribute.
+    final ComputedNetworkFees pricedFees = feeUnits == 0L ?
+      flatFee(flatAmount.get(), baseFees.queuePercentage()) :
+      flatAmount
+        .map(flat -> plusFlatFee(scaleByBaseFees(baseFees, feeUnits), flat))
+        .orElseGet(() -> scaleByBaseFees(baseFees, feeUnits));
+
+    return ComputedNetworkFees.builder().from(pricedFees).feeBreakdown(feeBreakdown).build();
+  }
+
+  /**
+   * Itemizes the fee of {@link FeeParams#transaction()} as a {@link FeeBreakdown}: one {@link FeeTerm} per reason the
+   * transaction owes something, each tagged {@code specified}, {@code assumed} or {@code derived}. This is the same
+   * computation {@link #computeFee(FeeParams)} prices from — the breakdown's totals <em>are</em> the fee — exposed
+   * separately so a caller can inspect or display the reasoning without the fee levels.
+   *
+   * @param feeParams The {@link FeeParams} describing the transaction and how it will be signed.
+   *
+   * @return A {@link FeeBreakdown}.
+   */
+  public static FeeBreakdown computeFeeBreakdown(final FeeParams feeParams) {
+    Objects.requireNonNull(feeParams);
+
     final Transaction transaction = feeParams.transaction();
     final TransactionType transactionType = transaction.transactionType();
 
-    // An owner reserve replaces the base-fee formula rather than adding to it, so signature counts do not apply.
     if (FeeParams.OWNER_RESERVE_TRANSACTION_TYPES.contains(transactionType)) {
-      return flatFee(feeParams.ownerReserve().get(), baseFees.queuePercentage());
+      // The owner reserve replaces the base-fee formula rather than adding to it, so signature counts do not apply.
+      return FeeBreakdown.of(FeeTerm.flat(
+        transactionType.value() + ": one owner reserve increment, flat (replaces the base-fee formula, so " +
+          "signature counts are ignored)",
+        feeParams.ownerReserve().get(),
+        FeeTerm.Provenance.DERIVED
+      ));
     }
 
     if (transactionType == TransactionType.BATCH) {
-      return computeFeeForBatch(feeParams, (Batch) transaction, baseFees);
+      return computeBatchFeeBreakdown(feeParams, (Batch) transaction);
     }
 
-    final long signatureUnits = signatureUnits(feeParams);
-    final long feeUnits = transactionType == TransactionType.LOAN_PAY ?
-      signatureUnits * feeParams.loanPaymentFeeIncrements().longValue() :
-      signatureUnits + surchargeUnits(feeParams, transaction, false);
+    if (transactionType == TransactionType.LOAN_PAY) {
+      return computeLoanPayFeeBreakdown(feeParams);
+    }
 
-    return scaleByBaseFees(baseFees, feeUnits);
+    final List<FeeTerm> terms = new ArrayList<>();
+    terms.add(FeeTerm.of("base fee (" + transactionType.value() + ")", 1L, FeeTerm.Provenance.DERIVED));
+    terms.addAll(signerCountTerms(feeParams, transaction));
+    surchargeTerm(feeParams, transaction).ifPresent(terms::add);
+    return FeeBreakdown.of(terms);
   }
 
   /**
-   * Computes the fee for a {@link Batch}, being its own cost plus one base fee per batch signature plus the fee of
-   * each inner transaction.
+   * Itemizes the fee of a {@link Batch}: two base fees for the outer transaction and batch processing, the outer
+   * account's own signature terms, one base fee per batch signature, and each inner transaction's fee — computed
+   * without signature terms, since rippled does not permit an inner transaction to carry signatures or fee
+   * sponsorship.
    *
    * @param feeParams The {@link FeeParams} describing the Batch and how it will be signed.
    * @param batch     The {@link Batch} being priced.
-   * @param baseFees  The unscaled {@link ComputedNetworkFees} for the current ledger.
    *
-   * @return A {@link ComputedNetworkFees} priced for this Batch.
+   * @return A {@link FeeBreakdown}.
    */
-  private static ComputedNetworkFees computeFeeForBatch(
-    final FeeParams feeParams,
-    final Batch batch,
-    final ComputedNetworkFees baseFees
-  ) {
-    // batchBase is one base fee for the Batch being a transaction like any other, plus one flat base fee for batch
-    // processing. The outer account's own signatures are carried by the first of those two.
-    long feeUnits = 1L + signatureUnits(feeParams) + batchSignatureCount(feeParams, batch);
-    long ownerReserveInners = 0L;
+  private static FeeBreakdown computeBatchFeeBreakdown(final FeeParams feeParams, final Batch batch) {
+    final List<FeeTerm> terms = new ArrayList<>();
+    terms.add(FeeTerm.of("Batch outer: base fee + batch processing fee", 2L, FeeTerm.Provenance.DERIVED));
+    terms.addAll(signerCountTerms(feeParams, batch));
 
-    for (final RawTransactionWrapper wrapper : batch.rawTransactions()) {
-      final Transaction inner = wrapper.rawTransaction();
-      if (FeeParams.OWNER_RESERVE_TRANSACTION_TYPES.contains(inner.transactionType())) {
-        ownerReserveInners++;
-      } else {
-        // An inner transaction never carries signatures or fee sponsorship, so it costs one base fee plus whatever
-        // surcharge its type attracts.
-        feeUnits += 1L + surchargeUnits(feeParams, inner, true);
-      }
+    if (!batch.batchSigners().isEmpty()) {
+      // Signatures have been collected, so every count is a fact read from the transaction.
+      batch.batchSigners().stream()
+        .map(BatchSignerWrapper::batchSigner)
+        .forEach(batchSigner -> {
+          final long count = batchSigner.transactionSignature().isPresent() ? 1L : batchSigner.signers().size();
+          terms.add(FeeTerm.of(
+            "batch signer " + batchSigner.account() + ": " + count + " collected signature(s)",
+            count, FeeTerm.Provenance.DERIVED
+          ));
+        });
+    } else {
+      // Pricing before signing: one signature per required signer, except where the caller forecast a multi-sign.
+      final Map<Address, UnsignedInteger> signaturesPerBatchSigner = feeParams.signaturesPerBatchSigner();
+      batch.requiredSigners().forEach(requiredSigner -> {
+        final UnsignedInteger specified = signaturesPerBatchSigner.get(requiredSigner);
+        terms.add(specified != null ?
+          FeeTerm.of(
+            "batch signer " + requiredSigner + ": will supply " + specified + " signature(s)",
+            specified.longValue(), FeeTerm.Provenance.SPECIFIED
+          ) :
+          FeeTerm.of(
+            "batch signer " + requiredSigner + ": assumed to sign with a single key (declare signaturesFor(" +
+              "address, count) if this participant will multi-sign)",
+            1L, FeeTerm.Provenance.ASSUMED
+          ));
+      });
     }
 
-    final ComputedNetworkFees scaled = scaleByBaseFees(baseFees, feeUnits);
-    return ownerReserveInners == 0 ? scaled : plusFlatFee(
-      scaled, feeParams.ownerReserve().get().times(XrpCurrencyAmount.of(UnsignedLong.valueOf(ownerReserveInners)))
-    );
+    for (final RawTransactionWrapper wrapper : batch.rawTransactions()) {
+      terms.add(innerTransactionTerm(feeParams, wrapper.rawTransaction()));
+    }
+    return FeeBreakdown.of(terms);
   }
 
   /**
-   * Counts the signatures that will appear across a {@link Batch}'s {@code BatchSigners} array.
+   * Itemizes the fee of a {@code LoanPay} as a single term, because its increment count multiplies the whole fee
+   * rather than adding to it: {@code increments × (1 + signersCount + sponsorSignersCount)} base fees.
    *
-   * <p>Once signatures have been collected the count is a fact, read from {@link Batch#batchSigners()}: one for an
-   * entry signing with a single key, or the size of its nested {@code Signers} array otherwise. Before then it is
-   * derived from {@link Batch#requiredSigners()}, counting one signature per required signer except where
-   * {@link FeeParams#signaturesPerBatchSigner()} says a participant will multi-sign.
+   * @param feeParams The {@link FeeParams} describing the LoanPay and how it will be signed.
+   *
+   * @return A {@link FeeBreakdown}.
+   */
+  private static FeeBreakdown computeLoanPayFeeBreakdown(final FeeParams feeParams) {
+    final long perIncrementUnits = signatureUnits(feeParams);
+    final Optional<UnsignedInteger> specifiedIncrements = feeParams.loanPaymentFeeIncrements();
+    final long increments = specifiedIncrements.orElse(UnsignedInteger.ONE).longValue();
+
+    final String formula =
+      "LoanPay: " + increments + " fee increment(s) x " + perIncrementUnits + " base fee(s) for the transaction " +
+        "and its signatures";
+    return FeeBreakdown.of(specifiedIncrements.isPresent() ?
+      FeeTerm.of(formula, increments * perIncrementUnits, FeeTerm.Provenance.SPECIFIED) :
+      FeeTerm.of(
+        formula + " (assumed a single payment; set loanPaymentFeeIncrements when the payment spans more)",
+        increments * perIncrementUnits, FeeTerm.Provenance.ASSUMED
+      ));
+  }
+
+  /**
+   * The terms a transaction owes for its own and its sponsor's multi-signatures, plus zero-unit "assumed" terms that
+   * surface the overridable single-signing assumptions — including a sponsor term only when the transaction actually
+   * carries a {@code Sponsor}, so the hint appears exactly where it is relevant.
+   *
+   * @param feeParams   The {@link FeeParams} being applied.
+   * @param transaction The {@link Transaction} being priced.
+   *
+   * @return A {@link List} of {@link FeeTerm}.
+   */
+  private static List<FeeTerm> signerCountTerms(final FeeParams feeParams, final Transaction transaction) {
+    final List<FeeTerm> terms = new ArrayList<>();
+
+    final long signersCount = feeParams.signersCount().longValue();
+    terms.add(signersCount > 0L ?
+      FeeTerm.of(
+        "own multi-signature: " + signersCount + " Signers entries", signersCount, FeeTerm.Provenance.SPECIFIED
+      ) :
+      FeeTerm.of(
+        "assumed single-signed: a lone TxnSignature is free (set signersCount if this account will multi-sign)",
+        0L, FeeTerm.Provenance.ASSUMED
+      ));
+
+    final long sponsorSignersCount = feeParams.sponsorSignersCount().longValue();
+    if (sponsorSignersCount > 0L) {
+      terms.add(FeeTerm.of(
+        "sponsor multi-signature: " + sponsorSignersCount + " SponsorSignature.Signers entries",
+        sponsorSignersCount, FeeTerm.Provenance.SPECIFIED
+      ));
+    } else if (transaction.sponsor().isPresent()) {
+      terms.add(FeeTerm.of(
+        "assumed the sponsor signs with a single key: a lone SponsorSignature.TxnSignature is free (set " +
+          "sponsorSignersCount if the sponsor will multi-sign)",
+        0L, FeeTerm.Provenance.ASSUMED
+      ));
+    }
+    return terms;
+  }
+
+  /**
+   * The term a Batch inner transaction contributes: its flat owner reserve for an {@code AccountDelete} or
+   * {@code AMMCreate}, or one base fee plus its type's surcharge otherwise. An inner never carries signatures or fee
+   * sponsorship, so it has no signature terms, and a {@code LoanSet} inner's counterparty is counted among the batch
+   * signers rather than here.
    *
    * @param feeParams The {@link FeeParams} being applied.
-   * @param batch     The {@link Batch} being priced.
+   * @param inner     The inner {@link Transaction}.
    *
-   * @return The number of batch signatures, each of which costs one base fee.
+   * @return A {@link FeeTerm}.
    */
-  private static long batchSignatureCount(final FeeParams feeParams, final Batch batch) {
-    if (!batch.batchSigners().isEmpty()) {
-      return batch.batchSigners().stream()
-        .map(BatchSignerWrapper::batchSigner)
-        .mapToLong(batchSigner -> batchSigner.transactionSignature().isPresent() ? 1L : batchSigner.signers().size())
-        .sum();
-    }
+  private static FeeTerm innerTransactionTerm(final FeeParams feeParams, final Transaction inner) {
+    final TransactionType innerType = inner.transactionType();
+    final String label = "inner " + innerType.value() + " (" + inner.account() + ")";
 
-    final Map<Address, UnsignedInteger> signaturesPerBatchSigner = feeParams.signaturesPerBatchSigner();
-    return batch.requiredSigners().stream()
-      .mapToLong(address -> signaturesPerBatchSigner.getOrDefault(address, UnsignedInteger.ONE).longValue())
-      .sum();
+    if (FeeParams.OWNER_RESERVE_TRANSACTION_TYPES.contains(innerType)) {
+      return FeeTerm.flat(
+        label + ": one owner reserve increment, flat", feeParams.ownerReserve().get(), FeeTerm.Provenance.DERIVED
+      );
+    }
+    if (CONFIDENTIAL_MPT_TRANSACTION_TYPES.contains(innerType)) {
+      return FeeTerm.of(
+        label + ": base fee + " + CONFIDENTIAL_FEE_MULTIPLIER + " confidential MPT surcharge",
+        1L + CONFIDENTIAL_FEE_MULTIPLIER, FeeTerm.Provenance.DERIVED
+      );
+    }
+    if (inner instanceof EscrowFinish) {
+      final long fulfillmentUnits = fulfillmentUnits((EscrowFinish) inner);
+      if (fulfillmentUnits > 0L) {
+        return FeeTerm.of(
+          label + ": base fee + " + fulfillmentUnits + " fulfillment surcharge (32 + fulfillmentBytes / 16)",
+          1L + fulfillmentUnits, FeeTerm.Provenance.DERIVED
+        );
+      }
+    }
+    if (innerType == TransactionType.LOAN_SET) {
+      return FeeTerm.of(
+        label + ": base fee (its counterparty signature is counted among the batch signers, not here)",
+        1L, FeeTerm.Provenance.DERIVED
+      );
+    }
+    return FeeTerm.of(label + ": base fee", 1L, FeeTerm.Provenance.DERIVED);
   }
 
   /**
@@ -278,30 +437,43 @@ public class FeeUtils {
   }
 
   /**
-   * The number of extra base fees a transaction owes because of its type, over and above what every transaction pays.
+   * The extra term a transaction owes because of its type, over and above what every transaction pays.
    *
    * @param feeParams   The {@link FeeParams} being applied.
-   * @param transaction The {@link Transaction} being priced, which may be an inner transaction of a Batch rather than
-   *                    {@link FeeParams#transaction()} itself.
-   * @param isInner     {@code true} when {@code transaction} is a Batch inner, whose signatures are counted by the
-   *                    outer Batch rather than by the inner itself.
+   * @param transaction The {@link Transaction} being priced.
    *
-   * @return A number of extra base fees, which is zero for most transaction types.
+   * @return An optionally-present {@link FeeTerm}, empty for the many transaction types with no surcharge.
    */
-  private static long surchargeUnits(final FeeParams feeParams, final Transaction transaction, final boolean isInner) {
+  private static Optional<FeeTerm> surchargeTerm(final FeeParams feeParams, final Transaction transaction) {
     final TransactionType transactionType = transaction.transactionType();
 
     if (CONFIDENTIAL_MPT_TRANSACTION_TYPES.contains(transactionType)) {
-      return CONFIDENTIAL_FEE_MULTIPLIER;
+      return Optional.of(FeeTerm.of(
+        "confidential MPT surcharge (rippled's kConfidentialFeeMultiplier)",
+        CONFIDENTIAL_FEE_MULTIPLIER, FeeTerm.Provenance.DERIVED
+      ));
     }
     if (transaction instanceof EscrowFinish) {
-      return fulfillmentUnits((EscrowFinish) transaction);
+      final long fulfillmentUnits = fulfillmentUnits((EscrowFinish) transaction);
+      return fulfillmentUnits == 0L ? Optional.empty() : Optional.of(FeeTerm.of(
+        "EscrowFinish fulfillment surcharge: 32 + fulfillmentBytes / 16",
+        fulfillmentUnits, FeeTerm.Provenance.DERIVED
+      ));
     }
     if (transactionType == TransactionType.LOAN_SET) {
-      // Charge the counterparty only for a standalone LoanSet; a Batch inner's is counted via the BatchSigners.
-      return isInner ? 0L : feeParams.counterpartySignatureCount().longValue();
+      final Optional<UnsignedInteger> specifiedCount = feeParams.counterpartySignatureCount();
+      return Optional.of(specifiedCount.isPresent() ?
+        FeeTerm.of(
+          "LoanSet counterparty multi-signature: " + specifiedCount.get() + " signature(s)",
+          specifiedCount.get().longValue(), FeeTerm.Provenance.SPECIFIED
+        ) :
+        FeeTerm.of(
+          "LoanSet counterparty signature: assumed a single key, which is itself charged (set " +
+            "counterpartySignatureCount if the counterparty will multi-sign)",
+          1L, FeeTerm.Provenance.ASSUMED
+        ));
     }
-    return 0L;
+    return Optional.empty();
   }
 
   /**

@@ -614,10 +614,7 @@ public abstract class AbstractIT {
         continue; // <-- Try again, up to the loop guard above.
       }
 
-      logInfo(
-        paymentResult.transactionResult().transaction().transactionType(),
-        paymentResult.transactionResult().hash()
-      );
+      logSubmitResult(paymentResult);
 
       this.scanForResult(
         () -> getValidatedTransaction(

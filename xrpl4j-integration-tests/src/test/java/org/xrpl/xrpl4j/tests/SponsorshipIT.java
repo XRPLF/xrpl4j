@@ -150,7 +150,7 @@ public class SponsorshipIT extends AbstractIT {
       );
       SubmitResult<SponsorshipSet> sponsorshipSetResult = xrplClient.submit(signedSponsorshipSet);
       assertThat(sponsorshipSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
-      logInfo(sponsorshipSet.transactionType(), sponsorshipSetResult.transactionResult().hash());
+      logSubmitResult(sponsorshipSetResult);
 
       scanForResult(() -> getValidatedTransaction(
         sponsorshipSetResult.transactionResult().hash(), SponsorshipSet.class
@@ -217,7 +217,7 @@ public class SponsorshipIT extends AbstractIT {
 
       SubmitResult<Payment> paymentResult = xrplClient.submit(finalPaymentTx);
       assertThat(paymentResult.engineResult()).isEqualTo(SUCCESS_STATUS);
-      logInfo(signedPayment.transactionType(), paymentResult.transactionResult().hash());
+      logSubmitResult(paymentResult);
 
       scanForResult(() -> getValidatedTransaction(finalPaymentTx.hash(), Payment.class));
 
@@ -353,7 +353,7 @@ public class SponsorshipIT extends AbstractIT {
       );
       SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
       assertThat(paymentResult.engineResult()).isEqualTo(SUCCESS_STATUS);
-      logInfo(sponsoredAccountCreate.transactionType(), paymentResult.transactionResult().hash());
+      logSubmitResult(paymentResult);
 
       scanForResult(() -> getValidatedTransaction(paymentResult.transactionResult().hash(), Payment.class));
 
@@ -511,7 +511,7 @@ public class SponsorshipIT extends AbstractIT {
       );
       SubmitResult<SponsorshipTransfer> endResult = xrplClient.submit(signedEndTransfer);
       assertThat(endResult.engineResult()).isEqualTo(SUCCESS_STATUS);
-      logInfo(endTransfer.transactionType(), endResult.transactionResult().hash());
+      logSubmitResult(endResult);
 
       scanForResult(() -> getValidatedTransaction(endResult.transactionResult().hash(), SponsorshipTransfer.class));
 

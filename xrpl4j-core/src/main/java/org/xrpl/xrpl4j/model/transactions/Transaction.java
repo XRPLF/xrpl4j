@@ -165,6 +165,10 @@ public interface Transaction {
    *
    * <p>This field is auto-fillable
    *
+   * <p>Defaults to zero when not supplied, so a transaction can be built before its fee is known and priced
+   * afterward (e.g., via {@code FeeUtils.computeFee(FeeParams)}). {@code TransactionSigner.sign()} and
+   * {@code TransactionSigner.sponsorSign()} reject a zero fee, so compute a real one before signing.
+   *
    * @return An {@link XrpCurrencyAmount} representing the transaction cost.
    *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"

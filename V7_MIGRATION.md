@@ -17,7 +17,7 @@ Version 7.0.0 introduces several breaking changes:
 3. **Transaction Fee Model Refactor** — `Transaction.fee()` is no longer a required field; it now defaults to zero
    drops. A new fee-computation API (`FeeParams`, `FeeTerm`, `FeeBreakdown`, and an expanded `FeeUtils`) replaces the
    old per-transaction-type `computeFee()` helpers for computing an accurate fee. To guard against the new default,
-   `TransactionSigner.sign()` and `sponsorSign()` now reject a transaction whose `fee()` is still zero.
+   All `TransactionSigner` outer-transaction signing methods (`sign()`, `multiSign()`, `sponsorSign()`, etc.) now reject a transaction whose `fee()` is still zero.
 
 ## Breaking Changes
 
@@ -218,10 +218,11 @@ Payment payment = Payment.builder()
 assertThat(payment.fee()).isEqualTo(XrpCurrencyAmount.ofDrops(0));
 ```
 
-As a safety net for this relaxed validation, `TransactionSigner.sign()` and `TransactionSigner.sponsorSign()` (e.g., on
-`BcSignatureService`) now throw `IllegalArgumentException` if `transaction.fee()` is still zero when signing. Compute a
-real fee first — see below — before calling `sign()`/`sponsorSign()`. (`multiSign()` and Batch inner-signing are
-unaffected: a Batch inner transaction is required to carry a `Fee` of exactly zero.)
+As a safety net for this relaxed validation, every `TransactionSigner` method that signs an outer transaction (e.g., on
+`BcSignatureService`) now throws `IllegalArgumentException` if `transaction.fee()` is still zero when signing. This
+covers `sign()`, `multiSign()`, `sponsorSign()`, `sponsorMultiSign()`, `counterpartySign()`, and
+`counterpartyMultiSign()`. Compute a real fee first — see below — before signing. Only `signInner()` and
+`multiSignInner()` are exempt, because a Batch inner transaction is required to carry a `Fee` of exactly zero.
 
 #### New fee-computation API: `FeeParams`, `FeeTerm`, `FeeBreakdown`
 

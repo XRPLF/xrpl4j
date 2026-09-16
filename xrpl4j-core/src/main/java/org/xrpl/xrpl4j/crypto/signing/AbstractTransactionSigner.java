@@ -105,6 +105,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   public <T extends Transaction> Signature multiSign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
+    requireNonZeroFee(transaction);
 
     final Address address = derivePublicKey(privateKeyable).deriveAddress();
     final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toMultiSignableBytes(transaction, address);
@@ -130,6 +131,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   public Signature counterpartySign(final P privateKeyable, final LoanSet transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
+    requireNonZeroFee(transaction);
 
     return signatureHelper(privateKeyable, transaction);
   }
@@ -138,6 +140,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   public Signature counterpartyMultiSign(final P privateKeyable, final LoanSet transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
+    requireNonZeroFee(transaction);
 
     final Address address = derivePublicKey(privateKeyable).deriveAddress();
     final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toCounterpartyMultiSignableBytes(
@@ -164,6 +167,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   public <T extends Transaction> Signature sponsorMultiSign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
+    requireNonZeroFee(transaction);
 
     // Sponsor multi-signing preserves the first-party signer's SigningPubKey in the signed data.
     // This differs from regular multi-signing which clears the SigningPubKey.
@@ -180,10 +184,12 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
    * signature that rippled will reject as underpriced, so this fails fast instead of letting a caller discover the
    * mistake at submission time.
    *
-   * <p>This is intentionally scoped to {@link #sign(PrivateKeyable, Transaction)} and
-   * {@link #sponsorSign(PrivateKeyable, Transaction)} — the paths that sign a transaction's own {@code Fee} field for
-   * eventual submission. It does not apply to multi-signing or to a Batch inner transaction, which rippled requires
-   * to carry a {@code Fee} of exactly zero.
+   * <p>This applies to every path that signs an outer transaction's own {@code Fee} field for eventual submission:
+   * single-signing, multi-signing, sponsor-signing, and LoanSet counterparty-signing. Multi-signing is guarded for the
+   * same reason as single-signing, and the stakes are higher because a zero-fee multi-signature wastes every
+   * signer's work. The only exemptions are {@link #signInner(PrivateKeyable, Batch, Address)} and
+   * {@link #multiSignInner(PrivateKeyable, Batch, Address)}, which sign a Batch inner transaction that rippled
+   * requires to carry a {@code Fee} of exactly zero.
    *
    * @param transaction The {@link Transaction} about to be signed.
    *

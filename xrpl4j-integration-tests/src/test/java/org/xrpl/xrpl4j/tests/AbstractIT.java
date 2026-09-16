@@ -905,10 +905,7 @@ public abstract class AbstractIT {
     );
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(signedAccountSet);
     assertThat(accountSetResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "AccountSet to enable Deposit Authorization successful. https://testnet.xrpl.org/transactions/{}",
-      accountSetResult.transactionResult().hash()
-    );
+    logSubmitResult(accountSetResult);
     return this.scanForResult(
       () -> this.getValidatedAccountInfo(wallet.publicKey().deriveAddress()),
       accountInfo -> accountInfo.accountData().flags().lsfDepositAuth()
@@ -1026,10 +1023,7 @@ public abstract class AbstractIT {
     );
     SubmitResult<AccountSet> setResult = xrplClient.submit(signedAccountSet);
     assertThat(setResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/{}",
-      setResult.transactionResult().hash()
-    );
+    logSubmitResult(setResult);
 
     scanForResult(
       () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),

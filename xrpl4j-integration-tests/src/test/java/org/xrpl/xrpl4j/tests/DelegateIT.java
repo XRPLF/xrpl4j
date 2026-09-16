@@ -31,7 +31,6 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
-import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -116,8 +115,7 @@ public class DelegateIT extends AbstractIT {
     );
     SubmitResult<DelegateSet> result = xrplClient.submit(signedDelegateSet);
     assertThat(result.engineResult()).isEqualTo(SUCCESS_STATUS);
-    logger.info("DelegateSet successful: https://testnet.xrpl.org/transactions/{}",
-      result.transactionResult().hash());
+    logSubmitResult(result);
 
     TransactionResult<DelegateSet> validatedDelegateSet = this.scanForResult(
       () -> this.getValidatedTransaction(result.transactionResult().hash(), DelegateSet.class)
@@ -188,8 +186,7 @@ public class DelegateIT extends AbstractIT {
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(delegateKeyPair.privateKey(), payment);
     SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
     assertThat(paymentResult.engineResult()).isEqualTo(SUCCESS_STATUS);
-    logger.info("Payment with Delegate successful: https://testnet.xrpl.org/transactions/{}",
-      paymentResult.transactionResult().hash());
+    logSubmitResult(paymentResult);
 
     TransactionResult<Payment> validatedPayment = this.scanForResult(
       () -> this.getValidatedTransaction(paymentResult.transactionResult().hash(), Payment.class)
@@ -279,8 +276,7 @@ public class DelegateIT extends AbstractIT {
     SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(delegateKeyPair.privateKey(), trustSet);
     SubmitResult<TrustSet> trustSetResult = xrplClient.submit(signedTrustSet);
     assertThat(trustSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
-    logger.info("TrustSet with Delegate successful: https://testnet.xrpl.org/transactions/{}",
-      trustSetResult.transactionResult().hash());
+    logSubmitResult(trustSetResult);
 
     TransactionResult<TrustSet> validatedTrustSet = this.scanForResult(
       () -> this.getValidatedTransaction(trustSetResult.transactionResult().hash(), TrustSet.class)
@@ -325,8 +321,7 @@ public class DelegateIT extends AbstractIT {
     );
     SubmitResult<DelegateSet> result = xrplClient.submit(signedDelegateSet);
     assertThat(result.engineResult()).isEqualTo(SUCCESS_STATUS);
-    logger.info("DelegateSet with granular permissions successful: https://testnet.xrpl.org/transactions/{}",
-      result.transactionResult().hash());
+    logSubmitResult(result);
 
     TransactionResult<DelegateSet> validatedDelegateSet = this.scanForResult(
       () -> this.getValidatedTransaction(result.transactionResult().hash(), DelegateSet.class)
@@ -736,9 +731,9 @@ public class DelegateIT extends AbstractIT {
   }
 
   /**
-   * Negative test: Verify that a delegate cannot execute a transaction without proper permission.
-   * This test creates a delegation with Payment permission, then tries to execute a TrustSet transaction
-   * which should fail with terNO_DELEGATE_PERMISSION.
+   * Negative test: Verify that a delegate cannot execute a transaction without proper permission. This test creates a
+   * delegation with Payment permission, then tries to execute a TrustSet transaction which should fail with
+   * terNO_DELEGATE_PERMISSION.
    */
   @Test
   public void testDelegateWithoutPermission() throws JsonRpcClientErrorException, JsonProcessingException {
@@ -807,9 +802,8 @@ public class DelegateIT extends AbstractIT {
   }
 
   /**
-   * Negative test: Verify that the wrong delegate cannot use a delegation.
-   * This test creates a delegation for delegate1, then tries to execute a transaction
-   * using delegate2's signature, which should fail.
+   * Negative test: Verify that the wrong delegate cannot use a delegation. This test creates a delegation for
+   * delegate1, then tries to execute a transaction using delegate2's signature, which should fail.
    */
   @Test
   public void testWrongDelegateCannotUsePermission() throws JsonRpcClientErrorException, JsonProcessingException {
@@ -876,9 +870,8 @@ public class DelegateIT extends AbstractIT {
   }
 
   /**
-   * Negative test: Verify that an account cannot delegate to itself.
-   * This test tries to create a DelegateSet where Account and Authorize are the same,
-   * which should fail with temBAD_SIGNER.
+   * Negative test: Verify that an account cannot delegate to itself. This test tries to create a DelegateSet where
+   * Account and Authorize are the same, which should fail with temBAD_SIGNER.
    */
   @Test
   public void testCannotDelegateToSelf() throws JsonRpcClientErrorException, JsonProcessingException {

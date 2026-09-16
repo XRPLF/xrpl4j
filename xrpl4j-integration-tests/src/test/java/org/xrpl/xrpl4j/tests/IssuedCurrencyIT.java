@@ -45,7 +45,6 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
-import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
@@ -613,42 +612,6 @@ public class IssuedCurrencyIT extends AbstractIT {
     );
 
   }
-
-  /**
-   * Set the {@code lsfDefaultRipple} flag on an issuer account.
-   *
-   * @param issuerKeyPair The {@link KeyPair} containing the address of the issuer account.
-   * @param feeResult     The current {@link FeeResult}.
-   *
-   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
-   */
-  public void setDefaultRipple(KeyPair issuerKeyPair, FeeResult feeResult)
-    throws JsonRpcClientErrorException, JsonProcessingException {
-    AccountInfoResult issuerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
-    );
-
-    AccountSet setDefaultRipple = AccountSet.builder()
-      .account(issuerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .sequence(issuerAccountInfo.accountData().sequence())
-      .signingPublicKey(issuerKeyPair.publicKey())
-      .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)
-      .build();
-
-    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
-      issuerKeyPair.privateKey(), setDefaultRipple
-    );
-    SubmitResult<AccountSet> setResult = xrplClient.submit(signedAccountSet);
-    assertThat(setResult.engineResult()).isEqualTo("tesSUCCESS");
-    logSubmitResult(setResult);
-
-    scanForResult(
-      () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
-      info -> info.accountData().flags().lsfDefaultRipple()
-    );
-  }
-
 
   private void assertThatEntryEqualsObjectFromAccountObjects(
     TrustLine trustLine,

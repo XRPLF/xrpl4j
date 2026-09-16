@@ -267,8 +267,8 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
   /**
    * This test creates a Trustline between an issuer and a badActor, issues funds to the badActor, then deep freezes the
-   * funds and validates that the badActor is unable to send or receive those funds (except to/from the issuer).
-   * It also verifies that the deep_freeze and deep_freeze_peer fields are correctly set in account_lines responses.
+   * funds and validates that the badActor is unable to send or receive those funds (except to/from the issuer). It also
+   * verifies that the deep_freeze and deep_freeze_peer fields are correctly set in account_lines responses.
    *
    * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0077-deep-freeze"
    */
@@ -860,8 +860,8 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
   /**
    * Freeze and deep freeze an individual trustline that exists between the specified issuer and the specified
-   * counterparty for the {@link #ISSUED_CURRENCY_CODE}. According to XLS-77d, deep freeze requires regular freeze
-   * to be set first or in the same transaction, and regular freeze cannot be cleared without also clearing deep freeze.
+   * counterparty for the {@link #ISSUED_CURRENCY_CODE}. According to XLS-77d, deep freeze requires regular freeze to be
+   * set first or in the same transaction, and regular freeze cannot be cleared without also clearing deep freeze.
    *
    * @param issuerKeyPair       The {@link KeyPair} of the trustline issuer.
    * @param counterpartyKeyPair The {@link KeyPair} of the trustline counterparty.
@@ -909,10 +909,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(issuerKeyPair.privateKey(), trustSet);
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
     assertThat(trustSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "TrustSet freeze and deep freeze transaction successful: https://testnet.xrpl.org/transactions/{}",
-      trustSetSubmitResult.transactionResult().hash()
-    );
+    logSubmitResult(trustSetSubmitResult);
 
     return scanForResult(
       () -> getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),

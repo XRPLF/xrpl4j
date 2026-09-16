@@ -279,9 +279,9 @@ Optional<String> hexString = metadata.map(MpTokenMetadata::value);
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.
 - The `Issue.XRP` constant is still available and works the same way.
-- The `TransactionSigner.sign()` and `TransactionSigner.multiSign()` method signatures are unchanged. `multiSign()`'s
-  behavior is unchanged. `sign()` and `sponsorSign()` now additionally reject a transaction with a zero `fee()` — see
-  [Transaction Fee Model](#3-transaction-fee-model) above.
+- All `TransactionSigner` method signatures are unchanged. All outer-transaction signing methods — `sign()`,
+  `multiSign()`, `sponsorSign()`, `sponsorMultiSign()`, `counterpartySign()`, and `counterpartyMultiSign()` — now
+  reject a transaction with a zero `fee()`; see [Transaction Fee Model](#3-transaction-fee-model) above.
 
 ## Additional Resources
 

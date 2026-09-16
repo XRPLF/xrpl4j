@@ -30,18 +30,23 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.AmmCreate;
 import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.BatchSigner;
 import org.xrpl.xrpl4j.model.transactions.BatchSignerWrapper;
+import org.xrpl.xrpl4j.model.transactions.EnableAmendment;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.LoanPay;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
+import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.UnknownTransaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.List;
@@ -379,6 +384,113 @@ public class FeeParamsScopedApiTest {
   }
 
   // /////////////////
+  // FeeParams.builder() — the flat builder's own check(), not reachable via the scoped entry points
+  // /////////////////
+
+  @Test
+  void flatBuilderRejectsAnOwnerReserveTypeWithNoOwnerReserve() {
+    assertThatThrownBy(() -> FeeParams.builder().feeResult(feeResult()).transaction(accountDelete()).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("ownerReserve must be supplied for");
+  }
+
+  @Test
+  void flatBuilderRejectsAnOwnerReserveOnAGenericallyPricedType() {
+    assertThatThrownBy(() -> FeeParams.builder()
+      .feeResult(feeResult())
+      .transaction(payment())
+      .ownerReserve(OWNER_RESERVE)
+      .build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("ownerReserve must be supplied for");
+  }
+
+  @Test
+  void forBatchRejectsAnOwnerReserveWithNoOwnerReserveInner() {
+    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
+    assertThatThrownBy(() -> FeeParams.forBatch(feeResult(), batch).ownerReserve(OWNER_RESERVE).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("ownerReserve must be supplied for");
+  }
+
+  @Test
+  void forBatchRejectsAMissingOwnerReserveWhenAnInnerRequiresOne() {
+    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerAccountDelete(ALICE, 2));
+    assertThatThrownBy(() -> FeeParams.forBatch(feeResult(), batch).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("ownerReserve must be supplied for");
+  }
+
+  @Test
+  void forOwnerReservePricesAnAmmCreateFlat() {
+    ComputedNetworkFees fees = FeeUtils.computeFee(
+      FeeParams.forOwnerReserve(feeResult(), ammCreate(), OWNER_RESERVE)
+    );
+    assertThat(fees.feeLow()).isEqualTo(OWNER_RESERVE);
+  }
+
+  @Test
+  void forBatchSuppliesTheOwnerReserveForAnAmmCreateInner() {
+    Batch batch = batch(ALICE, innerPayment(ALICE, 1), innerAmmCreate(ALICE, 2));
+    ComputedNetworkFees fees = FeeUtils.computeFee(
+      FeeParams.forBatch(feeResult(), batch).ownerReserve(OWNER_RESERVE).build()
+    );
+    // 2 outer + 1 payment inner = 3 base fees, plus one flat owner reserve.
+    assertThat(fees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(3 * 1000 + 200000));
+  }
+
+  @Test
+  void flatBuilderRejectsSignaturesPerBatchSignerOnANonBatchTransaction() {
+    assertThatThrownBy(() -> FeeParams.builder()
+      .feeResult(feeResult())
+      .transaction(payment())
+      .putSignaturesPerBatchSigner(BOB, UnsignedInteger.ONE)
+      .build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("signaturesPerBatchSigner applies only to a Batch");
+  }
+
+  @Test
+  void forLoanPayValidatesTheIncrementsEagerly() {
+    assertThatThrownBy(
+      () -> FeeParams.forLoanPay(feeResult(), loanPay()).loanPaymentFeeIncrements(UnsignedInteger.valueOf(21))
+    )
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("loanPaymentFeeIncrements must be between 1 and 20");
+
+    assertThatThrownBy(
+      () -> FeeParams.forLoanPay(feeResult(), loanPay()).loanPaymentFeeIncrements(UnsignedInteger.ZERO)
+    )
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("loanPaymentFeeIncrements must be between 1 and 20");
+  }
+
+  @Test
+  void flatBuilderRejectsLoanPaymentFeeIncrementsOutOfRange() {
+    assertThatThrownBy(() -> FeeParams.builder()
+      .feeResult(feeResult())
+      .transaction(loanPay())
+      .loanPaymentFeeIncrements(UnsignedInteger.valueOf(21))
+      .build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("loanPaymentFeeIncrements must be between 1 and 20");
+  }
+
+  @Test
+  void checkRejectsAPseudoTransaction() {
+    assertThatThrownBy(() -> FeeParams.builder().feeResult(feeResult()).transaction(enableAmendment()).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("is a pseudo-transaction");
+  }
+
+  @Test
+  void checkRejectsAnUnknownTransactionType() {
+    assertThatThrownBy(() -> FeeParams.builder().feeResult(feeResult()).transaction(unknownTransaction()).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("fee of an unknown transaction type cannot be computed");
+  }
+
+  // /////////////////
   // Helpers
   // /////////////////
 
@@ -434,6 +546,48 @@ public class FeeParamsScopedApiTest {
       .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
+      .build();
+  }
+
+  private AmmCreate ammCreate() {
+    return AmmCreate.builder()
+      .account(ALICE)
+      .amount(XrpCurrencyAmount.ofDrops(1000000))
+      .amount2(XrpCurrencyAmount.ofDrops(1000000))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY)
+      .build();
+  }
+
+  private AmmCreate innerAmmCreate(final Address account, final int sequence) {
+    return AmmCreate.builder()
+      .account(account)
+      .amount(XrpCurrencyAmount.ofDrops(1000000))
+      .amount2(XrpCurrencyAmount.ofDrops(1000000))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.valueOf(sequence))
+      .flags(TransactionFlags.INNER_BATCH_TXN)
+      .build();
+  }
+
+  private EnableAmendment enableAmendment() {
+    return EnableAmendment.builder()
+      .account(ALICE)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.ONE)
+      .amendment(Hash256.of("42426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369F97ABF044EE"))
+      .build();
+  }
+
+  private UnknownTransaction unknownTransaction() {
+    return UnknownTransaction.builder()
+      .unknownTransactionType("SomeFutureTransactionType")
+      .account(ALICE)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.ONE)
       .build();
   }
 

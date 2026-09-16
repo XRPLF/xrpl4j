@@ -225,12 +225,13 @@ unaffected: a Batch inner transaction is required to carry a `Fee` of exactly ze
 
 #### New fee-computation API: `FeeParams`, `FeeTerm`, `FeeBreakdown`
 
-`FeeUtils` gains `computeFee(FeeParams)` and `computeFeeBreakdown(FeeParams)`. Unlike the existing
-`computeNetworkFees(FeeResult)` / `computeMultisigNetworkFees(FeeResult, SignerListObject)` — which remain and still
-return a flat, per-base-fee estimate — the new methods take the transaction itself (via `FeeParams`) and price it
-exactly, including Batch (per-inner and per-signer costs), LoanSet/LoanPay, sponsored transactions, and confidential
-MPT transactions. A few transaction types also had their own narrow `computeFee()` static method (e.g.
-`EscrowFinish.computeFee(XrpCurrencyAmount, Fulfillment)`); those are now deprecated in favor of `FeeUtils.computeFee(FeeParams)`.
+`FeeUtils` gains `computeFee(FeeParams)`, which takes the transaction itself (via `FeeParams`) and prices it exactly,
+including Batch (per-inner and per-signer costs), LoanSet/LoanPay, sponsored transactions, and confidential MPT
+transactions. `computeNetworkFees(FeeResult)` and `computeMultisigNetworkFees(FeeResult, SignerListObject)` are now
+`@Deprecated` in favor of it: they return only a flat, per-base-fee estimate, so they silently under-charge any
+transaction that costs more than one base fee. A few transaction types also had their own narrow `computeFee()` static
+method (e.g. `EscrowFinish.computeFee(XrpCurrencyAmount, Fulfillment)`); those are now deprecated in favor of
+`FeeUtils.computeFee(FeeParams)` as well.
 
 **Migration:**
 

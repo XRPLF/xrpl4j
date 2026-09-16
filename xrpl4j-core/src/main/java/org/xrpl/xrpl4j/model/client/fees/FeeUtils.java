@@ -188,26 +188,6 @@ public class FeeUtils {
    *       does not permit an inner transaction to carry signatures or fee sponsorship.</li>
    * </ul>
    *
-   * <p>Because the fee is signed over, it must be computed before signing, and the intended flow is therefore: build
-   * the transaction with a placeholder fee of zero (the {@code Fee} field is ignored while pricing), price it, attach
-   * the fee, then sign:
-   * <pre>{@code
-   * Payment unpriced = Payment.builder()
-   *   // ... every other field ...
-   *   .fee(XrpCurrencyAmount.ofDrops(0)) // placeholder; ignored while pricing
-   *   .build();
-   * XrpCurrencyAmount fee = FeeUtils.computeFee(FeeParams.of(feeResult, unpriced).build()).recommendedFee();
-   * Payment payment = ImmutablePayment.copyOf(unpriced).withFee(fee);
-   * // sign and submit `payment`
-   * }</pre>
-   *
-   * <p>A {@link Batch} is the one exception to "price before signing": {@code serializeBatch} excludes the outer
-   * {@code Fee} from what the participants sign, so a Batch may be priced <em>after</em> the inner and batch
-   * signatures are collected — at which point every signature count is read from the transaction and nothing need be
-   * forecast. When a Batch must be priced up front instead (a wallet displaying the fee, say), the returned
-   * {@link ComputedNetworkFees#feeBreakdown()} itemizes every assumption made; review its {@code [assumed]} lines to
-   * find the inputs still worth supplying.
-   *
    * @param feeParams The {@link FeeParams} describing the transaction and how it will be signed. Prefer the
    *                  type-scoped entry points ({@link FeeParams#of}, {@link FeeParams#forBatch},
    *                  {@link FeeParams#forLoanSet}, {@link FeeParams#forLoanPay},

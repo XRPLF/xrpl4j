@@ -188,6 +188,18 @@ public class FeeUtils {
    *       does not permit an inner transaction to carry signatures or fee sponsorship.</li>
    * </ul>
    *
+   * <p>Because the fee is signed over, it must be computed before signing, and the intended flow is therefore: build
+   * the transaction without a fee (which defaults to zero and is ignored while pricing), price it, attach the fee,
+   * then sign:
+   * <pre>{@code
+   * Payment unpriced = Payment.builder()
+   *   // ... every other field ...
+   *   .build();
+   * XrpCurrencyAmount fee = FeeUtils.computeFee(FeeParams.of(feeResult, unpriced).build()).recommendedFee();
+   * Payment payment = ImmutablePayment.copyOf(unpriced).withFee(fee);
+   * // sign and submit `payment`
+   * }</pre>
+   *
    * @param feeParams The {@link FeeParams} describing the transaction and how it will be signed. Prefer the
    *                  type-scoped entry points ({@link FeeParams#of}, {@link FeeParams#forBatch},
    *                  {@link FeeParams#forLoanSet}, {@link FeeParams#forLoanPay},

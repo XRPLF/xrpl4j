@@ -93,20 +93,20 @@ public class FeeUtils {
   );
 
   /**
-   * Computes the fee necessary for a multisigned transaction.
-   *
-   * <p>The transaction cost of a multisigned transaction must be at least {@code (N + 1) * (the normal
-   * transaction cost)}, where {@code N} is the number of signatures provided.
+   * Calculate a suggested fee for submitting a multi-signed transaction to the XRPL, being at least
+   * {@code (N + 1) * (the normal transaction cost)}, where {@code N} is the number of signatures provided.
    *
    * @param feeResult  {@link FeeResult} object obtained by querying the ledger (e.g., via an `XrplClient#fee()` call).
    * @param signerList The {@link SignerListObject} containing the signers of the transaction.
    *
-   * @return An {@link XrpCurrencyAmount} representing the multisig fee.
+   * @return {@link ComputedNetworkFees} with low, medium and high fee levels to choose from for the transaction.
    *
-   * @deprecated This counts entries in {@code signerList} rather than the signatures a transaction will actually
-   *   carry, so it over-charges whenever a quorum is met by fewer signers than the list holds. It also has no term
-   *   for a sponsor's signatures. Use {@link #computeFee(FeeParams)}, supplying
-   *   {@link FeeParams#signersCount()} and {@link FeeParams#sponsorSignersCount()}.
+   * @see "https://xrpl.org/fee.html"
+   *
+   * @deprecated This counts entries in {@code signerList} rather than the signatures the transaction will actually
+   *   carry, so it over-charges whenever a quorum is met by fewer signers than the list holds, and it has no term for
+   *   a sponsor's signatures. Use {@link #computeFee(FeeParams)}, supplying {@link FeeParams#signersCount()} and
+   *   {@link FeeParams#sponsorSignersCount()}, so that there is a single way to price a transaction.
    */
   @Deprecated
   public static ComputedNetworkFees computeMultisigNetworkFees(
@@ -116,7 +116,7 @@ public class FeeUtils {
     Objects.requireNonNull(feeResult);
     Objects.requireNonNull(signerList);
 
-    ComputedNetworkFees computedNetworkFees = computeNetworkFees(feeResult);
+    ComputedNetworkFees computedNetworkFees = computeBaseFees(feeResult);
     XrpCurrencyAmount numberOfSignersAsAmount = XrpCurrencyAmount.of(
       UnsignedLong.valueOf(signerList.signerEntries().size() + 1)
     );
@@ -132,19 +132,33 @@ public class FeeUtils {
    * Calculate a suggested fee to be used for submitting a transaction to the XRPL. The calculated value depends on the
    * current size of the job queue as compared to its total capacity.
    *
-   * <p>This returns the base fee levels for a plain, single-signed transaction, and is correct on its own only for
-   * transaction types that cost exactly the base fee. For anything with a different fee shape — a multi-signed or
-   * sponsored transaction, or a type with its own rule ({@link Batch}, {@code EscrowFinish} with a fulfillment,
-   * confidential MPT, {@code LoanSet}, {@code LoanPay}, {@code AccountDelete}, {@code AMMCreate}) — use
-   * {@link #computeFee(FeeParams)}, which starts from these same levels and applies the type's rule.
-   *
    * @param feeResult {@link FeeResult} object obtained by querying the ledger (e.g., via an `XrplClient#fee()` call).
    *
    * @return {@link ComputedNetworkFees} with low, medium and high fee levels to choose from for the transaction.
    *
    * @see "https://xrpl.org/fee.html"
+   *
+   * @deprecated This returns only the ledger's base fee levels, so it silently under-charges any transaction that
+   *   does not cost exactly one base fee — a multi-signed or sponsored transaction, or one of the types with a rule
+   *   of its own ({@link Batch}, {@code EscrowFinish} with a fulfillment, confidential MPT, {@code LoanSet},
+   *   {@code LoanPay}, {@code AccountDelete}, {@code AMMCreate}). Use {@link #computeFee(FeeParams)}, which starts
+   *   from these same levels and applies the transaction's rule, so that there is a single way to price a
+   *   transaction.
    */
+  @Deprecated
   public static ComputedNetworkFees computeNetworkFees(final FeeResult feeResult) {
+    return computeBaseFees(feeResult);
+  }
+
+  /**
+   * The ledger's base fee levels, being the queue heuristic that turns a {@link FeeResult} into low, medium and high
+   * levels, before any per-transaction multiplier is applied.
+   *
+   * @param feeResult The {@link FeeResult} obtained by querying the ledger.
+   *
+   * @return A {@link ComputedNetworkFees} whose every level is one base fee.
+   */
+  private static ComputedNetworkFees computeBaseFees(final FeeResult feeResult) {
     Objects.requireNonNull(feeResult);
 
     final DecomposedFees decomposedFees = DecomposedFees.builder(feeResult);
@@ -209,7 +223,7 @@ public class FeeUtils {
     Objects.requireNonNull(feeParams);
 
     final FeeBreakdown feeBreakdown = computeFeeBreakdown(feeParams);
-    final ComputedNetworkFees baseFees = computeNetworkFees(feeParams.feeResult());
+    final ComputedNetworkFees baseFees = computeBaseFees(feeParams.feeResult());
 
     final long feeUnits = feeBreakdown.totalFeeUnits();
     final Optional<XrpCurrencyAmount> flatAmount = feeBreakdown.totalFlatAmount();

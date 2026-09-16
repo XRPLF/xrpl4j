@@ -251,10 +251,7 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedUnsignedBatch)
-        .build()).recommendedFee()
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch).build()).recommendedFee()
     );
 
     // ///////////////
@@ -388,9 +385,7 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedUnsignedBatch)
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch)
         .signersCount(UnsignedInteger.valueOf(2))
         .build()).recommendedFee()
     );
@@ -545,11 +540,12 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedUnsignedBatch)
+      // requireExplicitSignatureCounts makes pricing fail fast if any required batch signer's count were forgotten,
+      // rather than silently under-pricing and drawing a telINSUF_FEE_P at submission.
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch)
+        .requireExplicitSignatureCounts()
         .signersCount(UnsignedInteger.valueOf(2))
-        .putSignaturesPerBatchSigner(account2KeyPair.publicKey().deriveAddress(), UnsignedInteger.valueOf(2))
+        .signaturesFor(account2KeyPair.publicKey().deriveAddress(), UnsignedInteger.valueOf(2))
         .build()).recommendedFee()
     );
 
@@ -738,9 +734,7 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedUnsignedBatch)
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch)
         .signersCount(UnsignedInteger.valueOf(2))
         .build()).recommendedFee()
     );
@@ -928,9 +922,7 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedUnsignedBatch)
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch)
         .signersCount(UnsignedInteger.valueOf(2))
         .build()).recommendedFee()
     );
@@ -1099,10 +1091,7 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedUnsignedBatch)
-        .build()).recommendedFee()
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch).build()).recommendedFee()
     );
 
     // ///////////////
@@ -1278,11 +1267,9 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedUnsignedBatch)
-        .putSignaturesPerBatchSigner(account1KeyPair.publicKey().deriveAddress(), UnsignedInteger.valueOf(2))
-        .putSignaturesPerBatchSigner(account2KeyPair.publicKey().deriveAddress(), UnsignedInteger.valueOf(2))
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch)
+        .signaturesFor(account1KeyPair.publicKey().deriveAddress(), UnsignedInteger.valueOf(2))
+        .signaturesFor(account2KeyPair.publicKey().deriveAddress(), UnsignedInteger.valueOf(2))
         .build()).recommendedFee()
     );
 
@@ -1439,10 +1426,7 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedUnsignedBatch)
-        .build()).recommendedFee()
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch).build()).recommendedFee()
     );
 
     // Sign inner with regular key - BatchSigner.account is account1's real (master-key) address, even though the
@@ -1548,10 +1532,7 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedUnsignedBatch)
-        .build()).recommendedFee()
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch).build()).recommendedFee()
     );
 
     assertThat(unsignedBatch.sequence()).isEqualTo(UnsignedInteger.ZERO);
@@ -1633,10 +1614,7 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedUnsignedBatch)
-        .build()).recommendedFee()
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch).build()).recommendedFee()
     );
 
     // ///////////////
@@ -1732,10 +1710,7 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     final Batch batch = ImmutableBatch.copyOf(unpricedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedBatch)
-        .build()).recommendedFee()
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedBatch).build()).recommendedFee()
     );
 
     // Only outer needs to be signed because the same account authorizes both inner transactions.
@@ -1953,10 +1928,7 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     return ImmutableBatch.copyOf(unpricedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedBatch)
-        .build()).recommendedFee()
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedBatch).build()).recommendedFee()
     );
   }
 

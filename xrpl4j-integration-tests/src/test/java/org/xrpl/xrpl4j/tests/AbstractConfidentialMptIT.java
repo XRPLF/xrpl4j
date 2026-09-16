@@ -122,10 +122,7 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
    * @throws JsonRpcClientErrorException If the current fee levels cannot be fetched.
    */
   protected XrpCurrencyAmount feeFor(final Transaction transaction) throws JsonRpcClientErrorException {
-    return FeeUtils.computeFee(FeeParams.builder()
-      .feeResult(xrplClient.fee())
-      .transaction(transaction)
-      .build()).recommendedFee();
+    return FeeUtils.computeFee(FeeParams.of(xrplClient.fee(), transaction).build()).recommendedFee();
   }
 
   // ===========================================================================

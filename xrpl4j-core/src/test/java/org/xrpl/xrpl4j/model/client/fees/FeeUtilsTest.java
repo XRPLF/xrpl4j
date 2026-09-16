@@ -42,6 +42,7 @@ import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.SignerListFlags;
 import org.xrpl.xrpl4j.model.flags.SponsorFlags;
@@ -50,6 +51,7 @@ import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
 import org.xrpl.xrpl4j.model.ledger.SignerListObject;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.AmmCreate;
 import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.BatchSigner;
@@ -58,15 +60,20 @@ import org.xrpl.xrpl4j.model.transactions.ConfidentialMptSend;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.ImmutableEscrowFinish;
+import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.LoanPay;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
+import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
+import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
+import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
@@ -643,6 +650,46 @@ public class FeeUtilsTest {
   }
 
   @Test
+  void dynamicMpTokenIssuanceSetIsPricedGenerically() {
+    // Dynamic MPT (XLS-94) carries no surcharge of its own: 1 + 3 sponsor signatures (issue #829 case 4).
+    assertFeeUnits(
+      paramsFor(sponsoredMpTokenIssuanceSet()).sponsorSignersCount(UnsignedInteger.valueOf(3)),
+      4
+    );
+  }
+
+  @Test
+  void trustSetIsPricedGenerically() {
+    // 1 + 2 own + 3 sponsor (issue #829 case 5).
+    assertFeeUnits(
+      paramsFor(sponsoredTrustSet())
+        .signersCount(UnsignedInteger.valueOf(2))
+        .sponsorSignersCount(UnsignedInteger.valueOf(3)),
+      6
+    );
+  }
+
+  @Test
+  void setRegularKeyConditionalZeroFeeIsNotModeled() {
+    // rippled charges zero for a SetRegularKey signed by the master key while lsfPasswordSpent is unset
+    // (SetRegularKey.cpp:19). That rule depends on ledger state (the account root's flags), which FeeParams does not
+    // model, so computeFee prices a single-signed SetRegularKey at the generic one base fee — a safe overestimate of
+    // the zero-fee path. This test pins that behavior; it is NOT the rippled-derived zero.
+    assertFeeUnits(paramsFor(setRegularKey()), 1);
+  }
+
+  @Test
+  void setRegularKeyInAnyOtherStateFallsBackToTheGenericFormula() {
+    // 1 + 2 + 3 (issue #829 case 22).
+    assertFeeUnits(
+      paramsFor(setRegularKey())
+        .signersCount(UnsignedInteger.valueOf(2))
+        .sponsorSignersCount(UnsignedInteger.valueOf(3)),
+      6
+    );
+  }
+
+  @Test
   void allThreeFeeLevelsAreScaled() {
     ComputedNetworkFees fees = FeeUtils.computeFee(paramsFor(payment()).signersCount(UnsignedInteger.ONE).build());
     assertThat(fees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(2000));
@@ -765,6 +812,22 @@ public class FeeUtilsTest {
     assertThat(fees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(200000));
   }
 
+  @Test
+  void ammCreateCostsOneOwnerReserveFlat() {
+    // AMMCreate.cpp:88 — a flat owner reserve, with signer terms ignored, exactly like AccountDelete
+    // (issue #829 case 23).
+    ComputedNetworkFees fees = FeeUtils.computeFee(FeeParams.builder()
+      .feeResult(feeResultBuilder().build())
+      .transaction(ammCreate())
+      .ownerReserve(XrpCurrencyAmount.ofDrops(200000))
+      .signersCount(UnsignedInteger.valueOf(3))
+      .build());
+
+    assertThat(fees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(200000));
+    assertThat(fees.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(200000));
+    assertThat(fees.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(200000));
+  }
+
   // /////////////////
   // Batch
   // /////////////////
@@ -880,6 +943,20 @@ public class FeeUtilsTest {
   }
 
   @Test
+  void batchPricesAnEscrowFinishInnerWithItsFulfillmentSurcharge() {
+    // 2 outer + 0 batchSigners + (1 base + (32 + 36/16) surcharge) EscrowFinish inner + 1 payment inner = 2 + 35 + 1
+    Batch batch = batch(ALICE, innerEscrowFinish(ALICE, 1, 32), innerPayment(ALICE, 2));
+    assertFeeUnits(paramsFor(batch), 38);
+  }
+
+  @Test
+  void batchPricesAnEscrowFinishInnerWithoutFulfillmentAtOneBaseFee() {
+    // 2 outer + 0 batchSigners + 1 EscrowFinish inner (no surcharge) + 1 payment inner
+    Batch batch = batch(ALICE, innerEscrowFinish(ALICE, 1, 0), innerPayment(ALICE, 2));
+    assertFeeUnits(paramsFor(batch), 4);
+  }
+
+  @Test
   void batchAddsAnOwnerReserveForEachOwnerReserveInner() {
     // 2 outer + 0 batchSigners + 1 payment inner = 3 base fees, plus one flat owner reserve.
     Batch batch = batch(ALICE, innerPayment(ALICE, 1), innerAccountDelete(ALICE, 2));
@@ -946,11 +1023,15 @@ public class FeeUtilsTest {
 
   @Test
   void rejectsAPseudoTransaction() {
-    Transaction setFee = mock(Transaction.class);
-    when(setFee.transactionType()).thenReturn(TransactionType.SET_FEE);
-    assertThatThrownBy(() -> paramsFor(setFee).build())
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("pseudo-transaction");
+    for (TransactionType pseudoType : new TransactionType[] {
+      TransactionType.ENABLE_AMENDMENT, TransactionType.SET_FEE, TransactionType.UNL_MODIFY
+    }) {
+      Transaction pseudoTransaction = mock(Transaction.class);
+      when(pseudoTransaction.transactionType()).thenReturn(pseudoType);
+      assertThatThrownBy(() -> paramsFor(pseudoTransaction).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("pseudo-transaction");
+    }
   }
 
   @Test
@@ -1012,6 +1093,31 @@ public class FeeUtilsTest {
 
   private Payment sponsoredPayment() {
     return Payment.builder().from(payment())
+      .sponsor(FRANK)
+      .sponsorFlags(SponsorFlags.SPONSOR_FEE)
+      .build();
+  }
+
+  private MpTokenIssuanceSet sponsoredMpTokenIssuanceSet() {
+    return MpTokenIssuanceSet.builder()
+      .account(ALICE)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY)
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179" + Strings.repeat("11", 20)))
+      .flags(MpTokenIssuanceSetFlags.LOCK)
+      .sponsor(FRANK)
+      .sponsorFlags(SponsorFlags.SPONSOR_FEE)
+      .build();
+  }
+
+  private TrustSet sponsoredTrustSet() {
+    return TrustSet.builder()
+      .account(ALICE)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY)
+      .limitAmount(IssuedCurrencyAmount.builder().issuer(BOB).currency("USD").value("10").build())
       .sponsor(FRANK)
       .sponsorFlags(SponsorFlags.SPONSOR_FEE)
       .build();
@@ -1100,6 +1206,27 @@ public class FeeUtilsTest {
       .build();
   }
 
+  private AmmCreate ammCreate() {
+    return AmmCreate.builder()
+      .account(ALICE)
+      .amount(IssuedCurrencyAmount.builder().issuer(BOB).currency("TST").value("25").build())
+      .amount2(XrpCurrencyAmount.ofDrops(250000000))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY)
+      .build();
+  }
+
+  private SetRegularKey setRegularKey() {
+    return SetRegularKey.builder()
+      .account(ALICE)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY)
+      .build();
+  }
+
   /**
    * An {@link EscrowFinish} carrying a PREIMAGE-SHA-256 fulfillment built from a {@code preimageBytes}-byte preimage,
    * or no fulfillment when {@code preimageBytes} is 0.
@@ -1112,6 +1239,23 @@ public class FeeUtilsTest {
       .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY);
+    return preimageBytes == 0 ?
+      builder.build() : builder.fulfillment(PreimageSha256Fulfillment.from(new byte[preimageBytes])).build();
+  }
+
+  /**
+   * An {@link EscrowFinish} valid as a Batch inner (empty SigningPublicKey, tfInnerBatchTxn), carrying a
+   * PREIMAGE-SHA-256 fulfillment built from a {@code preimageBytes}-byte preimage, or no fulfillment when
+   * {@code preimageBytes} is 0.
+   */
+  private EscrowFinish innerEscrowFinish(final Address account, final int sequence, final int preimageBytes) {
+    ImmutableEscrowFinish.Builder builder = EscrowFinish.builder()
+      .account(account)
+      .owner(BOB)
+      .offerSequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.valueOf(sequence))
+      .flags(org.xrpl.xrpl4j.model.flags.TransactionFlags.INNER_BATCH_TXN);
     return preimageBytes == 0 ?
       builder.build() : builder.fulfillment(PreimageSha256Fulfillment.from(new byte[preimageBytes])).build();
   }

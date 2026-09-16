@@ -877,9 +877,7 @@ public class SponsorshipIT extends AbstractIT {
         .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
         .build();
 
-      XrpCurrencyAmount multiSignFee = FeeUtils.computeFee(FeeParams.builder()
-        .feeResult(feeResult)
-        .transaction(unpricedTransfer)
+      XrpCurrencyAmount multiSignFee = FeeUtils.computeFee(FeeParams.of(feeResult, unpricedTransfer)
         .signersCount(UnsignedInteger.valueOf(2))
         .sponsorSignersCount(UnsignedInteger.valueOf(2))
         .build()).recommendedFee();

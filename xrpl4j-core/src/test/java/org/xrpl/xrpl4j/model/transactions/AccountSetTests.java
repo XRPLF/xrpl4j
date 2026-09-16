@@ -70,6 +70,63 @@ public class AccountSetTests {
   }
 
   @Test
+  public void transactionFlagsReturnsEmptyFlagsWhenNoFlagsSet() {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .build();
+
+    assertThat(accountSet.transactionFlags()).isEqualTo(accountSet.flags());
+    assertThat(accountSet.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void transactionFlagsReturnsCorrectFlagsWhenFlagsSet() {
+    AccountSetTransactionFlags flags = AccountSetTransactionFlags.builder()
+      .tfRequireAuth()
+      .tfDisallowXrp()
+      .build();
+
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .flags(flags)
+      .build();
+
+    assertThat(accountSet.transactionFlags()).isEqualTo(accountSet.flags());
+    assertThat(((AccountSetTransactionFlags) accountSet.transactionFlags()).tfRequireAuth()).isTrue();
+    assertThat(((AccountSetTransactionFlags) accountSet.transactionFlags()).tfDisallowXrp()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    AccountSetTransactionFlags originalFlags = AccountSetTransactionFlags.builder()
+      .tfRequireAuth()
+      .tfRequireDestTag()
+      .tfDisallowXrp()
+      .build();
+
+    AccountSet originalAccountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .flags(originalFlags)
+      .build();
+
+    AccountSet copiedAccountSet = AccountSet.builder()
+      .from(originalAccountSet)
+      .build();
+
+    assertThat(copiedAccountSet.flags()).isEqualTo(originalAccountSet.flags());
+    assertThat(copiedAccountSet.transactionFlags()).isEqualTo(originalAccountSet.transactionFlags());
+    assertThat(((AccountSetTransactionFlags) copiedAccountSet.transactionFlags()).tfRequireAuth()).isTrue();
+    assertThat(((AccountSetTransactionFlags) copiedAccountSet.transactionFlags()).tfRequireDestTag()).isTrue();
+    assertThat(((AccountSetTransactionFlags) copiedAccountSet.transactionFlags()).tfDisallowXrp()).isTrue();
+  }
+
+  @Test
   void testWithEmptyClearFlagAndEmptyRawValue() {
     AccountSet accountSet = AccountSet.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
@@ -388,5 +445,88 @@ public class AccountSetTests {
       .build();
 
     assertThat(accountSet.tickSize()).isNotEmpty().get().isEqualTo(UnsignedInteger.ZERO);
+  }
+
+  @Test
+  public void testAllowTrustlineLockingFlag() {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .setFlag(AccountSet.AccountSetFlag.ALLOW_TRUSTLINE_LOCKING)
+      .build();
+
+    assertThat(accountSet.setFlag()).isNotEmpty().get()
+      .isEqualTo(AccountSet.AccountSetFlag.ALLOW_TRUSTLINE_LOCKING);
+    assertThat(accountSet.setFlagRawValue()).isNotEmpty().get()
+      .isEqualTo(UnsignedInteger.valueOf(17));
+  }
+
+  @Test
+  public void testClearAllowTrustlineLockingFlag() {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .clearFlag(AccountSet.AccountSetFlag.ALLOW_TRUSTLINE_LOCKING)
+      .build();
+
+    assertThat(accountSet.clearFlag()).isNotEmpty().get()
+      .isEqualTo(AccountSet.AccountSetFlag.ALLOW_TRUSTLINE_LOCKING);
+    assertThat(accountSet.clearFlagRawValue()).isNotEmpty().get()
+      .isEqualTo(UnsignedInteger.valueOf(17));
+  }
+
+  @ParameterizedTest
+  @MethodSource("accountSetFlags")
+  void testForValueIfValidReturnsValueForKnownFlags(AccountSetFlag accountSetFlag) {
+    assertThat(AccountSetFlag.forValueIfValid(accountSetFlag.getValue()))
+      .isPresent()
+      .hasValue(accountSetFlag);
+  }
+
+  @Test
+  void testForValueIfValidReturnsEmptyForUnknownFlags() {
+    // Value 11 is reserved for Hooks amendment (asfTshCollect) but not yet a valid enum value
+    assertThat(AccountSetFlag.forValueIfValid(11)).isEmpty();
+    // Value 17 is greater than MAX_VALUE
+    assertThat(AccountSetFlag.forValueIfValid(AccountSetFlag.MAX_VALUE + 1)).isEmpty();
+    // Negative values should also return empty
+    assertThat(AccountSetFlag.forValueIfValid(-1)).isEmpty();
+  }
+
+  @Test
+  void testForValueThrowsForUnknownFlags() {
+    // Value 11 is reserved for Hooks amendment (asfTshCollect) but not yet a valid enum value
+    assertThatThrownBy(() -> AccountSetFlag.forValue(11))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("No matching AccountSetFlag enum value for int value 11");
+  }
+
+  /**
+   * Tests that AccountSet transactions with flag value 11 (reserved for Hooks amendment) can be
+   * properly constructed. This is a regression test for the bug where deserializing a ledger
+   * containing an AccountSet with SetFlag=11 would throw an IllegalArgumentException.
+   */
+  @Test
+  void testWithReservedFlagValue11() {
+    // Value 11 is reserved for the Hooks amendment (asfTshCollect) and is not yet a valid
+    // AccountSetFlag enum value, but transactions with this flag value exist on testnet.
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .setFlagRawValue(UnsignedInteger.valueOf(11))
+      .clearFlagRawValue(UnsignedInteger.valueOf(11))
+      .build();
+
+    // setFlag and clearFlag should be empty since 11 is not a valid AccountSetFlag
+    assertThat(accountSet.setFlag()).isEmpty();
+    assertThat(accountSet.clearFlag()).isEmpty();
+    // But the raw values should be preserved
+    assertThat(accountSet.setFlagRawValue()).isPresent();
+    assertThat(accountSet.setFlagRawValue().get()).isEqualTo(UnsignedInteger.valueOf(11));
+    assertThat(accountSet.clearFlagRawValue()).isPresent();
+    assertThat(accountSet.clearFlagRawValue().get()).isEqualTo(UnsignedInteger.valueOf(11));
   }
 }

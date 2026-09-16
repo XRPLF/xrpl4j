@@ -108,6 +108,15 @@ public class AccountRootFlags extends Flags {
   public static final AccountRootFlags ALLOW_TRUSTLINE_CLAWBACK = new AccountRootFlags(0x80000000L);
 
   /**
+   * Constant {@link AccountRootFlags} for the {@code lsfAllowTrustLineLocking} account flag.
+   *
+   * <p>This constant will be marked {@link Beta} until the TokenEscrow amendment is enabled on mainnet. Its API is
+   * subject to change.</p>
+   */
+  @Beta
+  public static final AccountRootFlags ALLOW_TRUSTLINE_LOCKING = new AccountRootFlags(0x40000000);
+
+  /**
    * Required-args Constructor.
    *
    * @param value The long-number encoded flags value of this {@link AccountRootFlags}.
@@ -258,5 +267,18 @@ public class AccountRootFlags extends Flags {
   @Beta
   public boolean lsfAllowTrustLineClawback() {
     return this.isSet(AccountRootFlags.ALLOW_TRUSTLINE_CLAWBACK);
+  }
+
+  /**
+   * Allows trust line tokens (IOUs) issued by this account to be held in escrow.
+   *
+   * <p>This constant will be marked {@link Beta} until the TokenEscrow amendment is enabled on mainnet. Its API is
+   * subject to change.</p>
+   *
+   * @return {@code true} if {@code lsfAllowTrustLineLocking} is set, otherwise {@code false}.
+   */
+  @Beta
+  public boolean lsfAllowTrustLineLocking() {
+    return this.isSet(AccountRootFlags.ALLOW_TRUSTLINE_LOCKING);
   }
 }

@@ -25,6 +25,10 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
+import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.BatchSigner;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -37,7 +41,7 @@ public interface TransactionSigner<P extends PrivateKeyable> {
 
   /**
    * Accessor for the public-key corresponding to the supplied key meta-data. This method exists to support
-   * implementations that hold private-key material internally, yet need a way for external callers to determine the
+   * implementations that hold private-key material internally yet need a way for external callers to determine the
    * actual public key for signature verification or other purposes.
    *
    * @param privateKeyable A {@link PrivateKeyable} to derive a public key from.
@@ -47,8 +51,7 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   PublicKey derivePublicKey(P privateKeyable);
 
   /**
-   * Obtain a singly-signed signature for the supplied transaction using {@code privateKeyable} and the single-sign
-   * mechanism.
+   * Get a transaction with a single-sig using {@code privateKeyable}.
    *
    * @param privateKeyable The {@link P} used to sign {@code transaction}.
    * @param transaction    The {@link Transaction} to sign.
@@ -83,12 +86,35 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   Signature sign(P privateKeyable, Attestation attestation);
 
   /**
-   * Obtain a signature for the supplied unsigned transaction using the supplied {@link P}. The primary reason this
+   * Get a signature for a batch transaction using the supplied {@link P}.
+   *
+   * <p>Per XLS-0056 V1_1, the payload is: {@code HashPrefix::Batch} + outer {@code Account} + sequence +
+   * {@code Flags} + count + inner tx IDs, followed by {@code batchSignerAddress} (the {@link BatchSigner}'s own
+   * account) as a per-signer suffix. Note that {@code batchSignerAddress} is <b>not</b> necessarily the address derived
+   * from {@code privateKeyable} — e.g. when a {@link BatchSigner} is authorized via a regular key, the signing key
+   * derives to the regular key's own address, but {@code batchSignerAddress} must be the underlying account's master
+   * address.</p>
+   *
+   * <p>This method will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param privateKeyable     The {@link P} used to sign {@code batchTransaction}.
+   * @param batchTransaction   The {@link Batch} transaction to sign.
+   * @param batchSignerAddress The {@link Address} of the {@link BatchSigner} entry that this signature is for.
+   *
+   * @return A {@link Signature} for the batch transaction.
+   */
+  @Beta
+  Signature signInner(P privateKeyable, Batch batchTransaction, Address batchSignerAddress);
+
+  /**
+   * Get a signature for the supplied unsigned transaction using the supplied {@link P}. The primary reason this
    * method's signature diverges from {@link #sign(PrivateKeyable, Transaction)} is that for multi-sign scenarios, the
-   * interstitially signed transaction is always discarded. Instead, a quorum of signatures is need and then that quorum
-   * is submitted to the ledger with the unsigned transaction. Thus, obtaining a multi-signed transaction here is not
-   * useful and is not returned from this interface. Note that {@link SignatureUtils} can be used to assemble and obtain
-   * the bytes for a multi-signed transaction (these diverge slightly from the bytes of a single-signed transaction).
+   * interstitially signed transaction is always discarded. Instead, a quorum of signatures is needed, and then that
+   * quorum is submitted to the ledger with the unsigned transaction. Thus, getting a multi-signed transaction here is
+   * not useful and is not returned from this interface. Note that {@link SignatureUtils} can be used to assemble and
+   * obtain the bytes for a multi-signed transaction (these diverge slightly from the bytes of a single-signed
+   * transaction).
    *
    * @param privateKeyable The {@link P} used to sign {@code transaction}.
    * @param transaction    The {@link Transaction} to sign.
@@ -97,6 +123,105 @@ public interface TransactionSigner<P extends PrivateKeyable> {
    * @return A {@link Signature} for the transaction.
    */
   <T extends Transaction> Signature multiSign(P privateKeyable, T transaction);
+
+  /**
+   * Obtain a multi-signature for a batch transaction using the supplied {@link P}.
+   *
+   * <p>This is used when a multi-sig account acts as a BatchSigner with nested Signers. Per XLS-0056 V1_1 /
+   * rippled's {@code checkBatchMultiSign}, the payload is the base batch serialization followed by
+   * {@code batchSignerAddress} (the outer multi-sig account) then the address derived from {@code privateKeyable} (the
+   * individual nested signer).</p>
+   *
+   * <p>This method will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param privateKeyable     The {@link P} used to sign {@code batchTransaction}.
+   * @param batchTransaction   The {@link Batch} transaction to sign.
+   * @param batchSignerAddress The {@link Address} of the BatchSigner entry (the outer multi-sig account that contains
+   *                           the individual signer in its Signers list).
+   *
+   * @return A {@link Signature} for the batch transaction with multi-sig format.
+   */
+  Signature multiSignInner(P privateKeyable, Batch batchTransaction, Address batchSignerAddress);
+
+  /**
+   * Obtain a counterparty single-signature for the supplied {@link LoanSet} transaction. The counterparty signs the
+   * same bytes as the first-party signer, but this method returns only the raw {@link Signature} rather than a
+   * {@link SingleSignedTransaction} wrapper, since the counterparty's signature is placed into the
+   * {@link org.xrpl.xrpl4j.model.transactions.CounterpartySignature} field, not the transaction's
+   * {@code TxnSignature}.
+   *
+   * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   *
+   * @param privateKeyable The {@link P} used to sign {@code transaction}.
+   * @param transaction    The {@link LoanSet} transaction to sign by counterparty.
+   *
+   * @return A {@link Signature} for the counterparty.
+   */
+  @Beta
+  Signature counterpartySign(P privateKeyable, LoanSet transaction);
+
+  /**
+   * Obtain a counterparty multi-signature for the supplied {@link LoanSet} transaction. Unlike
+   * {@link #multiSign(PrivateKeyable, Transaction)}, this method does <b>not</b> clear the {@code SigningPubKey} field,
+   * preserving the first-party signer's public key in the signed data. The resulting bytes use the same multi-signing
+   * prefix ({@code SMT\0}) and the counterparty signer's account ID suffix.
+   *
+   * <p>This method will be marked {@link Beta} until the LendingProtocol amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   *
+   * @param privateKeyable The {@link P} used to sign {@code transaction}.
+   * @param transaction    The {@link LoanSet} transaction to counterparty multi-sign.
+   *
+   * @return A {@link Signature} for the counterparty signer.
+   */
+  @Beta
+  Signature counterpartyMultiSign(P privateKeyable, LoanSet transaction);
+
+  /**
+   * Obtain a sponsor single-signature for the supplied transaction. Per rippled's Sponsorship amendment
+   * implementation, the sponsor signs the same serialized bytes (using the {@code STX} / 0x53545800 prefix) as the
+   * account-owner. Domain separation is achieved structurally: the sponsor's signature is placed into the
+   * {@link Transaction#sponsorSignature()} field rather than the transaction's {@code TxnSignature}, and the
+   * account-owner and sponsor use different key pairs.
+   *
+   * <p>This method returns only the raw {@link Signature} rather than a {@link SingleSignedTransaction}
+   * wrapper.</p>
+   *
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param privateKeyable The {@link P} used to sign {@code transaction}.
+   * @param transaction    The {@link Transaction} to sign as the sponsor.
+   * @param <T>            The type of the transaction to be signed.
+   *
+   * @return A {@link Signature} for the sponsor.
+   */
+  @Beta
+  <T extends Transaction> Signature sponsorSign(P privateKeyable, T transaction);
+
+  /**
+   * Obtain a sponsor multi-signature for the supplied transaction. Unlike
+   * {@link #multiSign(PrivateKeyable, Transaction)}, this method does <b>not</b> clear the {@code SigningPubKey}
+   * field, preserving the first-party signer's public key in the signed data. The resulting bytes use the same
+   * multi-signing prefix ({@code SMT\0}) and the sponsor signer's account ID suffix.
+   *
+   * <p>This is necessary for sponsored transactions where the sponsor must co-sign without overwriting
+   * the transaction sender's signature. The sponsor's multi-signature is placed in the
+   * {@link Transaction#sponsorSignature()} {@code Signers} array.</p>
+   *
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param privateKeyable The {@link P} used to sign {@code transaction}.
+   * @param transaction    The {@link Transaction} to sponsor multi-sign.
+   * @param <T>            The type of the transaction to be signed.
+   *
+   * @return A {@link Signature} for the sponsor signer.
+   */
+  @Beta
+  <T extends Transaction> Signature sponsorMultiSign(P privateKeyable, T transaction);
 
   /**
    * Obtain a signature for the supplied unsigned transaction using the supplied {@link P}.
@@ -122,7 +247,12 @@ public interface TransactionSigner<P extends PrivateKeyable> {
    * @param <T>            The type of the transaction to be signed.
    *
    * @return A {@link Signature} for the transaction.
+   *
+   * @deprecated Use {@link #multiSign(PrivateKeyable, Transaction)} instead and assemble a {@link Signer} manually.
+   *   This will allow callers to better manage public-key derivation, especially for derived key scenarios like an HSM
+   *   where public-key derivation is expensive and may only need to be done once for multiple multi-sig operations.
    */
+  @Deprecated
   default <T extends Transaction> Signer multiSignToSigner(P privateKeyable, T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
@@ -130,9 +260,11 @@ public interface TransactionSigner<P extends PrivateKeyable> {
     // Compute this only once, just in case public-key derivation is expensive (e.g., a remote HSM).
     final PublicKey signingPublicKey = this.derivePublicKey(privateKeyable);
     return Signer.builder()
-      .account(signingPublicKey.deriveAddress())
+      // Note: .account is derived by default from `signingPublicKey`
       .signingPublicKey(signingPublicKey)
-      .transactionSignature(multiSign(privateKeyable, transaction))
+      .transactionSignature(
+        this.multiSign(privateKeyable, transaction)
+      )
       .build();
   }
 }

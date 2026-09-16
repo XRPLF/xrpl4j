@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.accounts;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
@@ -93,8 +94,24 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
   }
 
   /**
-   * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
-   * numerical ledger index, or a shortcut value.
+   * If present, filters the response to only include {@link org.xrpl.xrpl4j.model.ledger.LedgerObject}s whose
+   * sponsored state matches this value: {@code true} to only return sponsored objects, {@code false} to only
+   * return objects that are not sponsored. If omitted, no filtering is applied.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An {@link Optional} {@link Boolean} indicating whether to filter by sponsored state.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
+   */
+  @Beta
+  @JsonProperty("sponsored")
+  Optional<Boolean> sponsored();
+
+  /**
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
+   * or a shortcut value.
    *
    * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */
@@ -126,6 +143,10 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
      */
     CHECK("check"),
     /**
+     * Credential account object type.
+     */
+    CREDENTIAL("credential"),
+    /**
      * Desposit pre auth account object type.
      */
     DESPOSIT_PRE_AUTH("deposit_preauth"),
@@ -142,6 +163,10 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
      */
     PAYMENT_CHANNEL("payment_channel"),
     /**
+     * Permissioned domain account object type.
+     */
+    PERMISSIONED_DOMAIN("permissioned_domain"),
+    /**
      * Signer list account object type.
      */
     SIGNER_LIST("signer_list"),
@@ -154,13 +179,32 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
      */
     STATE("state"),
     /**
+     * Vault account object type.
+     */
+    VAULT("vault"),
+    /**
+     * LoanBroker account object type.
+     */
+    LOAN_BROKER("loan_broker"),
+    /**
+     * Loan account object type.
+     */
+    LOAN("loan"),
+    /**
      * MPToken Issuance object type.
      */
     MPT_ISSUANCE("mpt_issuance"),
     /**
      * MPToken object type.
      */
-    MP_TOKEN("mptoken");
+    MP_TOKEN("mptoken"),
+    /**
+     * Sponsorship object type.
+     *
+     * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
+     */
+    @Beta
+    SPONSORSHIP("sponsorship");
 
     private final String value;
 

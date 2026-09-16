@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.model.transactions.json;
  * =========================LICENSE_END==================================
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -179,6 +181,106 @@ public class TrustSetJsonTests extends AbstractJsonTest {
       "      \"value\": \"100\"\n" +
       "    },\n" +
       "    \"NetworkID\": 1024,\n" +
+      "    \"Sequence\": 12\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(trustSet, json);
+  }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlagsWhenNoFlagsSet() {
+    TrustSet trustSet = TrustSet.builder()
+      .account(Address.of("ra5nK24KXen9AHvsdFTKHSANinZseWnPcX"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(12))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rsP3mgGb2tcYUrxiLFiHJiQXhsziegtwBc"))
+        .value("100")
+        .build())
+      .build();
+
+    assertThat(trustSet.transactionFlags()).isEqualTo(trustSet.flags());
+    assertThat(trustSet.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void transactionFlagsReturnsCorrectFlagsWhenFlagsSet() {
+    TrustSet trustSet = TrustSet.builder()
+      .account(Address.of("ra5nK24KXen9AHvsdFTKHSANinZseWnPcX"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(12))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rsP3mgGb2tcYUrxiLFiHJiQXhsziegtwBc"))
+        .value("100")
+        .build())
+      .flags(TrustSetFlags.builder().tfSetNoRipple().tfSetFreeze().build())
+      .build();
+
+    assertThat(trustSet.transactionFlags()).isEqualTo(trustSet.flags());
+    assertThat(trustSet.transactionFlags().tfFullyCanonicalSig()).isTrue();
+    assertThat(((TrustSetFlags) trustSet.transactionFlags()).tfSetNoRipple()).isTrue();
+    assertThat(((TrustSetFlags) trustSet.transactionFlags()).tfSetFreeze()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    TrustSetFlags originalFlags = TrustSetFlags.builder()
+      .tfSetNoRipple()
+      .tfSetFreeze()
+      .build();
+
+    TrustSet original = TrustSet.builder()
+      .account(Address.of("ra5nK24KXen9AHvsdFTKHSANinZseWnPcX"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(12))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rsP3mgGb2tcYUrxiLFiHJiQXhsziegtwBc"))
+        .value("100")
+        .build())
+      .flags(originalFlags)
+      .build();
+
+    TrustSet copied = TrustSet.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+    assertThat(((TrustSetFlags) copied.transactionFlags()).tfSetNoRipple()).isTrue();
+    assertThat(((TrustSetFlags) copied.transactionFlags()).tfSetFreeze()).isTrue();
+  }
+
+  @Test
+  public void testTrustSetWithDelegate() throws JsonProcessingException, JSONException {
+    TrustSet trustSet = TrustSet.builder()
+      .account(Address.of("ra5nK24KXen9AHvsdFTKHSANinZseWnPcX"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(12))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rsP3mgGb2tcYUrxiLFiHJiQXhsziegtwBc"))
+        .value("100")
+        .build())
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .delegate(Address.of("rDelegateAddress123456789012345678"))
+      .build();
+
+    String json = "{\n" +
+      "    \"TransactionType\": \"TrustSet\",\n" +
+      "    \"Account\": \"ra5nK24KXen9AHvsdFTKHSANinZseWnPcX\",\n" +
+      "    \"Fee\": \"12\",\n" +
+      "    \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"Delegate\": \"rDelegateAddress123456789012345678\",\n" +
+      "    \"LimitAmount\": {\n" +
+      "        \"currency\": \"USD\",\n" +
+      "        \"issuer\": \"rsP3mgGb2tcYUrxiLFiHJiQXhsziegtwBc\",\n" +
+      "        \"value\": \"100\"\n" +
+      "    },\n" +
       "    \"Sequence\": 12\n" +
       "}";
 

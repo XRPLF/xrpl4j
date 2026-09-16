@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.model.transactions.json;
  * =========================LICENSE_END==================================
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -138,5 +140,35 @@ public class SetRegularKeyJsonTest extends AbstractJsonTest {
       "}";
 
     assertCanSerializeAndDeserialize(setRegularKey, json);
+  }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    SetRegularKey setRegularKey = SetRegularKey.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .regularKey(Address.of("rAR8rR8sUkBoCZFawhkWzY4Y5YoyuznwD"))
+      .build();
+
+    assertThat(setRegularKey.transactionFlags()).isEqualTo(setRegularKey.flags());
+    assertThat(setRegularKey.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    SetRegularKey original = SetRegularKey.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .regularKey(Address.of("rAR8rR8sUkBoCZFawhkWzY4Y5YoyuznwD"))
+      .build();
+
+    SetRegularKey copied = SetRegularKey.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
   }
 }

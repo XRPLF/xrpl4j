@@ -27,6 +27,8 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
@@ -49,14 +51,21 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     this.signatureUtils = Objects.requireNonNull(signatureUtils);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T extends Transaction> SingleSignedTransaction<T> sign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
 
-    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSignableBytes(transaction);
-    final Signature signature = this.signingHelper(privateKeyable, signableTransactionBytes);
-    return this.signatureUtils.addSignatureToTransaction(transaction, signature);
+    final Signature signature = signatureHelper(privateKeyable, transaction);
+
+    final Transaction transactionWithSignature = transaction.withTransactionSignature(signature);
+
+    return SingleSignedTransaction.<T>builder()
+      .unsignedTransaction(transaction)
+      .signature(signature)
+      .signedTransaction((T) transactionWithSignature)
+      .build();
   }
 
   @Override
@@ -65,7 +74,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     Objects.requireNonNull(unsignedClaim);
 
     final UnsignedByteArray signableBytes = signatureUtils.toSignableBytes(unsignedClaim);
-    return this.signingHelper(privateKeyable, signableBytes);
+    return this.signatureHelper(privateKeyable, signableBytes);
   }
 
   @Override
@@ -74,7 +83,19 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     Objects.requireNonNull(attestation);
 
     final UnsignedByteArray signableBytes = this.signatureUtils.toSignableBytes(attestation);
-    return this.signingHelper(privateKeyable, signableBytes);
+    return this.signatureHelper(privateKeyable, signableBytes);
+  }
+
+  @Override
+  public Signature signInner(
+    final P privateKeyable, final Batch batchTransaction, final Address batchSignerAddress
+  ) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+    Objects.requireNonNull(batchSignerAddress);
+    final UnsignedByteArray signableBytes = this.signatureUtils.toSignableInnerBytes(batchTransaction,
+      batchSignerAddress);
+    return this.signatureHelper(privateKeyable, signableBytes);
   }
 
   @Override
@@ -84,8 +105,85 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
 
     final Address address = derivePublicKey(privateKeyable).deriveAddress();
     final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toMultiSignableBytes(transaction, address);
+    return this.signatureHelper(privateKeyable, signableTransactionBytes);
+  }
 
-    return this.signingHelper(privateKeyable, signableTransactionBytes);
+  @Override
+  public Signature multiSignInner(final P privateKeyable, final Batch batchTransaction,
+    final Address batchSignerAddress) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+    Objects.requireNonNull(batchSignerAddress);
+
+    final Address nestedSignerAddress = derivePublicKey(privateKeyable).deriveAddress();
+    final UnsignedByteArray signableBytes = this.signatureUtils.toMultiSignableInnerBytes(
+      batchTransaction, batchSignerAddress, nestedSignerAddress
+    );
+
+    return this.signatureHelper(privateKeyable, signableBytes);
+  }
+
+  @Override
+  public Signature counterpartySign(final P privateKeyable, final LoanSet transaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(transaction);
+
+    return signatureHelper(privateKeyable, transaction);
+  }
+
+  @Override
+  public Signature counterpartyMultiSign(final P privateKeyable, final LoanSet transaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(transaction);
+
+    final Address address = derivePublicKey(privateKeyable).deriveAddress();
+    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toCounterpartyMultiSignableBytes(
+      transaction, address
+    );
+    return this.signatureHelper(privateKeyable, signableTransactionBytes);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorSign(final P privateKeyable, final T transaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(transaction);
+
+    // Per the rippled implementation of the Sponsorship amendment, sponsor single-signing uses the same
+    // HashPrefix::txSign (STX, 0x53545800) prefix and serialization as regular single-signing. Domain separation
+    // between the account-owner and sponsor roles is not required at the signing-bytes level because the resulting
+    // signatures are placed in distinct transaction fields (TxnSignature vs SponsorSignature.TxnSignature), and the
+    // account-owner and sponsor use different key pairs. So this can safely reuse the regular signing path.
+    return this.signatureHelper(privateKeyable, transaction);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorMultiSign(final P privateKeyable, final T transaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(transaction);
+
+    // Sponsor multi-signing preserves the first-party signer's SigningPubKey in the signed data.
+    // This differs from regular multi-signing which clears the SigningPubKey.
+    final Address address = derivePublicKey(privateKeyable).deriveAddress();
+    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSponsorMultiSignableBytes(
+      transaction, address
+    );
+    return this.signatureHelper(privateKeyable, signableTransactionBytes);
+  }
+
+  /**
+   * Helper to serialize a {@link Transaction} to signable bytes and then generate a {@link Signature}.
+   *
+   * @param privateKeyable A {@link PrivateKeyReference} for the signing key.
+   * @param transaction    A {@link Transaction} to sign.
+   *
+   * @return A {@link Signature}.
+   */
+  private <T extends Transaction> Signature signatureHelper(final P privateKeyable, final T transaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(transaction);
+
+    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSignableBytes(transaction);
+    return this.signatureHelper(privateKeyable, signableTransactionBytes);
   }
 
   /**
@@ -96,7 +194,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
    *
    * @return A {@link Signature}.
    */
-  private Signature signingHelper(
+  private Signature signatureHelper(
     final P privateKey, final UnsignedByteArray signableTransactionBytes
   ) {
     Objects.requireNonNull(privateKey);

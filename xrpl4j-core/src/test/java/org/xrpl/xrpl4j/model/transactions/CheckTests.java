@@ -91,4 +91,101 @@ public class CheckTests {
       "The CheckCash transaction must include either amount or deliverMin, but not both."
     );
   }
+
+  // CheckCancel transactionFlags tests
+  @Test
+  public void checkCancelTransactionFlagsReturnsEmptyFlags() {
+    CheckCancel checkCancel = CheckCancel.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .build();
+
+    assertThat(checkCancel.transactionFlags()).isEqualTo(checkCancel.flags());
+    assertThat(checkCancel.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void checkCancelBuilderFromCopiesFlagsCorrectly() {
+    CheckCancel original = CheckCancel.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .build();
+
+    CheckCancel copied = CheckCancel.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
+
+  // CheckCash transactionFlags tests
+  @Test
+  public void checkCashTransactionFlagsReturnsEmptyFlags() {
+    CheckCash checkCash = CheckCash.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .amount(XrpCurrencyAmount.ofDrops(100))
+      .build();
+
+    assertThat(checkCash.transactionFlags()).isEqualTo(checkCash.flags());
+    assertThat(checkCash.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void checkCashBuilderFromCopiesFlagsCorrectly() {
+    CheckCash original = CheckCash.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .amount(XrpCurrencyAmount.ofDrops(100))
+      .build();
+
+    CheckCash copied = CheckCash.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
+
+  // CheckCreate transactionFlags tests
+  @Test
+  public void checkCreateTransactionFlagsReturnsEmptyFlags() {
+    CheckCreate checkCreate = CheckCreate.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .destination(Address.of("rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm"))
+      .sendMax(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .build();
+
+    assertThat(checkCreate.transactionFlags()).isEqualTo(checkCreate.flags());
+    assertThat(checkCreate.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void checkCreateBuilderFromCopiesFlagsCorrectly() {
+    CheckCreate original = CheckCreate.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .destination(Address.of("rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm"))
+      .sendMax(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .build();
+
+    CheckCreate copied = CheckCreate.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
 }

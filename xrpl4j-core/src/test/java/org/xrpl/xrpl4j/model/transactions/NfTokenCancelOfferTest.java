@@ -62,4 +62,38 @@ public class NfTokenCancelOfferTest {
     );
   }
 
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    Hash256 offer = Hash256.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    List<Hash256> offers = new ArrayList<>();
+    offers.add(offer);
+    NfTokenCancelOffer nfTokenCancelOffer = NfTokenCancelOffer.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .tokenOffers(offers)
+      .build();
+
+    assertThat(nfTokenCancelOffer.transactionFlags()).isEqualTo(nfTokenCancelOffer.flags());
+    assertThat(nfTokenCancelOffer.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    Hash256 offer = Hash256.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    List<Hash256> offers = new ArrayList<>();
+    offers.add(offer);
+    NfTokenCancelOffer original = NfTokenCancelOffer.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .tokenOffers(offers)
+      .build();
+
+    NfTokenCancelOffer copied = NfTokenCancelOffer.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
+
 }

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.path;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -67,6 +68,14 @@ public interface DepositAuthorizedResult extends XrplResult {
    */
   @JsonProperty("destination_account")
   Address destinationAccount();
+
+  /**
+   * The credentials specified in the request, if any.
+   *
+   * @return A list of {@link Hash256} representing unique IDs of Credential entry in the ledger.
+   */
+  @JsonProperty("credentials")
+  List<Hash256> credentials();
 
   /**
    * <p>Whether the specified source account is authorized to send payments directly to the destination account. If

@@ -45,5 +45,6 @@ public class GatewayBalancesResultTest {
     assertThatThrownBy(result::ledgerCurrentIndexSafe).isInstanceOf(IllegalStateException.class);
     assertThatThrownBy(result::ledgerHashSafe).isInstanceOf(IllegalStateException.class);
     assertThatThrownBy(result::ledgerIndexSafe).isInstanceOf(IllegalStateException.class);
+    assertThat(result.frozenBalances()).isEqualTo(GatewayBalancesHotWallets.builder().build());
   }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
@@ -13,7 +14,7 @@ class AmmInfoRequestParamsTest extends AbstractJsonTest {
   void testAssetAsset2Json() throws JSONException, JsonProcessingException {
     AmmInfoRequestParams params = AmmInfoRequestParams.from(
       Issue.XRP,
-      Issue.builder()
+      IouIssue.builder()
         .currency("TST")
         .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
         .build()

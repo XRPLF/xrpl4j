@@ -31,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.google.common.io.BaseEncoding;
 import org.assertj.core.util.Sets;
@@ -43,14 +44,17 @@ import org.mockito.Mockito;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigInteger;
 
@@ -95,8 +99,6 @@ class BcSignatureServiceTest {
     when(signedTransactionMock.unsignedTransaction()).thenReturn(transactionMock);
     when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
-    when(signatureUtilsMock.addSignatureToTransaction(Mockito.<AccountSet>any(), any())).thenReturn(
-      signedTransactionMock);
 
     when(ed25519SignatureMock.value()).thenReturn(UnsignedByteArray.of(new byte[32]));
 
@@ -132,9 +134,9 @@ class BcSignatureServiceTest {
     assertThrows(NullPointerException.class, () -> new BcSignatureService(signatureUtilsMock, ed25519SignerMock, null));
   }
 
-  ///////////////////
+  // /////////////////
   // Sign
-  ///////////////////
+  // /////////////////
 
   @Test
   public void signWithNullPrivateKey() {
@@ -149,34 +151,52 @@ class BcSignatureServiceTest {
 
   @Test
   public void signAndVerifySecp256k1() {
-    when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
-    SingleSignedTransaction<Transaction> signedTransaction = signatureService.sign(secp256k1KeyPair.privateKey(),
-      transactionMock);
-    assertThat(signedTransaction.signature()).isEqualTo(secp256k1SignatureMock);
+    final Payment payment = Payment.builder()
+      .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(ED_PUBLIC_KEY)
+      .build();
 
-    verify(signatureUtilsMock).toSignableBytes(transactionMock);
-    verify(signatureUtilsMock, times(0)).toMultiSignableBytes(transactionMock, secp256k1SignerAddress);
-    verify(signatureUtilsMock).toSignableBytes(transactionMock);
+    final Signature expectedSignature = Signature.builder()
+      .value(UnsignedByteArray.of(BaseEncoding.base16().decode("300602010A02010A")))
+      .build();
 
-    final Signature expectedSecp256k1Signatur = Signature.builder()
-      .value(UnsignedByteArray.of(BaseEncoding.base16().decode("300602010A02010A"))).build();
-    verify(signatureUtilsMock).addSignatureToTransaction(transactionMock, expectedSecp256k1Signatur);
+    SingleSignedTransaction<Transaction> signedTransaction = signatureService.sign(
+      secp256k1KeyPair.privateKey(), payment
+    );
+    assertThat(signedTransaction.signature()).isEqualTo(expectedSignature);
+
+    verify(signatureUtilsMock).toSignableBytes(payment);
+    verify(signatureUtilsMock, times(0)).toMultiSignableBytes(payment, secp256k1SignerAddress);
+    verify(signatureUtilsMock).toSignableBytes(payment);
+
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   void signAndVerifyEd25519() {
-    when(signedTransactionMock.signature()).thenReturn(ed25519SignatureMock);
-    SingleSignedTransaction<Transaction> signedTransaction = signatureService.sign(ed25519KeyPair.privateKey(),
-      transactionMock);
-    assertThat(signedTransaction.signature()).isEqualTo(ed25519SignatureMock);
+    final Payment payment = Payment.builder()
+      .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("030D58EB48B4420B1F7B9DF55087E0E29FEF0E8468F9A6825B01CA2C361042D435")
+      )
+      .build();
 
-    verify(signatureUtilsMock).toSignableBytes(transactionMock);
-    verify(signatureUtilsMock, times(0)).toMultiSignableBytes(transactionMock, ed25519SignerAddress);
-    verify(signatureUtilsMock).toSignableBytes(transactionMock);
+    final Signature expectedSignature = Signature.builder().value(UnsignedByteArray.of(new byte[32])).build();
+    SingleSignedTransaction<Transaction> signedTransaction = signatureService.sign(
+      ed25519KeyPair.privateKey(), payment
+    );
+    assertThat(signedTransaction.signature()).isEqualTo(expectedSignature);
 
-    final Signature expectedSecp256k1Signature = Signature.builder().value(UnsignedByteArray.of(new byte[32])).build();
-    verify(signatureUtilsMock).addSignatureToTransaction(transactionMock, expectedSecp256k1Signature);
+    verify(signatureUtilsMock).toSignableBytes(payment);
+    verify(signatureUtilsMock, times(0)).toMultiSignableBytes(payment, ed25519SignerAddress);
+    verify(signatureUtilsMock).toSignableBytes(payment);
+
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -206,9 +226,9 @@ class BcSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // verify (single)
-  ///////////////////
+  // /////////////////
 
   @Test
   public void verifyWithNullMetadata() {
@@ -268,9 +288,9 @@ class BcSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // verify (multi)
-  ///////////////////
+  // /////////////////
 
   @Test
   public void verifyMultiWithNullSigs() {
@@ -348,9 +368,9 @@ class BcSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // EdDsaSign
-  ///////////////////
+  // /////////////////
 
   @Test
   public void edDsaSign() {
@@ -360,9 +380,9 @@ class BcSignatureServiceTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // EcDsaSign
-  ///////////////////
+  // /////////////////
 
   @Test
   public void ecDsaSign() {
@@ -382,9 +402,9 @@ class BcSignatureServiceTest {
     verifyNoMoreInteractions(ed25519SignerMock);
   }
 
-  ///////////////////
+  // /////////////////
   // edDsaVerify
-  ///////////////////
+  // /////////////////
 
   @Test
   public void edDsaVerifyTrue() {
@@ -424,9 +444,9 @@ class BcSignatureServiceTest {
     Mockito.verifyNoMoreInteractions(ed25519SignerMock);
   }
 
-  ///////////////////
+  // /////////////////
   // ecDsaVerify
-  ///////////////////
+  // /////////////////
 
   @Test
   public void ecDsaVerifyTrue() {

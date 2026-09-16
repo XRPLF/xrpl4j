@@ -23,26 +23,26 @@ package org.xrpl.xrpl4j.model.transactions.metadata;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.primitives.UnsignedInteger;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.flags.Flags;
-import org.xrpl.xrpl4j.model.ledger.ImmutableDepositPreAuthObject;
-import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
  * Tracks a preauthorization from one account to another. {@link DepositPreAuth} transactions create these objects.
  *
  * <p>This has no effect on processing of {@link Transaction}s unless the account that provided the preauthorization
- * requires Deposit Authorization. In that case, the account that was preauthorized can send payments and
- * other transactions directly to the account that provided the preauthorization.
- * Preauthorizations are uni-directional, and have no effect on payments going the opposite direction.</p>
+ * requires Deposit Authorization. In that case, the account that was preauthorized can send payments and other
+ * transactions directly to the account that provided the preauthorization. Preauthorizations are uni-directional, and
+ * have no effect on payments going the opposite direction.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableMetaDepositPreAuthObject.class)
@@ -66,6 +66,14 @@ public interface MetaDepositPreAuthObject extends MetaLedgerObject {
   Optional<Address> authorize();
 
   /**
+   * The credential(s) that received the preauthorization.
+   *
+   * @return A list of {@link MetaCredentialWrapper}.
+   */
+  @JsonProperty("AuthorizeCredentials")
+  List<MetaCredentialWrapper> authorizeCredentials();
+
+  /**
    * A bit-map of boolean flags. No flags are defined for {@link MetaDepositPreAuthObject}s, so this value is always 0.
    *
    * @return Always {@link Flags#UNSET}.
@@ -77,8 +85,8 @@ public interface MetaDepositPreAuthObject extends MetaLedgerObject {
   }
 
   /**
-   * A hint indicating which page of the sender's owner directory links to this object, in case the directory
-   * consists of multiple pages.
+   * A hint indicating which page of the sender's owner directory links to this object, in case the directory consists
+   * of multiple pages.
    *
    * <p>Note: The object does not contain a direct link to the owner directory containing it, since that value can be
    * derived from the Account.
@@ -103,4 +111,18 @@ public interface MetaDepositPreAuthObject extends MetaLedgerObject {
    */
   @JsonProperty("PreviousTxnLgrSeq")
   Optional<LedgerIndex> previousTransactionLedgerSequence();
+
+  /**
+   * The account that is sponsoring the reserve for this ledger object, as represented in transaction metadata.
+   * If present, the sponsor is responsible for the reserve requirement of this object instead of the owner.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An optionally-present {@link Address} of the sponsoring account.
+   */
+  @Beta
+  @JsonProperty("Sponsor")
+  Optional<Address> sponsor();
+
 }

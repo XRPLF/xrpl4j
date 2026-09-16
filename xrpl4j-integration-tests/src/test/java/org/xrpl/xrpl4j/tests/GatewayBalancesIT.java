@@ -30,13 +30,19 @@ import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
+import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesIssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
+import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
@@ -113,6 +119,106 @@ public class GatewayBalancesIT extends AbstractIT {
               .build()
           )
         )
+      );
+    assertThat(result.frozenBalances().balancesByHolder()).isEmpty();
+
+    KeyPair frozenAccountKeyPair = createRandomAccountEd25519();
+
+    ///////////////////////////
+    // Create a Trust Line between issuer and frozenAccount
+    TrustLine frozenTrustLine = createTrustLine(
+      frozenAccountKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(xrpl4jCoin)
+        .value("5000")
+        .build(),
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+    );
+
+    ///////////////////////////
+    // Send some xrpl4jCoin to the frozenAccount
+    sendIssuedCurrency(
+      issuerKeyPair,
+      frozenAccountKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(xrpl4jCoin)
+        .value(frozenTrustLine.limitPeer())
+        .build(),
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+    );
+
+    Address frozenAccountAddress = frozenAccountKeyPair.publicKey().deriveAddress();
+    this.scanForResult(
+      () -> getValidatedAccountLines(issuerAddress, frozenAccountAddress),
+      linesResult -> linesResult.lines().stream()
+        .anyMatch(line -> line.balance().equals("-" + frozenTrustLine.limitPeer()))
+    );
+
+    ///////////////////////////
+    // Freeze the trustline from the issuer's side
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerAddress)
+    );
+
+    TrustSet freezeTrustSet = TrustSet.builder()
+      .account(issuerAddress)
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency(xrpl4jCoin)
+        .issuer(frozenAccountAddress)
+        .value("0")
+        .build())
+      .flags(TrustSetFlags.builder().tfSetFreeze().build())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<TrustSet> signedFreezeTrustSet = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      freezeTrustSet
+    );
+    SubmitResult<TrustSet> freezeSubmitResult = xrplClient.submit(signedFreezeTrustSet);
+    assertThat(freezeSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+
+    this.scanForResult(
+      () -> getValidatedAccountLines(issuerAddress, frozenAccountAddress),
+      linesResult -> linesResult.lines().stream()
+        .anyMatch(TrustLine::freeze)
+    );
+
+    ///////////////////////////
+    // Scenario 1: Call gatewayBalances with frozenAccount in hotWallets
+    // Assert that frozenBalances is empty (frozen accounts in hotWallets are excluded from frozenBalances)
+    GatewayBalancesResult resultWithFrozenInHotWallets = xrplClient.gatewayBalances(
+      GatewayBalancesRequestParams.builder()
+        .account(issuerAddress)
+        .addHotWallets(frozenAccountAddress)
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+        .build()
+    );
+
+    assertThat(resultWithFrozenInHotWallets.frozenBalances().balancesByHolder()).isEmpty();
+
+    ///////////////////////////
+    // Scenario 2: Call gatewayBalances without hotWallets
+    // Assert that frozenBalances has an entry for the frozen account
+    GatewayBalancesResult resultWithoutHotWallets = xrplClient.gatewayBalances(
+      GatewayBalancesRequestParams.builder()
+        .account(issuerAddress)
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+        .build()
+    );
+
+    assertThat(resultWithoutHotWallets.frozenBalances().balancesByHolder())
+      .containsKey(frozenAccountAddress);
+    assertThat(resultWithoutHotWallets.frozenBalances().balancesByHolder().get(frozenAccountAddress))
+      .containsExactly(
+        GatewayBalancesIssuedCurrencyAmount.builder()
+          .value("5000")
+          .currency(xrpl4jCoin)
+          .build()
       );
   }
 }

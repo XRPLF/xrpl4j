@@ -53,6 +53,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountSponsoringRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountSponsoringResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
@@ -95,6 +97,8 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.client.vault.VaultInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.vault.VaultInfoResult;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -619,6 +623,31 @@ public class XrplClient {
   }
 
   /**
+   * Get the {@link AccountSponsoringResult} for the account specified in {@code params} by making an account_sponsoring
+   * method call.
+   *
+   * <p>This method will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param params The {@link AccountSponsoringRequestParams} to send in the request.
+   *
+   * @return The {@link AccountSponsoringResult} returned by the account_sponsoring method call.
+   *
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
+   */
+  @Beta
+  public AccountSponsoringResult accountSponsoring(AccountSponsoringRequestParams params)
+    throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.ACCOUNT_SPONSORING)
+      .addParams(params)
+      .build();
+    return jsonRpcClient.send(request, AccountSponsoringResult.class);
+  }
+
+  /**
    * Indicates whether one account is authorized to send payments directly to another.
    *
    * @param params A {@link DepositAuthorizedRequestParams} to send in the request.
@@ -891,6 +920,27 @@ public class XrplClient {
       .build();
 
     return jsonRpcClient.send(request, MptHoldersResponse.class);
+  }
+
+  /**
+   * Get info about a Vault by making a call to the vault_info rippled RPC method.
+   *
+   * @param params The {@link VaultInfoRequestParams} to send in the request.
+   *
+   * @return A {@link VaultInfoResult}.
+   *
+   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   */
+  @Beta
+  public VaultInfoResult vaultInfo(
+    VaultInfoRequestParams params
+  ) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.VAULT_INFO)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, VaultInfoResult.class);
   }
 
   public JsonRpcClient getJsonRpcClient() {

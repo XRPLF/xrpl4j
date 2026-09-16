@@ -40,7 +40,7 @@ import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 public class TransactionResultJsonTests extends AbstractJsonTest {
@@ -76,7 +76,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
       .build();
 
     assertThat(paymentResult.closeDateHuman()).hasValue(
-      ZonedDateTime.of(LocalDateTime.of(2021, 2, 9, 19, 1, 0), ZoneId.of("UTC"))
+      ZonedDateTime.of(LocalDateTime.of(2021, 2, 9, 19, 1, 0), ZoneOffset.UTC)
     );
 
     String json = "{\n" +

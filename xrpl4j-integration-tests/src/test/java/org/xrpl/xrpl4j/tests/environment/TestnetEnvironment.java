@@ -34,7 +34,7 @@ import java.util.Optional;
 public abstract class TestnetEnvironment extends AbstractXrplEnvironment implements XrplEnvironment {
 
   private final FaucetClient faucetClient =
-    FaucetClient.construct(HttpUrl.parse("https://faucet.altnet.rippletest.net"));
+    FaucetClient.construct(HttpUrl.parse("https://apex-faucet.altnet.rippletest.net"));
 
   @Override
   public abstract XrplClient getXrplClient();

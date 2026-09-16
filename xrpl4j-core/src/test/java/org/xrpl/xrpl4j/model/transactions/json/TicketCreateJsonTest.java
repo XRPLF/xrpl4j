@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.model.transactions.json;
  * =========================LICENSE_END==================================
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -138,5 +140,35 @@ class TicketCreateJsonTest extends AbstractJsonTest {
       "}";
 
     assertCanSerializeAndDeserialize(ticketCreate, json);
+  }
+
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    TicketCreate ticketCreate = TicketCreate.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .ticketCount(UnsignedInteger.valueOf(200))
+      .build();
+
+    assertThat(ticketCreate.transactionFlags()).isEqualTo(ticketCreate.flags());
+    assertThat(ticketCreate.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    TicketCreate original = TicketCreate.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .ticketCount(UnsignedInteger.valueOf(200))
+      .build();
+
+    TicketCreate copied = TicketCreate.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
   }
 }

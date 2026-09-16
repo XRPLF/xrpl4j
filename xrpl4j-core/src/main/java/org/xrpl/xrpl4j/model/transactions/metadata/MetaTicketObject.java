@@ -95,4 +95,5 @@ public interface MetaTicketObject extends MetaLedgerObject {
    */
   @JsonProperty("TicketSequence")
   Optional<UnsignedInteger> ticketSequence();
+
 }

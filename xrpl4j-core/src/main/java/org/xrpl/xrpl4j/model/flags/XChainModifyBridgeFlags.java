@@ -12,6 +12,12 @@ public class XChainModifyBridgeFlags extends TransactionFlags {
    */
   public static final XChainModifyBridgeFlags CLEAR_ACCOUNT_CREATE_AMOUNT = new XChainModifyBridgeFlags(0x00010000);
 
+  /**
+   * Constant {@link XChainModifyBridgeFlags} for the {@code tfInnerBatchTxn} flag.
+   */
+  public static final XChainModifyBridgeFlags INNER_BATCH_TXN =
+    new XChainModifyBridgeFlags(TransactionFlags.INNER_BATCH_TXN.getValue());
+
   private XChainModifyBridgeFlags(long value) {
     super(value);
   }
@@ -40,16 +46,21 @@ public class XChainModifyBridgeFlags extends TransactionFlags {
     return new XChainModifyBridgeFlags(value);
   }
 
-  private static XChainModifyBridgeFlags of(boolean tfFullyCanonicalSig, boolean tfClearAccountCreateAmount) {
+  private static XChainModifyBridgeFlags of(
+    boolean tfFullyCanonicalSig,
+    boolean tfClearAccountCreateAmount,
+    boolean tfInnerBatchTxn
+  ) {
     return new XChainModifyBridgeFlags(of(
       tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-      tfClearAccountCreateAmount ? CLEAR_ACCOUNT_CREATE_AMOUNT : UNSET
+      tfClearAccountCreateAmount ? CLEAR_ACCOUNT_CREATE_AMOUNT : UNSET,
+      tfInnerBatchTxn ? INNER_BATCH_TXN : UNSET
     ).getValue());
   }
 
   /**
-   * Construct an empty instance of {@link XChainModifyBridgeFlags}. Transactions with empty flags will
-   * not be serialized with a {@code Flags} field.
+   * Construct an empty instance of {@link XChainModifyBridgeFlags}. Transactions with empty flags will not be
+   * serialized with a {@code Flags} field.
    *
    * @return An empty {@link XChainModifyBridgeFlags}.
    */
@@ -67,11 +78,21 @@ public class XChainModifyBridgeFlags extends TransactionFlags {
   }
 
   /**
+   * Whether the {@code tfInnerBatchTxn} flag is set.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(INNER_BATCH_TXN);
+  }
+
+  /**
    * A builder class for {@link XChainModifyBridgeFlags} flags.
    */
   public static class Builder {
 
     private boolean tfClearAccountCreateAmount = false;
+    private boolean tfInnerBatchTxn = false;
 
     /**
      * Set {@code tfClearAccountCreateAmount} to the given value.
@@ -86,12 +107,24 @@ public class XChainModifyBridgeFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfInnerBatchTxn} to the given value.
+     *
+     * @param tfInnerBatchTxn A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfInnerBatchTxn(boolean tfInnerBatchTxn) {
+      this.tfInnerBatchTxn = tfInnerBatchTxn;
+      return this;
+    }
+
+    /**
      * Build a new {@link XChainModifyBridgeFlags} from the current boolean values.
      *
      * @return A new {@link XChainModifyBridgeFlags}.
      */
     public XChainModifyBridgeFlags build() {
-      return XChainModifyBridgeFlags.of(true, tfClearAccountCreateAmount);
+      return XChainModifyBridgeFlags.of(true, tfClearAccountCreateAmount, tfInnerBatchTxn);
     }
   }
 }

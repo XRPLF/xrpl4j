@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.codec.binary.types;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
@@ -27,5 +28,10 @@ public class UInt192Type extends UIntType<UInt192Type> {
   @Override
   public UInt192Type fromJson(JsonNode node) {
     return new UInt192Type(UnsignedByteArray.fromHex(node.asText()));
+  }
+
+  @Override
+  public JsonNode toJson() {
+    return new TextNode(toHex());
   }
 }

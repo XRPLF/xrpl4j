@@ -56,7 +56,7 @@ public interface NfTokenMint extends Transaction {
    * multiple tokens. The implementation reserves taxon identifiers greater
    * than or equal to 2147483648 (0x80000000).
    *
-   * @return Taxon of type {@link int} associated with the Token.
+   * @return Taxon of type {@link UnsignedLong} associated with the Token.
    */
   @JsonProperty("NFTokenTaxon")
   UnsignedLong tokenTaxon();

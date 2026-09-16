@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.path;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.List;
 import java.util.Optional;
@@ -72,9 +73,9 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
    * {@link CurrencyAmount} that the destination account would receive in a transaction.
    *
    * <p>Special case: You can specify "-1" (for XRP) or provide "-1" as the contents of
-   * {@link org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount#value()} (for non-XRP currencies).
-   * This requests a path to deliver as much as possible, while spending no more than the amount specified in
-   * {@link #sendMax()} (if provided).
+   * {@link org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount#value()} (for non-XRP currencies). This requests a
+   * path to deliver as much as possible, while spending no more than the amount specified in {@link #sendMax()} (if
+   * provided).
    *
    * @return A {@link CurrencyAmount} denoting the destination amount.
    */
@@ -102,12 +103,21 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
   List<PathCurrency> sourceCurrencies();
 
   /**
-   * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
-   * numerical ledger index, or a shortcut value.
+   * The object ID of a PermissionedDomain object. If this field is included, then only valid paths for this domain will
+   * be returned.
+   *
+   * @return An optionally-present {@link Hash256}.
+   */
+  @JsonProperty("domain")
+  Optional<Hash256> domain();
+
+  /**
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
+   * or a shortcut value.
    *
    * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */
   @JsonUnwrapped
   LedgerSpecifier ledgerSpecifier();
-  
+
 }

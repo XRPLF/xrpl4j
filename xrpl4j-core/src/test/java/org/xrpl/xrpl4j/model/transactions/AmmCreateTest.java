@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -166,5 +168,56 @@ class AmmCreateTest extends AbstractJsonTest {
       "}";
 
     assertCanSerializeAndDeserialize(ammCreate, json);
+  }
+
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    AmmCreate ammCreate = AmmCreate.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency("TST")
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .value("25")
+          .build()
+      )
+      .amount2(XrpCurrencyAmount.ofDrops(250000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    assertThat(ammCreate.transactionFlags()).isEqualTo(ammCreate.flags());
+    assertThat(ammCreate.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    AmmCreate original = AmmCreate.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency("TST")
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .value("25")
+          .build()
+      )
+      .amount2(XrpCurrencyAmount.ofDrops(250000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    AmmCreate copied = AmmCreate.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
   }
 }

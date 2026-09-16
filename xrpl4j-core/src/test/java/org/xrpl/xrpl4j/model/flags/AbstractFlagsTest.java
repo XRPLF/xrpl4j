@@ -78,6 +78,15 @@ public class AbstractFlagsTest extends AbstractJsonTest {
     assertThat(deserialized).isEqualTo(object);
   }
 
+  protected void assertCanSerializeAndDeserialize(BatchFlagsWrapper object, String json)
+    throws JsonProcessingException, JSONException {
+    String serialized = objectMapper.writeValueAsString(object);
+    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+
+    BatchFlagsWrapper deserialized = objectMapper.readValue(serialized, BatchFlagsWrapper.class);
+    assertThat(deserialized).isEqualTo(object);
+  }
+
   @Value.Immutable
   @JsonSerialize(as = ImmutableFlagsWrapper.class)
   @JsonDeserialize(as = ImmutableFlagsWrapper.class)
@@ -102,6 +111,21 @@ public class AbstractFlagsTest extends AbstractJsonTest {
     @Value.Default
     default TransactionFlags flags() {
       return TransactionFlags.EMPTY;
+    }
+  }
+
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableBatchFlagsWrapper.class)
+  @JsonDeserialize(as = ImmutableBatchFlagsWrapper.class)
+  interface BatchFlagsWrapper {
+
+    static BatchFlagsWrapper of(BatchFlags flags) {
+      return ImmutableBatchFlagsWrapper.builder().flags(flags).build();
+    }
+
+    @Value.Default
+    default BatchFlags flags() {
+      return BatchFlags.EMPTY;
     }
   }
 }

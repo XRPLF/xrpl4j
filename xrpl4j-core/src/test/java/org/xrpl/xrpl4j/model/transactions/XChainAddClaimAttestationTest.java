@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -275,5 +277,28 @@ class XChainAddClaimAttestationTest extends AbstractJsonTest {
       "      }";
 
     assertCanSerializeAndDeserialize(attestation, json);
+  }
+
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    XChainAddClaimAttestation attestation = baseBuilder()
+      .wasLockingChainSend(false)
+      .build();
+
+    assertThat(attestation.transactionFlags()).isEqualTo(attestation.flags());
+    assertThat(attestation.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    XChainAddClaimAttestation original = baseBuilder()
+      .wasLockingChainSend(false)
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    XChainAddClaimAttestation copied = XChainAddClaimAttestation.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
   }
 }

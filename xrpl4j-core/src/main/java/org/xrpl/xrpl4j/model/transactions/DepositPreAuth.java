@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,14 +25,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Derived;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 /**
- * A {@link DepositPreAuth} transaction gives another account pre-approval to deliver payments to the sender of
- * this transaction. This is only useful if the sender of this transaction is using (or plans to use)
+ * A {@link DepositPreAuth} transaction gives another account pre-approval to deliver payments to the sender of this
+ * transaction. This is only useful if the sender of this transaction is using (or plans to use)
  * <a href="https://xrpl.org/depositauth.html">Deposit Authorization</a>.
  *
  * <p>You can use this transaction to preauthorize certain counterparties before you enable Deposit Authorization.
@@ -53,8 +54,8 @@ public interface DepositPreAuth extends Transaction {
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link DepositPreAuth}, which only allows the
-   * {@code tfFullyCanonicalSig} flag, which is deprecated.
+   * Set of {@link TransactionFlags}s for this {@link DepositPreAuth}, which only allows the {@code tfFullyCanonicalSig}
+   * flag, which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
@@ -84,13 +85,86 @@ public interface DepositPreAuth extends Transaction {
   Optional<Address> unauthorize();
 
   /**
-   * Validate that either {@link DepositPreAuth#authorize()} or {@link DepositPreAuth#unauthorize()} is present,
-   * but not both.
+   * The {@link CredentialWrapper}'s to preauthorize.
+   *
+   * @return A list of type {@link CredentialWrapper} to preauthorize.
+   */
+  @JsonProperty("AuthorizeCredentials")
+  List<CredentialWrapper> authorizeCredentials();
+
+  /**
+   * The {@link CredentialWrapper}'s whose preauthorization should be revoked.
+   *
+   * @return A list of type {@link CredentialWrapper} to unauthorize.
+   */
+  @JsonProperty("UnauthorizeCredentials")
+  List<CredentialWrapper> unauthorizeCredentials();
+
+  /**
+   * Validate that exactly one of {@link DepositPreAuth#authorize()} or {@link DepositPreAuth#unauthorize()} or
+   * {@link DepositPreAuth#authorizeCredentials()} or {@link DepositPreAuth#unauthorizeCredentials()} is present.
    */
   @Value.Check
-  default void validateFieldPresence() {
-    Preconditions.checkArgument((authorize().isPresent() || unauthorize().isPresent()) &&
-        !(authorize().isPresent() && unauthorize().isPresent()),
-      "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both.");
+  default void validateExactOneFieldPresence() {
+    int fieldsPresent = 0;
+    if (authorize().isPresent()) {
+      fieldsPresent++;
+    }
+    if (unauthorize().isPresent()) {
+      fieldsPresent++;
+    }
+    if (!authorizeCredentials().isEmpty()) {
+      fieldsPresent++;
+    }
+    if (!unauthorizeCredentials().isEmpty()) {
+      fieldsPresent++;
+    }
+
+    Preconditions.checkArgument(fieldsPresent == 1,
+      "Exactly one of Authorize, Unauthorize, AuthorizeCredentials, or UnauthorizeCredentials must be present.");
+  }
+
+  /**
+   * Validate {@link DepositPreAuth#authorizeCredentials()} and {@link DepositPreAuth#unauthorizeCredentials()} has less
+   * than or equal to 8 credentials.
+   */
+  @Value.Check
+  default void validateCredentialList() {
+    if (!authorizeCredentials().isEmpty()) {
+      Preconditions.checkArgument(
+        authorizeCredentials().size() <= 8,
+        "AuthorizeCredentials should have less than or equal to 8 credentials."
+      );
+    }
+
+    if (!unauthorizeCredentials().isEmpty()) {
+      Preconditions.checkArgument(
+        unauthorizeCredentials().size() <= 8,
+        "UnauthorizeCredentials should have less than or equal to 8 credentials."
+      );
+    }
+  }
+
+  /**
+   * Validate {@link DepositPreAuth#authorizeCredentials()} and {@link DepositPreAuth#unauthorizeCredentials()} has
+   * unique credentials each.
+   */
+  @Value.Check
+  default void validateForUniqueValues() {
+    if (!authorizeCredentials().isEmpty()) {
+      final List<CredentialWrapper> credentials = authorizeCredentials();
+      Preconditions.checkArgument(
+        new HashSet<>(credentials).size() == credentials.size(),
+        "AuthorizeCredentials should have unique credentials."
+      );
+    }
+
+    if (!unauthorizeCredentials().isEmpty()) {
+      final List<CredentialWrapper> credentials = unauthorizeCredentials();
+      Preconditions.checkArgument(
+        new HashSet<>(credentials).size() == credentials.size(),
+        "UnauthorizeCredentials should have unique credentials."
+      );
+    }
   }
 }

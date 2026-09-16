@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 public class OfferCreateFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(4);
+    return getBooleanCombinations(6);
   }
 
   @ParameterizedTest
@@ -43,17 +43,21 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
     boolean tfPassive,
     boolean tfImmediateOrCancel,
     boolean tfFillOrKill,
-    boolean tfSell
+    boolean tfSell,
+    boolean tfHybrid,
+    boolean tfInnerBatchTxn
   ) {
     OfferCreateFlags flags = OfferCreateFlags.builder()
       .tfPassive(tfPassive)
       .tfImmediateOrCancel(tfImmediateOrCancel)
       .tfFillOrKill(tfFillOrKill)
       .tfSell(tfSell)
+      .tfHybrid(tfHybrid)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
     assertThat(flags.getValue())
-      .isEqualTo(getExpectedFlags(tfPassive, tfImmediateOrCancel, tfFillOrKill, tfSell));
+      .isEqualTo(getExpectedFlags(tfPassive, tfImmediateOrCancel, tfFillOrKill, tfSell, tfHybrid, tfInnerBatchTxn));
   }
 
   @ParameterizedTest
@@ -62,9 +66,13 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
     boolean tfPassive,
     boolean tfImmediateOrCancel,
     boolean tfFillOrKill,
-    boolean tfSell
+    boolean tfSell,
+    boolean tfHybrid,
+    boolean tfInnerBatchTxn
   ) {
-    long expectedFlags = getExpectedFlags(tfPassive, tfImmediateOrCancel, tfFillOrKill, tfSell);
+    long expectedFlags = getExpectedFlags(
+      tfPassive, tfImmediateOrCancel, tfFillOrKill, tfSell, tfHybrid, tfInnerBatchTxn
+    );
     OfferCreateFlags flags = OfferCreateFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
@@ -73,6 +81,8 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfImmediateOrCancel()).isEqualTo(tfImmediateOrCancel);
     assertThat(flags.tfFillOrKill()).isEqualTo(tfFillOrKill);
     assertThat(flags.tfSell()).isEqualTo(tfSell);
+    assertThat(flags.tfHybrid()).isEqualTo(tfHybrid);
+    assertThat(flags.tfInnerBatchTxn()).isEqualTo(tfInnerBatchTxn);
   }
 
   @Test
@@ -85,6 +95,8 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfFillOrKill()).isFalse();
     assertThat(flags.tfSell()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.tfHybrid()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
     assertThat(flags.getValue()).isEqualTo(0L);
   }
 
@@ -94,20 +106,23 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
     boolean tfPassive,
     boolean tfImmediateOrCancel,
     boolean tfFillOrKill,
-    boolean tfSell
+    boolean tfSell,
+    boolean tfHybrid,
+    boolean tfInnerBatchTxn
   ) throws JSONException, JsonProcessingException {
     OfferCreateFlags flags = OfferCreateFlags.builder()
       .tfPassive(tfPassive)
       .tfImmediateOrCancel(tfImmediateOrCancel)
       .tfFillOrKill(tfFillOrKill)
       .tfSell(tfSell)
+      .tfHybrid(tfHybrid)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
-    String json = String.format("{\n" +
-      "               \"flags\": %s\n" +
+    String json = String.format("{" +
+      "  \"flags\": %s" +
       "}", flags.getValue());
-
 
     assertCanSerializeAndDeserialize(wrapper, json);
   }
@@ -116,22 +131,39 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
   void testEmptyJson() throws JSONException, JsonProcessingException {
     OfferCreateFlags flags = OfferCreateFlags.empty();
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
-    String json = "{\n" +
+    String json = "{" +
       "}";
 
     assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testInnerBatchTxn() {
+    OfferCreateFlags flags = OfferCreateFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfPassive()).isFalse();
+    assertThat(flags.tfImmediateOrCancel()).isFalse();
+    assertThat(flags.tfFillOrKill()).isFalse();
+    assertThat(flags.tfSell()).isFalse();
+    assertThat(flags.tfHybrid()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
   }
 
   private long getExpectedFlags(
     boolean tfPassive,
     boolean tfImmediateOrCancel,
     boolean tfFillOrKill,
-    boolean tfSell
+    boolean tfSell,
+    boolean tfHybrid,
+    boolean tfInnerBatchTxn
   ) {
     return (OfferCreateFlags.FULLY_CANONICAL_SIG.getValue()) |
       (tfPassive ? OfferCreateFlags.PASSIVE.getValue() : 0L) |
       (tfImmediateOrCancel ? OfferCreateFlags.IMMEDIATE_OR_CANCEL.getValue() : 0L) |
       (tfFillOrKill ? OfferCreateFlags.FILL_OR_KILL.getValue() : 0L) |
-      (tfSell ? OfferCreateFlags.SELL.getValue() : 0L);
+      (tfSell ? OfferCreateFlags.SELL.getValue() : 0L) |
+      (tfHybrid ? OfferCreateFlags.HYBRID.getValue() : 0L) |
+      (tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN.getValue() : 0L);
   }
 }

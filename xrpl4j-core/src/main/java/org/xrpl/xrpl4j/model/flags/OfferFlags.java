@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,6 +36,11 @@ public class OfferFlags extends Flags {
    * Constant {@link OfferFlags} for the {@code lsfSell} flag.
    */
   protected static final OfferFlags SELL = new OfferFlags(0x00020000);
+
+  /**
+   * Constant {@link OfferFlags} for the {@code lsfHybrid} flag.
+   */
+  protected static final OfferFlags HYBRID = new OfferFlags(0x00040000);
 
   private OfferFlags(long value) {
     super(value);
@@ -62,12 +67,21 @@ public class OfferFlags extends Flags {
   }
 
   /**
-   * The object was placed as a sell offer. This has no effect on the object in the ledger (because tfSell only
-   * matters if you get a better rate than you asked for, which cannot happen after the object enters the ledger).
+   * The object was placed as a sell offer. This has no effect on the object in the ledger (because tfSell only matters
+   * if you get a better rate than you asked for, which cannot happen after the object enters the ledger).
    *
    * @return {@code true} if {@code lsfSell} is set, otherwise {@code false}.
    */
   public boolean lsfSell() {
     return this.isSet(SELL);
+  }
+
+  /**
+   * Indicates the offer is hybrid. (meaning it is part of both a domain and open order book).
+   *
+   * @return {@code true} if {@code lsfHybrid} is set, otherwise {@code false}.
+   */
+  public boolean lsfHybrid() {
+    return this.isSet(HYBRID);
   }
 }

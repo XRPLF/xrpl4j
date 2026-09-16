@@ -31,6 +31,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
@@ -40,6 +41,10 @@ import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialUriDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialUriSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDataDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDataSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentDeserializer;
@@ -48,6 +53,10 @@ import org.xrpl.xrpl4j.model.jackson.modules.DidUriDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidUriSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Deserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Serializer;
+import org.xrpl.xrpl4j.model.jackson.modules.LoanBrokerDataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.LoanBrokerDataSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.LoanDataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.LoanDataSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdDeserializer;
@@ -69,6 +78,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.VaultDataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.VaultDataSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XChainClaimIdDeserializer;
@@ -143,6 +154,13 @@ public class Wrappers {
   @JsonDeserialize(as = Hash256.class, using = Hash256Deserializer.class)
   abstract static class _Hash256 extends Wrapper<String> implements Serializable {
 
+    /**
+     * A {@link Hash256} containing all zeros.
+     */
+    static final Hash256 ZERO = Hash256.of(
+      "0000000000000000000000000000000000000000000000000000000000000000"
+    );
+
     @Override
     public String toString() {
       return this.value();
@@ -158,11 +176,9 @@ public class Wrappers {
 
     @Override
     public boolean equals(Object obj) {
-      if (obj != null && obj instanceof Hash256) {
-        String otherValue = ((Hash256) obj).value();
-        if (otherValue != null) {
-          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
-        }
+      if (obj instanceof Hash256) {
+        String otherValue = ((Hash256) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;
     }
@@ -196,6 +212,12 @@ public class Wrappers {
      */
     public static XrpCurrencyAmount ofDrops(final long drops) {
       if (drops < 0) {
+        if (drops == Long.MIN_VALUE) {
+          throw new IllegalArgumentException(
+            "drops value of Long.MIN_VALUE is not supported because Math.abs(Long.MIN_VALUE) overflows to " +
+              "Long.MIN_VALUE"
+          );
+        }
         // Normalize the drops value to be a positive number; indicate negativity via property.
         return ofDrops(UnsignedLong.valueOf(Math.abs(drops)), true);
       } else {
@@ -274,7 +296,7 @@ public class Wrappers {
      *
      * <p>Note that the use of the `@Default` annotation and the default implementation are suitable for a few
      * reasons. First, deserialization will parse the payload properly, setting this value correctly (despite this
-     * default settings). Second, using a default value here will not break legacy code that is using a builder to
+     * default annotation). Second, using a default value here will not break legacy code that uses a builder to
      * construct an {@link XrpCurrencyAmount} correctly (i.e., we assume that no developer is constructing a negative
      * XRP amount because the {@link UnsignedLong} precondition in any legacy code would not allow them to do such a
      * thing without throwing an exception). Finally, due to the way this class merely adds new static builders to
@@ -289,6 +311,16 @@ public class Wrappers {
     // any software using the JSON variant of an XrpCurrencyAmount will have this information available.
     public boolean isNegative() {
       return false;
+    }
+
+    /**
+     * Indicates whether this amount is zero.
+     *
+     * @return {@code true} if this amount is zero; {@code false} otherwise.
+     */
+    @Override
+    public boolean isZero() {
+      return value().equals(UnsignedLong.ZERO);
     }
 
     /**
@@ -315,6 +347,9 @@ public class Wrappers {
      * @return The sum of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount plus(XrpCurrencyAmount other) {
+      Objects.requireNonNull(other);
+      assert other.value() != null; // <-- Should never happen due to Immutables
+
       // Convert each value to a long (positive or negative works)
       long result =
         (this.value().longValue() * (this.isNegative() ? -1 : 1)) +
@@ -330,6 +365,9 @@ public class Wrappers {
      * @return The difference of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount minus(XrpCurrencyAmount other) {
+      Objects.requireNonNull(other);
+      assert other.value() != null; // <-- Should never happen due to Immutables
+
       // Convert each value to a long (positive or negative works)
       long result =
         (this.value().longValue() * (this.isNegative() ? -1 : 1)) -
@@ -344,16 +382,33 @@ public class Wrappers {
      *
      * @return The product of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
-    public XrpCurrencyAmount times(XrpCurrencyAmount other) {
+    public XrpCurrencyAmount times(final XrpCurrencyAmount other) {
+      Objects.requireNonNull(other);
+      assert other.value() != null; // <-- Should never happen due to Immutables
+
       return XrpCurrencyAmount.ofDrops(
         this.value().times(other.value()),
-        this.isNegative() || other.isNegative()
+        this.isNegative() ^ other.isNegative()
       );
     }
 
     @Override
     public String toString() {
       return String.format("%s%s", isNegative() ? "-" : "", this.value().toString());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof XrpCurrencyAmount) {
+        XrpCurrencyAmount other = (XrpCurrencyAmount) obj; // <-- Can't be null due to Immutables
+        return this.value().equals(other.value()) && this.isNegative() == other.isNegative();
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(this.value(), this.isNegative());
     }
 
     /**
@@ -409,13 +464,16 @@ public class Wrappers {
 
     @Override
     public boolean equals(Object obj) {
-      if (obj != null && obj instanceof NfTokenId) {
-        String otherValue = ((NfTokenId) obj).value();
-        if (otherValue != null) {
-          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
-        }
+      if (obj instanceof NfTokenId) {
+        String otherValue = ((NfTokenId) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
     }
   }
 
@@ -441,11 +499,9 @@ public class Wrappers {
 
     @Override
     public boolean equals(Object obj) {
-      if (obj != null && obj instanceof NfTokenUri) {
-        String otherValue = ((NfTokenUri) obj).value();
-        if (otherValue != null) {
-          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
-        }
+      if (obj instanceof NfTokenUri) {
+        String otherValue = ((NfTokenUri) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;
     }
@@ -761,7 +817,6 @@ public class Wrappers {
     public String toString() {
       return this.value();
     }
-
   }
 
   /**
@@ -805,6 +860,11 @@ public class Wrappers {
   @Beta
   abstract static class _MpTokenNumericAmount extends Wrapper<UnsignedLong> implements Serializable {
 
+    /**
+     * The maximum allowable value for an MPT amount.
+     */
+    static final UnsignedLong MAX_AMOUNT = UnsignedLong.valueOf(0x7FFF_FFFF_FFFF_FFFFL);
+
     public static MpTokenNumericAmount of(long amount) {
       return MpTokenNumericAmount.of(UnsignedLong.valueOf(amount));
     }
@@ -823,18 +883,67 @@ public class Wrappers {
   @Beta
   abstract static class _MpTokenIssuanceId extends Wrapper<String> implements Serializable {
 
+    /** An MPTokenIssuanceID is a 4-byte sequence (8 hex chars) followed by the 20-byte issuer AccountID. */
+    private static final int SEQUENCE_HEX_LENGTH = 8;
+
+    /** A well-formed MPTokenIssuanceID is 24 bytes: a 4-byte sequence plus the 20-byte issuer AccountID. */
+    private static final int ISSUANCE_ID_HEX_LENGTH = 48;
+
     // TODO: Do clients ever need to construct an issuance id given a sequence and issuer AccountID?
+    // See https://github.com/XRPLF/xrpl4j/issues/657
+
+    @Value.Check
+    void check() {
+      Preconditions.checkArgument(!this.value().isEmpty(), "MpTokenIssuanceId must not be empty.");
+    }
+
+    /**
+     * Whether {@code account} is the issuer encoded in this issuance ID.
+     *
+     * <p>An MPTokenIssuanceID is a 4-byte sequence followed by the 20-byte issuer AccountID, so the issuer is its
+     * last 40 hex characters — the same derivation {@code rippled} uses ({@code MPTIssue::getIssuer}). The comparison
+     * is on decoded AccountIDs. Returns {@code false} (rather than throwing) for a malformed issuance ID that is not
+     * 48 hex characters long, leaving that to other validation.</p>
+     *
+     * @param account The {@link Address} to test against this issuance ID's issuer.
+     *
+     * @return {@code true} if {@code account} decodes to the issuer AccountID in this issuance ID.
+     */
+    public boolean isIssuer(final Address account) {
+      Objects.requireNonNull(account);
+      final String id = this.value();
+      if (id.length() != ISSUANCE_ID_HEX_LENGTH) {
+        return false;
+      }
+      final String issuerAccountIdHex = id.substring(SEQUENCE_HEX_LENGTH).toUpperCase(Locale.ENGLISH);
+      final String accountIdHex =
+        AddressCodec.getInstance().decodeAccountId(account).hexValue().toUpperCase(Locale.ENGLISH);
+      return accountIdHex.equals(issuerAccountIdHex);
+    }
 
     @Override
     public String toString() {
       return this.value();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof MpTokenIssuanceId) {
+        String otherValue = ((MpTokenIssuanceId) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
   }
 
   /**
-   * Wrapped String representing MPT metadata. This wrapper class may prove useful in the future if we ever
-   * want to encapsulate various MPTokenMetadata standard formats.
+   * Wrapped String representing MPT metadata. This wrapper class may prove useful in the future if we ever want to
+   * encapsulate various MPTokenMetadata standard formats.
    */
   @Value.Immutable
   @Wrapped
@@ -849,4 +958,290 @@ public class Wrappers {
     }
 
   }
+
+  /**
+   * Base class for hex-encoded metadata wrappers with length validation.
+   * Provides shared validation, equality, and string handling for metadata types.
+   * Subclasses must override {@link #maxBytes()} to specify their size limit.
+   */
+  abstract static class Metadata extends Wrapper<String> implements Serializable {
+
+    /**
+     * Maximum allowed size in bytes.
+     *
+     * @return The maximum number of bytes allowed.
+     */
+    protected abstract UnsignedInteger maxBytes();
+
+    /**
+     * Validates that the value is not empty and does not exceed the maximum byte length.
+     */
+    @Value.Check
+    public void validateLength() {
+      String typeName = getClass().getSimpleName();
+      final int maxHexLength = maxBytes().times(UnsignedInteger.valueOf(2)).intValue();
+
+      Preconditions.checkArgument(!this.value().isEmpty(), "%s must not be empty.", typeName);
+      Preconditions.checkArgument(
+        this.value().length() <= maxHexLength,
+        "%s must be <= %s bytes or <= %s hex characters.", typeName, maxBytes(), maxHexLength);
+    }
+
+    /**
+     * Validates that the value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      String typeName = getClass().getSimpleName();
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException(typeName + " must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj != null && this.getClass() == obj.getClass()) {
+        String otherValue = ((Metadata) obj).value();
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing vault metadata in hex format, limited to 256 bytes.
+   *
+   * <p>This class will be marked Beta until the SingleAssetVault amendment is enabled on mainnet. Its API is
+   * subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = VaultData.class, using = VaultDataSerializer.class)
+  @JsonDeserialize(as = VaultData.class, using = VaultDataDeserializer.class)
+  @Beta
+  abstract static class _VaultData extends Metadata {
+
+    @Override
+    protected UnsignedInteger maxBytes() {
+      return UnsignedInteger.valueOf(256);
+    }
+
+    /**
+     * Constructs a {@link VaultData} from a plaintext string by hex-encoding it.
+     *
+     * @param plaintext A string value representing the vault data in plaintext.
+     *
+     * @return A {@link VaultData} of hex-encoded plaintext.
+     */
+    public static VaultData ofPlainText(String plaintext) {
+      return VaultData.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing loan broker metadata in hex format, limited to 256 bytes.
+   *
+   * <p>This class will be marked Beta until the LendingProtocol amendment is enabled on mainnet. Its API is
+   * subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = LoanBrokerData.class, using = LoanBrokerDataSerializer.class)
+  @JsonDeserialize(as = LoanBrokerData.class, using = LoanBrokerDataDeserializer.class)
+  @Beta
+  abstract static class _LoanBrokerData extends Metadata {
+
+    @Override
+    protected UnsignedInteger maxBytes() {
+      return UnsignedInteger.valueOf(256);
+    }
+
+    /**
+     * Constructs a {@link LoanBrokerData} from a plaintext string by hex-encoding it.
+     *
+     * @param plaintext A string value representing the loan broker data in plaintext.
+     *
+     * @return A {@link LoanBrokerData} of hex-encoded plaintext.
+     */
+    public static LoanBrokerData ofPlainText(String plaintext) {
+      return LoanBrokerData.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing loan metadata in hex format, limited to 256 bytes.
+   *
+   * <p>This class will be marked Beta until the LendingProtocol amendment is enabled on mainnet. Its API is
+   * subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = LoanData.class, using = LoanDataSerializer.class)
+  @JsonDeserialize(as = LoanData.class, using = LoanDataDeserializer.class)
+  @Beta
+  abstract static class _LoanData extends Metadata {
+
+    @Override
+    protected UnsignedInteger maxBytes() {
+      return UnsignedInteger.valueOf(256);
+    }
+
+    /**
+     * Constructs a {@link LoanData} from a plaintext string by hex-encoding it.
+     *
+     * @param plaintext A string value representing the loan data in plaintext.
+     *
+     * @return A {@link LoanData} of hex-encoded plaintext.
+     */
+    public static LoanData ofPlainText(String plaintext) {
+      return LoanData.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing a Credential Type.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = CredentialType.class, using = CredentialTypeSerializer.class)
+  @JsonDeserialize(as = CredentialType.class, using = CredentialTypeDeserializer.class)
+  @Beta
+  abstract static class _CredentialType extends Wrapper<String> implements Serializable {
+
+    /**
+     * Constructs an {@link CredentialType} using a String value.
+     *
+     * @param plaintext A string value representing the Credential Type in plaintext.
+     *
+     * @return A {@link CredentialType} of plaintext.
+     */
+    public static CredentialType ofPlainText(String plaintext) {
+      return CredentialType.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * Validates that a {@link CredentialType}'s value's length is capped at 128 characters.
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(!this.value().isEmpty(), "CredentialType must not be empty.");
+      Preconditions.checkArgument(
+        this.value().length() <= 128,
+        "CredentialType must be <= 64 characters or <= 128 hex characters.");
+    }
+
+    /**
+     * Validates that a {@link CredentialType}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("CredentialType must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof CredentialType) {
+        String otherValue = ((CredentialType) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing a Credential Uri.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = CredentialUri.class, using = CredentialUriSerializer.class)
+  @JsonDeserialize(as = CredentialUri.class, using = CredentialUriDeserializer.class)
+  @Beta
+  abstract static class _CredentialUri extends Wrapper<String> implements Serializable {
+
+    /**
+     * Constructs an {@link CredentialUri} using a String value.
+     *
+     * @param plaintext A string value representing the Uri in plaintext.
+     *
+     * @return An {@link CredentialUri} of plaintext.
+     */
+    public static CredentialUri ofPlainText(String plaintext) {
+      return CredentialUri.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * Validates that a {@link CredentialUri}'s value's length is capped at 512 characters.
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(!this.value().isEmpty(), "CredentialUri must not be empty.");
+      Preconditions.checkArgument(this.value().length() <= 512,
+        "CredentialUri must be <= 256 characters or <= 512 hex characters." +
+          "hex characters.");
+    }
+
+    /**
+     * Validates that a {@link CredentialUri}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("CredentialUri must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof CredentialUri) {
+        String otherValue = ((CredentialUri) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+
+  }
+
 }

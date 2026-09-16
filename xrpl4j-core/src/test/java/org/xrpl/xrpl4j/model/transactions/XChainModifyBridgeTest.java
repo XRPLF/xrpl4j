@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -154,6 +155,37 @@ class XChainModifyBridgeTest extends AbstractJsonTest {
       "}", ED_PUBLIC_KEY.base16Value());
 
     assertCanSerializeAndDeserialize(modify, json);
+  }
+
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    XChainModifyBridge modify = baseBuilder().build();
+
+    assertThat(modify.transactionFlags()).isEqualTo(modify.flags());
+    assertThat(modify.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void transactionFlagsReturnsCorrectFlagsWhenSet() {
+    XChainModifyBridge modify = baseBuilder()
+      .flags(XChainModifyBridgeFlags.CLEAR_ACCOUNT_CREATE_AMOUNT)
+      .build();
+
+    assertThat(modify.transactionFlags()).isEqualTo(modify.flags());
+    assertThat(((XChainModifyBridgeFlags) modify.transactionFlags()).tfClearAccountCreateAmount()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    XChainModifyBridge original = baseBuilder()
+      .flags(XChainModifyBridgeFlags.CLEAR_ACCOUNT_CREATE_AMOUNT)
+      .build();
+
+    XChainModifyBridge copied = XChainModifyBridge.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+    assertThat(((XChainModifyBridgeFlags) copied.transactionFlags()).tfClearAccountCreateAmount()).isTrue();
   }
 
   private ImmutableXChainModifyBridge.Builder baseBuilder() {

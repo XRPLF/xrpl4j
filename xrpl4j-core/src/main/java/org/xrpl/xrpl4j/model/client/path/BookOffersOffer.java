@@ -8,12 +8,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.OfferFlags;
+import org.xrpl.xrpl4j.model.ledger.BookWrapper;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -218,4 +220,21 @@ public interface BookOffersOffer {
   default BigDecimal quality() {
     return new BigDecimal(qualityString());
   }
+
+  /**
+   * The permissioned domain that the offer is part of.
+   *
+   * @return A {@link Hash256} representing DomainID.
+   */
+  @JsonProperty("DomainID")
+  Optional<Hash256> domainId();
+
+  /**
+   * An additional list of order book directories that this offer belongs to. Currently, this field only applicable to
+   * hybrid offers.
+   *
+   * @return A list of {@link BookWrapper} representing order book directories.
+   */
+  @JsonProperty("AdditionalBooks")
+  List<BookWrapper> additionalBooks();
 }

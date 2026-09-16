@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.ledger;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,27 +23,33 @@ package org.xrpl.xrpl4j.model.ledger;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.Condition;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Optional;
 
 /**
- * Represents a held payment of XRP waiting to be executed or canceled. An {@link EscrowCreate} transaction creates an
- * {@link EscrowObject} in the ledger. A successful {@link EscrowFinish} or {@link EscrowCancel} transaction deletes the
- * object. If the {@link EscrowObject} has a crypto-condition, the payment can only succeed if an {@link EscrowFinish}
+ * Represents a held payment of XRP, IOU tokens, or MPT tokens waiting to be executed or canceled. An
+ * {@link EscrowCreate} transaction creates an {@link EscrowObject} in the ledger. A successful {@link EscrowFinish} or
+ * {@link EscrowCancel} transaction deletes the object.
+ *
+ * <p>If the {@link EscrowObject} has a crypto-condition, the payment can only succeed if an {@link EscrowFinish}
  * transaction provides the corresponding fulfillment that satisfies the condition (the only supported crypto-condition
  * type is PREIMAGE-SHA-256). If the {@link EscrowObject} has a {@link EscrowObject#finishAfter()} time, the held
  * payment can only execute after that time.
+ *
+ * <p>With the TokenEscrow amendment, escrows can hold IOU tokens (trustline-based) or MPT tokens (Multi-Purpose
+ * Tokens) in addition to XRP. The transfer rate or transfer fee is locked at escrow creation time.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableEscrowObject.class)
@@ -71,8 +77,8 @@ public interface EscrowObject extends LedgerObject {
   }
 
   /**
-   * The {@link Address} of the owner (sender) of this held payment. This is the account that provided the XRP, and gets
-   * it back if the held payment is canceled.
+   * The {@link Address} of the owner (sender) of this held payment. This is the account that provided the tokens, and
+   * gets them back if the held payment is canceled.
    *
    * @return The {@link Address} of the owner of this escrow.
    */
@@ -80,7 +86,7 @@ public interface EscrowObject extends LedgerObject {
   Address account();
 
   /**
-   * The destination {@link Address} where the XRP is paid if the held payment is successful.
+   * The destination {@link Address} where the tokens are paid if the held payment is successful.
    *
    * @return The {@link Address} of the destination of this escrow.
    */
@@ -88,19 +94,55 @@ public interface EscrowObject extends LedgerObject {
   Address destination();
 
   /**
-   * The amount of XRP, in drops, to be delivered by the held payment.
+   * The number of tokens to be delivered by the held payment.
    *
-   * @return A {@link XrpCurrencyAmount} denoting the amount.
+   * <p>Can be one of:
+   * <ul>
+   *   <li>{@link org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount} - XRP in drops</li>
+   *   <li>{@link org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount} - IOU tokens</li>
+   *   <li>{@link org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount} - MPT tokens</li>
+   * </ul>
+   *
+   * @return A {@link CurrencyAmount} denoting the amount.
    */
   @JsonProperty("Amount")
-  XrpCurrencyAmount amount();
+  CurrencyAmount amount();
+
+  /**
+   * The transfer rate or transfer fee locked at escrow creation time. This field is present only for IOU or MPT escrows
+   * (not XRP escrows).
+   *
+   * <p>For IOU tokens, this represents the transfer rate (in billionths of a unit) from the issuer's
+   * {@code TransferRate} setting at the time of escrow creation. For MPT tokens, this represents the transfer fee (in
+   * ten-thousandths of a basis point) from the MPT issuance's {@code TransferFee} setting at the time of escrow
+   * creation.
+   *
+   * <p>This value is used during {@link org.xrpl.xrpl4j.model.transactions.EscrowFinish} to apply the correct fee,
+   * even if the issuer changes their transfer rate/fee after the escrow was created.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} representing the locked transfer rate or fee.
+   */
+  @JsonProperty("TransferRate")
+  Optional<UnsignedInteger> transferRate();
+
+  /**
+   * A hint indicating which page of the issuer's owner directory links to this object, in case the directory consists
+   * of multiple pages. This field is present only when the issuer is neither the source nor the destination of the
+   * escrow (i.e., for IOU or MPT escrows where a third-party issuer is involved).
+   *
+   * @return An {@link Optional} of type {@link String} containing the issuer node hint.
+   */
+  @JsonProperty("IssuerNode")
+  Optional<String> issuerNode();
+
 
   /**
    * A PREIMAGE-SHA-256 crypto-condition in DER hexadecimal encoding. If present, the
-   * {@link org.xrpl.xrpl4j.model.transactions.EscrowFinish} transaction
-   * must contain a fulfillment that satisfies this condition.
+   * {@link org.xrpl.xrpl4j.model.transactions.EscrowFinish} transaction must contain a fulfillment that satisfies this
+   * condition.
    *
    * @return An {@link Optional} of type {@link Condition} containing the escrow condition.
+   *
    * @see "https://tools.ietf.org/html/draft-thomas-crypto-conditions-04#section-8.1"
    */
   @JsonProperty("Condition")
@@ -120,8 +162,8 @@ public interface EscrowObject extends LedgerObject {
   /**
    * The time, in <a href="https://xrpl.org/basic-data-types.html#specifying-time">seconds since the Ripple Epoch</a>,
    * after which this held payment can be finished. Any {@link org.xrpl.xrpl4j.model.transactions.EscrowFinish}
-   * transaction before this time fails.
-   * (Specifically, this is compared with the close time of the previous validated ledger.)
+   * transaction before this time fails. (Specifically, this is compared with the close time of the previous validated
+   * ledger.)
    *
    * @return An {@link Optional} of type {@link UnsignedLong} representing the finish after time.
    */
@@ -195,6 +237,19 @@ public interface EscrowObject extends LedgerObject {
    */
   @JsonProperty("PreviousTxnLgrSeq")
   Optional<UnsignedInteger> previousTransactionLedgerSequence();
+
+  /**
+   * The account that is sponsoring the reserve for this Escrow object. If present, the sponsor is responsible
+   * for the reserve requirement of this object instead of the owner.
+   *
+   * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   *
+   * @return An optionally-present {@link Address} of the sponsoring account.
+   */
+  @Beta
+  @JsonProperty("Sponsor")
+  Optional<Address> sponsor();
 
   /**
    * The unique ID of this {@link EscrowObject}.

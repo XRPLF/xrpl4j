@@ -13,18 +13,25 @@ import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.BridgeObject;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
+import org.xrpl.xrpl4j.model.ledger.CredentialObject;
+import org.xrpl.xrpl4j.model.ledger.DelegateObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.DidObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.LoanBrokerObject;
+import org.xrpl.xrpl4j.model.ledger.LoanObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.OracleObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
+import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
+import org.xrpl.xrpl4j.model.ledger.SponsorshipObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
+import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
@@ -200,6 +207,31 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   }
 
   /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link CredentialObject} ledger entry.
+   *
+   * <p>Note that although the rippled API allows you to specify either the Credential's ID
+   * or the [subject, issuer and credential_type] of the transaction that created the Credential, this class does not
+   * allow developers to request a {@link CredentialObject} by ID via this method. Instead, developers should use
+   * {@link LedgerEntryRequestParams#index()} and specify {@link CredentialObject} as the {@code ledgerObjectClass}
+   * parameter.</p>
+   *
+   * @param params          The {@link CredentialLedgerEntryParams} that uniquely identify the {@link CredentialObject}
+   *                        on ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link CredentialObject}.
+   */
+  static LedgerEntryRequestParams<CredentialObject> credential(
+    CredentialLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<CredentialObject>builder()
+      .credential(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
    * Construct a {@link LedgerEntryRequestParams} that requests a {@link EscrowObject} ledger entry.
    *
    * <p>Note that although the rippled API allows you to specify either the Escrow's ID or the owner and sequence
@@ -370,7 +402,7 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @param issuanceId      The {@link MpTokenIssuanceId} of the token.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
    *
-   * @return A {@link LedgerEntryRequestParams} for {@link OracleObject}.
+   * @return A {@link LedgerEntryRequestParams} for {@link MpTokenIssuanceObject}.
    */
   static LedgerEntryRequestParams<MpTokenIssuanceObject> mpTokenIssuance(
     MpTokenIssuanceId issuanceId,
@@ -396,6 +428,123 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   ) {
     return ImmutableLedgerEntryRequestParams.<MpTokenObject>builder()
       .mpToken(mpToken)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link PermissionedDomainObject} ledger entry.
+   *
+   * @param params          The {@link PermissionedDomainLedgerEntryParams} specifying the Permissioned domain.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link PermissionedDomainObject}.
+   */
+  static LedgerEntryRequestParams<PermissionedDomainObject> permissionedDomain(
+    PermissionedDomainLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<PermissionedDomainObject>builder()
+      .permissionedDomain(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link DelegateObject} ledger entry.
+   *
+   * @param params          The {@link DelegateLedgerEntryParams} that uniquely identify the
+   *                        {@link DelegateObject} on ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link DelegateObject}.
+   */
+  static LedgerEntryRequestParams<DelegateObject> delegate(
+    DelegateLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<DelegateObject>builder()
+      .delegate(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link VaultObject} ledger entry.
+   *
+   * <p>Note that although the rippled API allows you to specify either the Vault's ID or the owner and sequence
+   * number of the transaction that created the Vault, this class does not allow developers to request a
+   * {@link VaultObject} by ID via this method. Instead, developers should use {@link LedgerEntryRequestParams#index()}
+   * and specify {@link VaultObject} as the {@code ledgerObjectClass} parameter.</p>
+   *
+   * @param params          The {@link VaultLedgerEntryParams} that uniquely identify the {@link VaultObject} on
+   *                        ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link VaultObject}.
+   */
+  static LedgerEntryRequestParams<VaultObject> vault(
+    VaultLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<VaultObject>builder()
+      .vault(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link LoanBrokerObject} ledger entry.
+   *
+   * @param params          The {@link LoanBrokerLedgerEntryParams} that uniquely identify the
+   *                        {@link LoanBrokerObject} on ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link LoanBrokerObject}.
+   */
+  static LedgerEntryRequestParams<LoanBrokerObject> loanBroker(
+    LoanBrokerLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<LoanBrokerObject>builder()
+      .loanBroker(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link LoanObject} ledger entry.
+   *
+   * @param params          The {@link LoanLedgerEntryParams} that uniquely identify the {@link LoanObject} on ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link LoanObject}.
+   */
+  static LedgerEntryRequestParams<LoanObject> loan(
+    LoanLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<LoanObject>builder()
+      .loan(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link SponsorshipObject} ledger entry.
+   *
+   * @param params          The {@link SponsorshipLedgerEntryParams} that uniquely identify the
+   *                        {@link SponsorshipObject} on ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link SponsorshipObject}.
+   */
+  static LedgerEntryRequestParams<SponsorshipObject> sponsorship(
+    SponsorshipLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<SponsorshipObject>builder()
+      .sponsorship(params)
       .ledgerSpecifier(ledgerSpecifier)
       .build();
   }
@@ -463,6 +612,13 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @return An optionally-present {@link Hash256}.
    */
   Optional<Hash256> check();
+
+  /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.CredentialObject} by {@link CredentialLedgerEntryParams}.
+   *
+   * @return An optionally-present {@link CredentialLedgerEntryParams}.
+   */
+  Optional<CredentialLedgerEntryParams> credential();
 
   /**
    * Look up an {@link org.xrpl.xrpl4j.model.ledger.EscrowObject} by {@link EscrowLedgerEntryParams}.
@@ -550,6 +706,51 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<MpTokenLedgerEntryParams> mpToken();
 
   /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} by
+   * {@link PermissionedDomainLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link PermissionedDomainLedgerEntryParams}.
+   */
+  @JsonProperty("permissioned_domain")
+  Optional<PermissionedDomainLedgerEntryParams> permissionedDomain();
+
+  /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.DelegateObject} by {@link DelegateLedgerEntryParams}.
+   *
+   * @return An optionally-present {@link DelegateLedgerEntryParams}.
+   */
+  Optional<DelegateLedgerEntryParams> delegate();
+
+  /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.VaultObject} by {@link VaultLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link VaultLedgerEntryParams}.
+   */
+  Optional<VaultLedgerEntryParams> vault();
+
+  /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.LoanBrokerObject} by {@link LoanBrokerLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link LoanBrokerLedgerEntryParams}.
+   */
+  @JsonProperty("loan_broker")
+  Optional<LoanBrokerLedgerEntryParams> loanBroker();
+
+  /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.LoanObject} by {@link LoanLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link LoanLedgerEntryParams}.
+   */
+  Optional<LoanLedgerEntryParams> loan();
+
+  /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.SponsorshipObject} by {@link SponsorshipLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link SponsorshipLedgerEntryParams}.
+   */
+  Optional<SponsorshipLedgerEntryParams> sponsorship();
+
+  /**
    * The {@link Class} of {@link T}. This field is helpful when telling Jackson how to deserialize rippled's response to
    * a {@link T}.
    *
@@ -576,6 +777,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (check().isPresent()) {
       return (Class<T>) CheckObject.class;
+    }
+
+    if (credential().isPresent()) {
+      return (Class<T>) CredentialObject.class;
     }
 
     if (escrow().isPresent()) {
@@ -616,6 +821,30 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (mpToken().isPresent()) {
       return (Class<T>) MpTokenObject.class;
+    }
+
+    if (permissionedDomain().isPresent()) {
+      return (Class<T>) PermissionedDomainObject.class;
+    }
+
+    if (delegate().isPresent()) {
+      return (Class<T>) DelegateObject.class;
+    }
+
+    if (vault().isPresent()) {
+      return (Class<T>) VaultObject.class;
+    }
+
+    if (loanBroker().isPresent()) {
+      return (Class<T>) LoanBrokerObject.class;
+    }
+
+    if (loan().isPresent()) {
+      return (Class<T>) LoanObject.class;
+    }
+
+    if (sponsorship().isPresent()) {
+      return (Class<T>) SponsorshipObject.class;
     }
 
     return (Class<T>) LedgerObject.class;

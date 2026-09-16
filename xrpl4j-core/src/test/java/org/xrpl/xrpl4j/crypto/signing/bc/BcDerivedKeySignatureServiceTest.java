@@ -44,15 +44,20 @@ import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.AddressConstants;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.flags.BatchFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
 import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Amount;
+import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
 import org.xrpl.xrpl4j.model.transactions.XChainClaimId;
@@ -783,6 +788,709 @@ class BcDerivedKeySignatureServiceTest {
       });
   }
 
+  @Test
+  void signInnerEd() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Batch batchTransaction = createBatchTransaction(publicKey);
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedBatchCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.signInner(
+        privateKeyReference, batchTransaction, publicKey.deriveAddress()
+      );
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isNotEmpty();
+      // Verify signature is deterministic
+      Signature signature2 = this.derivedKeySignatureService.signInner(
+        privateKeyReference, batchTransaction, publicKey.deriveAddress()
+      );
+      assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedBatchCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void signInnerEc() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.SECP256K1);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Batch batchTransaction = createBatchTransaction(publicKey);
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedBatchCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.signInner(
+        privateKeyReference, batchTransaction, publicKey.deriveAddress()
+      );
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isNotEmpty();
+      // Verify signature is deterministic for SECP256K1
+      Signature signature2 = this.derivedKeySignatureService.signInner(
+        privateKeyReference, batchTransaction, publicKey.deriveAddress()
+      );
+      assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedBatchCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void multiSignInnerEd() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Batch batchTransaction = createBatchTransaction(publicKey);
+    final Address batchSignerAddress = Address.of(sourceClassicAddressEd);
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedBatchCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.multiSignInner(
+        privateKeyReference, batchTransaction, batchSignerAddress
+      );
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isNotEmpty();
+      // Verify signature is deterministic
+      Signature signature2 = this.derivedKeySignatureService.multiSignInner(
+        privateKeyReference, batchTransaction, batchSignerAddress
+      );
+      assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedBatchCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void multiSignInnerEc() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.SECP256K1);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Batch batchTransaction = createBatchTransaction(publicKey);
+    final Address batchSignerAddress = Address.of(sourceClassicAddressEc);
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedBatchCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.multiSignInner(
+        privateKeyReference, batchTransaction, batchSignerAddress
+      );
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isNotEmpty();
+      // Verify signature is deterministic for SECP256K1
+      Signature signature2 = this.derivedKeySignatureService.multiSignInner(
+        privateKeyReference, batchTransaction, batchSignerAddress
+      );
+      assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedBatchCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void counterpartySignEd() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final LoanSet loanSet = createLoanSetTransaction(publicKey);
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.counterpartySign(privateKeyReference, loanSet);
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isNotEmpty();
+      // Verify signature is deterministic
+      Signature signature2 = this.derivedKeySignatureService.counterpartySign(privateKeyReference, loanSet);
+      assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void counterpartySignEc() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.SECP256K1);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final LoanSet loanSet = createLoanSetTransaction(publicKey);
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.counterpartySign(privateKeyReference, loanSet);
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isNotEmpty();
+      // Verify signature is deterministic for SECP256K1
+      Signature signature2 = this.derivedKeySignatureService.counterpartySign(privateKeyReference, loanSet);
+      assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void counterpartyMultiSignEd() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final LoanSet loanSet = createLoanSetTransaction(publicKey);
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.counterpartyMultiSign(privateKeyReference, loanSet);
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isNotEmpty();
+      // Verify signature is deterministic
+      Signature signature2 = this.derivedKeySignatureService.counterpartyMultiSign(privateKeyReference, loanSet);
+      assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void counterpartyMultiSignEc() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.SECP256K1);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final LoanSet loanSet = createLoanSetTransaction(publicKey);
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.counterpartyMultiSign(privateKeyReference, loanSet);
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isNotEmpty();
+      // Verify signature is deterministic for SECP256K1
+      Signature signature2 = this.derivedKeySignatureService.counterpartyMultiSign(privateKeyReference, loanSet);
+      assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void sponsorSignEd() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Payment paymentTransaction = Payment.builder()
+      .account(Address.of(sourceClassicAddressEd))
+      .fee(XrpCurrencyAmount.ofDrops(10L))
+      .sequence(UnsignedInteger.ONE)
+      .destination(Address.of(destinationClassicAddress))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .signingPublicKey(publicKey)
+      .build();
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.sponsorSign(privateKeyReference, paymentTransaction);
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isEqualTo(
+        "F0968CC4FC05040788E3F5E28D8BFE21F34B059143D769B54F8668CBD805BDE5C7AAF748EC60DD877B193FD16CB32A91D9539" +
+          "C4C04851099C4B45E5FD1566401"
+      );
+      // Verify signature is deterministic
+      Signature signature2 = this.derivedKeySignatureService.sponsorSign(privateKeyReference, paymentTransaction);
+      assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void sponsorSignEc() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.SECP256K1);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Payment paymentTransaction = Payment.builder()
+      .account(Address.of(sourceClassicAddressEc))
+      .fee(XrpCurrencyAmount.ofDrops(10L))
+      .sequence(UnsignedInteger.ONE)
+      .destination(Address.of(destinationClassicAddress))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .signingPublicKey(publicKey)
+      .build();
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.sponsorSign(privateKeyReference, paymentTransaction);
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isEqualTo(
+        "3045022100CA3EE6AF48AA49EEF7964E4BF5E3FA879476FFE836F91740344415CD3B34A25B02205DCFC440B19BECBE3C5FF29F" +
+          "F0C662C33AE2DDD10AC4B1859C419D0BB32B8AC6"
+      );
+      // Verify signature is deterministic for SECP256K1
+      Signature signature2 = this.derivedKeySignatureService.sponsorSign(privateKeyReference, paymentTransaction);
+      assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void sponsorMultiSignEd() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Payment paymentTransaction = Payment.builder()
+      .account(Address.of(sourceClassicAddressEd))
+      .fee(XrpCurrencyAmount.ofDrops(10L))
+      .sequence(UnsignedInteger.ONE)
+      .destination(Address.of(destinationClassicAddress))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .signingPublicKey(publicKey)
+      .build();
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.sponsorMultiSign(privateKeyReference, paymentTransaction);
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isEqualTo(
+        "8DFF4D545A289D7F0659DB61759C1EFDA36093432F1B2B6E99BA3B8A5EF4343125B6470441CE7579F42FD9B29BAC728E087BA" +
+          "8260E911583B3B3B6038FF5740D"
+      );
+      // Verify signature is deterministic
+      Signature signature2 = this.derivedKeySignatureService.sponsorMultiSign(privateKeyReference, paymentTransaction);
+      assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void sponsorMultiSignEc() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.SECP256K1);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Payment paymentTransaction = Payment.builder()
+      .account(Address.of(sourceClassicAddressEc))
+      .fee(XrpCurrencyAmount.ofDrops(10L))
+      .sequence(UnsignedInteger.ONE)
+      .destination(Address.of(destinationClassicAddress))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .signingPublicKey(publicKey)
+      .build();
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.sponsorMultiSign(privateKeyReference, paymentTransaction);
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isEqualTo(
+        "304502210088CBBE3DE6CCA7306072B28DF8785157E9D6A4037E6F895B7D93C4106C208EFF02204CE2EB8A9A1077358408201" +
+          "052D46EC7AB4BEA09CB981E2FEAB17812BBC52E96"
+      );
+      // Verify signature is deterministic for SECP256K1
+      Signature signature2 = this.derivedKeySignatureService.sponsorMultiSign(privateKeyReference, paymentTransaction);
+      assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void multiSignToSignerEd() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Payment payment = Payment.builder()
+      .account(Address.of(sourceClassicAddressEd))
+      .amount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rE7QZCdvs64wWr88f44R8q8kQtCQwefXFv"))
+        .value("100")
+        .build())
+      .destination(Address.of(destinationClassicAddress))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
+      .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
+      .sequence(UnsignedInteger.valueOf(4101911))
+      .build();
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedTxCallable = () -> {
+      Signer signer = this.derivedKeySignatureService.multiSignToSigner(privateKeyReference, payment);
+      assertThat(signer).isNotNull();
+      assertThat(signer.signingPublicKey()).isEqualTo(publicKey);
+      assertThat(signer.transactionSignature()).isNotNull();
+      assertThat(signer.transactionSignature().base16Value()).isNotEmpty();
+
+      // Verify the signer's account is derived from the public key
+      assertThat(signer.account()).isEqualTo(publicKey.deriveAddress());
+
+      // Verify signature matches multiSign
+      Signature multiSignSignature = this.derivedKeySignatureService.multiSign(privateKeyReference, payment);
+      assertThat(signer.transactionSignature()).isEqualTo(multiSignSignature);
+
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedTxCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void multiSignToSignerEc() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.SECP256K1);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Payment payment = Payment.builder()
+      .account(Address.of(sourceClassicAddressEc))
+      .amount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rE7QZCdvs64wWr88f44R8q8kQtCQwefXFv"))
+        .value("100")
+        .build())
+      .destination(Address.of(destinationClassicAddress))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
+      .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
+      .sequence(UnsignedInteger.valueOf(4101911))
+      .build();
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedTxCallable = () -> {
+      Signer signer = this.derivedKeySignatureService.multiSignToSigner(privateKeyReference, payment);
+      assertThat(signer).isNotNull();
+      assertThat(signer.signingPublicKey()).isEqualTo(publicKey);
+      assertThat(signer.transactionSignature()).isNotNull();
+      assertThat(signer.transactionSignature().base16Value()).isNotEmpty();
+
+      // Verify the signer's account is derived from the public key
+      assertThat(signer.account()).isEqualTo(publicKey.deriveAddress());
+
+      // Verify signature matches multiSign
+      Signature multiSignSignature = this.derivedKeySignatureService.multiSign(privateKeyReference, payment);
+      assertThat(signer.transactionSignature()).isEqualTo(multiSignSignature);
+
+      return true;
+    };
+
+    final List<Future<Boolean>> futureResults = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      futureResults.add(pool.submit(signedTxCallable));
+    }
+
+    futureResults.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(result -> assertThat(result).isTrue());
+  }
+
+  @Test
+  void verifyMultiSignedWithZeroMinSigners() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Payment payment = Payment.builder()
+      .account(Address.of(sourceClassicAddressEd))
+      .amount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rE7QZCdvs64wWr88f44R8q8kQtCQwefXFv"))
+        .value("100")
+        .build())
+      .destination(Address.of(destinationClassicAddress))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
+      .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
+      .sequence(UnsignedInteger.valueOf(4101911))
+      .build();
+
+    Signature signature = this.derivedKeySignatureService.multiSign(privateKeyReference, payment);
+    Signer signer = Signer.builder()
+      .transactionSignature(signature)
+      .signingPublicKey(publicKey)
+      .build();
+
+    // Test with minSigners = 0 should throw IllegalArgumentException
+    assertThrows(IllegalArgumentException.class, () -> {
+      this.derivedKeySignatureService.verifyMultiSigned(
+        Sets.newHashSet(signer),
+        payment,
+        0
+      );
+    });
+  }
+
+  @Test
+  void verifyMultiSignedWithNegativeMinSigners() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Payment payment = Payment.builder()
+      .account(Address.of(sourceClassicAddressEd))
+      .amount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rE7QZCdvs64wWr88f44R8q8kQtCQwefXFv"))
+        .value("100")
+        .build())
+      .destination(Address.of(destinationClassicAddress))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
+      .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
+      .sequence(UnsignedInteger.valueOf(4101911))
+      .build();
+
+    Signature signature = this.derivedKeySignatureService.multiSign(privateKeyReference, payment);
+    Signer signer = Signer.builder()
+      .transactionSignature(signature)
+      .signingPublicKey(publicKey)
+      .build();
+
+    // Test with minSigners = -1 should throw IllegalArgumentException
+    assertThrows(IllegalArgumentException.class, () -> {
+      this.derivedKeySignatureService.verifyMultiSigned(
+        Sets.newHashSet(signer),
+        payment,
+        -1
+      );
+    });
+  }
+
+  @Test
+  void verifyMultiSignedWithNullSignerSet() {
+    final Payment payment = Payment.builder()
+      .account(Address.of(sourceClassicAddressEd))
+      .amount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rE7QZCdvs64wWr88f44R8q8kQtCQwefXFv"))
+        .value("100")
+        .build())
+      .destination(Address.of(destinationClassicAddress))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
+      .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
+      .sequence(UnsignedInteger.valueOf(4101911))
+      .build();
+
+    // Test with null signerSet should throw NullPointerException
+    assertThrows(NullPointerException.class, () -> {
+      this.derivedKeySignatureService.verifyMultiSigned(
+        null,
+        payment,
+        1
+      );
+    });
+  }
+
+  @Test
+  void verifyMultiSignedWithNullTransaction() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Payment payment = Payment.builder()
+      .account(Address.of(sourceClassicAddressEd))
+      .amount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rE7QZCdvs64wWr88f44R8q8kQtCQwefXFv"))
+        .value("100")
+        .build())
+      .destination(Address.of(destinationClassicAddress))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
+      .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
+      .sequence(UnsignedInteger.valueOf(4101911))
+      .build();
+
+    Signature signature = this.derivedKeySignatureService.multiSign(privateKeyReference, payment);
+    Signer signer = Signer.builder()
+      .transactionSignature(signature)
+      .signingPublicKey(publicKey)
+      .build();
+
+    // Test with null transaction should throw NullPointerException
+    assertThrows(NullPointerException.class, () -> {
+      this.derivedKeySignatureService.verifyMultiSigned(
+        Sets.newHashSet(signer),
+        null,
+        1
+      );
+    });
+  }
+
   //////////////////
   // Private Helpers
   //////////////////
@@ -809,5 +1517,64 @@ class BcDerivedKeySignatureServiceTest {
         return keyType;
       }
     };
+  }
+
+  /**
+   * Helper function to create a LoanSet transaction for testing counterpartySign and counterpartyMultiSign.
+   *
+   * @param publicKey The {@link PublicKey} to use for the transaction.
+   *
+   * @return A {@link LoanSet} transaction.
+   */
+  private LoanSet createLoanSetTransaction(final PublicKey publicKey) {
+    Objects.requireNonNull(publicKey);
+
+    return LoanSet.builder()
+      .account(publicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(30))
+      .sequence(UnsignedInteger.ONE)
+      .loanBrokerId(Hash256.of(com.google.common.base.Strings.padStart("ABC123", 64, '0')))
+      .principalRequested(Amount.of("50000"))
+      .signingPublicKey(publicKey)
+      .build();
+  }
+
+  /**
+   * Helper function to create a Batch transaction for testing signInner and multiSignInner.
+   *
+   * @param publicKey The {@link PublicKey} to use for the batch transaction.
+   *
+   * @return A {@link Batch} transaction.
+   */
+  private Batch createBatchTransaction(final PublicKey publicKey) {
+    Objects.requireNonNull(publicKey);
+
+    // Create two inner payment transactions
+    final Payment payment1 = Payment.builder()
+      .account(Address.of(sourceClassicAddressEd))
+      .destination(Address.of(destinationClassicAddress))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(0)) // Must be 0 for inner transactions
+      .sequence(UnsignedInteger.valueOf(1))
+      .flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
+      .build();
+
+    final Payment payment2 = Payment.builder()
+      .account(Address.of(sourceClassicAddressEc))
+      .destination(Address.of(destinationClassicAddress))
+      .amount(XrpCurrencyAmount.ofDrops(2000))
+      .fee(XrpCurrencyAmount.ofDrops(0)) // Must be 0 for inner transactions
+      .sequence(UnsignedInteger.valueOf(2))
+      .flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
+      .build();
+
+    return Batch.builder()
+      .account(publicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.valueOf(10))
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .addRawTransactions(RawTransactionWrapper.of(payment1), RawTransactionWrapper.of(payment2))
+      .signingPublicKey(publicKey)
+      .build();
   }
 }

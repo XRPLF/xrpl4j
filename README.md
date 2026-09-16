@@ -2,7 +2,8 @@
 
 [![codecov][codecov-image]][codecov-url]
 [![issues][github-issues-image]][github-issues-url]
-[![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-parent/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-parent)
+[![javadoc-core](https://javadoc.io/badge2/org.xrpl/xrpl4j-core/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-core/latest/index.html)
+[![javadoc-client](https://javadoc.io/badge2/org.xrpl/xrpl4j-client/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-client/latest/index.html)
 
 This project is a pure Java implementation of an SDK that works with the XRP Ledger. This library supports XRPL key 
 and address generation, transaction serialization and signing, provides useful Java bindings for XRP Ledger objects and 
@@ -33,7 +34,7 @@ current [BOM](https://howtodoinjava.com/maven/maven-bom-bill-of-materials-depend
         <dependency>
             <groupId>org.xrpl</groupId>
             <artifactId>xrpl4j-bom</artifactId>
-            <version>4.1.0</version>
+            <version>5.0.0</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -258,6 +259,28 @@ To build the project while skipping Unit and Integration tests, use the followin
 ```
 mvn clean install -DskipITs -DskipTests
 ```
+
+### Running integration tests against a private xrpld image
+
+By default the local integration tests start an `xrpld` node via Testcontainers using the public image
+`rippleci/xrpld:develop`. To run them against a private xrpld image, set the `XRPLD_DOCKER_IMAGE` environment variable
+before invoking Maven:
+
+```
+XRPLD_DOCKER_IMAGE=registry.gitlab.com/ripple/xrpledger/xrpld_package_deploy/xrpld-private:private-3.3.0-rc2 mvn clean install
+```
+
+`RippledContainer` reads `XRPLD_DOCKER_IMAGE` (falling back to the public image when it is unset). For a private
+registry, run `docker login` first so Testcontainers can reuse the credentials when pulling.
+
+In CI the image is selected from a committed config file, `.github/xrpld-image.env`. Set `XRPLD_PRIVATE_VERSION` to a
+version (without the `private-` prefix, for example `XRPLD_PRIVATE_VERSION=3.3.0-rc2`) and every workflow run — including
+pull request runs — resolves the private image, logs into the GitLab registry (via the `.github/actions/xrpld-login`
+composite action, shared by all of those jobs), and exports `XRPLD_DOCKER_IMAGE` to the
+local-integration-test jobs. Leave it empty to use the default public image. Private pulls require the repository
+variable `GITLAB_REGISTRY_USERNAME` and repository secret `GITLAB_REGISTRY_TOKEN` (a GitLab deploy token with
+`read_registry` access); these are not exposed to fork pull requests, so a private version must be tested from a branch
+in this repository.
 
 [codecov-image]: https://codecov.io/gh/XRPLF/xrpl4j/branch/main/graph/badge.svg
 

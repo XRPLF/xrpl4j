@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -34,7 +33,7 @@ import java.util.stream.Stream;
 public class AccountRootFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(14);
+    return getBooleanCombinations(15);
   }
 
   @ParameterizedTest
@@ -54,7 +53,8 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     boolean lsfDisallowIncomingCheck,
     boolean lsfDisallowIncomingPayChan,
     boolean lsfDisallowIncomingTrustline,
-    boolean lsfAllowTrustlineClawback
+    boolean lsfAllowTrustlineClawback,
+    boolean lsfAllowTrustlineLocking
   ) {
     long expectedFlags = (lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE.getValue() : 0L) |
       (lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH.getValue() : 0L) |
@@ -69,7 +69,8 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
       (lsfDisallowIncomingCheck ? AccountRootFlags.DISALLOW_INCOMING_CHECK.getValue() : 0L) |
       (lsfDisallowIncomingPayChan ? AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN.getValue() : 0L) |
       (lsfDisallowIncomingTrustline ? AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE.getValue() : 0L) |
-      (lsfAllowTrustlineClawback ? AccountRootFlags.ALLOW_TRUSTLINE_CLAWBACK.getValue() : 0L);
+      (lsfAllowTrustlineClawback ? AccountRootFlags.ALLOW_TRUSTLINE_CLAWBACK.getValue() : 0L) |
+      (lsfAllowTrustlineLocking ? AccountRootFlags.ALLOW_TRUSTLINE_LOCKING.getValue() : 0L);
     Flags flagsFromFlags = AccountRootFlags.of(
       (lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE : AccountRootFlags.UNSET),
       (lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH : AccountRootFlags.UNSET),
@@ -84,7 +85,8 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
       (lsfDisallowIncomingCheck ? AccountRootFlags.DISALLOW_INCOMING_CHECK : AccountRootFlags.UNSET),
       (lsfDisallowIncomingPayChan ? AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN : AccountRootFlags.UNSET),
       (lsfDisallowIncomingTrustline ? AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE : AccountRootFlags.UNSET),
-      (lsfAllowTrustlineClawback ? AccountRootFlags.ALLOW_TRUSTLINE_CLAWBACK : AccountRootFlags.UNSET)
+      (lsfAllowTrustlineClawback ? AccountRootFlags.ALLOW_TRUSTLINE_CLAWBACK : AccountRootFlags.UNSET),
+      (lsfAllowTrustlineLocking ? AccountRootFlags.ALLOW_TRUSTLINE_LOCKING : AccountRootFlags.UNSET)
     );
     assertThat(flagsFromFlags.getValue()).isEqualTo(expectedFlags);
 
@@ -106,6 +108,7 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     assertThat(flagsFromLong.lsfDisallowIncomingPayChan()).isEqualTo(lsfDisallowIncomingPayChan);
     assertThat(flagsFromLong.lsfDisallowIncomingTrustline()).isEqualTo(lsfDisallowIncomingTrustline);
     assertThat(flagsFromLong.lsfAllowTrustLineClawback()).isEqualTo(lsfAllowTrustlineClawback);
+    assertThat(flagsFromLong.lsfAllowTrustLineLocking()).isEqualTo(lsfAllowTrustlineLocking);
   }
 
   @ParameterizedTest
@@ -125,7 +128,8 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     boolean lsfDisallowIncomingCheck,
     boolean lsfDisallowIncomingPayChan,
     boolean lsfDisallowIncomingTrustline,
-    boolean lsfAllowTrustlineClawback
+    boolean lsfAllowTrustlineClawback,
+    boolean lsfAllowTrustlineLocking
   ) throws JSONException, JsonProcessingException {
     Flags flags = AccountRootFlags.of(
       (lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE : AccountRootFlags.UNSET),
@@ -141,7 +145,8 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
       (lsfDisallowIncomingCheck ? AccountRootFlags.DISALLOW_INCOMING_CHECK : AccountRootFlags.UNSET),
       (lsfDisallowIncomingPayChan ? AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN : AccountRootFlags.UNSET),
       (lsfDisallowIncomingTrustline ? AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE : AccountRootFlags.UNSET),
-      (lsfAllowTrustlineClawback ? AccountRootFlags.ALLOW_TRUSTLINE_CLAWBACK : AccountRootFlags.UNSET)
+      (lsfAllowTrustlineClawback ? AccountRootFlags.ALLOW_TRUSTLINE_CLAWBACK : AccountRootFlags.UNSET),
+      (lsfAllowTrustlineLocking ? AccountRootFlags.ALLOW_TRUSTLINE_LOCKING : AccountRootFlags.UNSET)
     );
 
     FlagsWrapper flagsWrapper = FlagsWrapper.of(flags);

@@ -84,5 +84,34 @@ public class NfTokenBurnTest {
       "tokenId must be 64 characters (256 bits), but was 6 characters long."
     );
   }
-}
 
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .nfTokenId(id)
+      .build();
+
+    assertThat(nfTokenBurn.transactionFlags()).isEqualTo(nfTokenBurn.flags());
+    assertThat(nfTokenBurn.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenBurn original = NfTokenBurn.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .nfTokenId(id)
+      .build();
+
+    NfTokenBurn copied = NfTokenBurn.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
+}

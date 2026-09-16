@@ -27,6 +27,9 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
+import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -98,18 +101,51 @@ public abstract class AbstractSignatureService<P extends PrivateKeyable> impleme
   }
 
   @Override
+  public Signature sign(final P privateKeyable, final Attestation attestation) {
+    return this.abstractTransactionSigner.sign(privateKeyable, attestation);
+  }
+
+  @Override
   public Signature sign(final P privateKeyable, final UnsignedClaim unsignedClaim) {
     return this.abstractTransactionSigner.sign(privateKeyable, unsignedClaim);
   }
 
   @Override
-  public Signature sign(P privateKeyable, Attestation attestation) {
-    return this.abstractTransactionSigner.sign(privateKeyable, attestation);
+  public Signature signInner(
+    final P privateKeyable, final Batch batchTransaction, final Address batchSignerAddress
+  ) {
+    return this.abstractTransactionSigner.signInner(privateKeyable, batchTransaction, batchSignerAddress);
   }
 
   @Override
   public <T extends Transaction> Signature multiSign(final P privateKeyable, final T transaction) {
     return abstractTransactionSigner.multiSign(privateKeyable, transaction);
+  }
+
+  @Override
+  public Signature multiSignInner(final P privateKeyable, final Batch batchTransaction,
+    final Address batchSignerAddress) {
+    return abstractTransactionSigner.multiSignInner(privateKeyable, batchTransaction, batchSignerAddress);
+  }
+
+  @Override
+  public Signature counterpartySign(final P privateKeyable, final LoanSet transaction) {
+    return abstractTransactionSigner.counterpartySign(privateKeyable, transaction);
+  }
+
+  @Override
+  public Signature counterpartyMultiSign(final P privateKeyable, final LoanSet transaction) {
+    return abstractTransactionSigner.counterpartyMultiSign(privateKeyable, transaction);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorSign(final P privateKeyable, final T transaction) {
+    return abstractTransactionSigner.sponsorSign(privateKeyable, transaction);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorMultiSign(final P privateKeyable, final T transaction) {
+    return abstractTransactionSigner.sponsorMultiSign(privateKeyable, transaction);
   }
 
   @Override

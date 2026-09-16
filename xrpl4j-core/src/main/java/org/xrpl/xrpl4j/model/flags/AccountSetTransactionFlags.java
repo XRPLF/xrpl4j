@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,10 +24,11 @@ import com.google.common.base.Preconditions;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 
 /**
- * {@link TransactionFlags} for {@link AccountSet} transactions. Note that using these directly is
- * discouraged, but can be useful when setting multiple flags for an account.
+ * {@link TransactionFlags} for {@link AccountSet} transactions. Note that using these directly is discouraged, but can
+ * be useful when setting multiple flags for an account.
  */
 public class AccountSetTransactionFlags extends TransactionFlags {
+
   /**
    * Constant for an unset flag.
    */
@@ -63,6 +64,15 @@ public class AccountSetTransactionFlags extends TransactionFlags {
    */
   protected static final AccountSetTransactionFlags ALLOW_XRP = new AccountSetTransactionFlags(0x00200000);
 
+  /**
+   * Constant {@link AccountSetTransactionFlags} for the {@code tfInnerBatchTxn} flag. This flag is used to indicate
+   * that a transaction is an inner transaction of a Batch.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0056-batch"
+   */
+  public static final AccountSetTransactionFlags INNER_BATCH_TXN =
+    new AccountSetTransactionFlags(TransactionFlags.INNER_BATCH_TXN.getValue());
+
   private AccountSetTransactionFlags(long value) {
     super(value);
   }
@@ -77,7 +87,8 @@ public class AccountSetTransactionFlags extends TransactionFlags {
     boolean tfRequireAuth,
     boolean tfOptionalAuth,
     boolean tfDisallowXrp,
-    boolean tfAllowXrp
+    boolean tfAllowXrp,
+    boolean tfInnerBatchTxn
   ) {
     Preconditions.checkArgument(
       !(tfRequireDestTag && tfOptionalDestTag),
@@ -101,7 +112,8 @@ public class AccountSetTransactionFlags extends TransactionFlags {
         tfRequireAuth ? REQUIRE_AUTH : UNSET,
         tfOptionalAuth ? OPTIONAL_AUTH : UNSET,
         tfDisallowXrp ? DISALLOW_XRP : UNSET,
-        tfAllowXrp ? ALLOW_XRP : UNSET
+        tfAllowXrp ? ALLOW_XRP : UNSET,
+        tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN : UNSET
       ).getValue()
     );
   }
@@ -135,8 +147,8 @@ public class AccountSetTransactionFlags extends TransactionFlags {
   }
 
   /**
-   * Construct an empty instance of {@link AccountSetTransactionFlags}. Transactions with empty flags will
-   * not be serialized with a {@code Flags} field.
+   * Construct an empty instance of {@link AccountSetTransactionFlags}. Transactions with empty flags will not be
+   * serialized with a {@code Flags} field.
    *
    * @return An empty {@link AccountSetTransactionFlags}.
    */
@@ -217,15 +229,28 @@ public class AccountSetTransactionFlags extends TransactionFlags {
   }
 
   /**
+   * Indicates that this transaction is an inner transaction of a Batch transaction.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0056-batch"
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(AccountSetTransactionFlags.INNER_BATCH_TXN);
+  }
+
+  /**
    * A builder class for {@link AccountSetTransactionFlags}.
    */
   public static class Builder {
+
     private boolean tfRequireDestTag = false;
     private boolean tfOptionalDestTag = false;
     private boolean tfRequireAuth = false;
     private boolean tfOptionalAuth = false;
     private boolean tfDisallowXrp = false;
     private boolean tfAllowXrp = false;
+    private boolean tfInnerBatchTxn = false;
 
     /**
      * Set {@code tfRequireDestTag} to the given value.
@@ -288,6 +313,18 @@ public class AccountSetTransactionFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfInnerBatchTxn} to the given value.
+     *
+     * @param tfInnerBatchTxn A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfInnerBatchTxn(boolean tfInnerBatchTxn) {
+      this.tfInnerBatchTxn = tfInnerBatchTxn;
+      return this;
+    }
+
+    /**
      * Build a new {@link AccountSetTransactionFlags} from the current boolean values.
      *
      * @return A new {@link AccountSetTransactionFlags}.
@@ -300,7 +337,8 @@ public class AccountSetTransactionFlags extends TransactionFlags {
         tfRequireAuth,
         tfOptionalAuth,
         tfDisallowXrp,
-        tfAllowXrp
+        tfAllowXrp,
+        tfInnerBatchTxn
       );
     }
   }

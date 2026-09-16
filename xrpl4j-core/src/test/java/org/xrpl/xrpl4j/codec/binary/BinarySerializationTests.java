@@ -39,6 +39,8 @@ import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentChannelClaimFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
@@ -49,6 +51,7 @@ import org.xrpl.xrpl4j.model.flags.XChainModifyBridgeFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
@@ -63,6 +66,7 @@ import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
 import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.AssetPrice;
+import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -91,6 +95,13 @@ import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateBridge;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateClaimId;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainModifyBridge;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
+import org.xrpl.xrpl4j.model.transactions.MpTokenMetadata;
+import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
@@ -108,6 +119,7 @@ import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransferFee;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit;
 import org.xrpl.xrpl4j.model.transactions.XChainAddAccountCreateAttestation;
@@ -1799,7 +1811,7 @@ public class BinarySerializationTests {
           .lockingChainIssue(Issue.XRP)
           .issuingChainDoor(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
           .issuingChainIssue(
-            Issue.builder()
+            IouIssue.builder()
               .currency("ETH")
               .issuer(Address.of("rPyfep3gcLzkosKC9XiE77Y8DZWG6iWDT9"))
               .build()
@@ -2281,12 +2293,12 @@ public class BinarySerializationTests {
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
       .flags(AmmWithdrawFlags.LP_TOKEN)
-      .asset(Issue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(Issue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2340,12 +2352,12 @@ public class BinarySerializationTests {
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A"))
-      .asset(Issue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(Issue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2422,12 +2434,12 @@ public class BinarySerializationTests {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
-      .asset(Issue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(Issue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2452,12 +2464,12 @@ public class BinarySerializationTests {
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
       .flags(AmmDepositFlags.SINGLE_ASSET)
-      .asset(Issue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(Issue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2514,12 +2526,12 @@ public class BinarySerializationTests {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
       )
-      .asset(Issue.builder()
+      .asset(IouIssue.builder()
         .currency("4755534400000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
       )
-      .asset2(Issue.builder()
+      .asset2(IouIssue.builder()
         .currency("524C555344000000000000000000000000000000")
         .issuer(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
         .build()
@@ -2533,6 +2545,92 @@ public class BinarySerializationTests {
       "0000000000000F78AD4FDA66653106AE45EE5FE683C457E6BA9C5";
 
     assertSerializesAndDeserializes(ammVote, expectedBinary);
+  }
+
+  @Test
+  void serializeMpTokenIssuanceCreate() throws JsonProcessingException {
+    MpTokenIssuanceCreate mpTokenIssuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(Address.of("rMBzp8CgpE441cp5PVyA9rpVV7oT8hP3ys"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347")
+      )
+      .flags(MpTokenIssuanceCreateFlags.builder()
+        .tfMptCanTransfer(true)
+        .tfMptCanTrade(true)
+        .build()
+      )
+      .assetScale(AssetScale.of(UnsignedInteger.valueOf(2)))
+      .transferFee(TransferFee.of(UnsignedInteger.valueOf(100)))
+      .maximumAmount(MpTokenNumericAmount.of(1000000000L))
+      .mpTokenMetadata(MpTokenMetadata.of("6D65746164617461"))
+      .build();
+
+    String expectedBinary = "120036140064228000003024000000013018000000003B9ACA0068400000000000000A7321ED9861C4CB0" +
+      "29C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347701E086D657461646174618114DD76483FACDEE26E60D8A586BB58D" +
+      "09F27045C46051002";
+
+    assertSerializesAndDeserializes(mpTokenIssuanceCreate, expectedBinary);
+  }
+
+  @Test
+  void serializeMpTokenAuthorize() throws JsonProcessingException {
+    MpTokenAuthorize mpTokenAuthorize = MpTokenAuthorize.builder()
+      .account(Address.of("rMBzp8CgpE441cp5PVyA9rpVV7oT8hP3ys"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347")
+      )
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("013411307C0D97D1EC6B2989138679ACDCB75C37CA30F0A6"))
+      .holder(Address.of("rPZtDb6ZHtfYzMmzyUGvehoi2vYhrNAPhy"))
+      .build();
+
+    String expectedBinary = "120039240000000168400000000000000A7321ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C1" +
+      "11CC7CF947FC5A933478114DD76483FACDEE26E60D8A586BB58D09F27045C468B14F78AD4FDA66653106AE45EE5FE683C457E6BA9" +
+      "C50115013411307C0D97D1EC6B2989138679ACDCB75C37CA30F0A6";
+
+    assertSerializesAndDeserializes(mpTokenAuthorize, expectedBinary);
+  }
+
+  @Test
+  void serializeMpTokenIssuanceSet() throws JsonProcessingException {
+    MpTokenIssuanceSet mpTokenIssuanceSet = MpTokenIssuanceSet.builder()
+      .account(Address.of("rMBzp8CgpE441cp5PVyA9rpVV7oT8hP3ys"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347")
+      )
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("013411307C0D97D1EC6B2989138679ACDCB75C37CA30F0A6"))
+      .flags(MpTokenIssuanceSetFlags.builder().tfMptLock(true).build())
+      .build();
+
+    String expectedBinary = "1200382280000001240000000168400000000000000A7321ED9861C4CB029C0DA737B823D7D3459A70F22" +
+      "7958D5C0C111CC7CF947FC5A933478114DD76483FACDEE26E60D8A586BB58D09F27045C460115013411307C0D97D1EC6B29891386" +
+      "79ACDCB75C37CA30F0A6";
+
+    assertSerializesAndDeserializes(mpTokenIssuanceSet, expectedBinary);
+  }
+
+  @Test
+  void serializeMpTokenIssuanceDestroy() throws JsonProcessingException {
+    MpTokenIssuanceDestroy mpTokenIssuanceDestroy = MpTokenIssuanceDestroy.builder()
+      .account(Address.of("rMBzp8CgpE441cp5PVyA9rpVV7oT8hP3ys"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347")
+      )
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("113411307C0D97D1EC6B2989138679ACDCB75C37CA30F0A6"))
+      .build();
+
+    String expectedBinary = "120037240000000168400000000000000A7321ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C1" +
+      "11CC7CF947FC5A933478114DD76483FACDEE26E60D8A586BB58D09F27045C460115113411307C0D97D1EC6B2989138679ACDCB75C" +
+      "37CA30F0A6";
+
+    assertSerializesAndDeserializes(mpTokenIssuanceDestroy, expectedBinary);
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

@@ -60,6 +60,18 @@ public class XrplMethods {
   public static final String ACCOUNT_OFFERS = "account_offers";
 
   /**
+   * Constant for the {@code account_sponsoring} Clio API method, which retrieves a list of ledger objects
+   * that an account is sponsoring.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
+   */
+  @Beta
+  public static final String ACCOUNT_SPONSORING = "account_sponsoring";
+
+  /**
    * Constant for the <a href="https://xrpl.org/account_tx.html">account_tx</a> rippled API method.
    */
   public static final String ACCOUNT_TX = "account_tx";
@@ -235,4 +247,10 @@ public class XrplMethods {
 
   public static final String GET_AGGREGATE_PRICE = "get_aggregate_price";
   public static final String MPT_HOLDERS = "mpt_holders";
+
+  /**
+   * Constant for the {@code vault_info} rippled API method.
+   */
+  @Beta
+  public static final String VAULT_INFO = "vault_info";
 }

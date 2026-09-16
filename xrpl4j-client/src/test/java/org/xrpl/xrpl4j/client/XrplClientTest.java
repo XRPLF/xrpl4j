@@ -50,7 +50,6 @@ import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
-import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
@@ -66,6 +65,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountSponsoringRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountSponsoringResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
@@ -95,7 +96,6 @@ import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.path.BookOffersResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
-import org.xrpl.xrpl4j.model.client.path.ImmutableBookOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.path.PathCurrency;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
@@ -109,9 +109,12 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.client.vault.VaultInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.vault.VaultInfoResult;
 import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -128,7 +131,6 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -662,7 +664,7 @@ public class XrplClientTest {
         JsonRpcRequest request,
         JavaType resultType
       ) {
-        SubmitMultiSignedResult submitMultiSignedResult = SubmitMultiSignedResult.builder()
+        SubmitMultiSignedResult<?> submitMultiSignedResult = SubmitMultiSignedResult.builder()
           .engineResult("tesSUCCESS")
           .engineResultCode(200)
           .engineResultMessage("Submitted")
@@ -958,7 +960,7 @@ public class XrplClientTest {
       .taker(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .takerGets(Issue.XRP)
       .takerPays(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
           .currency("USD")
           .build()
@@ -991,6 +993,20 @@ public class XrplClientTest {
     verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountLinesResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_LINES);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountLinesRequestParams);
+  }
+
+  @Test
+  public void accountSponsoring() throws JsonRpcClientErrorException {
+    AccountSponsoringRequestParams accountSponsoringRequestParams = AccountSponsoringRequestParams.builder()
+      .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
+      .build();
+    xrplClient.accountSponsoring(accountSponsoringRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountSponsoringResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_SPONSORING);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountSponsoringRequestParams);
   }
 
   @Test
@@ -1064,6 +1080,20 @@ public class XrplClientTest {
   }
 
   @Test
+  void vaultInfo() throws JsonRpcClientErrorException {
+    VaultInfoRequestParams params = mock(VaultInfoRequestParams.class);
+    JsonRpcRequest expectedRequest = JsonRpcRequest.builder()
+      .method(XrplMethods.VAULT_INFO)
+      .addParams(params)
+      .build();
+    VaultInfoResult mockResult = mock(VaultInfoResult.class);
+    when(jsonRpcClientMock.send(expectedRequest, VaultInfoResult.class)).thenReturn(mockResult);
+    VaultInfoResult result = xrplClient.vaultInfo(params);
+
+    assertThat(result).isEqualTo(mockResult);
+  }
+
+  @Test
   void ledgerEntry() throws JsonRpcClientErrorException {
     LedgerEntryRequestParams<LedgerObject> params = LedgerEntryRequestParams.index(
       Hash256.of("6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E"),
@@ -1076,9 +1106,9 @@ public class XrplClientTest {
         .method(XrplMethods.LEDGER_ENTRY)
         .addParams(params)
         .build(),
-        ObjectMapperFactory.create().getTypeFactory().constructParametricType(
-          LedgerEntryResult.class, LedgerObject.class
-        )
+      ObjectMapperFactory.create().getTypeFactory().constructParametricType(
+        LedgerEntryResult.class, LedgerObject.class
+      )
     )).thenReturn(mockResult);
 
     LedgerEntryResult<LedgerObject> result = xrplClient.ledgerEntry(params);

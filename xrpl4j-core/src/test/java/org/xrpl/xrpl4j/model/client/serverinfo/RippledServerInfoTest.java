@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.serverinfo;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,9 +36,6 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -226,8 +223,7 @@ public class RippledServerInfoTest extends AbstractJsonTest {
       .publicKeyNode("n9MmdUoYxpTMPhD8Fxky48wXnmr3zu5hqG1httdLrD8JY66GbdTq")
       .serverState("full")
       .serverStateDurationUs("20369650238475")
-      .time(ZonedDateTime.parse("2022-Jul-26 19:14:02.337455 UTC",
-        DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z", Locale.US)).withZoneSameLocal(ZoneId.of("UTC")))
+      .time(parseRippledTime("2022-Jul-26 19:14:02.337455 UTC"))
       .upTime(UnsignedLong.valueOf(20369659))
       .validatedLedger(ValidatedLedger.builder()
         .age(UnsignedInteger.ONE)
@@ -243,6 +239,69 @@ public class RippledServerInfoTest extends AbstractJsonTest {
     ServerInfoResult rippledResult = ServerInfoResult.builder()
       .status("success")
       .info(rippledServerInfo)
+      .build();
+
+    assertCanDeserialize(json, rippledResult);
+  }
+
+  @Test
+  public void deserializeServerInfoWithClosedLedgerMissingAge() throws JsonProcessingException {
+    // Reproduces https://github.com/XRPLF/xrpl4j/issues/824: rippled 3.2.1 omits `age` from `closed_ledger`
+    // when it cannot compute a valid age (e.g. syncing, disconnected, or reconnecting).
+    String json = "{\n" +
+      "    \"info\": {\n" +
+      "      \"build_version\": \"3.2.1\",\n" +
+      "      \"complete_ledgers\": \"empty\",\n" +
+      "      \"closed_ledger\": {\n" +
+      "        \"base_fee_xrp\": 0.00001,\n" +
+      "        \"hash\": \"84759C11354D315E9B90BF7082BBCF273ACB14A4F0AF8504694080456E7F56B3\",\n" +
+      "        \"reserve_base_xrp\": 10,\n" +
+      "        \"reserve_inc_xrp\": 2,\n" +
+      "        \"seq\": 52631\n" +
+      "      },\n" +
+      "      \"hostid\": \"trace\",\n" +
+      "      \"io_latency_ms\": 1,\n" +
+      "      \"jq_trans_overflow\": \"0\",\n" +
+      "      \"last_close\": {\n" +
+      "        \"converge_time_s\": 2.0,\n" +
+      "        \"proposers\": 4\n" +
+      "      },\n" +
+      "      \"peers\": 4,\n" +
+      "      \"pubkey_node\": \"n9MmdUoYxpTMPhD8Fxky48wXnmr3zu5hqG1httdLrD8JY66GbdTq\",\n" +
+      "      \"server_state\": \"connected\",\n" +
+      "      \"server_state_duration_us\": \"2001303\",\n" +
+      "      \"time\": \"2020-Mar-24 01:27:42.147330 UTC\",\n" +
+      "      \"uptime\": 1984\n" +
+      "    },\n" +
+      "    \"status\": \"success\"\n" +
+      "  }";
+
+    ServerInfoResult rippledResult = ServerInfoResult.builder()
+      .status("success")
+      .info(RippledServerInfo.builder()
+        .buildVersion("3.2.1")
+        .completeLedgers(LedgerRangeUtils.completeLedgersToListOfRange("empty"))
+        .closedLedger(ValidatedLedger.builder()
+          .hash(Hash256.of("84759C11354D315E9B90BF7082BBCF273ACB14A4F0AF8504694080456E7F56B3"))
+          .baseFeeXrp(new BigDecimal("0.000010"))
+          .reserveBaseXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10)))
+          .reserveIncXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2)))
+          .sequence(LedgerIndex.of(UnsignedInteger.valueOf(52631)))
+          .build())
+        .hostId("trace")
+        .ioLatencyMs(UnsignedLong.ONE)
+        .jqTransOverflow("0")
+        .lastClose(LastClose.builder()
+          .convergeTimeSeconds(BigDecimal.valueOf(2d))
+          .proposers(UnsignedInteger.valueOf(4))
+          .build())
+        .peers(UnsignedInteger.valueOf(4))
+        .publicKeyNode("n9MmdUoYxpTMPhD8Fxky48wXnmr3zu5hqG1httdLrD8JY66GbdTq")
+        .serverState("connected")
+        .serverStateDurationUs("2001303")
+        .time(parseRippledTime("2020-Mar-24 01:27:42.147330 UTC"))
+        .upTime(UnsignedLong.valueOf(1984))
+        .build())
       .build();
 
     assertCanDeserialize(json, rippledResult);
@@ -321,8 +380,7 @@ public class RippledServerInfoTest extends AbstractJsonTest {
       .publicKeyValidator("nHBk5DPexBjinXV8qHn7SEKzoxh2W92FxSbNTPgGtQYBzEF4msn9")
       .serverState("proposing")
       .serverStateDurationUs("1850969666")
-      .time(ZonedDateTime.parse("2020-Mar-24 01:27:42.147330 UTC",
-        DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z", Locale.US)).withZoneSameLocal(ZoneId.of("UTC")))
+      .time(parseRippledTime("2020-Mar-24 01:27:42.147330 UTC"))
       .upTime(UnsignedLong.valueOf(1984))
       .validatedLedger(ValidatedLedger.builder()
         .age(UnsignedInteger.valueOf(2))

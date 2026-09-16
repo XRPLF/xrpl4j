@@ -1,11 +1,14 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
+import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 
 class AmmWithdrawTest extends AbstractJsonTest {
@@ -258,10 +261,34 @@ class AmmWithdrawTest extends AbstractJsonTest {
       )
       .fee(XrpCurrencyAmount.ofDrops(10))
       .asset(
-        Issue.builder()
+        IouIssue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
       ).asset2(Issue.XRP);
+  }
+
+  @Test
+  void transactionFlagsReturnsCorrectFlagsWhenFlagsSet() {
+    AmmWithdraw ammWithdraw = baseBuilder()
+      .flags(AmmWithdrawFlags.LP_TOKEN)
+      .lpTokensIn(lpTokensIn())
+      .build();
+
+    assertThat(ammWithdraw.transactionFlags()).isEqualTo(ammWithdraw.flags());
+    assertThat(((AmmWithdrawFlags) ammWithdraw.transactionFlags()).tfLpToken()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    AmmWithdraw original = baseBuilder()
+      .flags(AmmWithdrawFlags.WITHDRAW_ALL)
+      .build();
+
+    AmmWithdraw copied = AmmWithdraw.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+    assertThat(((AmmWithdrawFlags) copied.transactionFlags()).tfWithdrawAll()).isTrue();
   }
 }

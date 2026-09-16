@@ -56,6 +56,24 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <executions>
+          <!-- Disable inherited executions: this module has no sources/tests of its own to instrument or report. -->
+          <execution>
+            <id>default</id>
+            <phase>none</phase>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>none</phase>
+          </execution>
+          <execution>
+            <id>pre-integration-test</id>
+            <phase>none</phase>
+          </execution>
+          <execution>
+            <id>integration test report</id>
+            <phase>none</phase>
+          </execution>
+
           <execution>
             <id>aggregate-coverage</id>
             <phase>verify</phase>

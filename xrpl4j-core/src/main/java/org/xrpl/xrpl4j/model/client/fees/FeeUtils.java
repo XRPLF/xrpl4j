@@ -222,14 +222,15 @@ public class FeeUtils {
   /**
    * Itemizes the fee of {@link FeeParams#transaction()} as a {@link FeeBreakdown}: one {@link FeeTerm} per reason the
    * transaction owes something, each tagged {@code specified}, {@code assumed} or {@code derived}. This is the same
-   * computation {@link #computeFee(FeeParams)} prices from — the breakdown's totals <em>are</em> the fee — exposed
-   * separately so a caller can inspect or display the reasoning without the fee levels.
+   * computation {@link #computeFee(FeeParams)} prices from — the breakdown's totals <em>are</em> the fee — factored
+   * out so {@link #computeFee(FeeParams)} can populate {@link ComputedNetworkFees#feeBreakdown()} from it.
    *
    * @param feeParams The {@link FeeParams} describing the transaction and how it will be signed.
    *
    * @return A {@link FeeBreakdown}.
    */
-  public static FeeBreakdown computeFeeBreakdown(final FeeParams feeParams) {
+  @VisibleForTesting
+  static FeeBreakdown computeFeeBreakdown(final FeeParams feeParams) {
     Objects.requireNonNull(feeParams);
 
     final Transaction transaction = feeParams.transaction();

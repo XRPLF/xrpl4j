@@ -42,7 +42,6 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
-import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Credential;
 import org.xrpl.xrpl4j.model.transactions.CredentialAccept;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
@@ -494,44 +493,6 @@ public class DepositPreAuthIT extends AbstractIT {
         )
         .build()).depositAuthorized(),
       "org.xrpl.xrpl4j.client.JsonRpcClientErrorException: ledgerNotFound"
-    );
-  }
-
-  /**
-   * Enable the lsfDepositPreauth flag on a given account by submitting an {@link AccountSet} transaction.
-   *
-   * @param wallet The {@link KeyPair} of the account to enable Deposit Preauthorization on.
-   * @param fee    The {@link XrpCurrencyAmount} of the ledger fee for the AccountSet transaction.
-   *
-   * @return The {@link AccountInfoResult} of the wallet once the {@link AccountSet} transaction has been applied.
-   *
-   * @throws JsonRpcClientErrorException If {@code xrplClient} throws an error.
-   */
-  private AccountInfoResult enableDepositPreauth(
-    KeyPair wallet,
-    XrpCurrencyAmount fee
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
-    AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.publicKey().deriveAddress())
-    );
-    AccountSet accountSet = AccountSet.builder()
-      .account(wallet.publicKey().deriveAddress())
-      .fee(fee)
-      .sequence(accountInfoResult.accountData().sequence())
-      .signingPublicKey(wallet.publicKey())
-      .setFlag(AccountSet.AccountSetFlag.DEPOSIT_AUTH)
-      .build();
-
-    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
-      wallet.privateKey(), accountSet
-    );
-    SubmitResult<AccountSet> accountSetResult = xrplClient.submit(signedAccountSet);
-    assertThat(accountSetResult.engineResult()).isEqualTo("tesSUCCESS");
-    logSubmitResult(accountSetResult, "Enable Deposit Preauth");
-
-    return this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.publicKey().deriveAddress()),
-      accountInfo -> accountInfo.accountData().flags().lsfDepositAuth()
     );
   }
 

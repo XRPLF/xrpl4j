@@ -138,6 +138,17 @@ public class TransactionTest {
   }
 
   @Test
+  void feeDefaultsToZero() {
+    Payment payment = Payment.builder()
+      .account(Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .build();
+
+    assertThat(payment.fee()).isEqualTo(XrpCurrencyAmount.ofDrops(0));
+  }
+
+  @Test
   void signingPublicKeyDefaultsToMultiSignPublicKey() {
     Payment payment = Payment.builder()
       .account(Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH"))

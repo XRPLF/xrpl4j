@@ -235,13 +235,15 @@ public class FeeUtils {
   }
 
   /**
-   * Logs a warning naming every {@link FeeTerm.Provenance#ASSUMED} term in {@code feeBreakdown} that adds to the fee,
-   * so that a developer who did not intend to rely on a default — a Batch participant assumed to single-sign, or a
-   * {@code LoanSet} counterparty assumed to use one key — has a chance to notice before trusting the computed fee.
+   * Logs a warning naming every {@link FeeTerm.Provenance#ASSUMED} term in {@code feeBreakdown}, so that a developer
+   * who left an input unset — a Batch participant assumed to single-sign, or a {@code LoanSet} counterparty assumed to
+   * use one key — has a chance to notice before trusting the computed fee.
    *
-   * <p>Only assumptions that carry fee units are reported. An assumed count of zero (the ordinary case of a
-   * single-signed, unsponsored transaction) cannot make the fee too low, so warning about it would fire on nearly every
-   * call and train callers to ignore the log.
+   * <p>Every assumption is reported, including one that costs nothing, because the point is to say "you did not set
+   * this field, so the library chose for you" rather than to predict which assumptions will prove expensive. A caller
+   * who has deliberately accepted a default can silence the warning by supplying the value explicitly:
+   * {@link FeeParams#signersCount()} set to {@link UnsignedInteger#ZERO} is a stated single-signature rather than an
+   * assumed one.
    *
    * @param feeParams    The {@link FeeParams} that produced {@code feeBreakdown}, identifying the transaction in the
    *                     log message.
@@ -252,14 +254,14 @@ public class FeeUtils {
       return;
     }
 
-    final boolean hasCostlyAssumption = feeBreakdown.terms().stream()
-      .anyMatch(term -> term.provenance() == FeeTerm.Provenance.ASSUMED && term.feeUnits() > 0L);
+    final boolean hasAssumedTerm = feeBreakdown.terms().stream()
+      .anyMatch(term -> term.provenance() == FeeTerm.Provenance.ASSUMED);
 
-    if (hasCostlyAssumption) {
+    if (hasAssumedTerm) {
       LOGGER.warn(
-        "computeFee assumed one or more unspecified inputs while pricing a {} transaction, and those assumptions " +
-          "add to the fee. If any of them does not hold, the computed fee will be too low. Review the [assumed] " +
-          "lines and supply the named FeeParams input:\n{}",
+        "computeFee assumed one or more unspecified inputs while pricing a {} transaction. If any assumption does " +
+          "not hold, the computed fee will be wrong. Review the [assumed] lines and supply the named FeeParams " +
+          "input:\n{}",
         feeParams.transaction().transactionType().value(),
         feeBreakdown.summary()
       );

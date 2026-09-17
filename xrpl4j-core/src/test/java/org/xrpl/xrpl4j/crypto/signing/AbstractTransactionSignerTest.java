@@ -32,6 +32,8 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PUBLIC_KEY;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
+import com.google.common.base.Strings;
+import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -44,7 +46,11 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.ImmutableLoanSet;
+import org.xrpl.xrpl4j.model.transactions.ImmutablePayment;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
@@ -127,6 +133,39 @@ public class AbstractTransactionSignerTest {
     };
   }
 
+  /**
+   * Builds a minimal {@link Payment} with the given fee. Passing {@code null} leaves the fee at its zero default.
+   */
+  private static Payment payment(final XrpCurrencyAmount fee) {
+    final ImmutablePayment.Builder builder = Payment.builder()
+      .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(ED_PUBLIC_KEY);
+    if (fee != null) {
+      builder.fee(fee);
+    }
+    return builder.build();
+  }
+
+  /**
+   * Builds a minimal {@link LoanSet} with the given fee. Passing {@code null} leaves the fee at its zero default.
+   */
+  private static LoanSet loanSet(final XrpCurrencyAmount fee) {
+    final ImmutableLoanSet.Builder builder = LoanSet.builder()
+      .account(ED_PUBLIC_KEY.deriveAddress())
+      .sequence(UnsignedInteger.ONE)
+      .loanBrokerId(Hash256.of(Strings.padStart("ABC123", 64, '0')))
+      .principalRequested(Amount.of("50000"))
+      .signingPublicKey(ED_PUBLIC_KEY);
+    if (fee != null) {
+      builder.fee(fee);
+    }
+    return builder.build();
+  }
+
+  private static final XrpCurrencyAmount NON_ZERO_FEE = XrpCurrencyAmount.ofDrops(1000);
+
   // /////////////////
   // Sign (Transaction)
   // ////////////////
@@ -140,6 +179,21 @@ public class AbstractTransactionSignerTest {
   void signWithNullTransaction() {
     assertThrows(NullPointerException.class,
       () -> transactionSigner.sign(privateKeyableMock, (Transaction) null));
+  }
+
+  @Test
+  void signWithZeroFeeThrows() {
+    final Payment payment = Payment.builder()
+      .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(ED_PUBLIC_KEY)
+      .build();
+
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> transactionSigner.sign(privateKeyableMock, payment)
+    );
+    assertThat(exception.getMessage()).contains("Refusing to sign a transaction with a Fee of 0");
   }
 
   @Test
@@ -284,27 +338,39 @@ public class AbstractTransactionSignerTest {
   }
 
   @Test
+  void multiSignWithZeroFeeThrows() {
+    final Payment payment = payment(null);
+
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> transactionSigner.multiSign(privateKeyableMock, payment)
+    );
+    assertThat(exception.getMessage()).contains("Refusing to sign a transaction with a Fee of 0");
+  }
+
+  @Test
   void multiSignEd25519() {
     keyType = KeyType.ED25519;
+    final Payment payment = payment(NON_ZERO_FEE);
 
-    Signature signature = transactionSigner.multiSign(privateKeyableMock, transactionMock);
+    Signature signature = transactionSigner.multiSign(privateKeyableMock, payment);
     assertThat(signature).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.ED_ADDRESS);
-    verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
+    verify(signatureUtilsMock).toMultiSignableBytes(payment, TestConstants.ED_ADDRESS);
+    verify(signatureUtilsMock, times(0)).toSignableBytes(payment);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   void multiSignSecp256k1() {
     keyType = KeyType.SECP256K1;
+    final Payment payment = payment(NON_ZERO_FEE);
 
-    Signature signature = transactionSigner.multiSign(privateKeyableMock, transactionMock);
+    Signature signature = transactionSigner.multiSign(privateKeyableMock, payment);
 
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.EC_ADDRESS);
-    verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
+    verify(signatureUtilsMock).toMultiSignableBytes(payment, TestConstants.EC_ADDRESS);
+    verify(signatureUtilsMock, times(0)).toSignableBytes(payment);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -325,29 +391,30 @@ public class AbstractTransactionSignerTest {
   @Test
   void multiSignToSignerEd25519() {
     keyType = KeyType.ED25519;
+    final Payment payment = payment(NON_ZERO_FEE);
 
-    Signer signer = transactionSigner.multiSignToSigner(privateKeyableMock, transactionMock);
+    Signer signer = transactionSigner.multiSignToSigner(privateKeyableMock, payment);
     assertThat(signer.signingPublicKey()).isEqualTo(ED_PUBLIC_KEY);
     assertThat(signer.account()).isEqualTo(ED_PUBLIC_KEY.deriveAddress());
     assertThat(signer.transactionSignature()).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.ED_ADDRESS);
-    verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
+    verify(signatureUtilsMock).toMultiSignableBytes(payment, TestConstants.ED_ADDRESS);
+    verify(signatureUtilsMock, times(0)).toSignableBytes(payment);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   void multiSignToSignerSecp256k1() {
-
     keyType = KeyType.SECP256K1;
+    final Payment payment = payment(NON_ZERO_FEE);
 
-    Signer signer = transactionSigner.multiSignToSigner(privateKeyableMock, transactionMock);
+    Signer signer = transactionSigner.multiSignToSigner(privateKeyableMock, payment);
     assertThat(signer.signingPublicKey()).isEqualTo(EC_PUBLIC_KEY);
     assertThat(signer.account()).isEqualTo(EC_PUBLIC_KEY.deriveAddress());
     assertThat(signer.transactionSignature()).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.EC_ADDRESS);
-    verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
+    verify(signatureUtilsMock).toMultiSignableBytes(payment, TestConstants.EC_ADDRESS);
+    verify(signatureUtilsMock, times(0)).toSignableBytes(payment);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -457,24 +524,36 @@ public class AbstractTransactionSignerTest {
   }
 
   @Test
+  void counterpartySignWithZeroFeeThrows() {
+    final LoanSet loanSet = loanSet(null);
+
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> transactionSigner.counterpartySign(privateKeyableMock, loanSet)
+    );
+    assertThat(exception.getMessage()).contains("Refusing to sign a transaction with a Fee of 0");
+  }
+
+  @Test
   void counterpartySignEd25519() {
     keyType = KeyType.ED25519;
+    final LoanSet loanSet = loanSet(NON_ZERO_FEE);
 
-    Signature signature = transactionSigner.counterpartySign(privateKeyableMock, loanSetMock);
+    Signature signature = transactionSigner.counterpartySign(privateKeyableMock, loanSet);
     assertThat(signature).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toSignableBytes(loanSetMock);
+    verify(signatureUtilsMock).toSignableBytes(loanSet);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   void counterpartySignSecp256k1() {
     keyType = KeyType.SECP256K1;
+    final LoanSet loanSet = loanSet(NON_ZERO_FEE);
 
-    Signature signature = transactionSigner.counterpartySign(privateKeyableMock, loanSetMock);
+    Signature signature = transactionSigner.counterpartySign(privateKeyableMock, loanSet);
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toSignableBytes(loanSetMock);
+    verify(signatureUtilsMock).toSignableBytes(loanSet);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -494,24 +573,36 @@ public class AbstractTransactionSignerTest {
   }
 
   @Test
+  void counterpartyMultiSignWithZeroFeeThrows() {
+    final LoanSet loanSet = loanSet(null);
+
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> transactionSigner.counterpartyMultiSign(privateKeyableMock, loanSet)
+    );
+    assertThat(exception.getMessage()).contains("Refusing to sign a transaction with a Fee of 0");
+  }
+
+  @Test
   void counterpartyMultiSignEd25519() {
     keyType = KeyType.ED25519;
+    final LoanSet loanSet = loanSet(NON_ZERO_FEE);
 
-    Signature signature = transactionSigner.counterpartyMultiSign(privateKeyableMock, loanSetMock);
+    Signature signature = transactionSigner.counterpartyMultiSign(privateKeyableMock, loanSet);
     assertThat(signature).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toCounterpartyMultiSignableBytes(loanSetMock, TestConstants.ED_ADDRESS);
+    verify(signatureUtilsMock).toCounterpartyMultiSignableBytes(loanSet, TestConstants.ED_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   void counterpartyMultiSignSecp256k1() {
     keyType = KeyType.SECP256K1;
+    final LoanSet loanSet = loanSet(NON_ZERO_FEE);
 
-    Signature signature = transactionSigner.counterpartyMultiSign(privateKeyableMock, loanSetMock);
+    Signature signature = transactionSigner.counterpartyMultiSign(privateKeyableMock, loanSet);
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toCounterpartyMultiSignableBytes(loanSetMock, TestConstants.EC_ADDRESS);
+    verify(signatureUtilsMock).toCounterpartyMultiSignableBytes(loanSet, TestConstants.EC_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -528,6 +619,21 @@ public class AbstractTransactionSignerTest {
   void sponsorSignWithNullTransaction() {
     assertThrows(NullPointerException.class,
       () -> transactionSigner.sponsorSign(privateKeyableMock, null));
+  }
+
+  @Test
+  void sponsorSignWithZeroFeeThrows() {
+    final Payment payment = Payment.builder()
+      .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(ED_PUBLIC_KEY)
+      .build();
+
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> transactionSigner.sponsorSign(privateKeyableMock, payment)
+    );
+    assertThat(exception.getMessage()).contains("Refusing to sign a transaction with a Fee of 0");
   }
 
   @Test
@@ -584,26 +690,38 @@ public class AbstractTransactionSignerTest {
   }
 
   @Test
+  void sponsorMultiSignWithZeroFeeThrows() {
+    final Payment payment = payment(null);
+
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> transactionSigner.sponsorMultiSign(privateKeyableMock, payment)
+    );
+    assertThat(exception.getMessage()).contains("Refusing to sign a transaction with a Fee of 0");
+  }
+
+  @Test
   void sponsorMultiSignEd25519() {
     keyType = KeyType.ED25519;
+    final Payment payment = payment(NON_ZERO_FEE);
     when(signatureUtilsMock.toSponsorMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
-    Signature signature = transactionSigner.sponsorMultiSign(privateKeyableMock, transactionMock);
+    Signature signature = transactionSigner.sponsorMultiSign(privateKeyableMock, payment);
     assertThat(signature).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toSponsorMultiSignableBytes(transactionMock, TestConstants.ED_ADDRESS);
+    verify(signatureUtilsMock).toSponsorMultiSignableBytes(payment, TestConstants.ED_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   void sponsorMultiSignSecp256k1() {
     keyType = KeyType.SECP256K1;
+    final Payment payment = payment(NON_ZERO_FEE);
     when(signatureUtilsMock.toSponsorMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
-    Signature signature = transactionSigner.sponsorMultiSign(privateKeyableMock, transactionMock);
+    Signature signature = transactionSigner.sponsorMultiSign(privateKeyableMock, payment);
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toSponsorMultiSignableBytes(transactionMock, TestConstants.EC_ADDRESS);
+    verify(signatureUtilsMock).toSponsorMultiSignableBytes(payment, TestConstants.EC_ADDRESS);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 

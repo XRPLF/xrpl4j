@@ -384,6 +384,13 @@ public class BatchTransactionIT extends AbstractIT {
       )
       .build();
 
+    // Every inner belongs to the outer account, so there are no BatchSigners to collect and the Batch can be priced
+    // straight away.
+    Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // ///////////////
     // Outer MultiSign (account1Signer1 and account1Signer2 are the outer multi-signers)

@@ -1450,6 +1450,19 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addSignatureToVaultSetWithoutFlags() {
+    VaultSet transaction = VaultSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
   void addSignatureToVaultDelete() {
     VaultDelete transaction = VaultDelete.builder()
       .account(sourcePublicKey.deriveAddress())

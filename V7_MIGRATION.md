@@ -195,6 +195,23 @@ Optional<MpTokenMetadata> metadata = metaMpTokenIssuanceObject.mpTokenMetadata()
 Optional<String> hexString = metadata.map(MpTokenMetadata::value);
 ```
 
+### 4. `VaultDeposit` and `VaultSet` `flags()` type change
+
+The return type of `VaultDeposit.flags()` changed from `TransactionFlags` to `VaultDepositFlags`, and the return type
+of `VaultSet.flags()` changed from `TransactionFlags` to `VaultSetFlags`. This supports the new `tfVaultDonate` flag on
+`VaultDeposit`, and the new `tfVaultDepositBlock`/`tfVaultDepositUnblock` flags on `VaultSet`.
+
+**Migration:**
+
+```java
+// Before (v6.x.x)
+TransactionFlags depositFlags = vaultDeposit.flags();
+
+// After (v7.0.0)
+VaultDepositFlags depositFlags = vaultDeposit.flags();
+boolean donate = depositFlags.tfVaultDonate();
+```
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.

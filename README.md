@@ -60,6 +60,25 @@ found in the BOM to your `pom.xml`. For example:
 </dependencies>
 ```
 
+### Using a pooled HTTP client
+
+By default `XrplClient` sends requests with Feign's built-in `HttpURLConnection` client, which
+has no connection-pool configuration. To use a pooled client, pass any Feign `Client` to the
+`XrplClient(HttpUrl, Client, Options)` constructor. For example, add `feign-okhttp` at the same
+Feign version that `xrpl4j-client` uses, then:
+
+```java
+OkHttpClient okHttpClient = new OkHttpClient.Builder()
+  .connectionPool(new ConnectionPool(32, 30, TimeUnit.SECONDS))
+  .build();
+
+XrplClient xrplClient = new XrplClient(
+  HttpUrl.get("https://s1.ripple.com:51234/"),
+  new feign.okhttp.OkHttpClient(okHttpClient),
+  new Request.Options(5, TimeUnit.SECONDS, 30, TimeUnit.SECONDS, true)
+);
+```
+
 ### Core Objects
 
 This library provides Java objects modeling [XRP Ledger Objects](https://xrpl.org/ledger-data-formats.html),

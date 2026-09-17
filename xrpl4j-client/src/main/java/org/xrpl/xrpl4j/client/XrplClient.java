@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import feign.Client;
 import feign.Request;
 import feign.Request.Options;
 import okhttp3.HttpUrl;
@@ -160,6 +161,22 @@ public class XrplClient {
           true)
       )
     );
+  }
+
+  /**
+   * Public constructor that allows for a custom Feign {@link Client} to be used for HTTP requests, for example one
+   * backed by OkHttp or Apache HttpClient with connection pooling.
+   *
+   * <p>xrpl4j does not bundle a Feign client implementation. Add one such as
+   * {@code io.github.openfeign:feign-okhttp} to your project, using the same Feign version that {@code xrpl4j-client}
+   * depends on.
+   *
+   * @param rippledUrl The {@link HttpUrl} of the node to connect to.
+   * @param client     The Feign {@link Client} used to execute HTTP requests.
+   * @param options    Feign request {@link Options} (connect timeout, read timeout, follow redirects).
+   */
+  public XrplClient(HttpUrl rippledUrl, Client client, Options options) {
+    this(JsonRpcClient.construct(rippledUrl, client, options));
   }
 
   /**

@@ -79,6 +79,7 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Unit tests for {@link FeeUtils}.
@@ -845,7 +846,7 @@ public class FeeUtilsTest {
     // 2 outer + 2 batchSigners + (1 + 1) inners
     Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
     assertThat(batch.requiredSigners()).containsExactlyInAnyOrder(BOB, CAROL);
-    assertFeeUnits(paramsFor(batch), 6);
+    assertFeeUnits(paramsFor(signedByAllRequiredSigners(batch)), 6);
   }
 
   @Test
@@ -860,13 +861,12 @@ public class FeeUtilsTest {
   }
 
   @Test
-  void batchPricedBeforeSigningCanBeToldAParticipantWillMultiSign() {
-    // The same 8, forecast rather than counted.
+  void refusesToPriceABatchBeforeItsSignaturesAreCollected() {
+    // Each batch signature costs one base fee, and the only exact source of that count is BatchSigners.
     Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
-    assertFeeUnits(
-      paramsFor(batch).putSignaturesPerBatchSigner(CAROL, UnsignedInteger.valueOf(3)),
-      8
-    );
+    assertThatThrownBy(() -> paramsFor(batch).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("cannot be priced until its BatchSigners are collected");
   }
 
   @Test
@@ -883,7 +883,7 @@ public class FeeUtilsTest {
     );
 
     assertThat(batch.requiredSigners()).containsExactlyInAnyOrder(CAROL, DAVE, FRANK);
-    assertFeeUnits(paramsFor(batch), 8);
+    assertFeeUnits(paramsFor(signedByAllRequiredSigners(batch)), 8);
   }
 
   @Test
@@ -898,7 +898,7 @@ public class FeeUtilsTest {
     // 2 outer + 2 batchSigners + 2 outer signers + 3 sponsor signers + (10 + 1) inners
     Batch batch = batch(ALICE, innerConfidentialSend(BOB, 1), innerPayment(CAROL, 1));
     assertFeeUnits(
-      paramsFor(batch)
+      paramsFor(signedByAllRequiredSigners(batch))
         .signersCount(UnsignedInteger.valueOf(2))
         .sponsorSignersCount(UnsignedInteger.valueOf(3)),
       20
@@ -911,7 +911,7 @@ public class FeeUtilsTest {
     // 2 outer + 3 batchSigners {bob, carol, dave} + (1 payment + 1 loanSet) inners
     Batch batch = batch(ALICE, innerPayment(BOB, 1), innerLoanSet(CAROL, DAVE, 1));
     assertThat(batch.requiredSigners()).containsExactlyInAnyOrder(BOB, CAROL, DAVE);
-    assertFeeUnits(paramsFor(batch), 7);
+    assertFeeUnits(paramsFor(signedByAllRequiredSigners(batch)), 7);
   }
 
   @Test
@@ -935,7 +935,7 @@ public class FeeUtilsTest {
     // 2 outer + 2 batchSigners + 2 outer signers + 3 sponsor signers + (1 + 1) inners
     Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
     assertFeeUnits(
-      paramsFor(batch)
+      paramsFor(signedByAllRequiredSigners(batch))
         .signersCount(UnsignedInteger.valueOf(2))
         .sponsorSignersCount(UnsignedInteger.valueOf(3)),
       11
@@ -976,23 +976,12 @@ public class FeeUtilsTest {
   // /////////////////
 
   @Test
-  void rejectsASignatureCountForAnAccountThatNeedNotSign() {
+  void namesTheAccountsThatMustSignWhenRefusingAnUnsignedBatch() {
     Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
-    assertThatThrownBy(() -> paramsFor(batch).putSignaturesPerBatchSigner(DAVE, UnsignedInteger.valueOf(3)).build())
+    assertThatThrownBy(() -> paramsFor(batch).build())
       .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("is not required to sign this Batch");
-  }
-
-  @Test
-  void rejectsAForecastWhenSignaturesHaveAlreadyBeenCollected() {
-    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
-    Batch signed = Batch.builder().from(batch)
-      .batchSigners(Lists.newArrayList(singleSignature(BOB), singleSignature(CAROL)))
-      .build();
-
-    assertThatThrownBy(() -> paramsFor(signed).putSignaturesPerBatchSigner(BOB, UnsignedInteger.valueOf(3)).build())
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("before its signatures exist");
+      .hasMessageContaining(BOB.value())
+      .hasMessageContaining(CAROL.value());
   }
 
   @Test
@@ -1004,10 +993,6 @@ public class FeeUtilsTest {
     assertThatThrownBy(() -> paramsFor(payment()).loanPaymentFeeIncrements(UnsignedInteger.valueOf(2)).build())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("applies only to a LoanPay");
-
-    assertThatThrownBy(() -> paramsFor(payment()).putSignaturesPerBatchSigner(BOB, UnsignedInteger.ONE).build())
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("applies only to a Batch");
   }
 
   @Test
@@ -1056,15 +1041,6 @@ public class FeeUtilsTest {
     assertThatThrownBy(() -> paramsFor(loanSet()).counterpartySignatureCount(UnsignedInteger.ZERO).build())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("counterpartySignatureCount must be between 1 and 32");
-  }
-
-  @Test
-  void rejectsZeroSignaturesForARequiredBatchSigner() {
-    // A participant listed in signaturesPerBatchSigner must sign, so zero would undercount the batch signatures.
-    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
-    assertThatThrownBy(() -> paramsFor(batch).putSignaturesPerBatchSigner(BOB, UnsignedInteger.ZERO).build())
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("must be between 1 and 32");
   }
 
   // /////////////////
@@ -1256,6 +1232,16 @@ public class FeeUtilsTest {
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
       .rawTransactions(wrappers)
+      .build();
+  }
+
+  /**
+   * Attaches a single-signature {@code BatchSigner} for every account {@code batch} requires, so that it can be
+   * priced. A Batch must carry its {@code BatchSigners} before {@link FeeUtils#computeFee(FeeParams)} will price it.
+   */
+  private Batch signedByAllRequiredSigners(final Batch batch) {
+    return Batch.builder().from(batch)
+      .batchSigners(batch.requiredSigners().stream().map(this::singleSignature).collect(Collectors.toList()))
       .build();
   }
 

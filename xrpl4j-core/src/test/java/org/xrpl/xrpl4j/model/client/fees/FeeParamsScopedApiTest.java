@@ -48,6 +48,8 @@ import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.UnknownTransaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.Signer;
+import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 
 import java.util.List;
 
@@ -120,32 +122,37 @@ public class FeeParamsScopedApiTest {
 
   @Test
   void forBatchMatchesTheFlatBuilder() {
-    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
-    // 2 outer + 2 batchSigners + (1 + 1) inners
-    assertFeeUnits(FeeParams.forBatch(feeResult(), batch).build(), 6);
-    // Forecast carol multi-signing with 3 keys: 2 + (1 + 3) + (1 + 1)
-    assertFeeUnits(
-      FeeParams.forBatch(feeResult(), batch).signaturesFor(CAROL, UnsignedInteger.valueOf(3)).build(),
-      8
-    );
-  }
-
-  @Test
-  void forBatchRejectsANonRequiredSignerAtTheCallThatNamedIt() {
-    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
-    assertThatThrownBy(() -> FeeParams.forBatch(feeResult(), batch).signaturesFor(DAVE, UnsignedInteger.ONE))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("is not required to sign this Batch");
-  }
-
-  @Test
-  void forBatchRejectsAForecastOnceSignaturesExist() {
-    Batch signed = Batch.builder().from(batch(ALICE, innerPayment(BOB, 1), innerPayment(BOB, 2)))
-      .batchSigners(Lists.newArrayList(singleSignature(BOB)))
+    Batch signed = Batch.builder().from(batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1)))
+      .batchSigners(Lists.newArrayList(singleSignature(BOB), singleSignature(CAROL)))
       .build();
-    assertThatThrownBy(() -> FeeParams.forBatch(feeResult(), signed).signaturesFor(BOB, UnsignedInteger.valueOf(2)))
+    // 2 outer + 2 collected batch signatures + (1 + 1) inners
+    assertFeeUnits(FeeParams.forBatch(feeResult(), signed).build(), 6);
+    assertFeeUnits(FeeParams.builder().feeResult(feeResult()).transaction(signed).build(), 6);
+  }
+
+  @Test
+  void forBatchReadsAMultiSigningParticipantsRealCount() {
+    // Carol signs with 3 keys: 2 outer + (1 bob + 3 carol) + (1 + 1) inners
+    Batch signed = Batch.builder().from(batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1)))
+      .batchSigners(Lists.newArrayList(singleSignature(BOB), multiSignature(CAROL, 3)))
+      .build();
+    assertFeeUnits(FeeParams.forBatch(feeResult(), signed).build(), 8);
+  }
+
+  @Test
+  void forBatchRefusesAnUnsignedBatch() {
+    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
+    assertThatThrownBy(() -> FeeParams.forBatch(feeResult(), batch).build())
       .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("before its signatures exist");
+      .hasMessageContaining("cannot be priced until its BatchSigners are collected");
+  }
+
+  @Test
+  void forBatchAcceptsASingleAccountBatchWithNoRequiredSigners() {
+    // Every inner belongs to the outer account, so there are no batch signers to collect.
+    Batch batch = batch(ALICE, innerPayment(ALICE, 1), innerPayment(ALICE, 2));
+    assertThat(batch.requiredSigners()).isEmpty();
+    assertFeeUnits(FeeParams.forBatch(feeResult(), batch).build(), 4);
   }
 
   @Test
@@ -156,42 +163,6 @@ public class FeeParamsScopedApiTest {
     );
     // 2 outer + 1 payment inner = 3 base fees, plus one flat owner reserve.
     assertThat(fees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(3 * 1000 + 200000));
-  }
-
-  // /////////////////
-  // Strict mode: requireExplicitSignatureCounts
-  // /////////////////
-
-  @Test
-  void strictModeRefusesToPriceOnAnAssumedSignatureCount() {
-    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
-    assertThatThrownBy(() -> FeeParams.forBatch(feeResult(), batch)
-      .requireExplicitSignatureCounts()
-      .signaturesFor(CAROL, UnsignedInteger.valueOf(3))
-      .build())
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("no signature count was supplied for [" + BOB + "]");
-  }
-
-  @Test
-  void strictModeBuildsOnceEveryRequiredSignerHasACount() {
-    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
-    FeeParams feeParams = FeeParams.forBatch(feeResult(), batch)
-      .requireExplicitSignatureCounts()
-      .signaturesFor(BOB, UnsignedInteger.ONE)
-      .signaturesFor(CAROL, UnsignedInteger.valueOf(3))
-      .build();
-    assertFeeUnits(feeParams, 8);
-  }
-
-  @Test
-  void strictModeIsANoOpOnceSignaturesAreCollected() {
-    // Collected signature counts are facts, not assumptions, so there is nothing for strict mode to demand.
-    Batch signed = Batch.builder().from(batch(ALICE, innerPayment(BOB, 1), innerPayment(BOB, 2)))
-      .batchSigners(Lists.newArrayList(singleSignature(BOB)))
-      .build();
-    // 2 outer + 1 collected batch signature + (1 + 1) inners
-    assertFeeUnits(FeeParams.forBatch(feeResult(), signed).requireExplicitSignatureCounts().build(), 5);
   }
 
   // /////////////////
@@ -282,10 +253,10 @@ public class FeeParamsScopedApiTest {
 
   @Test
   void computeFeeAttachesABreakdownWhoseTotalsAreTheFee() {
-    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
-    ComputedNetworkFees fees = FeeUtils.computeFee(
-      FeeParams.forBatch(feeResult(), batch).signaturesFor(CAROL, UnsignedInteger.valueOf(3)).build()
-    );
+    Batch signed = Batch.builder().from(batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1)))
+      .batchSigners(Lists.newArrayList(singleSignature(BOB), multiSignature(CAROL, 3)))
+      .build();
+    ComputedNetworkFees fees = FeeUtils.computeFee(FeeParams.forBatch(feeResult(), signed).build());
 
     assertThat(fees.feeBreakdown()).isPresent();
     FeeBreakdown breakdown = fees.feeBreakdown().get();
@@ -295,15 +266,15 @@ public class FeeParamsScopedApiTest {
   }
 
   @Test
-  void breakdownTagsAssumedAndSpecifiedBatchSigners() {
-    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
-    FeeBreakdown breakdown = FeeUtils.computeFeeBreakdown(
-      FeeParams.forBatch(feeResult(), batch).signaturesFor(CAROL, UnsignedInteger.valueOf(3)).build()
-    );
+  void breakdownTagsEachCollectedBatchSignatureWithItsRealCount() {
+    Batch signed = Batch.builder().from(batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1)))
+      .batchSigners(Lists.newArrayList(singleSignature(BOB), multiSignature(CAROL, 3)))
+      .build();
+    FeeBreakdown breakdown = FeeUtils.computeFeeBreakdown(FeeParams.forBatch(feeResult(), signed).build());
 
-    assertThat(termFor(breakdown, BOB.value()).provenance()).isEqualTo(FeeTerm.Provenance.ASSUMED);
-    assertThat(termFor(breakdown, BOB.value()).description()).contains("signaturesFor");
-    assertThat(termFor(breakdown, CAROL.value()).provenance()).isEqualTo(FeeTerm.Provenance.SPECIFIED);
+    assertThat(termFor(breakdown, BOB.value()).provenance()).isEqualTo(FeeTerm.Provenance.DERIVED);
+    assertThat(termFor(breakdown, BOB.value()).feeUnits()).isEqualTo(1);
+    assertThat(termFor(breakdown, CAROL.value()).provenance()).isEqualTo(FeeTerm.Provenance.DERIVED);
     assertThat(termFor(breakdown, CAROL.value()).feeUnits()).isEqualTo(3);
   }
 
@@ -370,13 +341,12 @@ public class FeeParamsScopedApiTest {
 
   @Test
   void summaryRendersOneLinePerTermAndATotal() {
-    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
-    String summary = FeeUtils.computeFeeBreakdown(
-      FeeParams.forBatch(feeResult(), batch).signaturesFor(CAROL, UnsignedInteger.valueOf(3)).build()
-    ).summary();
+    Batch signed = Batch.builder().from(batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1)))
+      .batchSigners(Lists.newArrayList(singleSignature(BOB), multiSignature(CAROL, 3)))
+      .build();
+    String summary = FeeUtils.computeFeeBreakdown(FeeParams.forBatch(feeResult(), signed).build()).summary();
 
     assertThat(summary).contains("[assumed]");
-    assertThat(summary).contains("[specified]");
     assertThat(summary).contains("[derived]");
     assertThat(summary).contains("total: 8 x base fee");
     // Uncomment to eyeball the rendering:
@@ -437,17 +407,6 @@ public class FeeParamsScopedApiTest {
     );
     // 2 outer + 1 payment inner = 3 base fees, plus one flat owner reserve.
     assertThat(fees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(3 * 1000 + 200000));
-  }
-
-  @Test
-  void flatBuilderRejectsSignaturesPerBatchSignerOnANonBatchTransaction() {
-    assertThatThrownBy(() -> FeeParams.builder()
-      .feeResult(feeResult())
-      .transaction(payment())
-      .putSignaturesPerBatchSigner(BOB, UnsignedInteger.ONE)
-      .build())
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("signaturesPerBatchSigner applies only to a Batch");
   }
 
   @Test
@@ -614,6 +573,17 @@ public class FeeParamsScopedApiTest {
       .signingPublicKey(PUBLIC_KEY)
       .rawTransactions(wrappers)
       .build();
+  }
+
+  private BatchSignerWrapper multiSignature(final Address account, final int signatureCount) {
+    final List<SignerWrapper> signers = Lists.newArrayList();
+    for (int i = 0; i < signatureCount; i++) {
+      signers.add(SignerWrapper.of(Signer.builder()
+        .signingPublicKey(PUBLIC_KEY)
+        .transactionSignature(Signature.fromBase16("ABCD"))
+        .build()));
+    }
+    return BatchSignerWrapper.of(BatchSigner.builder().account(account).signers(signers).build());
   }
 
   private BatchSignerWrapper singleSignature(final Address account) {

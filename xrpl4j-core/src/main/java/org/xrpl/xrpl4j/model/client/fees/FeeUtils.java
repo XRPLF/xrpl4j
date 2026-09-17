@@ -312,8 +312,8 @@ public class FeeUtils {
 
   /**
    * Itemizes the fee of a {@link Batch}: two base fees for the outer transaction and batch processing, the outer
-   * account's own signature terms, one base fee per batch signature, and each inner transaction's fee — computed
-   * without signature terms, since rippled does not permit an inner transaction to carry signatures or fee
+   * account's own signature terms, one base fee per collected batch signature, and each inner transaction's fee —
+   * computed without signature terms, since rippled does not permit an inner transaction to carry signatures or fee
    * sponsorship.
    *
    * @param feeParams The {@link FeeParams} describing the Batch and how it will be signed.
@@ -326,34 +326,17 @@ public class FeeUtils {
     terms.add(FeeTerm.of("Batch outer: base fee + batch processing fee", 2L, FeeTerm.Provenance.DERIVED));
     terms.addAll(signerCountTerms(feeParams, batch));
 
-    if (!batch.batchSigners().isEmpty()) {
-      // Signatures have been collected, so every count is a fact read from the transaction.
-      batch.batchSigners().stream()
-        .map(BatchSignerWrapper::batchSigner)
-        .forEach(batchSigner -> {
-          final long count = batchSigner.transactionSignature().isPresent() ? 1L : batchSigner.signers().size();
-          terms.add(FeeTerm.of(
-            "batch signer " + batchSigner.account() + ": " + count + " collected signature(s)",
-            count, FeeTerm.Provenance.DERIVED
-          ));
-        });
-    } else {
-      // Pricing before signing: one signature per required signer, except where the caller forecast a multi-sign.
-      final Map<Address, UnsignedInteger> signaturesPerBatchSigner = feeParams.signaturesPerBatchSigner();
-      batch.requiredSigners().forEach(requiredSigner -> {
-        final UnsignedInteger specified = signaturesPerBatchSigner.get(requiredSigner);
-        terms.add(specified != null ?
-          FeeTerm.of(
-            "batch signer " + requiredSigner + ": will supply " + specified + " signature(s)",
-            specified.longValue(), FeeTerm.Provenance.SPECIFIED
-          ) :
-          FeeTerm.of(
-            "batch signer " + requiredSigner + ": assumed to sign with a single key (declare signaturesFor(" +
-              "address, count) if this participant will multi-sign)",
-            1L, FeeTerm.Provenance.ASSUMED
-          ));
+    // Every count is a fact read from the collected signatures; FeeParams#check rejects an unsigned Batch, so there is
+    // nothing to forecast here.
+    batch.batchSigners().stream()
+      .map(BatchSignerWrapper::batchSigner)
+      .forEach(batchSigner -> {
+        final long count = batchSigner.transactionSignature().isPresent() ? 1L : batchSigner.signers().size();
+        terms.add(FeeTerm.of(
+          "batch signer " + batchSigner.account() + ": " + count + " collected signature(s)",
+          count, FeeTerm.Provenance.DERIVED
+        ));
       });
-    }
 
     for (final RawTransactionWrapper wrapper : batch.rawTransactions()) {
       terms.add(innerTransactionTerm(feeParams, wrapper.rawTransaction()));

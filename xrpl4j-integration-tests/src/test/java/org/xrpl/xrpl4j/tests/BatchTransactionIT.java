@@ -249,10 +249,6 @@ public class BatchTransactionIT extends AbstractIT {
       )
       .build();
 
-    final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch).build()).recommendedFee()
-    );
-
     // ///////////////
     // Inner Sign (account2 is the inner signer)
     // ///////////////
@@ -262,7 +258,7 @@ public class BatchTransactionIT extends AbstractIT {
         .signingPublicKey(account2KeyPair.publicKey())
         .transactionSignature(
           signatureService.signInner(
-            account2KeyPair.privateKey(), unsignedBatch, account2KeyPair.publicKey().deriveAddress()
+            account2KeyPair.privateKey(), unpricedUnsignedBatch, account2KeyPair.publicKey().deriveAddress()
           ) // <-- `signInner` is crucial here
         )
         .build()
@@ -272,11 +268,17 @@ public class BatchTransactionIT extends AbstractIT {
     // ///////////////
     // Outer Sign (account1 is the batch submitter)
     // ///////////////
+    final Batch batchWithSigners = Batch.builder().from(unpricedUnsignedBatch)
+      .batchSigners(signerWrappers)
+      .build();
+    final Batch unsignedBatch = ImmutableBatch.copyOf(batchWithSigners).withFee(
+      // Priced only once the BatchSigners exist: each batch signature costs one base fee. serializeBatch
+      // excludes the outer Fee, so the inner signatures taken above remain valid.
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, batchWithSigners).build()).recommendedFee()
+    );
+
     final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(
-      account1KeyPair.privateKey(),
-      Batch.builder().from(unsignedBatch)
-        .batchSigners(signerWrappers)
-        .build()
+      account1KeyPair.privateKey(), unsignedBatch
     );
 
     // Submit and wait for validation
@@ -382,11 +384,6 @@ public class BatchTransactionIT extends AbstractIT {
       )
       .build();
 
-    Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch)
-        .signersCount(UnsignedInteger.valueOf(2))
-        .build()).recommendedFee()
-    );
 
     // ///////////////
     // Outer MultiSign (account1Signer1 and account1Signer2 are the outer multi-signers)
@@ -536,15 +533,6 @@ public class BatchTransactionIT extends AbstractIT {
       )
       .build();
 
-    Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      // requireExplicitSignatureCounts makes pricing fail fast if any required batch signer's count were forgotten,
-      // rather than silently under-pricing and drawing a telINSUF_FEE_P at submission.
-      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch)
-        .requireExplicitSignatureCounts()
-        .signersCount(UnsignedInteger.valueOf(2))
-        .signaturesFor(account2KeyPair.publicKey().deriveAddress(), UnsignedInteger.valueOf(2))
-        .build()).recommendedFee()
-    );
 
     // ///////////////
     // Inner Multisign (account2Signer1 and account2Signer2 are the inner multi-signers)
@@ -558,7 +546,7 @@ public class BatchTransactionIT extends AbstractIT {
         final Signer signer = Signer.builder()
           .signingPublicKey(signingPublicKey)
           .transactionSignature(
-            signatureService.multiSignInner(keyPair.privateKey(), unsignedBatch, account2BatchSignerAddress))
+            signatureService.multiSignInner(keyPair.privateKey(), unpricedUnsignedBatch, account2BatchSignerAddress))
           .build();
         return SignerWrapper.of(signer);
       })
@@ -568,8 +556,8 @@ public class BatchTransactionIT extends AbstractIT {
     // Outer Multisign (account1Signer1 and account1Signer2 are the outer multi-signers)
     // ///////////////
 
-    final Batch unsignedBatchWithInnerBatchSigner = Batch.builder()
-      .from(unsignedBatch)
+    final Batch batchWithSigners = Batch.builder()
+      .from(unpricedUnsignedBatch)
       .batchSigners(
         Lists.newArrayList(
           BatchSignerWrapper.of(BatchSigner.builder()
@@ -578,6 +566,13 @@ public class BatchTransactionIT extends AbstractIT {
             .build()
           )))
       .build();
+    final Batch unsignedBatchWithInnerBatchSigner = ImmutableBatch.copyOf(batchWithSigners).withFee(
+      // Priced only once the BatchSigners exist: each batch signature costs one base fee. serializeBatch
+      // excludes the outer Fee, so the inner signatures taken above remain valid.
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, batchWithSigners)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // Sign the outer batch transaction (account1 is the batch submitter)
     final Signature signedOuterBatchBySigner1 = signatureService.multiSign(
@@ -729,12 +724,6 @@ public class BatchTransactionIT extends AbstractIT {
       )
       .build();
 
-    Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch)
-        .signersCount(UnsignedInteger.valueOf(2))
-        .build()).recommendedFee()
-    );
-
     // ///////////////
     // Inner Sign (account2 is the inner single-signer)
     // ///////////////
@@ -745,7 +734,7 @@ public class BatchTransactionIT extends AbstractIT {
         .signingPublicKey(account2KeyPair.publicKey())
         .transactionSignature(
           signatureService.signInner(
-            account2KeyPair.privateKey(), unsignedBatch, account2KeyPair.publicKey().deriveAddress()
+            account2KeyPair.privateKey(), unpricedUnsignedBatch, account2KeyPair.publicKey().deriveAddress()
           ) // <-- `signInner` is crucial here
         )
         .build()
@@ -756,10 +745,17 @@ public class BatchTransactionIT extends AbstractIT {
     // Outer Multisign (account1Signer1 and account1Signer2 are the outer multi-signers)
     // ///////////////
 
-    final Batch unsignedBatchWithInnerBatchSigner = Batch.builder()
-      .from(unsignedBatch)
+    final Batch batchWithSigners = Batch.builder()
+      .from(unpricedUnsignedBatch)
       .batchSigners(signerWrappers)
       .build();
+    final Batch unsignedBatchWithInnerBatchSigner = ImmutableBatch.copyOf(batchWithSigners).withFee(
+      // Priced only once the BatchSigners exist: each batch signature costs one base fee. serializeBatch
+      // excludes the outer Fee, so the inner signatures taken above remain valid.
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, batchWithSigners)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // Sign the outer batch transaction (account1 is the batch submitter)
     final Signature signedOuterBatchBySigner1 = signatureService.multiSign(
@@ -916,12 +912,6 @@ public class BatchTransactionIT extends AbstractIT {
       )
       .build();
 
-    Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch)
-        .signersCount(UnsignedInteger.valueOf(2))
-        .build()).recommendedFee()
-    );
-
     // ///////////////
     // Inner Multisign (account2Signer1 and account2Signer2 are the inner multi-signers)
     // ///////////////
@@ -932,7 +922,7 @@ public class BatchTransactionIT extends AbstractIT {
         .signingPublicKey(account2KeyPair.publicKey())
         .transactionSignature(
           signatureService.signInner(
-            account2KeyPair.privateKey(), unsignedBatch, account2KeyPair.publicKey().deriveAddress()
+            account2KeyPair.privateKey(), unpricedUnsignedBatch, account2KeyPair.publicKey().deriveAddress()
           ) // <-- `signInner` is crucial here
         )
         .build()
@@ -943,10 +933,17 @@ public class BatchTransactionIT extends AbstractIT {
     // Outer Multisign (account1Signer1 and account1Signer2 are the outer multi-signers)
     // ///////////////
 
-    final Batch unsignedBatchWithInnerBatchSigner = Batch.builder()
-      .from(unsignedBatch)
+    final Batch batchWithSigners = Batch.builder()
+      .from(unpricedUnsignedBatch)
       .batchSigners(innerSignerWrappers)
       .build();
+    final Batch unsignedBatchWithInnerBatchSigner = ImmutableBatch.copyOf(batchWithSigners).withFee(
+      // Priced only once the BatchSigners exist: each batch signature costs one base fee. serializeBatch
+      // excludes the outer Fee, so the inner signatures taken above remain valid.
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, batchWithSigners)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // Sign the outer batch transaction (account1 is the batch submitter)
     final Signature signedOuterBatchBySigner1 = signatureService.multiSign(
@@ -1084,10 +1081,6 @@ public class BatchTransactionIT extends AbstractIT {
       )
       .build();
 
-    final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch).build()).recommendedFee()
-    );
-
     // ///////////////
     // Inner Sign (innerSigner1 and innerSigner2 are the inner signers)
     // ///////////////
@@ -1099,7 +1092,8 @@ public class BatchTransactionIT extends AbstractIT {
         .signingPublicKey(innerSigner1KeyPair.publicKey())
         .transactionSignature(
           signatureService.signInner(
-            innerSigner1KeyPair.privateKey(), unsignedBatch, innerSigner1KeyPair.publicKey().deriveAddress()
+            innerSigner1KeyPair.privateKey(), unpricedUnsignedBatch,
+            innerSigner1KeyPair.publicKey().deriveAddress()
           ) // <-- `signInner` is crucial here
         )
         .build()
@@ -1110,7 +1104,8 @@ public class BatchTransactionIT extends AbstractIT {
         .signingPublicKey(innerSigner2KeyPair.publicKey())
         .transactionSignature(
           signatureService.signInner(
-            innerSigner2KeyPair.privateKey(), unsignedBatch, innerSigner2KeyPair.publicKey().deriveAddress()
+            innerSigner2KeyPair.privateKey(), unpricedUnsignedBatch,
+            innerSigner2KeyPair.publicKey().deriveAddress()
           ) // <-- `signInner` is crucial here
         )
         .build()
@@ -1122,12 +1117,18 @@ public class BatchTransactionIT extends AbstractIT {
     // ///////////////
 
     // Sign the outer batch transaction with the third account
+    final Batch batchWithSigners = Batch.builder()
+      .from(unpricedUnsignedBatch)
+      .batchSigners(signerWrappers)
+      .build();
+    final Batch unsignedBatch = ImmutableBatch.copyOf(batchWithSigners).withFee(
+      // Priced only once the BatchSigners exist: each batch signature costs one base fee. serializeBatch
+      // excludes the outer Fee, so the inner signatures taken above remain valid.
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, batchWithSigners).build()).recommendedFee()
+    );
+
     final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(
-      outerSignerKeyPair.privateKey(),
-      Batch.builder()
-        .from(unsignedBatch)
-        .batchSigners(signerWrappers)
-        .build()
+      outerSignerKeyPair.privateKey(), unsignedBatch
     );
 
     // Submit and wait for validation
@@ -1259,12 +1260,6 @@ public class BatchTransactionIT extends AbstractIT {
       )
       .build();
 
-    final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch)
-        .signaturesFor(account1KeyPair.publicKey().deriveAddress(), UnsignedInteger.valueOf(2))
-        .signaturesFor(account2KeyPair.publicKey().deriveAddress(), UnsignedInteger.valueOf(2))
-        .build()).recommendedFee()
-    );
 
     // ///////////////
     // Inner Multisign - BatchSigner Group 1 (account1Signer1 and account1Signer2 sign for account1)
@@ -1279,7 +1274,7 @@ public class BatchTransactionIT extends AbstractIT {
         final Signer signer = Signer.builder()
           .signingPublicKey(signingPublicKey)
           .transactionSignature(
-            signatureService.multiSignInner(keyPair.privateKey(), unsignedBatch, account1BatchSignerAddress)
+            signatureService.multiSignInner(keyPair.privateKey(), unpricedUnsignedBatch, account1BatchSignerAddress)
           )
           .build();
         return SignerWrapper.of(signer);
@@ -1299,7 +1294,7 @@ public class BatchTransactionIT extends AbstractIT {
         final Signer signer = Signer.builder()
           .signingPublicKey(signingPublicKey)
           .transactionSignature(
-            signatureService.multiSignInner(keyPair.privateKey(), unsignedBatch, account2BatchSignerAddress)
+            signatureService.multiSignInner(keyPair.privateKey(), unpricedUnsignedBatch, account2BatchSignerAddress)
           )
           .build();
         return SignerWrapper.of(signer);
@@ -1308,7 +1303,7 @@ public class BatchTransactionIT extends AbstractIT {
 
     // Build the final batch with both BatchSigner groups
     final Batch batchWithBatchSigners = Batch.builder()
-      .from(unsignedBatch)
+      .from(unpricedUnsignedBatch)
       .batchSigners(Lists.newArrayList(
         BatchSignerWrapper.of(BatchSigner.builder()
           .account(account1BatchSignerAddress)
@@ -1323,12 +1318,18 @@ public class BatchTransactionIT extends AbstractIT {
       ))
       .build();
 
+    final Batch pricedBatchWithBatchSigners = ImmutableBatch.copyOf(batchWithBatchSigners).withFee(
+      // Priced only once the BatchSigners exist: each batch signature costs one base fee. serializeBatch
+      // excludes the outer Fee, so the inner signatures taken above remain valid.
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, batchWithBatchSigners).build()).recommendedFee()
+    );
+
     // ///////////////
     // Outer Sign (outerSigner single-signs the full batch with both BatchSigner groups)
     // ///////////////
 
     final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(
-      outerSignerKeyPair.privateKey(), batchWithBatchSigners
+      outerSignerKeyPair.privateKey(), pricedBatchWithBatchSigners
     );
 
     // Submit and wait for validation
@@ -1417,10 +1418,6 @@ public class BatchTransactionIT extends AbstractIT {
       .addRawTransactions(RawTransactionWrapper.of(innerPayment1), RawTransactionWrapper.of(innerPayment2))
       .build();
 
-    Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch).build()).recommendedFee()
-    );
-
     // Sign inner with regular key - BatchSigner.account is account1's real (master-key) address, even though the
     // signature itself is produced using the regular key's private key.
     List<BatchSignerWrapper> signerWrappers = Lists.newArrayList(
@@ -1429,7 +1426,8 @@ public class BatchTransactionIT extends AbstractIT {
         .signingPublicKey(account1RegularKeyPair.publicKey()) // <-- Must specify regular public key.
         .transactionSignature(
           signatureService.signInner(
-            account1RegularKeyPair.privateKey(), unsignedBatch, account1KeyPair.publicKey().deriveAddress()
+            account1RegularKeyPair.privateKey(), unpricedUnsignedBatch,
+            account1KeyPair.publicKey().deriveAddress()
           )
         )
         .build()
@@ -1437,9 +1435,15 @@ public class BatchTransactionIT extends AbstractIT {
     );
 
     // Sign outer
+    Batch batchWithSigners = Batch.builder().from(unpricedUnsignedBatch).batchSigners(signerWrappers).build();
+    Batch unsignedBatch = ImmutableBatch.copyOf(batchWithSigners).withFee(
+      // Priced only once the BatchSigners exist: each batch signature costs one base fee. serializeBatch
+      // excludes the outer Fee, so the inner signatures taken above remain valid.
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, batchWithSigners).build()).recommendedFee()
+    );
+
     SingleSignedTransaction<Batch> signedBatch = signatureService.sign(
-      outerSignerKeyPair.privateKey(),
-      Batch.builder().from(unsignedBatch).batchSigners(signerWrappers).build()
+      outerSignerKeyPair.privateKey(), unsignedBatch
     );
 
     // Submit and verify
@@ -1603,10 +1607,6 @@ public class BatchTransactionIT extends AbstractIT {
       )
       .build();
 
-    final Batch unsignedBatch = ImmutableBatch.copyOf(unpricedUnsignedBatch).withFee(
-      FeeUtils.computeFee(FeeParams.forBatch(feeResult, unpricedUnsignedBatch).build()).recommendedFee()
-    );
-
     // ///////////////
     // Inner Sign (account2 is the inner signer). Because account1's Sequence is 0 on this outer transaction, the
     // signing payload must bind to account1's TicketSequence instead.
@@ -1617,7 +1617,7 @@ public class BatchTransactionIT extends AbstractIT {
         .signingPublicKey(account2KeyPair.publicKey())
         .transactionSignature(
           signatureService.signInner(
-            account2KeyPair.privateKey(), unsignedBatch, account2KeyPair.publicKey().deriveAddress()
+            account2KeyPair.privateKey(), unpricedUnsignedBatch, account2KeyPair.publicKey().deriveAddress()
           )
         )
         .build()
@@ -1627,9 +1627,16 @@ public class BatchTransactionIT extends AbstractIT {
     // ///////////////
     // Outer Sign (account1 is the batch submitter)
     // ///////////////
+    final Batch batchWithSigners =
+      Batch.builder().from(unpricedUnsignedBatch).batchSigners(signerWrappers).build();
+    final Batch unsignedBatch = ImmutableBatch.copyOf(batchWithSigners).withFee(
+      // Priced only once the BatchSigners exist: each batch signature costs one base fee. serializeBatch
+      // excludes the outer Fee, so the inner signatures taken above remain valid.
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, batchWithSigners).build()).recommendedFee()
+    );
+
     final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(
-      account1KeyPair.privateKey(),
-      Batch.builder().from(unsignedBatch).batchSigners(signerWrappers).build()
+      account1KeyPair.privateKey(), unsignedBatch
     );
 
     final SubmitResult<Batch> result = xrplClient.submit(signedBatch);

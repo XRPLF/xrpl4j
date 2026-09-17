@@ -155,15 +155,15 @@ public interface FeeParams {
   }
 
   /**
-   * Begin pricing a {@link Batch}. The returned builder exposes the Batch pricing inputs: a signature count per batch
-   * signer ({@link BatchBuilder#signaturesFor(Address, UnsignedInteger)}), the outer account's own and sponsor
-   * signature counts, an owner reserve for {@code AccountDelete}/{@code AMMCreate} inner transactions, and an opt-in
-   * strict mode ({@link BatchBuilder#requireExplicitSignatureCounts()}) that refuses to price on assumptions.
+   * Begin pricing a {@link Batch}. The returned builder exposes the outer account's own and sponsor signature counts,
+   * and an owner reserve for {@code AccountDelete}/{@code AMMCreate} inner transactions.
    *
-   * <p>The accounts that must sign are {@link Batch#requiredSigners()}, derived from the inner transactions. Note
-   * that pricing <em>after</em> the batch signatures have been collected is exact and needs no per-signer inputs at
-   * all — the counts are read from {@link Batch#batchSigners()} — and is legal because {@code serializeBatch}
-   * excludes the outer {@code Fee} from what the participants sign.
+   * <p>A Batch must already carry its {@link Batch#batchSigners()} to be priced, because every batch signature costs
+   * one base fee and the count is read from those entries rather than forecast. This is not a restriction on the
+   * signing order: {@code serializeBatch} excludes the outer {@code Fee} from what the participants sign, so the
+   * sequence is collect the batch signatures, price the Batch, attach the fee, then have the outer account sign last.
+   * A Batch whose every inner belongs to the outer account has no {@link Batch#requiredSigners()} and therefore needs
+   * no batch signers.
    *
    * @param feeResult The current network fee levels.
    * @param batch     The {@link Batch} to price.
@@ -317,27 +317,6 @@ public interface FeeParams {
   Optional<XrpCurrencyAmount> ownerReserve();
 
   /**
-   * How many signatures each {@link org.xrpl.xrpl4j.model.transactions.Batch Batch} participant will supply, for
-   * participants that multi-sign.
-   *
-   * <p>This is needed only when pricing a Batch <em>before</em> its {@code BatchSigners} exist — a wallet displaying
-   * a fee up front, for instance. Once signatures have been collected, the counts are read from
-   * {@link org.xrpl.xrpl4j.model.transactions.Batch#batchSigners() Batch#batchSigners()} and this map is neither
-   * needed nor permitted. Participants absent from the map are
-   * counted as signing with a single key.
-   *
-   * <p>Keys must be members of
-   * {@link org.xrpl.xrpl4j.model.transactions.Batch#requiredSigners() Batch#requiredSigners()} — the accounts that
-   * must sign, derived from the inner
-   * transactions. Note that a required signer is not always an inner's {@code Account}: a delegated inner is signed by
-   * its {@code Delegate}, and a sponsored inner also requires its {@code Sponsor}.
-   *
-   * @return A {@link Map} from a Batch participant's {@link Address} to the number of signatures it will supply,
-   *   defaulting to empty.
-   */
-  Map<Address, UnsignedInteger> signaturesPerBatchSigner();
-
-  /**
    * Validates that the supplied fields are consistent with the {@link #transaction()} being priced, so that a value
    * which would be silently ignored is rejected instead.
    */
@@ -385,7 +364,7 @@ public interface FeeParams {
         "transaction. Transaction was a %s.", OWNER_RESERVE_TRANSACTION_TYPES, transactionType
     );
 
-    this.checkSignaturesPerBatchSigner(transactionType);
+    this.checkBatchIsSigned(transactionType);
   }
 
   /**
@@ -409,38 +388,30 @@ public interface FeeParams {
   }
 
   /**
-   * Validates {@link #signaturesPerBatchSigner()} against the transaction being priced.
+   * Asserts that a {@link Batch} being priced already carries the {@code BatchSigners} its inner transactions require.
+   *
+   * <p>Every batch signature costs one base fee, and the only exact source of that count is
+   * {@link Batch#batchSigners()}. Forecasting it would silently under-price a Batch whose participant multi-signs, so
+   * an unsigned Batch is refused instead. This constrains the order of operations, not the design: because
+   * {@code serializeBatch} excludes the outer {@code Fee} from what the participants sign, the batch signatures can be
+   * collected first and the fee attached afterwards.
    *
    * @param transactionType The {@link TransactionType} of {@link #transaction()}.
    */
-  default void checkSignaturesPerBatchSigner(final TransactionType transactionType) {
-    if (this.signaturesPerBatchSigner().isEmpty()) {
+  default void checkBatchIsSigned(final TransactionType transactionType) {
+    if (transactionType != TransactionType.BATCH) {
       return;
     }
 
-    Preconditions.checkArgument(
-      transactionType == TransactionType.BATCH,
-      "signaturesPerBatchSigner applies only to a Batch, but the transaction is a %s.", transactionType
-    );
-
     final Batch batch = (Batch) this.transaction();
-    Preconditions.checkArgument(
-      batch.batchSigners().isEmpty(),
-      "signaturesPerBatchSigner is only for pricing a Batch before its signatures exist. This Batch already has " +
-        "BatchSigners, so the counts are read from them instead."
-    );
-
     final Set<Address> requiredSigners = batch.requiredSigners();
-    this.signaturesPerBatchSigner().forEach((address, count) -> {
-      Preconditions.checkArgument(
-        requiredSigners.contains(address),
-        "%s is not required to sign this Batch, so a signature count for it would be ignored. The accounts that " +
-          "must sign are %s. Note that a required signer is not always an inner transaction's Account: a delegated " +
-          "inner is signed by its Delegate, and a sponsored inner also requires its Sponsor.",
-        address, requiredSigners
-      );
-      checkSignatureCount(count, UnsignedInteger.ONE, "signaturesPerBatchSigner[" + address + "]");
-    });
+    Preconditions.checkArgument(
+      !batch.batchSigners().isEmpty() || requiredSigners.isEmpty(),
+      "A Batch cannot be priced until its BatchSigners are collected, because each batch signature costs one base " +
+        "fee. %s must sign first. Note that serializeBatch excludes the outer Fee from what the participants sign, " +
+        "so the order is: collect the batch signatures, price the Batch, attach the fee, then have the outer account " +
+        "sign last.", requiredSigners
+    );
   }
 
   /**
@@ -528,55 +499,20 @@ public interface FeeParams {
 
   /**
    * A builder for pricing a {@link Batch}, obtained from {@link #forBatch(FeeResult, Batch)}. Its inputs are
-   * validated eagerly, per call, so a mistake is reported at the line that made it.
+   * validated eagerly, per call, so a mistake is reported at the line that made it. The per-batch-signature counts are
+   * not inputs: they are read from {@link Batch#batchSigners()}, which the Batch must already carry.
    */
   class BatchBuilder {
 
     private final FeeResult feeResult;
     private final Batch batch;
-    private final Map<Address, UnsignedInteger> signaturesPerBatchSigner = new LinkedHashMap<>();
     private UnsignedInteger signersCount;
     private UnsignedInteger sponsorSignersCount;
     private XrpCurrencyAmount ownerReserve;
-    private boolean requireExplicitSignatureCounts;
 
     private BatchBuilder(final FeeResult feeResult, final Batch batch) {
       this.feeResult = feeResult;
       this.batch = batch;
-    }
-
-    /**
-     * Declares how many signatures a Batch participant will supply, for a participant that will multi-sign. The
-     * participant must be a member of {@link Batch#requiredSigners()}; a required signer not declared here is priced
-     * as signing with a single key.
-     *
-     * <p>Only for pricing a Batch <em>before</em> its {@code BatchSigners} exist — once signatures have been
-     * collected, the counts are read from {@link Batch#batchSigners()} and this method is refused.
-     *
-     * @param batchSigner    The {@link Address} of a Batch participant that must sign.
-     * @param signatureCount The {@link UnsignedInteger} number of signatures it will supply, at least one.
-     *
-     * @return This builder.
-     */
-    public BatchBuilder signaturesFor(final Address batchSigner, final UnsignedInteger signatureCount) {
-      Objects.requireNonNull(batchSigner);
-      Objects.requireNonNull(signatureCount);
-      Preconditions.checkArgument(
-        batch.batchSigners().isEmpty(),
-        "signaturesFor is only for pricing a Batch before its signatures exist. This Batch already has " +
-          "BatchSigners, so the counts are read from them instead."
-      );
-      final Set<Address> requiredSigners = batch.requiredSigners();
-      Preconditions.checkArgument(
-        requiredSigners.contains(batchSigner),
-        "%s is not required to sign this Batch, so a signature count for it would be ignored. The accounts that " +
-          "must sign are %s. Note that a required signer is not always an inner transaction's Account: a delegated " +
-          "inner is signed by its Delegate, and a sponsored inner also requires its Sponsor.",
-        batchSigner, requiredSigners
-      );
-      FeeParams.checkSignatureCount(signatureCount, UnsignedInteger.ONE, "signaturesFor(" + batchSigner + ")");
-      this.signaturesPerBatchSigner.put(batchSigner, signatureCount);
-      return this;
     }
 
     /**
@@ -623,46 +559,16 @@ public interface FeeParams {
     }
 
     /**
-     * Refuse to price this Batch on an assumed signature count: {@link #build()} will fail unless every member of
-     * {@link Batch#requiredSigners()} has been given an explicit count via
-     * {@link #signaturesFor(Address, UnsignedInteger)}. Use this when an under-priced fee is worse than a build-time
-     * error — it turns "I didn't know carol would multi-sign" from a {@code telINSUF_FEE_P} at submission into an
-     * immediate, named failure.
-     *
-     * <p>A no-op when the Batch already carries {@link Batch#batchSigners()}, whose signature counts are exact facts
-     * rather than assumptions.
-     *
-     * @return This builder.
-     */
-    public BatchBuilder requireExplicitSignatureCounts() {
-      this.requireExplicitSignatureCounts = true;
-      return this;
-    }
-
-    /**
-     * Builds the {@link FeeParams}, enforcing {@link #requireExplicitSignatureCounts()} when set.
+     * Builds the {@link FeeParams}.
      *
      * @return A {@link FeeParams}.
      */
     public FeeParams build() {
-      if (requireExplicitSignatureCounts && batch.batchSigners().isEmpty()) {
-        final Set<Address> missing = batch.requiredSigners().stream()
-          .filter(signer -> !signaturesPerBatchSigner.containsKey(signer))
-          .collect(Collectors.toCollection(LinkedHashSet::new));
-        Preconditions.checkArgument(
-          missing.isEmpty(),
-          "requireExplicitSignatureCounts is set, but no signature count was supplied for %s. Every account in " +
-            "Batch#requiredSigners() must be given one via signaturesFor(address, count), so that nothing is " +
-            "priced on an assumption.",
-          missing
-        );
-      }
       final ImmutableFeeParams.Builder builder = FeeParams.builder()
         .feeResult(feeResult)
         .transaction(batch)
         .signersCount(Optional.ofNullable(signersCount))
-        .sponsorSignersCount(Optional.ofNullable(sponsorSignersCount))
-        .putAllSignaturesPerBatchSigner(signaturesPerBatchSigner);
+        .sponsorSignersCount(Optional.ofNullable(sponsorSignersCount));
       if (ownerReserve != null) {
         builder.ownerReserve(ownerReserve);
       }

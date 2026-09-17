@@ -29,6 +29,8 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.ledger.SignerListObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -56,6 +58,8 @@ import java.util.Set;
  * Utils relating to XRPL fees.
  */
 public class FeeUtils {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(FeeUtils.class);
 
   private static final BigInteger MAX_UNSIGNED_LONG = UnsignedLong.MAX_VALUE.bigIntegerValue();
 
@@ -215,6 +219,7 @@ public class FeeUtils {
     Objects.requireNonNull(feeParams);
 
     final FeeBreakdown feeBreakdown = computeFeeBreakdown(feeParams);
+    warnIfAssumed(feeParams, feeBreakdown);
     final ComputedNetworkFees baseFees = computeBaseFees(feeParams.feeResult());
 
     final long feeUnits = feeBreakdown.totalFeeUnits();
@@ -229,6 +234,38 @@ public class FeeUtils {
         .orElseGet(() -> scaleByBaseFees(baseFees, feeUnits));
 
     return ComputedNetworkFees.builder().from(pricedFees).feeBreakdown(feeBreakdown).build();
+  }
+
+  /**
+   * Logs a warning naming every {@link FeeTerm.Provenance#ASSUMED} term in {@code feeBreakdown} that adds to the fee,
+   * so that a developer who did not intend to rely on a default — a Batch participant assumed to single-sign, or a
+   * {@code LoanSet} counterparty assumed to use one key — has a chance to notice before trusting the computed fee.
+   *
+   * <p>Only assumptions that carry fee units are reported. An assumed count of zero (the ordinary case of a
+   * single-signed, unsponsored transaction) cannot make the fee too low, so warning about it would fire on nearly every
+   * call and train callers to ignore the log.
+   *
+   * @param feeParams    The {@link FeeParams} that produced {@code feeBreakdown}, identifying the transaction in the
+   *                     log message.
+   * @param feeBreakdown The {@link FeeBreakdown} to inspect.
+   */
+  private static void warnIfAssumed(final FeeParams feeParams, final FeeBreakdown feeBreakdown) {
+    if (!LOGGER.isWarnEnabled()) {
+      return;
+    }
+
+    final boolean hasCostlyAssumption = feeBreakdown.terms().stream()
+      .anyMatch(term -> term.provenance() == FeeTerm.Provenance.ASSUMED && term.feeUnits() > 0L);
+
+    if (hasCostlyAssumption) {
+      LOGGER.warn(
+        "computeFee assumed one or more unspecified inputs while pricing a {} transaction, and those assumptions " +
+          "add to the fee. If any of them does not hold, the computed fee will be too low. Review the [assumed] " +
+          "lines and supply the named FeeParams input:\n{}",
+        feeParams.transaction().transactionType().value(),
+        feeBreakdown.summary()
+      );
+    }
   }
 
   /**

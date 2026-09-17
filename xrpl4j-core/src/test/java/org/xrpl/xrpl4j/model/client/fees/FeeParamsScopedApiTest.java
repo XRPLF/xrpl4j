@@ -44,12 +44,12 @@ import org.xrpl.xrpl4j.model.transactions.LoanPay;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
+import org.xrpl.xrpl4j.model.transactions.Signer;
+import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.UnknownTransaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.Signer;
-import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 
 import java.util.List;
 

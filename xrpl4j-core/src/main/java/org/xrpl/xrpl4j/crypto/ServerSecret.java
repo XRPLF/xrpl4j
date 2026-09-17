@@ -58,7 +58,7 @@ public class ServerSecret implements javax.security.auth.Destroyable {
    * @param value This passphrase's binary value. This value is defensively copied so that this class's internal
    *              state is never aliased to memory owned by the caller.
    */
-  private ServerSecret(byte[] value) {
+  private ServerSecret(final byte[] value) {
     Objects.requireNonNull(value);
     this.value = Arrays.copyOf(value, value.length);
   }

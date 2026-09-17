@@ -287,8 +287,10 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
     byte[] passphraseBytes = EMPTY_BYTE_ARRAY; // <-- to avoid an NPE in the "finally" block.
     try {
       passphraseBytes = Hashing.hmacSha512(
-          serverSecretBytes) // <-- This is equivalent to the `passphraseBytes` in the xrpl.org docs.
-        .hashBytes(accountIdentifier.getBytes()).asBytes();
+          serverSecretBytes // <-- This is equivalent to the `passphraseBytes` in the xrpl.org docs.
+        )
+        .hashBytes(accountIdentifier.getBytes())
+        .asBytes();
       return Seed.ed25519SeedFromPassphrase(Passphrase.of(passphraseBytes));
     } finally {
       // Zero-out all bytes in both local arrays so secret material exists in-memory for as little time as possible.

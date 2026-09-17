@@ -190,7 +190,7 @@ for every transaction subclass:
 ### 3. Transaction Fee Model
 
 `Transaction.fee()` and the fee-computation helpers have been reworked to support the new fee rules introduced by
-Batch, LoanSet/LoanPay, sponsored transactions, and confidential MPT transactions — none of which the old
+Batch, LoanSet/LoanPay, sponsored transactions, and confidential MPT transactions, none of which the old
 per-transaction-type `computeFee()` methods could price correctly.
 
 #### `Transaction.fee()` is no longer a required field
@@ -226,7 +226,7 @@ assertThat(payment.fee()).isEqualTo(XrpCurrencyAmount.ofDrops(0));
 As a safety net for this relaxed validation, every `TransactionSigner` method that signs an outer transaction (e.g., on
 `BcSignatureService`) now throws `IllegalArgumentException` if `transaction.fee()` is still zero when signing. This
 covers `sign()`, `multiSign()`, `sponsorSign()`, `sponsorMultiSign()`, `counterpartySign()`, and
-`counterpartyMultiSign()`. Compute a real fee first — see below — before signing. Only `signInner()` and
+`counterpartyMultiSign()`. Compute a real fee (see below) before signing. Only `signInner()` and
 `multiSignInner()` are exempt, because a Batch inner transaction is required to carry a `Fee` of exactly zero.
 
 #### New fee-computation API: `FeeParams`, `FeeTerm`, `FeeBreakdown`
@@ -317,8 +317,8 @@ UnsignedInteger ageValue = validatedLedger.age().orElse(UnsignedInteger.ZERO);
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.
 - The `Issue.XRP` constant is still available and works the same way.
-- All `TransactionSigner` method signatures are unchanged. All outer-transaction signing methods — `sign()`,
-  `multiSign()`, `sponsorSign()`, `sponsorMultiSign()`, `counterpartySign()`, and `counterpartyMultiSign()` — now
+- All `TransactionSigner` method signatures are unchanged. The outer-transaction signing methods (`sign()`,
+  `multiSign()`, `sponsorSign()`, `sponsorMultiSign()`, `counterpartySign()`, and `counterpartyMultiSign()`) now
   reject a transaction with a zero `fee()`; see [Transaction Fee Model](#3-transaction-fee-model) above.
 
 ## Additional Resources

@@ -16,8 +16,13 @@ Version 7.0.0 introduces several breaking changes:
    methods on `SingleSignedTransaction` and `MultiSignedTransaction`.
 3. **Transaction Fee Model Refactor** — `Transaction.fee()` is no longer a required field; it now defaults to zero
    drops. A new fee-computation API (`FeeParams`, `FeeTerm`, `FeeBreakdown`, and an expanded `FeeUtils`) replaces the
-   old per-transaction-type `computeFee()` helpers for computing an accurate fee. To guard against the new default,
-   All `TransactionSigner` outer-transaction signing methods (`sign()`, `multiSign()`, `sponsorSign()`, etc.) now reject a transaction whose `fee()` is still zero.
+   old per-transaction-type `computeFee()` helpers for computing an accurate fee. To guard against the new default, all
+   `TransactionSigner` methods that sign an outer transaction (`sign()`, `multiSign()`, `sponsorSign()`,
+   `counterpartySign()`) now reject a transaction whose `fee()` is still zero.
+4. **`MetaMpTokenIssuanceObject.mpTokenMetadata()` type change** — now returns `Optional<MpTokenMetadata>` instead of
+   `Optional<String>`.
+5. **`ValidatedLedger.age()` type change** — now returns `Optional<UnsignedInteger>` instead of `UnsignedInteger`,
+   since rippled omits this field when it cannot compute a valid age.
 
 ## Breaking Changes
 
@@ -273,6 +278,39 @@ Optional<String> metadata = metaMpTokenIssuanceObject.mpTokenMetadata();
 Optional<MpTokenMetadata> metadata = metaMpTokenIssuanceObject.mpTokenMetadata();
 // To get the raw hex string:
 Optional<String> hexString = metadata.map(MpTokenMetadata::value);
+```
+
+### 5. `ValidatedLedger.age()` type change
+
+The return type of `ServerInfo.ValidatedLedger#age()` changed from `UnsignedInteger` to `Optional<UnsignedInteger>`.
+rippled omits the `age` field from `closed_ledger` and `validated_ledger` in `server_info` responses when it cannot
+compute a valid age — for example while the server is syncing, disconnected, or reconnecting. Previously, xrpl4j
+modeled `age` as required, so `XrplClient.serverInformation()` would throw a `JsonRpcClientErrorException` in exactly
+those situations, making it unusable as a health check during incomplete synchronization.
+
+**Migration:**
+
+```java
+// Before (v6.x.x)
+UnsignedInteger age = validatedLedger.age();
+
+// After (v7.0.0)
+Optional<UnsignedInteger> age = validatedLedger.age();
+
+// Idiomatic ways to use the optional value:
+// Option 1: Check if present and use it
+if (validatedLedger.age().isPresent()) {
+    UnsignedInteger ageValue = validatedLedger.age().get();
+    // Use ageValue here
+}
+
+// Option 2: Use ifPresent for a functional style
+validatedLedger.age().ifPresent(ageValue -> {
+    // Use ageValue here
+});
+
+// Option 3: Provide a default value
+UnsignedInteger ageValue = validatedLedger.age().orElse(UnsignedInteger.ZERO);
 ```
 
 ## Backward Compatibility

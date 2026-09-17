@@ -277,16 +277,22 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   final Seed generateEd25519XrplSeed(final String accountIdentifier) {
     Objects.requireNonNull(accountIdentifier);
 
-    final ServerSecret serverSecretBytes = serverSecretSupplier.get();
+    // Note: `serverSecretSupplier` is caller-owned and may return the same underlying ServerSecret instance (or the
+    // same backing byte[]) on every invocation. This method therefore never calls `destroy()` on the object that
+    // `serverSecretSupplier` returns -- doing so would permanently zero out a shared secret the very first time it's
+    // used. Instead, this method extracts a private, local copy of the secret bytes (via `ServerSecret#value()`,
+    // which itself returns a defensive copy) and zeroes only that local copy once it's no longer needed.
+    final ServerSecret serverSecret = serverSecretSupplier.get();
+    final byte[] serverSecretBytes = serverSecret.value();
     byte[] passphraseBytes = EMPTY_BYTE_ARRAY; // <-- to avoid an NPE in the "finally" block.
     try {
       passphraseBytes = Hashing.hmacSha512(
-          serverSecretBytes.value()) // <-- This is equivalent to the `passphraseBytes` in the xrpl.org docs.
+          serverSecretBytes) // <-- This is equivalent to the `passphraseBytes` in the xrpl.org docs.
         .hashBytes(accountIdentifier.getBytes()).asBytes();
       return Seed.ed25519SeedFromPassphrase(Passphrase.of(passphraseBytes));
     } finally {
-      // Zero-out all bytes in the both arrays so secret material exists in-memory for as little time as possible.
-      serverSecretBytes.destroy();
+      // Zero-out all bytes in both local arrays so secret material exists in-memory for as little time as possible.
+      Arrays.fill(serverSecretBytes, (byte) 0);
       Arrays.fill(passphraseBytes, (byte) 0);
     }
   }
@@ -306,16 +312,22 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   final Seed generateSecp256k1Seed(final String accountIdentifier) {
     Objects.requireNonNull(accountIdentifier);
 
-    final ServerSecret serverSecretBytes = serverSecretSupplier.get();
+    // Note: `serverSecretSupplier` is caller-owned and may return the same underlying ServerSecret instance (or the
+    // same backing byte[]) on every invocation. This method therefore never calls `destroy()` on the object that
+    // `serverSecretSupplier` returns -- doing so would permanently zero out a shared secret the very first time it's
+    // used. Instead, this method extracts a private, local copy of the secret bytes (via `ServerSecret#value()`,
+    // which itself returns a defensive copy) and zeroes only that local copy once it's no longer needed.
+    final ServerSecret serverSecret = serverSecretSupplier.get();
+    final byte[] serverSecretBytes = serverSecret.value();
     byte[] passphraseBytes = EMPTY_BYTE_ARRAY; // <-- to avoid an NPE in the "finally" block.
     try {
       passphraseBytes = Hashing.hmacSha512(
-          serverSecretBytes.value()) // <-- This is equivalent to the `passphraseBytes` in the xrpl.org docs.
+          serverSecretBytes) // <-- This is equivalent to the `passphraseBytes` in the xrpl.org docs.
         .hashBytes(accountIdentifier.getBytes()).asBytes();
       return Seed.secp256k1SeedFromPassphrase(Passphrase.of(passphraseBytes));
     } finally {
-      // Zero-out all bytes in the both arrays so secret material exists in-memory for as little time as possible.
-      serverSecretBytes.destroy();
+      // Zero-out all bytes in both local arrays so secret material exists in-memory for as little time as possible.
+      Arrays.fill(serverSecretBytes, (byte) 0);
       Arrays.fill(passphraseBytes, (byte) 0);
     }
   }

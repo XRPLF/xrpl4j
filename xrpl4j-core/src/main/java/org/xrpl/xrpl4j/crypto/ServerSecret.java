@@ -27,6 +27,13 @@ import java.util.Objects;
 
 /**
  * A way of encapsulating a secret value set by a server.
+ *
+ * <p>This class defensively copies the byte array supplied to {@link #of(byte[])} upon construction. As a result,
+ * {@link #destroy()} only zeroizes this instance's internal copy of the secret; it never mutates the caller's
+ * original array. Callers that source secret material from a persistent, in-memory {@code byte[]} (for example, one
+ * loaded once from a keystore or environment variable and reused across calls) can therefore safely construct a new
+ * {@link ServerSecret} from that array on every invocation of a {@link ServerSecretSupplier} without fear that a
+ * prior {@link #destroy()} call will have zeroed out their source material.</p>
  */
 public class ServerSecret implements javax.security.auth.Destroyable {
 
@@ -36,7 +43,8 @@ public class ServerSecret implements javax.security.auth.Destroyable {
   /**
    * Instantiates a new builder.
    *
-   * @param value This passphrase's binary value.
+   * @param value This passphrase's binary value. This method makes a defensive copy of {@code value}, so destroying
+   *              the returned {@link ServerSecret} will not mutate or zero-out the array passed into this method.
    *
    * @return A {@link ServerSecret}.
    */
@@ -47,11 +55,12 @@ public class ServerSecret implements javax.security.auth.Destroyable {
   /**
    * Required-args Constructor.
    *
-   * @param value This passphrase's binary value.
+   * @param value This passphrase's binary value. This value is defensively copied so that this class's internal
+   *              state is never aliased to memory owned by the caller.
    */
   private ServerSecret(byte[] value) {
     Objects.requireNonNull(value);
-    this.value = value;
+    this.value = Arrays.copyOf(value, value.length);
   }
 
   /**

@@ -42,7 +42,6 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.time.Duration;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * A feign HTTP client for interacting with the rippled JSON RPC API. This client is strictly responsible for making
@@ -81,7 +80,7 @@ public interface JsonRpcClient {
   static JsonRpcClient construct(final HttpUrl rippledUrl) {
     Objects.requireNonNull(rippledUrl);
 
-    return construct(rippledUrl, new Options());
+    return construct(rippledUrl, new Client.Default(null, null), new Options());
   }
 
   /**
@@ -91,8 +90,13 @@ public interface JsonRpcClient {
    * @param options    An {@link Options}.
    *
    * @return A {@link JsonRpcClient}.
+   *
+   * @deprecated Prefer {@link #construct(HttpUrl, Client, Options)}, which also allows a custom Feign {@link Client} to
+   *   be supplied (e.g. for connection pooling). This overload remains for existing callers, and continues to use
+   *   Feign's own default {@link Client}.
    */
-  static JsonRpcClient construct(HttpUrl rippledUrl, Options options) {
+  @Deprecated
+  static JsonRpcClient construct(final HttpUrl rippledUrl, final Options options) {
     return construct(rippledUrl, new Client.Default(null, null), options);
   }
 
@@ -110,7 +114,7 @@ public interface JsonRpcClient {
    *
    * @return A {@link JsonRpcClient}.
    */
-  static JsonRpcClient construct(HttpUrl rippledUrl, Client client, Options options) {
+  static JsonRpcClient construct(final HttpUrl rippledUrl, final Client client, final Options options) {
     Objects.requireNonNull(rippledUrl);
     Objects.requireNonNull(client);
     Objects.requireNonNull(options);

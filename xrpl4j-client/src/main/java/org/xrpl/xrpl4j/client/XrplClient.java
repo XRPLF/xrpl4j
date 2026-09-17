@@ -24,12 +24,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.Beta;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import feign.Client;
-import feign.Request;
 import feign.Request.Options;
 import okhttp3.HttpUrl;
 import org.slf4j.Logger;
@@ -148,7 +146,13 @@ public class XrplClient {
    * @param rippledUrl     The {@link HttpUrl} of the node to connect to.
    * @param connectTimeout A {@link Duration} indicating the client's connect timeout.
    * @param readTimeout    A {@link Duration} indicating the client's read timeout.
+   *
+   * @deprecated Prefer {@link #XrplClient(HttpUrl, Client, Options)}, which exposes the full set of Feign
+   *   {@link Options} rather than just connect/read timeouts, and also allows a custom {@link Client} to be supplied.
+   *   For an {@link Options}-only equivalent of this constructor, use
+   *   {@code new XrplClient(JsonRpcClient.construct(rippledUrl, options))}.
    */
+  @Deprecated
   public XrplClient(
     HttpUrl rippledUrl,
     Duration connectTimeout,
@@ -157,8 +161,11 @@ public class XrplClient {
     this(
       JsonRpcClient.construct(
         rippledUrl,
-        new Options(connectTimeout.toMillis(), TimeUnit.MILLISECONDS, readTimeout.toMillis(), TimeUnit.MILLISECONDS,
-          true)
+        new Options(
+          connectTimeout.toMillis(), TimeUnit.MILLISECONDS,
+          readTimeout.toMillis(), TimeUnit.MILLISECONDS,
+          true
+        )
       )
     );
   }
@@ -171,21 +178,27 @@ public class XrplClient {
    * {@code io.github.openfeign:feign-okhttp} to your project, using the same Feign version that {@code xrpl4j-client}
    * depends on.
    *
+   * <p>Note: when a custom client is supplied, TLS (trust store, hostname verification, protocol versions), proxy
+   * selection, and redirect handling are governed entirely by that client's own configuration rather than the JVM
+   * defaults used by Feign's built-in {@code Client.Default}.
+   *
    * @param rippledUrl The {@link HttpUrl} of the node to connect to.
    * @param client     The Feign {@link Client} used to execute HTTP requests.
    * @param options    Feign request {@link Options} (connect timeout, read timeout, follow redirects).
    */
-  public XrplClient(HttpUrl rippledUrl, Client client, Options options) {
+  public XrplClient(final HttpUrl rippledUrl, final Client client, final Options options) {
     this(JsonRpcClient.construct(rippledUrl, client, options));
   }
 
   /**
-   * Required-args constructor (exists for testing purposes only).
+   * Public constructor that allows a caller-constructed {@link JsonRpcClient} to be used directly. This is the most
+   * general extension point on this class: unlike the other constructors, it is not tied to Feign at all, so a caller
+   * can supply a {@link JsonRpcClient} built via {@link JsonRpcClient#construct(HttpUrl, Client, Options)} or any other
+   * {@link JsonRpcClient} implementation entirely.
    *
    * @param jsonRpcClient A {@link JsonRpcClient}.
    */
-  @VisibleForTesting
-  XrplClient(final JsonRpcClient jsonRpcClient) {
+  public XrplClient(final JsonRpcClient jsonRpcClient) {
     this.jsonRpcClient = Objects.requireNonNull(jsonRpcClient);
     this.objectMapper = ObjectMapperFactory.create();
     this.binaryCodec = XrplBinaryCodec.getInstance();
@@ -651,7 +664,6 @@ public class XrplClient {
    * @return The {@link AccountSponsoringResult} returned by the account_sponsoring method call.
    *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   *
    * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
    */
   @Beta

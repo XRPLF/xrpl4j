@@ -131,6 +131,8 @@ import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -625,6 +627,12 @@ public class XrplClientTest {
   }
 
   @Test
+  void jsonRpcClientConstructorIsPublic() throws NoSuchMethodException {
+    Constructor<XrplClient> constructor = XrplClient.class.getDeclaredConstructor(JsonRpcClient.class);
+    assertThat(Modifier.isPublic(constructor.getModifiers())).isTrue();
+  }
+
+  @Test
   public void submitSingleSignedTransaction() {
     BcSignatureService bcSignatureService = new BcSignatureService();
     jsonRpcClientMock = new JsonRpcClient() {
@@ -1044,7 +1052,8 @@ public class XrplClientTest {
         .body("{\"result\":{\"status\":\"success\",\"signature_verified\":true}}", StandardCharsets.UTF_8)
         .build());
 
-    XrplClient client = new XrplClient(HttpUrl.get("http://localhost:1/"), feignClient, new Request.Options());
+    Request.Options options = new Request.Options();
+    XrplClient client = new XrplClient(HttpUrl.get("http://localhost:1/"), feignClient, options);
     ChannelVerifyResult result = client.channelVerify(ChannelVerifyRequestParams.builder()
       .amount(XrpCurrencyAmount.ofDrops(1))
       .channelId(Hash256.of(Strings.repeat("0", 64)))
@@ -1053,7 +1062,10 @@ public class XrplClientTest {
       .build());
 
     assertThat(result.signatureVerified()).isTrue();
-    verify(feignClient).execute(any(Request.class), any(Request.Options.class));
+
+    ArgumentCaptor<Request.Options> optionsCaptor = ArgumentCaptor.forClass(Request.Options.class);
+    verify(feignClient).execute(any(Request.class), optionsCaptor.capture());
+    assertThat(optionsCaptor.getValue()).isSameAs(options);
   }
 
   @Test

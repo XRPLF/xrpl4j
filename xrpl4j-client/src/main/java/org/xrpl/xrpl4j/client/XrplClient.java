@@ -149,8 +149,6 @@ public class XrplClient {
    *
    * @deprecated Prefer {@link #XrplClient(HttpUrl, Client, Options)}, which exposes the full set of Feign
    *   {@link Options} rather than just connect/read timeouts, and also allows a custom {@link Client} to be supplied.
-   *   For an {@link Options}-only equivalent of this constructor, use
-   *   {@code new XrplClient(JsonRpcClient.construct(rippledUrl, options))}.
    */
   @Deprecated
   public XrplClient(

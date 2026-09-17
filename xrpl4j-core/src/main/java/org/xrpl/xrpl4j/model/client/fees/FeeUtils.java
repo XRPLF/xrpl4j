@@ -373,22 +373,21 @@ public class FeeUtils {
         0L, FeeTerm.Provenance.ASSUMED
       )));
 
-    final Optional<UnsignedInteger> sponsorSignersCount = feeParams.sponsorSignersCount();
-    if (sponsorSignersCount.isPresent()) {
-      final long count = sponsorSignersCount.get().longValue();
-      terms.add(FeeTerm.of(
-        count > 0L ?
+    // A sponsor term exists only when its count was supplied, or when the transaction carries a Sponsor at all.
+    feeParams.sponsorSignersCount()
+      .map(count -> FeeTerm.of(
+        count.longValue() > 0L ?
           "sponsor multi-signature: " + count + " SponsorSignature.Signers entries" :
           "sponsor single-signed as specified: a lone SponsorSignature.TxnSignature is free",
-        count, FeeTerm.Provenance.SPECIFIED
-      ));
-    } else if (transaction.sponsor().isPresent()) {
-      terms.add(FeeTerm.of(
+        count.longValue(), FeeTerm.Provenance.SPECIFIED
+      ))
+      .map(Optional::of)
+      .orElseGet(() -> transaction.sponsor().map(sponsor -> FeeTerm.of(
         "assumed the sponsor signs with a single key: a lone SponsorSignature.TxnSignature is free (set " +
           "sponsorSignersCount if the sponsor will multi-sign)",
         0L, FeeTerm.Provenance.ASSUMED
-      ));
-    }
+      )))
+      .ifPresent(terms::add);
     return terms;
   }
 
@@ -475,17 +474,16 @@ public class FeeUtils {
       ));
     }
     if (transactionType == TransactionType.LOAN_SET) {
-      final Optional<UnsignedInteger> specifiedCount = feeParams.counterpartySignatureCount();
-      return Optional.of(specifiedCount.isPresent() ?
-        FeeTerm.of(
-          "LoanSet counterparty multi-signature: " + specifiedCount.get() + " signature(s)",
-          specifiedCount.get().longValue(), FeeTerm.Provenance.SPECIFIED
-        ) :
-        FeeTerm.of(
+      return Optional.of(feeParams.counterpartySignatureCount()
+        .map(count -> FeeTerm.of(
+          "LoanSet counterparty multi-signature: " + count + " signature(s)",
+          count.longValue(), FeeTerm.Provenance.SPECIFIED
+        ))
+        .orElseGet(() -> FeeTerm.of(
           "LoanSet counterparty signature: assumed a single key, which is itself charged (set " +
             "counterpartySignatureCount if the counterparty will multi-sign)",
           1L, FeeTerm.Provenance.ASSUMED
-        ));
+        )));
     }
     return Optional.empty();
   }

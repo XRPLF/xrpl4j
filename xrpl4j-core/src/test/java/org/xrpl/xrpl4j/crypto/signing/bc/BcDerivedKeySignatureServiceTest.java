@@ -210,7 +210,7 @@ class BcDerivedKeySignatureServiceTest {
         .value("100")
         .build())
       .destination(Address.of(destinationClassicAddress))
-      .fee(XrpCurrencyAmount.ofDrops(0))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
@@ -225,8 +225,8 @@ class BcDerivedKeySignatureServiceTest {
     final Callable<Boolean> signedTxCallableFoo = () -> {
       Signature signature = this.derivedKeySignatureService.multiSign(privateKeyReferenceFoo, payment);
       assertThat(signature.base16Value()).isEqualTo(
-        "E2ACD61C90D93433402B1F704DA38DF72876B6788C2C05B3196E14BC711AECFF14A7D6276439A198D8B4880EE2DB544CF351A8CE23" +
-          "1B3340F42F9BF1EDBF5104"
+        "5970DC88AE8E364856CD9BB0920EF850CC34A61B3BD41F10114944FF9DA8C16EC3397033C2E02DCC18F74D1727B8FBD760BDC0165F" +
+          "4AF27D03A5C3980FDEFB08"
       );
 
       boolean result = this.derivedKeySignatureService.verifyMultiSigned(
@@ -255,8 +255,8 @@ class BcDerivedKeySignatureServiceTest {
     final Callable<Boolean> signedTxCallableBar = () -> {
       Signature signature = this.derivedKeySignatureService.multiSign(privateKeyReferenceBar, payment);
       assertThat(signature.base16Value()).isEqualTo(
-        "55A7B3AD35E01774A85BBB81958F505C1AF8DB67318420239AAEA32AD4A9D6B6AF920159314D5A5C93490C696C7F2BB3CEA76A4" +
-          "6FDF4E03514070FB994EFFF08"
+        "DF221CF7BFE4A1C77D929A490A2C9576D838730E0D6110B4D45DB65AB40FB323A8ECEEF08ED8CB7E585EEDCF76BF3F90A9D7AB1B6" +
+          "EEE7A534BC1AD0808C0E609"
       );
 
       boolean result = this.derivedKeySignatureService.verifyMultiSigned(
@@ -314,7 +314,7 @@ class BcDerivedKeySignatureServiceTest {
         .value("100")
         .build())
       .destination(Address.of(destinationClassicAddress))
-      .fee(XrpCurrencyAmount.ofDrops(0))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
@@ -325,8 +325,8 @@ class BcDerivedKeySignatureServiceTest {
       Signature signature = this.derivedKeySignatureService.multiSign(privateKeyReference, payment);
 
       assertThat(signature.base16Value()).isEqualTo(
-        "3045022100ED9BF3764ACF7AFC39E75AEDC5825EF667B498305A469CFCE3CF76E7580CC2F902204A4B1317103459EE777B0406D04ED" +
-          "5C60942D962B6FB60BB589E15636817086E"
+        "3045022100CE588A59AFB33317A606E977B99E3A855143D7D16451B0691FBBA99981FC4C4702205287A29C0FCF47ED3564AAEE72CB" +
+          "543237EC54D3483515A199ED55471889F87C"
       );
 
       boolean result = this.derivedKeySignatureService.verifyMultiSigned(
@@ -1268,7 +1268,7 @@ class BcDerivedKeySignatureServiceTest {
         .value("100")
         .build())
       .destination(Address.of(destinationClassicAddress))
-      .fee(XrpCurrencyAmount.ofDrops(0))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
@@ -1321,7 +1321,7 @@ class BcDerivedKeySignatureServiceTest {
         .value("100")
         .build())
       .destination(Address.of(destinationClassicAddress))
-      .fee(XrpCurrencyAmount.ofDrops(0))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
@@ -1374,7 +1374,7 @@ class BcDerivedKeySignatureServiceTest {
         .value("100")
         .build())
       .destination(Address.of(destinationClassicAddress))
-      .fee(XrpCurrencyAmount.ofDrops(0))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
@@ -1409,7 +1409,7 @@ class BcDerivedKeySignatureServiceTest {
         .value("100")
         .build())
       .destination(Address.of(destinationClassicAddress))
-      .fee(XrpCurrencyAmount.ofDrops(0))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
@@ -1441,7 +1441,7 @@ class BcDerivedKeySignatureServiceTest {
         .value("100")
         .build())
       .destination(Address.of(destinationClassicAddress))
-      .fee(XrpCurrencyAmount.ofDrops(0))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
@@ -1470,7 +1470,7 @@ class BcDerivedKeySignatureServiceTest {
         .value("100")
         .build())
       .destination(Address.of(destinationClassicAddress))
-      .fee(XrpCurrencyAmount.ofDrops(0))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))

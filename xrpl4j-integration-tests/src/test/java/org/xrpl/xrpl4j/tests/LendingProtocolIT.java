@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -28,6 +29,7 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.LoanManageFlags;
 import org.xrpl.xrpl4j.model.flags.LoanPayFlags;
+import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -59,9 +61,11 @@ import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.VaultCreate;
 import org.xrpl.xrpl4j.model.transactions.VaultDeposit;
+import org.xrpl.xrpl4j.model.transactions.VaultKind;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.time.Duration;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -1167,6 +1171,14 @@ public class LendingProtocolIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
 
+    // LoanBrokerSet requires a closed-ended Vault once LendingProtocolV1_1 is enabled, so this Vault must
+    // define a SubscriptionDate/RedemptionDate pair and this method must wait for the ledger to pass
+    // SubscriptionDate before attaching a LoanBroker to it, below.
+    final UnsignedLong subscriptionDate = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5)));
+    final UnsignedLong redemptionDate = subscriptionDate.plus(
+      VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.plus(UnsignedLong.valueOf(60))
+    );
+
     final VaultCreate vaultCreate = VaultCreate.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
@@ -1174,6 +1186,9 @@ public class LendingProtocolIT extends AbstractIT {
       .asset(Issue.XRP)
       .assetsMaximum(Amount.of("10000000000"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(subscriptionDate)
+      .redemptionDate(redemptionDate)
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
 
@@ -1214,6 +1229,13 @@ public class LendingProtocolIT extends AbstractIT {
     final SubmitResult<VaultDeposit> depositResult = xrplClient.submit(signedDeposit);
     assertThat(depositResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(() -> this.getValidatedTransaction(signedDeposit.hash(), VaultDeposit.class));
+
+    // LoanBrokerSet requires the Vault to be past its SubscriptionDate once it is closed-ended.
+    this.scanForResult(
+      this::getValidatedLedger,
+      ledgerResult -> FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
+        .greaterThan(subscriptionDate)
+    );
 
     brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())

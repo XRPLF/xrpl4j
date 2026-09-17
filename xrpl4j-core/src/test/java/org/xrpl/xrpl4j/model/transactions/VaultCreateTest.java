@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.VaultCreateFlags;
@@ -105,6 +106,88 @@ class VaultCreateTest {
       .scale(AssetScale.of(UnsignedInteger.valueOf(0)))
       .build()
     );
+  }
+
+  @Test
+  void closedEndedVaultWithValidDatesAllowed() {
+    assertDoesNotThrow(() -> baseBuilder()
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(UnsignedLong.valueOf(1000))
+      .redemptionDate(UnsignedLong.valueOf(1000).plus(VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS))
+      .build()
+    );
+  }
+
+  @Test
+  void openEndedVaultWithSubscriptionDateNotAllowed() {
+    assertThatThrownBy(() -> baseBuilder()
+      .subscriptionDate(UnsignedLong.valueOf(1000))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("SubscriptionDate and RedemptionDate are only allowed when VaultKind is CLOSED_ENDED.");
+  }
+
+  @Test
+  void openEndedVaultWithRedemptionDateNotAllowed() {
+    assertThatThrownBy(() -> baseBuilder()
+      .redemptionDate(UnsignedLong.valueOf(1000))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("SubscriptionDate and RedemptionDate are only allowed when VaultKind is CLOSED_ENDED.");
+  }
+
+  @Test
+  void closedEndedVaultRequiresSubscriptionDate() {
+    assertThatThrownBy(() -> baseBuilder()
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .redemptionDate(UnsignedLong.valueOf(1000))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("SubscriptionDate and RedemptionDate are both required when VaultKind is CLOSED_ENDED.");
+  }
+
+  @Test
+  void closedEndedVaultRequiresRedemptionDate() {
+    assertThatThrownBy(() -> baseBuilder()
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(UnsignedLong.valueOf(1000))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("SubscriptionDate and RedemptionDate are both required when VaultKind is CLOSED_ENDED.");
+  }
+
+  @Test
+  void closedEndedVaultRedemptionDateMustBeAfterSubscriptionDate() {
+    assertThatThrownBy(() -> baseBuilder()
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(UnsignedLong.valueOf(1000))
+      .redemptionDate(UnsignedLong.valueOf(1000))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("RedemptionDate must be strictly after SubscriptionDate.");
+  }
+
+  @Test
+  void closedEndedVaultGapMustMeetMinimum() {
+    UnsignedLong tooSmallGap = VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.minus(UnsignedLong.ONE);
+    assertThatThrownBy(() -> baseBuilder()
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(UnsignedLong.valueOf(1000))
+      .redemptionDate(UnsignedLong.valueOf(1000).plus(tooSmallGap))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageStartingWith("The gap between SubscriptionDate and RedemptionDate must be at least");
+  }
+
+  @Test
+  void closedEndedVaultGapMustBeBelowMaximum() {
+    assertThatThrownBy(() -> baseBuilder()
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(UnsignedLong.valueOf(1000))
+      .redemptionDate(UnsignedLong.valueOf(1000).plus(VaultCreate.MAX_INVESTMENT_PERIOD_SECONDS))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageStartingWith("The gap between SubscriptionDate and RedemptionDate must be at least");
   }
 
   /**

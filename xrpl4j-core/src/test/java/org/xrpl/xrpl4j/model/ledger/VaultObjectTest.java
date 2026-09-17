@@ -5,6 +5,7 @@ import static org.xrpl.xrpl4j.crypto.TestConstants.HASH_256;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -16,6 +17,7 @@ import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.VaultData;
+import org.xrpl.xrpl4j.model.transactions.VaultKind;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 
 class VaultObjectTest extends AbstractJsonTest {
@@ -44,8 +46,13 @@ class VaultObjectTest extends AbstractJsonTest {
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
       .scale(AssetScale.of(UnsignedInteger.valueOf(8)))
       .flags(VaultFlags.VAULT_PRIVATE)
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(UnsignedLong.valueOf(1000))
+      .redemptionDate(UnsignedLong.valueOf(2000))
       .index(HASH_256)
       .build();
+
+    assertThat(vault.vaultKind()).isEqualTo(VaultKind.CLOSED_ENDED);
 
     String json = String.format("{\n" +
       "    \"LedgerEntryType\" : \"Vault\",\n" +
@@ -68,6 +75,9 @@ class VaultObjectTest extends AbstractJsonTest {
       "    \"ShareMPTID\" : \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\",\n" +
       "    \"WithdrawalPolicy\" : 1,\n" +
       "    \"Scale\" : 8,\n" +
+      "    \"VaultKind\" : 1,\n" +
+      "    \"SubscriptionDate\" : 1000,\n" +
+      "    \"RedemptionDate\" : 2000,\n" +
       "    \"index\" : %s\n" +
       "}", HASH_256);
 
@@ -108,6 +118,7 @@ class VaultObjectTest extends AbstractJsonTest {
       "    \"ShareMPTID\" : \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\",\n" +
       "    \"WithdrawalPolicy\" : 1,\n" +
       "    \"Scale\" : 0,\n" +
+      "    \"VaultKind\" : 0,\n" +
       "    \"index\" : %s\n" +
       "}", HASH_256);
 
@@ -159,6 +170,7 @@ class VaultObjectTest extends AbstractJsonTest {
       "    \"ShareMPTID\" : \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\",\n" +
       "    \"WithdrawalPolicy\" : 1,\n" +
       "    \"Scale\" : 0,\n" +
+      "    \"VaultKind\" : 0,\n" +
       "    \"index\" : %s\n" +
       "}", HASH_256);
 

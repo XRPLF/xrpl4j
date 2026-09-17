@@ -929,6 +929,26 @@
       }
     ],
     [
+      "SubscriptionDate",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 75,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "RedemptionDate",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 76,
+        "type": "UInt32"
+      }
+    ],
+    [
       "IndexNext",
       {
         "isSerialized": true,
@@ -3579,6 +3599,16 @@
       }
     ],
     [
+      "VaultKind",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 22,
+        "type": "UInt8"
+      }
+    ],
+    [
       "TakerPaysCurrency",
       {
         "isSerialized": true,
@@ -5250,6 +5280,18 @@
       {
         "name": "Scale",
         "optionality": 2
+      },
+      {
+        "name": "VaultKind",
+        "optionality": 2
+      },
+      {
+        "name": "SubscriptionDate",
+        "optionality": 1
+      },
+      {
+        "name": "RedemptionDate",
+        "optionality": 1
       }
     ],
     "XChainOwnedClaimID": [
@@ -6740,6 +6782,18 @@
       },
       {
         "name": "Scale",
+        "optionality": 1
+      },
+      {
+        "name": "VaultKind",
+        "optionality": 1
+      },
+      {
+        "name": "SubscriptionDate",
+        "optionality": 1
+      },
+      {
+        "name": "RedemptionDate",
         "optionality": 1
       }
     ],

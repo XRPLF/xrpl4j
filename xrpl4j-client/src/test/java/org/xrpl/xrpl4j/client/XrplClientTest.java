@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -37,6 +38,9 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import feign.Client;
+import feign.Request;
+import feign.Response;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -126,9 +130,12 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -1023,6 +1030,30 @@ public class XrplClientTest {
     verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(ChannelVerifyResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.CHANNEL_VERIFY);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(channelVerifyRequestParams);
+  }
+
+  @Test
+  public void constructorWithCustomFeignClientRoutesRequestsThroughIt()
+    throws JsonRpcClientErrorException, IOException {
+    Client feignClient = mock(Client.class);
+    when(feignClient.execute(any(Request.class), any(Request.Options.class)))
+      .thenAnswer(invocation -> Response.builder()
+        .request(invocation.getArgument(0))
+        .status(200)
+        .headers(Collections.emptyMap())
+        .body("{\"result\":{\"status\":\"success\",\"signature_verified\":true}}", StandardCharsets.UTF_8)
+        .build());
+
+    XrplClient client = new XrplClient(HttpUrl.get("http://localhost:1/"), feignClient, new Request.Options());
+    ChannelVerifyResult result = client.channelVerify(ChannelVerifyRequestParams.builder()
+      .amount(XrpCurrencyAmount.ofDrops(1))
+      .channelId(Hash256.of(Strings.repeat("0", 64)))
+      .publicKey("publicKey")
+      .signature("signature")
+      .build());
+
+    assertThat(result.signatureVerified()).isTrue();
+    verify(feignClient).execute(any(Request.class), any(Request.Options.class));
   }
 
   @Test

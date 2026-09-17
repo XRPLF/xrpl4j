@@ -252,12 +252,14 @@ public interface FeeParams {
    * carried in {@code TxnSignature} instead. For a multi-signature this is the full size of the {@code Signers}
    * array (e.g. 4 for a 4-of-N signer list), not one fewer — rippled charges {@code base × (1 + signersCount)}.
    *
-   * @return An {@link UnsignedInteger} number of signatures, defaulting to zero.
+   * <p>An absent value is priced as zero. Leaving it absent (rather than defaulting it to zero) lets a computed
+   * {@link FeeBreakdown} distinguish "the caller did not say" from "the caller confirmed a single signature": the
+   * former is reported as {@link FeeTerm.Provenance#ASSUMED}, the latter as {@link FeeTerm.Provenance#SPECIFIED}. Pass
+   * {@link UnsignedInteger#ZERO} explicitly to assert that this account single-signs.
+   *
+   * @return An optionally-present {@link UnsignedInteger} number of signatures, priced as zero when absent.
    */
-  @Value.Default
-  default UnsignedInteger signersCount() {
-    return UnsignedInteger.ZERO;
-  }
+  Optional<UnsignedInteger> signersCount();
 
   /**
    * The number of signatures the transaction's sponsor will supply in its {@code SponsorSignature.Signers} array.
@@ -266,12 +268,12 @@ public interface FeeParams {
    * only {@code SponsorSignature.Signers} entries, and a lone sponsor signature is carried in
    * {@code SponsorSignature.TxnSignature} instead.
    *
-   * @return An {@link UnsignedInteger} number of signatures, defaulting to zero.
+   * <p>An absent value is priced as zero, and is distinguished from an explicit zero in a computed
+   * {@link FeeBreakdown} exactly as {@link #signersCount()} is.
+   *
+   * @return An optionally-present {@link UnsignedInteger} number of signatures, priced as zero when absent.
    */
-  @Value.Default
-  default UnsignedInteger sponsorSignersCount() {
-    return UnsignedInteger.ZERO;
-  }
+  Optional<UnsignedInteger> sponsorSignersCount();
 
   /**
    * The total number of signatures in a {@code LoanSet}'s {@code CounterpartySignature}, applicable only when
@@ -353,8 +355,10 @@ public interface FeeParams {
       "The fee of an unknown transaction type cannot be computed, because its fee rules are not known."
     );
 
-    checkSignatureCount(this.signersCount(), UnsignedInteger.ZERO, "signersCount");
-    checkSignatureCount(this.sponsorSignersCount(), UnsignedInteger.ZERO, "sponsorSignersCount");
+    this.signersCount().ifPresent(count -> checkSignatureCount(count, UnsignedInteger.ZERO, "signersCount"));
+    this.sponsorSignersCount().ifPresent(
+      count -> checkSignatureCount(count, UnsignedInteger.ZERO, "sponsorSignersCount")
+    );
 
     Preconditions.checkArgument(
       transactionType == TransactionType.LOAN_SET || !this.counterpartySignatureCount().isPresent(),
@@ -468,8 +472,8 @@ public interface FeeParams {
 
     private final FeeResult feeResult;
     private final Transaction transaction;
-    private UnsignedInteger signersCount = UnsignedInteger.ZERO;
-    private UnsignedInteger sponsorSignersCount = UnsignedInteger.ZERO;
+    private UnsignedInteger signersCount;
+    private UnsignedInteger sponsorSignersCount;
 
     private GenericBuilder(final FeeResult feeResult, final Transaction transaction) {
       this.feeResult = feeResult;
@@ -516,8 +520,8 @@ public interface FeeParams {
       return FeeParams.builder()
         .feeResult(feeResult)
         .transaction(transaction)
-        .signersCount(signersCount)
-        .sponsorSignersCount(sponsorSignersCount)
+        .signersCount(Optional.ofNullable(signersCount))
+        .sponsorSignersCount(Optional.ofNullable(sponsorSignersCount))
         .build();
     }
   }
@@ -531,8 +535,8 @@ public interface FeeParams {
     private final FeeResult feeResult;
     private final Batch batch;
     private final Map<Address, UnsignedInteger> signaturesPerBatchSigner = new LinkedHashMap<>();
-    private UnsignedInteger signersCount = UnsignedInteger.ZERO;
-    private UnsignedInteger sponsorSignersCount = UnsignedInteger.ZERO;
+    private UnsignedInteger signersCount;
+    private UnsignedInteger sponsorSignersCount;
     private XrpCurrencyAmount ownerReserve;
     private boolean requireExplicitSignatureCounts;
 
@@ -656,8 +660,8 @@ public interface FeeParams {
       final ImmutableFeeParams.Builder builder = FeeParams.builder()
         .feeResult(feeResult)
         .transaction(batch)
-        .signersCount(signersCount)
-        .sponsorSignersCount(sponsorSignersCount)
+        .signersCount(Optional.ofNullable(signersCount))
+        .sponsorSignersCount(Optional.ofNullable(sponsorSignersCount))
         .putAllSignaturesPerBatchSigner(signaturesPerBatchSigner);
       if (ownerReserve != null) {
         builder.ownerReserve(ownerReserve);
@@ -673,8 +677,8 @@ public interface FeeParams {
 
     private final FeeResult feeResult;
     private final LoanSet loanSet;
-    private UnsignedInteger signersCount = UnsignedInteger.ZERO;
-    private UnsignedInteger sponsorSignersCount = UnsignedInteger.ZERO;
+    private UnsignedInteger signersCount;
+    private UnsignedInteger sponsorSignersCount;
     private UnsignedInteger counterpartySignatureCount;
 
     private LoanSetBuilder(final FeeResult feeResult, final LoanSet loanSet) {
@@ -738,8 +742,8 @@ public interface FeeParams {
       final ImmutableFeeParams.Builder builder = FeeParams.builder()
         .feeResult(feeResult)
         .transaction(loanSet)
-        .signersCount(signersCount)
-        .sponsorSignersCount(sponsorSignersCount);
+        .signersCount(Optional.ofNullable(signersCount))
+        .sponsorSignersCount(Optional.ofNullable(sponsorSignersCount));
       if (counterpartySignatureCount != null) {
         builder.counterpartySignatureCount(counterpartySignatureCount);
       }
@@ -754,8 +758,8 @@ public interface FeeParams {
 
     private final FeeResult feeResult;
     private final LoanPay loanPay;
-    private UnsignedInteger signersCount = UnsignedInteger.ZERO;
-    private UnsignedInteger sponsorSignersCount = UnsignedInteger.ZERO;
+    private UnsignedInteger signersCount;
+    private UnsignedInteger sponsorSignersCount;
     private UnsignedInteger loanPaymentFeeIncrements;
 
     private LoanPayBuilder(final FeeResult feeResult, final LoanPay loanPay) {
@@ -824,8 +828,8 @@ public interface FeeParams {
       final ImmutableFeeParams.Builder builder = FeeParams.builder()
         .feeResult(feeResult)
         .transaction(loanPay)
-        .signersCount(signersCount)
-        .sponsorSignersCount(sponsorSignersCount);
+        .signersCount(Optional.ofNullable(signersCount))
+        .sponsorSignersCount(Optional.ofNullable(sponsorSignersCount));
       if (loanPaymentFeeIncrements != null) {
         builder.loanPaymentFeeIncrements(loanPaymentFeeIncrements);
       }

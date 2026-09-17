@@ -361,21 +361,26 @@ public class FeeUtils {
   private static List<FeeTerm> signerCountTerms(final FeeParams feeParams, final Transaction transaction) {
     final List<FeeTerm> terms = new ArrayList<>();
 
-    final long signersCount = feeParams.signersCount().longValue();
-    terms.add(signersCount > 0L ?
-      FeeTerm.of(
-        "own multi-signature: " + signersCount + " Signers entries", signersCount, FeeTerm.Provenance.SPECIFIED
-      ) :
-      FeeTerm.of(
+    terms.add(feeParams.signersCount()
+      .map(count -> FeeTerm.of(
+        count.longValue() > 0L ?
+          "own multi-signature: " + count + " Signers entries" :
+          "single-signed as specified: a lone TxnSignature is free",
+        count.longValue(), FeeTerm.Provenance.SPECIFIED
+      ))
+      .orElseGet(() -> FeeTerm.of(
         "assumed single-signed: a lone TxnSignature is free (set signersCount if this account will multi-sign)",
         0L, FeeTerm.Provenance.ASSUMED
-      ));
+      )));
 
-    final long sponsorSignersCount = feeParams.sponsorSignersCount().longValue();
-    if (sponsorSignersCount > 0L) {
+    final Optional<UnsignedInteger> sponsorSignersCount = feeParams.sponsorSignersCount();
+    if (sponsorSignersCount.isPresent()) {
+      final long count = sponsorSignersCount.get().longValue();
       terms.add(FeeTerm.of(
-        "sponsor multi-signature: " + sponsorSignersCount + " SponsorSignature.Signers entries",
-        sponsorSignersCount, FeeTerm.Provenance.SPECIFIED
+        count > 0L ?
+          "sponsor multi-signature: " + count + " SponsorSignature.Signers entries" :
+          "sponsor single-signed as specified: a lone SponsorSignature.TxnSignature is free",
+        count, FeeTerm.Provenance.SPECIFIED
       ));
     } else if (transaction.sponsor().isPresent()) {
       terms.add(FeeTerm.of(
@@ -440,7 +445,9 @@ public class FeeUtils {
    * @return A number of base fees, at least one.
    */
   private static long signatureUnits(final FeeParams feeParams) {
-    return 1L + feeParams.signersCount().longValue() + feeParams.sponsorSignersCount().longValue();
+    return 1L +
+      feeParams.signersCount().orElse(UnsignedInteger.ZERO).longValue() +
+      feeParams.sponsorSignersCount().orElse(UnsignedInteger.ZERO).longValue();
   }
 
   /**

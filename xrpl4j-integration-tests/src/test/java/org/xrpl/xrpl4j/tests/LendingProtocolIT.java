@@ -107,7 +107,6 @@ public class LendingProtocolIT extends AbstractIT {
     );
     final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
@@ -199,7 +198,6 @@ public class LendingProtocolIT extends AbstractIT {
     );
     final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
@@ -269,7 +267,6 @@ public class LendingProtocolIT extends AbstractIT {
     );
     final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
@@ -343,7 +340,6 @@ public class LendingProtocolIT extends AbstractIT {
     );
     final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
@@ -415,7 +411,6 @@ public class LendingProtocolIT extends AbstractIT {
     );
     final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
@@ -723,7 +718,6 @@ public class LendingProtocolIT extends AbstractIT {
     // Build the LoanSet transaction with broker's signing key
     LoanSet unpricedLoanSetBase = LoanSet.builder()
       .account(loanBrokerKeyPair.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(loanBrokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("50000"))

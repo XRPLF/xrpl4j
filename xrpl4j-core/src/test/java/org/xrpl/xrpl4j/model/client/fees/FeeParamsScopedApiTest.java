@@ -512,7 +512,6 @@ public class FeeParamsScopedApiTest {
       .account(ALICE)
       .destination(BOB)
       .amount(XrpCurrencyAmount.ofDrops(1000))
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
       .build();
@@ -523,7 +522,6 @@ public class FeeParamsScopedApiTest {
       .account(account)
       .destination(DAVE)
       .amount(XrpCurrencyAmount.ofDrops(1000))
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.valueOf(sequence))
       .flags(PaymentFlags.INNER_BATCH_TXN)
       .build();
@@ -533,7 +531,6 @@ public class FeeParamsScopedApiTest {
     return AccountDelete.builder()
       .account(account)
       .destination(DAVE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.valueOf(sequence))
       .flags(org.xrpl.xrpl4j.model.flags.TransactionFlags.INNER_BATCH_TXN)
       .build();
@@ -543,7 +540,6 @@ public class FeeParamsScopedApiTest {
     return AccountDelete.builder()
       .account(ALICE)
       .destination(BOB)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
       .build();
@@ -555,7 +551,6 @@ public class FeeParamsScopedApiTest {
       .amount(XrpCurrencyAmount.ofDrops(1000000))
       .amount2(XrpCurrencyAmount.ofDrops(1000000))
       .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
       .build();
@@ -567,7 +562,6 @@ public class FeeParamsScopedApiTest {
       .amount(XrpCurrencyAmount.ofDrops(1000000))
       .amount2(XrpCurrencyAmount.ofDrops(1000000))
       .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.valueOf(sequence))
       .flags(TransactionFlags.INNER_BATCH_TXN)
       .build();
@@ -576,7 +570,6 @@ public class FeeParamsScopedApiTest {
   private EnableAmendment enableAmendment() {
     return EnableAmendment.builder()
       .account(ALICE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .amendment(Hash256.of("42426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369F97ABF044EE"))
       .build();
@@ -586,7 +579,6 @@ public class FeeParamsScopedApiTest {
     return UnknownTransaction.builder()
       .unknownTransactionType("SomeFutureTransactionType")
       .account(ALICE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .build();
   }
@@ -594,7 +586,6 @@ public class FeeParamsScopedApiTest {
   private LoanSet loanSet() {
     return LoanSet.builder()
       .account(ALICE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .loanBrokerId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
       .principalRequested(Amount.of("1000000"))
@@ -605,7 +596,6 @@ public class FeeParamsScopedApiTest {
   private LoanPay loanPay() {
     return LoanPay.builder()
       .account(ALICE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .loanId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
       .amount(XrpCurrencyAmount.ofDrops(50000))
@@ -620,7 +610,6 @@ public class FeeParamsScopedApiTest {
     }
     return Batch.builder()
       .account(outerAccount)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
       .rawTransactions(wrappers)

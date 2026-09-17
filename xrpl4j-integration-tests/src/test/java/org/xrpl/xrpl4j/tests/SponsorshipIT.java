@@ -869,7 +869,6 @@ public class SponsorshipIT extends AbstractIT {
       // once it exists, then applied. With 2 sponsee signers and 2 sponsor signers that is 5x the reference base fee.
       SponsorshipTransfer unpricedTransfer = SponsorshipTransfer.builder()
         .account(sponseeAddress)
-        .fee(XrpCurrencyAmount.ofDrops(0))
         .sequence(updatedSponseeInfo.accountData().sequence())
         .flags(SponsorshipTransferFlags.builder().tfSponsorshipCreate(true).build())
         .sponsor(sponsorAddress)

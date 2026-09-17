@@ -241,7 +241,6 @@ public class BatchTransactionIT extends AbstractIT {
     final Batch unpricedUnsignedBatch = Batch.builder()
       .account(account1KeyPair.publicKey().deriveAddress())
       .signingPublicKey(account1KeyPair.publicKey())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(account1Info.accountData().sequence())
       .flags(batchFlags)
       .addRawTransactions(
@@ -375,7 +374,6 @@ public class BatchTransactionIT extends AbstractIT {
     // Build the Batch transaction with Independent mode
     Batch unpricedUnsignedBatch = Batch.builder()
       .account(account1KeyPair.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(account1Result.accountData().sequence())
       .flags(batchFlags)
       .addRawTransactions(
@@ -530,7 +528,6 @@ public class BatchTransactionIT extends AbstractIT {
     // Build the Batch transaction - account1 is the batch submitter
     Batch unpricedUnsignedBatch = Batch.builder()
       .account(account1KeyPair.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(account1Result.accountData().sequence())
       .flags(batchFlags)
       .addRawTransactions(
@@ -724,7 +721,6 @@ public class BatchTransactionIT extends AbstractIT {
     // Build the Batch transaction - account1 is the batch submitter
     Batch unpricedUnsignedBatch = Batch.builder()
       .account(account1KeyPair.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(account1Result.accountData().sequence())
       .flags(batchFlags)
       .addRawTransactions(
@@ -912,7 +908,6 @@ public class BatchTransactionIT extends AbstractIT {
     // Build the Batch transaction - account1 is the batch submitter
     Batch unpricedUnsignedBatch = Batch.builder()
       .account(account1KeyPair.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(account1Result.accountData().sequence())
       .flags(batchFlags)
       .addRawTransactions(
@@ -1081,7 +1076,6 @@ public class BatchTransactionIT extends AbstractIT {
     final Batch unpricedUnsignedBatch = Batch.builder()
       .account(outerSignerKeyPair.publicKey().deriveAddress())
       .signingPublicKey(outerSignerKeyPair.publicKey())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(outerSignerInfo.accountData().sequence())
       .flags(batchFlags) // <-- One crux of the test
       .addRawTransactions(
@@ -1257,7 +1251,6 @@ public class BatchTransactionIT extends AbstractIT {
     final Batch unpricedUnsignedBatch = Batch.builder()
       .account(outerSignerKeyPair.publicKey().deriveAddress())
       .signingPublicKey(outerSignerKeyPair.publicKey())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(outerSignerInfo.accountData().sequence())
       .flags(batchFlags)
       .addRawTransactions(
@@ -1419,7 +1412,6 @@ public class BatchTransactionIT extends AbstractIT {
     Batch unpricedUnsignedBatch = Batch.builder()
       .account(outerSignerKeyPair.publicKey().deriveAddress())
       .signingPublicKey(outerSignerKeyPair.publicKey())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(outerSignerInfo.accountData().sequence())
       .flags(BatchFlags.ofAllOrNothing())
       .addRawTransactions(RawTransactionWrapper.of(innerPayment1), RawTransactionWrapper.of(innerPayment2))
@@ -1522,7 +1514,6 @@ public class BatchTransactionIT extends AbstractIT {
     final Batch unpricedUnsignedBatch = Batch.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .signingPublicKey(sourceKeyPair.publicKey())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .ticketSequence(ticketSequence) // <-- outer Batch tx uses a Ticket, not a Sequence
       .flags(BatchFlags.ofAllOrNothing())
       .addRawTransactions(
@@ -1604,7 +1595,6 @@ public class BatchTransactionIT extends AbstractIT {
     final Batch unpricedUnsignedBatch = Batch.builder()
       .account(account1KeyPair.publicKey().deriveAddress())
       .signingPublicKey(account1KeyPair.publicKey())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .ticketSequence(account1TicketSequence) // <-- outer Batch tx uses a Ticket, not a Sequence
       .flags(BatchFlags.ofAllOrNothing())
       .addRawTransactions(
@@ -1679,7 +1669,6 @@ public class BatchTransactionIT extends AbstractIT {
     // Inner payment1 is authorized via a Ticket instead of a Sequence.
     final Payment innerPayment1 = Payment.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ZERO)
       .ticketSequence(ticketSequence) // <-- inner Payment tx uses a Ticket, not a Sequence
       .destination(destination1KeyPair.publicKey().deriveAddress())
@@ -1700,7 +1689,6 @@ public class BatchTransactionIT extends AbstractIT {
     final Batch unpricedBatch = Batch.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .signingPublicKey(sourceKeyPair.publicKey())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(sourceAccountInfo.accountData().sequence())
       .flags(BatchFlags.ofAllOrNothing())
       .addRawTransactions(
@@ -1852,7 +1840,6 @@ public class BatchTransactionIT extends AbstractIT {
   ) {
     return Payment.builder()
       .account(sourceAddress)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(sequence)
       .destination(destinationAddress)
       .amount(XrpCurrencyAmount.ofDrops(amount))
@@ -1917,7 +1904,6 @@ public class BatchTransactionIT extends AbstractIT {
   ) {
     final Batch unpricedBatch = Batch.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(accountSequence)
       .signingPublicKey(sourceKeyPair.publicKey())
       .flags(batchFlags)

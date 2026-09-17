@@ -1245,7 +1245,6 @@ public class BatchTest {
     }
     return Batch.builder()
       .account(outerAccount)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .flags(BatchFlags.ALL_OR_NOTHING)
       .rawTransactions(wrappers)

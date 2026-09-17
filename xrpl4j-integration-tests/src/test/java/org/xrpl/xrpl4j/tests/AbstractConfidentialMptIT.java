@@ -250,7 +250,6 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
 
     final ImmutableConfidentialMptConvert.Builder builder = ConfidentialMptConvert.builder()
       .account(holder.address())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(sequence)
       .signingPublicKey(holder.account.publicKey())
       .mpTokenIssuanceId(issuance.issuanceId)
@@ -295,7 +294,6 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
   ) throws Exception {
     final ConfidentialMptMergeInbox merge = ConfidentialMptMergeInbox.builder()
       .account(holder.address())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(currentSequence(holder.address()))
       .signingPublicKey(holder.account.publicKey())
       .mpTokenIssuanceId(issuance.issuanceId)
@@ -365,7 +363,6 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
 
     final ImmutableConfidentialMptSend.Builder builder = ConfidentialMptSend.builder()
       .account(sender.address())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(sequence)
       .signingPublicKey(sender.account.publicKey())
       .destination(destination.address())
@@ -432,7 +429,6 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
 
     final ConfidentialMptConvertBack convertBack = ConfidentialMptConvertBack.builder()
       .account(holder.address())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(sequence)
       .signingPublicKey(holder.account.publicKey())
       .mpTokenIssuanceId(issuance.issuanceId)
@@ -490,7 +486,6 @@ public abstract class AbstractConfidentialMptIT extends AbstractMptIT {
 
     final ConfidentialMptClawback clawback = ConfidentialMptClawback.builder()
       .account(issuance.issuer.publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(sequence)
       .signingPublicKey(issuance.issuer.publicKey())
       .mpTokenIssuanceId(issuance.issuanceId)

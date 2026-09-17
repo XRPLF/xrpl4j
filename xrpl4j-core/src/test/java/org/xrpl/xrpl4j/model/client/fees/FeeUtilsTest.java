@@ -1085,7 +1085,6 @@ public class FeeUtilsTest {
       .account(ALICE)
       .destination(BOB)
       .amount(XrpCurrencyAmount.ofDrops(1000))
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
       .build();
@@ -1101,7 +1100,6 @@ public class FeeUtilsTest {
   private MpTokenIssuanceSet sponsoredMpTokenIssuanceSet() {
     return MpTokenIssuanceSet.builder()
       .account(ALICE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
       .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179" + Strings.repeat("11", 20)))
@@ -1114,7 +1112,6 @@ public class FeeUtilsTest {
   private TrustSet sponsoredTrustSet() {
     return TrustSet.builder()
       .account(ALICE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
       .limitAmount(IssuedCurrencyAmount.builder().issuer(BOB).currency("USD").value("10").build())
@@ -1128,7 +1125,6 @@ public class FeeUtilsTest {
       .account(account)
       .destination(DAVE)
       .amount(XrpCurrencyAmount.ofDrops(1000))
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.valueOf(sequence))
       .flags(PaymentFlags.INNER_BATCH_TXN)
       .build();
@@ -1138,7 +1134,6 @@ public class FeeUtilsTest {
     return ConfidentialMptSend.builder()
       .account(account)
       .destination(DAVE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.valueOf(sequence))
       .flags(org.xrpl.xrpl4j.model.flags.TransactionFlags.INNER_BATCH_TXN)
       .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179" + Strings.repeat("11", 20)))
@@ -1155,7 +1150,6 @@ public class FeeUtilsTest {
     return AccountDelete.builder()
       .account(account)
       .destination(DAVE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.valueOf(sequence))
       .flags(org.xrpl.xrpl4j.model.flags.TransactionFlags.INNER_BATCH_TXN)
       .build();
@@ -1164,7 +1158,6 @@ public class FeeUtilsTest {
   private LoanSet loanSet() {
     return LoanSet.builder()
       .account(ALICE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .loanBrokerId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
       .principalRequested(Amount.of("1000000"))
@@ -1176,7 +1169,6 @@ public class FeeUtilsTest {
     return LoanSet.builder()
       .account(account)
       .counterparty(counterparty)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.valueOf(sequence))
       .flags(org.xrpl.xrpl4j.model.flags.LoanSetFlags.of(
         org.xrpl.xrpl4j.model.flags.TransactionFlags.INNER_BATCH_TXN.getValue()))
@@ -1188,7 +1180,6 @@ public class FeeUtilsTest {
   private LoanPay loanPay() {
     return LoanPay.builder()
       .account(ALICE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .loanId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
       .amount(XrpCurrencyAmount.ofDrops(50000))
@@ -1200,7 +1191,6 @@ public class FeeUtilsTest {
     return AccountDelete.builder()
       .account(ALICE)
       .destination(BOB)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
       .build();
@@ -1212,7 +1202,6 @@ public class FeeUtilsTest {
       .amount(IssuedCurrencyAmount.builder().issuer(BOB).currency("TST").value("25").build())
       .amount2(XrpCurrencyAmount.ofDrops(250000000))
       .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
       .build();
@@ -1221,7 +1210,6 @@ public class FeeUtilsTest {
   private SetRegularKey setRegularKey() {
     return SetRegularKey.builder()
       .account(ALICE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
       .build();
@@ -1236,7 +1224,6 @@ public class FeeUtilsTest {
       .account(ALICE)
       .owner(BOB)
       .offerSequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY);
     return preimageBytes == 0 ?
@@ -1253,7 +1240,6 @@ public class FeeUtilsTest {
       .account(account)
       .owner(BOB)
       .offerSequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.valueOf(sequence))
       .flags(org.xrpl.xrpl4j.model.flags.TransactionFlags.INNER_BATCH_TXN);
     return preimageBytes == 0 ?
@@ -1267,7 +1253,6 @@ public class FeeUtilsTest {
     }
     return Batch.builder()
       .account(outerAccount)
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(UnsignedInteger.ONE)
       .signingPublicKey(PUBLIC_KEY)
       .rawTransactions(wrappers)

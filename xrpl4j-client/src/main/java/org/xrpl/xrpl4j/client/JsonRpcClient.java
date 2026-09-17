@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.Beta;
 import com.google.common.collect.Iterators;
+import feign.Client;
 import feign.Feign;
 import feign.Headers;
 import feign.Request.Options;
@@ -92,10 +93,30 @@ public interface JsonRpcClient {
    * @return A {@link JsonRpcClient}.
    */
   static JsonRpcClient construct(HttpUrl rippledUrl, Options options) {
+    return construct(rippledUrl, new Client.Default(null, null), options);
+  }
+
+  /**
+   * Constructs a new client for the given url that sends requests using the supplied Feign {@link Client}, for example
+   * {@code new feign.okhttp.OkHttpClient(okHttpClient)} to enable connection pooling.
+   *
+   * <p>xrpl4j does not bundle a Feign client implementation. Add one such as
+   * {@code io.github.openfeign:feign-okhttp} to your project, using the same Feign version that {@code xrpl4j-client}
+   * depends on.
+   *
+   * @param rippledUrl The {@link HttpUrl} of the node to connect to.
+   * @param client     The Feign {@link Client} used to execute HTTP requests.
+   * @param options    An {@link Options}.
+   *
+   * @return A {@link JsonRpcClient}.
+   */
+  static JsonRpcClient construct(HttpUrl rippledUrl, Client client, Options options) {
     Objects.requireNonNull(rippledUrl);
+    Objects.requireNonNull(client);
     Objects.requireNonNull(options);
 
     return Feign.builder()
+      .client(client)
       .encoder(new JacksonEncoder(objectMapper))
       // rate limiting will return a 503 status that can be retried
       .errorDecoder(new RetryStatusDecoder(RETRY_INTERVAL, SERVICE_UNAVAILABLE_STATUS))

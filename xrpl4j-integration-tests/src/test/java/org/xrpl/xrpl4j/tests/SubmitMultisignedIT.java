@@ -109,10 +109,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     signerListSetResult = xrplClient.submit(signedSignerListSet);
     assertThat(signerListSetResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signedSignerListSet.hash()).isEqualTo(signerListSetResult.transactionResult().hash());
-    logInfo(
-      signerListSetResult.transactionResult().transaction().transactionType(),
-      signerListSetResult.transactionResult().hash()
-    );
+    logSubmitResult(signerListSetResult);
 
     // Then wait until the transaction enters a validated ledger and the source account's signer list
     // exists
@@ -173,10 +170,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     SubmitMultiSignedResult<Payment> submitMultiSignedResult = xrplClient.submitMultisigned(signedTransaction);
     assertThat(submitMultiSignedResult.transaction().hash().value()).isEqualTo(libraryCalculatedHash);
     assertThat(submitMultiSignedResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    logInfo(
-      submitMultiSignedResult.transaction().transaction().transactionType(),
-      submitMultiSignedResult.transaction().hash()
-    );
+    logSubmitResult(submitMultiSignedResult);
   }
 
   @Test
@@ -221,10 +215,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     SubmitMultiSignedResult<Payment> submitMultiSignedResult = xrplClient.submitMultisigned(signedTransaction);
     assertThat(submitMultiSignedResult.transaction().hash().value()).isEqualTo(libraryCalculatedHash);
     assertThat(submitMultiSignedResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    logInfo(
-      submitMultiSignedResult.transaction().transaction().transactionType(),
-      submitMultiSignedResult.transaction().hash()
-    );
+    logSubmitResult(submitMultiSignedResult);
 
   }
 }

@@ -310,7 +310,6 @@ public class ConfidentialMptBatchIT extends AbstractConfidentialMptIT {
     // The outer Batch consumes aliceSequence and the confidential send inner takes +1, so this plain inner takes +2.
     final Payment plainPayment = Payment.builder()
       .account(alice.address())
-      .fee(XrpCurrencyAmount.ofDrops(0))
       .sequence(aliceSequence.plus(UnsignedInteger.valueOf(2)))
       .flags(PaymentFlags.INNER_BATCH_TXN)
       .destination(carol.publicKey().deriveAddress())

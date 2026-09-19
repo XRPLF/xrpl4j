@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.crypto.signing;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.base.Preconditions;
+import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
@@ -56,6 +58,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   public <T extends Transaction> SingleSignedTransaction<T> sign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
+    requireNonZeroFee(transaction);
 
     final Signature signature = signatureHelper(privateKeyable, transaction);
 
@@ -102,6 +105,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   public <T extends Transaction> Signature multiSign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
+    requireNonZeroFee(transaction);
 
     final Address address = derivePublicKey(privateKeyable).deriveAddress();
     final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toMultiSignableBytes(transaction, address);
@@ -127,6 +131,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   public Signature counterpartySign(final P privateKeyable, final LoanSet transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
+    requireNonZeroFee(transaction);
 
     // The counterparty signs a payload bound to its own role, so its signature cannot be replayed as the
     // transaction's own or the sponsor's signature.
@@ -138,6 +143,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   public Signature counterpartyMultiSign(final P privateKeyable, final LoanSet transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
+    requireNonZeroFee(transaction);
 
     final Address address = derivePublicKey(privateKeyable).deriveAddress();
     final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toCounterpartyMultiSignableBytes(
@@ -150,6 +156,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   public <T extends Transaction> Signature sponsorSign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
+    requireNonZeroFee(transaction);
 
     // The sponsor signs a payload bound to its own role, so its signature cannot be replayed as the transaction's
     // own or the counterparty's signature.
@@ -161,6 +168,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   public <T extends Transaction> Signature sponsorMultiSign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
+    requireNonZeroFee(transaction);
 
     // Sponsor multi-signing preserves the first-party signer's SigningPubKey in the signed data.
     // This differs from regular multi-signing which clears the SigningPubKey.
@@ -169,6 +177,32 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
       transaction, address
     );
     return this.signatureHelper(privateKeyable, signableTransactionBytes);
+  }
+
+  /**
+   * Guards against signing a transaction whose {@link Transaction#fee()} was left at its zero default (see
+   * {@link Transaction#fee()}) rather than set to a real, computed value. Signing such a transaction would produce a
+   * signature that rippled will reject as underpriced, so this fails fast instead of letting a caller discover the
+   * mistake at submission time.
+   *
+   * <p>This applies to every path that signs an outer transaction's own {@code Fee} field for eventual submission:
+   * single-signing, multi-signing, sponsor-signing, and LoanSet counterparty-signing. Multi-signing is guarded for the
+   * same reason as single-signing, and the stakes are higher because a zero-fee multi-signature wastes every
+   * signer's work. The only exemptions are {@link #signInner(PrivateKeyable, Batch, Address)} and
+   * {@link #multiSignInner(PrivateKeyable, Batch, Address)}, which sign a Batch inner transaction that rippled
+   * requires to carry a {@code Fee} of exactly zero.
+   *
+   * @param transaction The {@link Transaction} about to be signed.
+   *
+   * @throws IllegalArgumentException if {@code transaction}'s {@link Transaction#fee()} is zero.
+   */
+  private static void requireNonZeroFee(final Transaction transaction) {
+    Preconditions.checkArgument(
+      !transaction.fee().value().equals(UnsignedLong.ZERO),
+      "Refusing to sign a transaction with a Fee of 0. Transaction#fee() now defaults to 0 rather than being " +
+        "required, so compute a real fee before signing, e.g. via " +
+        "org.xrpl.xrpl4j.model.client.fees.FeeUtils#computeFee(FeeParams)."
+    );
   }
 
   /**

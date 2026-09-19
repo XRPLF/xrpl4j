@@ -1004,9 +1004,8 @@ public class LendingProtocolIT extends AbstractIT {
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
-    final LoanSet unsignedLoanSet = LoanSet.builder()
+    final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
@@ -1015,6 +1014,10 @@ public class LendingProtocolIT extends AbstractIT {
       .paymentInterval(UnsignedInteger.valueOf(60))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
+
+    final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSet).build()).recommendedFee()
+    );
 
     final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
       brokerKeyPair.privateKey(), unsignedLoanSet

@@ -111,6 +111,8 @@ public class AbstractTransactionSignerTest {
     when(signatureUtilsMock.toSignableInnerBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableInnerBytes(any(), any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toCounterpartyMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toCounterpartySignableBytes(any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toSponsorSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
 
     when(signerMock.signingPublicKey()).thenReturn(publicKeyMock);
     when(signerMock.transactionSignature()).thenReturn(fauxEd25519Signature);
@@ -541,7 +543,7 @@ public class AbstractTransactionSignerTest {
     Signature signature = transactionSigner.counterpartySign(privateKeyableMock, loanSet);
     assertThat(signature).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toSignableBytes(loanSet);
+    verify(signatureUtilsMock).toCounterpartySignableBytes(loanSet);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -553,7 +555,7 @@ public class AbstractTransactionSignerTest {
     Signature signature = transactionSigner.counterpartySign(privateKeyableMock, loanSet);
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toSignableBytes(loanSet);
+    verify(signatureUtilsMock).toCounterpartySignableBytes(loanSet);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -651,7 +653,7 @@ public class AbstractTransactionSignerTest {
     Signature signature = transactionSigner.sponsorSign(privateKeyableMock, payment);
     assertThat(signature).isEqualTo(fauxEd25519Signature);
 
-    verify(signatureUtilsMock).toSignableBytes(payment);
+    verify(signatureUtilsMock).toSponsorSignableBytes(payment);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -670,7 +672,7 @@ public class AbstractTransactionSignerTest {
     Signature signature = transactionSigner.sponsorSign(privateKeyableMock, payment);
     assertThat(signature).isEqualTo(fauxSecp256k1Signature);
 
-    verify(signatureUtilsMock).toSignableBytes(payment);
+    verify(signatureUtilsMock).toSponsorSignableBytes(payment);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 

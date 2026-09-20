@@ -1112,6 +1112,12 @@ public class LendingProtocolIT extends AbstractIT {
    * rippled's close time advances much faster than wall-clock time, so pinning the loan to the 60-second minimum
    * {@code PaymentInterval} keeps this wait well under a second.</p>
    *
+   * <p>Note that rippled evaluates lateness against the <em>applying</em> ledger's {@code parentCloseTime}, whereas
+   * this polls the <em>validated</em> ledger's {@code closeTime}. Waiting on the latter is sufficient because close
+   * times are monotonic: for any ledger {@code M} later than the validated ledger {@code N} observed here,
+   * {@code parentCloseTime(M) == closeTime(M-1) >= closeTime(N)}. So once {@code closeTime(N)} has passed the due
+   * date, every subsequent ledger that could apply the impair has too, and no overshoot margin is required.</p>
+   *
    * @param loanId The {@link Hash256} identifying the loan to wait on.
    *
    * @throws JsonRpcClientErrorException If the loan cannot be read from the ledger.
@@ -1130,8 +1136,8 @@ public class LendingProtocolIT extends AbstractIT {
       .atMost(Duration.of(1, ChronoUnit.MINUTES))
       .await()
       .until(() -> getValidatedLedger().ledger().closeTime()
-        .map(closeTime -> closeTime.compareTo(nextPaymentDueDate) > 0)
-        .orElse(false)
+        .orElseThrow(() -> new IllegalStateException("Validated ledger must have a closeTime."))
+        .compareTo(nextPaymentDueDate) > 0
       );
   }
 

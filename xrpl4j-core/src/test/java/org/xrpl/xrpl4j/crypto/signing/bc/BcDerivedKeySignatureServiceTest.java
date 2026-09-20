@@ -953,7 +953,10 @@ class BcDerivedKeySignatureServiceTest {
     final Callable<Boolean> signedCallable = () -> {
       Signature signature = this.derivedKeySignatureService.counterpartySign(privateKeyReference, loanSet);
       assertThat(signature).isNotNull();
-      assertThat(signature.base16Value()).isNotEmpty();
+      assertThat(signature.base16Value()).isEqualTo(
+        "C499CCC65166E3005078416B358EE2185C3DFD5DD2348ABA27EA1EEEFB6D4DCC5609240221EC920E01541296D4D03872B7" +
+          "7B39CA59519FF2FCF0A81C9C79A500"
+      );
       // Verify signature is deterministic
       Signature signature2 = this.derivedKeySignatureService.counterpartySign(privateKeyReference, loanSet);
       assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
@@ -987,7 +990,10 @@ class BcDerivedKeySignatureServiceTest {
     final Callable<Boolean> signedCallable = () -> {
       Signature signature = this.derivedKeySignatureService.counterpartySign(privateKeyReference, loanSet);
       assertThat(signature).isNotNull();
-      assertThat(signature.base16Value()).isNotEmpty();
+      assertThat(signature.base16Value()).isEqualTo(
+        "30450221009030188E569A0D6E5CC47939D7D97B333860B3E04FFECE15A91F4DACB217AB14022015D86943FCAD7495ABCE" +
+          "716DFB0C16AA52575710C92B44ED5D10E34C246FA2EB"
+      );
       // Verify signature is deterministic for SECP256K1
       Signature signature2 = this.derivedKeySignatureService.counterpartySign(privateKeyReference, loanSet);
       assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
@@ -1021,7 +1027,10 @@ class BcDerivedKeySignatureServiceTest {
     final Callable<Boolean> signedCallable = () -> {
       Signature signature = this.derivedKeySignatureService.counterpartyMultiSign(privateKeyReference, loanSet);
       assertThat(signature).isNotNull();
-      assertThat(signature.base16Value()).isNotEmpty();
+      assertThat(signature.base16Value()).isEqualTo(
+        "74DDE36F5A79E4E00304A5B1273AEB244B0F7E442ABA22512C4D61CF58D7AFDD0617A5BF49A06C9CC8AE144462723A0FC7" +
+          "69F714BC13D1D0C285630263BE9006"
+      );
       // Verify signature is deterministic
       Signature signature2 = this.derivedKeySignatureService.counterpartyMultiSign(privateKeyReference, loanSet);
       assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());
@@ -1055,7 +1064,10 @@ class BcDerivedKeySignatureServiceTest {
     final Callable<Boolean> signedCallable = () -> {
       Signature signature = this.derivedKeySignatureService.counterpartyMultiSign(privateKeyReference, loanSet);
       assertThat(signature).isNotNull();
-      assertThat(signature.base16Value()).isNotEmpty();
+      assertThat(signature.base16Value()).isEqualTo(
+        "304402201D25A0CE2AEFA9CD5EFB82125C1DA001D06BC94A00E4A39B5063CEDB5F70065002205C8D20CAD9BF064BE7934E" +
+          "58A933FB9791A600EAC8B1568B9803BD7773DFD501"
+      );
       // Verify signature is deterministic for SECP256K1
       Signature signature2 = this.derivedKeySignatureService.counterpartyMultiSign(privateKeyReference, loanSet);
       assertThat(signature.base16Value()).isEqualTo(signature2.base16Value());

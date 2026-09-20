@@ -58,10 +58,10 @@ public class XrplBinaryCodec {
   // Role-specific signing prefixes introduced by the fixCleanup3_4_0 amendment. Each role signs under a distinct
   // prefix so a signature made for one role cannot be replayed in another, and is only valid on a network where that
   // amendment is enabled.
-  public static final String COUNTERPARTY_SIGNATURE_PREFIX = "43505400"; // "CPT\0" - CounterpartySignature single-sign
-  public static final String COUNTERPARTY_MULTI_SIGNATURE_PREFIX = "43504D00"; // "CPM\0" - CounterpartySignature multi
-  public static final String SPONSOR_SIGNATURE_PREFIX = "53504E00"; // "SPN\0" - SponsorSignature single-sign
-  public static final String SPONSOR_MULTI_SIGNATURE_PREFIX = "53504D00"; // "SPM\0" - SponsorSignature multi-sign
+  public static final String COUNTERPARTY_SIGNATURE_PREFIX = "43505400";       // "CPT\0" single-sign
+  public static final String COUNTERPARTY_MULTI_SIGNATURE_PREFIX = "43504D00"; // "CPM\0" multi-sign
+  public static final String SPONSOR_SIGNATURE_PREFIX = "53504E00";            // "SPN\0" single-sign
+  public static final String SPONSOR_MULTI_SIGNATURE_PREFIX = "53504D00";      // "SPM\0" multi-sign
 
   public static final String CHANNEL_FIELD_NAME = "Channel";
   public static final String AMOUNT_FIELD_NAME = "Amount";

@@ -572,6 +572,70 @@ public class SignatureUtilsTest {
   }
 
   // ////////////////
+  // toCounterpartySignableBytes (LoanSet)
+  // ////////////////
+
+  @Test
+  void toCounterpartySignableBytesWithNullTransaction() {
+    assertThrows(NullPointerException.class, () -> signatureUtils.toCounterpartySignableBytes(null));
+  }
+
+  @Test
+  void toCounterpartySignableBytes() throws JsonProcessingException {
+    LoanSet loanSet = createLoanSet();
+
+    when(xrplBinaryCodecMock.encodeForSigningCounterparty(anyString())).thenReturn("CAFE1234");
+
+    UnsignedByteArray actual = signatureUtils.toCounterpartySignableBytes(loanSet);
+    assertThat(actual.hexValue()).isEqualTo("CAFE1234");
+
+    verify(objectMapperMock).writeValueAsString(loanSet);
+    verifyNoMoreInteractions(objectMapperMock);
+    verify(xrplBinaryCodecMock).encodeForSigningCounterparty(anyString());
+    verifyNoMoreInteractions(xrplBinaryCodecMock);
+  }
+
+  @Test
+  void toCounterpartySignableBytesWithJsonException() throws JsonProcessingException {
+    LoanSet loanSet = createLoanSet();
+    doThrow(new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)))
+      .when(objectMapperMock).writeValueAsString(loanSet);
+    assertThrows(RuntimeException.class, () -> signatureUtils.toCounterpartySignableBytes(loanSet));
+  }
+
+  // ////////////////
+  // toSponsorSignableBytes (Transaction)
+  // ////////////////
+
+  @Test
+  void toSponsorSignableBytesWithNullTransaction() {
+    assertThrows(NullPointerException.class, () -> signatureUtils.toSponsorSignableBytes(null));
+  }
+
+  @Test
+  void toSponsorSignableBytes() throws JsonProcessingException {
+    Payment payment = createPayment1();
+
+    when(xrplBinaryCodecMock.encodeForSigningSponsor(anyString())).thenReturn("CAFE1234");
+
+    UnsignedByteArray actual = signatureUtils.toSponsorSignableBytes(payment);
+    assertThat(actual.hexValue()).isEqualTo("CAFE1234");
+
+    verify(objectMapperMock).writeValueAsString(payment);
+    verifyNoMoreInteractions(objectMapperMock);
+    verify(xrplBinaryCodecMock).encodeForSigningSponsor(anyString());
+    verifyNoMoreInteractions(xrplBinaryCodecMock);
+  }
+
+  @Test
+  void toSponsorSignableBytesWithJsonException() throws JsonProcessingException {
+    Payment payment = createPayment1();
+    doThrow(new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)))
+      .when(objectMapperMock).writeValueAsString(payment);
+    assertThrows(RuntimeException.class, () -> signatureUtils.toSponsorSignableBytes(payment));
+  }
+
+  // ////////////////
   // toCounterpartyMultiSignableBytes (LoanSet)
   // ////////////////
 
@@ -591,7 +655,7 @@ public class SignatureUtilsTest {
   void toCounterpartyMultiSignableBytes() throws JsonProcessingException {
     LoanSet loanSet = createLoanSet();
 
-    when(xrplBinaryCodecMock.encodeForMultiSigningWithSigningPubKey(anyString(), anyString())).thenReturn("CAFE1234");
+    when(xrplBinaryCodecMock.encodeForMultiSigningCounterparty(anyString(), anyString())).thenReturn("CAFE1234");
 
     UnsignedByteArray actual = signatureUtils.toCounterpartyMultiSignableBytes(
       loanSet, sourcePublicKey.deriveAddress()
@@ -600,7 +664,7 @@ public class SignatureUtilsTest {
 
     verify(objectMapperMock).writeValueAsString(loanSet);
     verifyNoMoreInteractions(objectMapperMock);
-    verify(xrplBinaryCodecMock).encodeForMultiSigningWithSigningPubKey(anyString(), anyString());
+    verify(xrplBinaryCodecMock).encodeForMultiSigningCounterparty(anyString(), anyString());
     verifyNoMoreInteractions(xrplBinaryCodecMock);
   }
 
@@ -649,7 +713,7 @@ public class SignatureUtilsTest {
   void toSponsorMultiSignableBytes() throws JsonProcessingException {
     Payment payment = createPayment1();
 
-    when(xrplBinaryCodecMock.encodeForMultiSigningWithSigningPubKey(anyString(), anyString())).thenReturn("CAFE1234");
+    when(xrplBinaryCodecMock.encodeForMultiSigningSponsor(anyString(), anyString())).thenReturn("CAFE1234");
 
     UnsignedByteArray actual = signatureUtils.toSponsorMultiSignableBytes(
       payment, sourcePublicKey.deriveAddress()
@@ -658,7 +722,7 @@ public class SignatureUtilsTest {
 
     verify(objectMapperMock).writeValueAsString(payment);
     verifyNoMoreInteractions(objectMapperMock);
-    verify(xrplBinaryCodecMock).encodeForMultiSigningWithSigningPubKey(anyString(), anyString());
+    verify(xrplBinaryCodecMock).encodeForMultiSigningSponsor(anyString(), anyString());
     verifyNoMoreInteractions(xrplBinaryCodecMock);
   }
 

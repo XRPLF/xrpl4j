@@ -34,6 +34,13 @@ public interface TransactionVerifier {
    * Verify the supplied digital-signature to ensure that it was constructed using the private-key corresponding to
    * {@code signerPublicKey}.
    *
+   * <p>This verifies a signature over the transaction's <em>own</em> signing payload only. It does <b>not</b> verify a
+   * {@code CounterpartySignature} or {@code SponsorSignature}: since the {@code fixCleanup3_4_0} amendment those are
+   * signed over role-specific payloads (see {@link TransactionSigner#counterpartySign} and
+   * {@link TransactionSigner#sponsorSign}), so passing a role signature here returns {@code false} rather than
+   * validating it. There is currently no role-aware verification API; role signatures are validated by rippled on
+   * submission.</p>
+   *
    * @param signer              A {@link Signer} used for verification.
    * @param unsignedTransaction The {@link Transaction} of type {@link T} that was signed.
    * @param <T>                 The actual type of {@link Transaction}.

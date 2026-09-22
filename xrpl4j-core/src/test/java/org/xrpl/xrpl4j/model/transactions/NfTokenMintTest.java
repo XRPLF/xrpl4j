@@ -52,12 +52,12 @@ public class NfTokenMintTest {
   @Test
   public void buildTxWithMissingParam() {
 
-    UnsignedLong taxon = UnsignedLong.valueOf(146999694L);
+    // tokenTaxon has no default, unlike fee(), which now defaults to zero (see Transaction#fee()).
     assertThrows(
       IllegalStateException.class,
       () -> NfTokenMint.builder()
+        .fee(XrpCurrencyAmount.ofDrops(1))
         .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-        .tokenTaxon(taxon)
         .build()
     );
   }

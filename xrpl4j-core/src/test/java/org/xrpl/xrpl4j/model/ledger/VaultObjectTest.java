@@ -1,9 +1,11 @@
 package org.xrpl.xrpl4j.model.ledger;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.xrpl.xrpl4j.crypto.TestConstants.HASH_256;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -15,6 +17,7 @@ import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.VaultData;
+import org.xrpl.xrpl4j.model.transactions.VaultKind;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 
 class VaultObjectTest extends AbstractJsonTest {
@@ -43,8 +46,15 @@ class VaultObjectTest extends AbstractJsonTest {
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
       .scale(AssetScale.of(UnsignedInteger.valueOf(8)))
       .flags(VaultFlags.VAULT_PRIVATE)
+      .leVersion(UnsignedInteger.ONE)
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(UnsignedLong.valueOf(1000))
+      .redemptionDate(UnsignedLong.valueOf(2000))
       .index(HASH_256)
       .build();
+
+    assertThat(vault.vaultKind()).isEqualTo(VaultKind.CLOSED_ENDED);
+    assertThat(vault.leVersion()).isEqualTo(UnsignedInteger.ONE);
 
     String json = String.format("{\n" +
       "    \"LedgerEntryType\" : \"Vault\",\n" +
@@ -67,6 +77,10 @@ class VaultObjectTest extends AbstractJsonTest {
       "    \"ShareMPTID\" : \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\",\n" +
       "    \"WithdrawalPolicy\" : 1,\n" +
       "    \"Scale\" : 8,\n" +
+      "    \"LEVersion\" : 1,\n" +
+      "    \"VaultKind\" : 1,\n" +
+      "    \"SubscriptionDate\" : 1000,\n" +
+      "    \"RedemptionDate\" : 2000,\n" +
       "    \"index\" : %s\n" +
       "}", HASH_256);
 
@@ -107,6 +121,61 @@ class VaultObjectTest extends AbstractJsonTest {
       "    \"ShareMPTID\" : \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\",\n" +
       "    \"WithdrawalPolicy\" : 1,\n" +
       "    \"Scale\" : 0,\n" +
+      "    \"LEVersion\" : 0,\n" +
+      "    \"VaultKind\" : 0,\n" +
+      "    \"index\" : %s\n" +
+      "}", HASH_256);
+
+    assertCanSerializeAndDeserialize(vault, json);
+  }
+
+  @Test
+  void testJsonWithDepositBlockingFlags() throws JSONException, JsonProcessingException {
+    VaultFlags flags = VaultFlags.of(
+      VaultFlags.VAULT_PRIVATE.getValue() |
+        VaultFlags.VAULT_DEPOSIT_BLOCKED.getValue() |
+        VaultFlags.VAULT_OWNER_CAN_BLOCK_DEPOSIT.getValue()
+    );
+
+    VaultObject vault = VaultObject.builder()
+      .previousTransactionId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000010"))
+      .previousTransactionLedgerSequence(UnsignedInteger.valueOf(100))
+      .sequence(UnsignedInteger.valueOf(5))
+      .ownerNode("0")
+      .owner(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .account(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
+      .asset(Issue.XRP)
+      .shareMptId(MpTokenIssuanceId.of("00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836"))
+      .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
+      .flags(flags)
+      .index(HASH_256)
+      .build();
+
+    assertThat(vault.flags().lsfVaultPrivate()).isTrue();
+    assertThat(vault.flags().lsfVaultDepositBlocked()).isTrue();
+    assertThat(vault.flags().lsfVaultOwnerCanBlockDeposit()).isTrue();
+
+    String json = String.format("{\n" +
+      "    \"LedgerEntryType\" : \"Vault\",\n" +
+      "    \"Flags\" : 458752,\n" +
+      "    \"PreviousTxnID\" : \"0000000000000000000000000000000000000000000000000000000000000010\",\n" +
+      "    \"PreviousTxnLgrSeq\" : 100,\n" +
+      "    \"Sequence\" : 5,\n" +
+      "    \"OwnerNode\" : \"0\",\n" +
+      "    \"Owner\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
+      "    \"Account\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
+      "    \"Asset\" : {\n" +
+      "        \"currency\" : \"XRP\"\n" +
+      "    },\n" +
+      "    \"AssetsTotal\" : \"0\",\n" +
+      "    \"AssetsAvailable\" : \"0\",\n" +
+      "    \"AssetsMaximum\" : \"0\",\n" +
+      "    \"LossUnrealized\" : \"0\",\n" +
+      "    \"ShareMPTID\" : \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\",\n" +
+      "    \"WithdrawalPolicy\" : 1,\n" +
+      "    \"Scale\" : 0,\n" +
+      "    \"LEVersion\" : 0,\n" +
+      "    \"VaultKind\" : 0,\n" +
       "    \"index\" : %s\n" +
       "}", HASH_256);
 

@@ -21,7 +21,11 @@ Version 7.0.0 introduces several breaking changes:
    `counterpartySign()`) now reject a transaction whose `fee()` is still zero.
 4. **`MetaMpTokenIssuanceObject.mpTokenMetadata()` type change** — now returns `Optional<MpTokenMetadata>` instead of
    `Optional<String>`.
-5. **`ValidatedLedger.age()` type change** — now returns `Optional<UnsignedInteger>` instead of `UnsignedInteger`,
+5. **`VaultDeposit` and `VaultSet` `flags()` type change** — now return `VaultDepositFlags` and `VaultSetFlags`
+   respectively instead of `TransactionFlags`, to support the new `tfVaultDonate` flag on `VaultDeposit` and the new
+   `tfVaultDepositBlock`/`tfVaultDepositUnblock` flags on `VaultSet`. Those flags require the
+   `LendingProtocolV1_2` amendment, which is not yet available in rippled.
+6. **`ValidatedLedger.age()` type change** — now returns `Optional<UnsignedInteger>` instead of `UnsignedInteger`,
    since rippled omits this field when it cannot compute a valid age.
 
 ## Breaking Changes
@@ -280,7 +284,28 @@ Optional<MpTokenMetadata> metadata = metaMpTokenIssuanceObject.mpTokenMetadata()
 Optional<String> hexString = metadata.map(MpTokenMetadata::value);
 ```
 
-### 5. `ValidatedLedger.age()` type change
+### 5. `VaultDeposit` and `VaultSet` `flags()` type change
+
+The return type of `VaultDeposit.flags()` changed from `TransactionFlags` to `VaultDepositFlags`, and the return type
+of `VaultSet.flags()` changed from `TransactionFlags` to `VaultSetFlags`. This supports the new `tfVaultDonate` flag on
+`VaultDeposit`, and the new `tfVaultDepositBlock`/`tfVaultDepositUnblock` flags on `VaultSet`.
+
+Note that all three of those flags are gated on the `LendingProtocolV1_2` amendment, which rippled has not shipped
+yet. The types are in place now so the narrowing lands once rather than as a second breaking change, but rippled will
+reject a transaction carrying any of these flags until that amendment activates.
+
+**Migration:**
+
+```java
+// Before (v6.x.x)
+TransactionFlags depositFlags = vaultDeposit.flags();
+
+// After (v7.0.0)
+VaultDepositFlags depositFlags = vaultDeposit.flags();
+boolean donate = depositFlags.tfVaultDonate();
+```
+
+### 6. `ValidatedLedger.age()` type change
 
 The return type of `ServerInfo.ValidatedLedger#age()` changed from `UnsignedInteger` to `Optional<UnsignedInteger>`.
 rippled omits the `age` field from `closed_ledger` and `validated_ledger` in `server_info` responses when it cannot

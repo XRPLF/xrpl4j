@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.VaultFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -13,6 +14,7 @@ import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.VaultData;
+import org.xrpl.xrpl4j.model.transactions.VaultKind;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 
 import java.util.Optional;
@@ -194,6 +196,50 @@ public interface VaultObject extends LedgerObject {
   default AssetScale scale() {
     return AssetScale.of(UnsignedInteger.ZERO);
   }
+
+  /**
+   * The ledger-entry version of this vault, which selects the accounting rules rippled applies to it. Vaults
+   * created before the {@code LendingProtocolV1_1} amendment activated carry no {@code LEVersion} field and are
+   * treated as version {@code 0} (legacy accounting); vaults created afterwards carry version {@code 1}
+   * (LoanBroker cash-basis accounting).
+   *
+   * @return An {@link UnsignedInteger}, defaulting to {@link UnsignedInteger#ZERO}.
+   */
+  @JsonProperty("LEVersion")
+  @Value.Default
+  default UnsignedInteger leVersion() {
+    return UnsignedInteger.ZERO;
+  }
+
+  /**
+   * Distinguishes a closed-ended vault from the default open-ended kind. Only a closed-ended vault may have a
+   * {@code LoanBroker} attached to it once the {@code LendingProtocolV1_1} amendment is enabled.
+   *
+   * @return A {@link VaultKind}, defaulting to {@link VaultKind#OPEN_ENDED}.
+   */
+  @JsonProperty("VaultKind")
+  @Value.Default
+  default VaultKind vaultKind() {
+    return VaultKind.OPEN_ENDED;
+  }
+
+  /**
+   * The time, in seconds since the Ripple Epoch, after which this closed-ended vault's Subscription phase ends
+   * and its Investment phase begins. Only present when {@link #vaultKind()} is {@link VaultKind#CLOSED_ENDED}.
+   *
+   * @return An {@link Optional} of type {@link UnsignedLong} representing the subscription date.
+   */
+  @JsonProperty("SubscriptionDate")
+  Optional<UnsignedLong> subscriptionDate();
+
+  /**
+   * The time, in seconds since the Ripple Epoch, after which this closed-ended vault's Investment phase ends and
+   * its Redemption phase begins. Only present when {@link #vaultKind()} is {@link VaultKind#CLOSED_ENDED}.
+   *
+   * @return An {@link Optional} of type {@link UnsignedLong} representing the redemption date.
+   */
+  @JsonProperty("RedemptionDate")
+  Optional<UnsignedLong> redemptionDate();
 
   /**
    * The share MPTokenIssuance information for this vault. Only present in {@code vault_info} RPC responses.

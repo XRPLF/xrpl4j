@@ -7,6 +7,8 @@ import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
+import java.util.Optional;
+
 /**
  * Delete a single asset vault. The vault must have no remaining assets or outstanding shares.
  *
@@ -46,5 +48,17 @@ public interface VaultDelete extends Transaction {
    */
   @JsonProperty("VaultID")
   Hash256 vaultId();
+
+  /**
+   * Arbitrary metadata recording why the vault is being deleted, limited to 256 bytes, in hex format. This field
+   * requires the {@code LendingProtocolV1_1} amendment.
+   *
+   * <p>Despite the name, this is a top-level {@code MemoData} field (rippled's {@code sfMemoData}) and is unrelated to
+   * the standard {@link Transaction#memos()} field.</p>
+   *
+   * @return An optionally-present {@link VaultData}.
+   */
+  @JsonProperty("MemoData")
+  Optional<VaultData> memoData();
 
 }

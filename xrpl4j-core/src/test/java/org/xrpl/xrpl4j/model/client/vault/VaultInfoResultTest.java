@@ -79,6 +79,8 @@ class VaultInfoResultTest extends AbstractJsonTest {
       "        \"ShareMPTID\" : \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\",\n" +
       "        \"WithdrawalPolicy\" : 1,\n" +
       "        \"Scale\" : 6,\n" +
+      "        \"LEVersion\" : 0,\n" +
+      "        \"VaultKind\" : 0,\n" +
       "        \"shares\" : {\n" +
       "            \"Flags\" : 0,\n" +
       "            \"Issuer\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +

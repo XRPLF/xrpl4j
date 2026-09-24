@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.model.transactions.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -18,6 +19,7 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenMetadata;
 import org.xrpl.xrpl4j.model.transactions.VaultCreate;
 import org.xrpl.xrpl4j.model.transactions.VaultData;
+import org.xrpl.xrpl4j.model.transactions.VaultKind;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -45,7 +47,8 @@ public class VaultCreateJsonTest extends AbstractJsonTest {
       .data(VaultData.of("48656C6C6F"))
       .scale(AssetScale.of(UnsignedInteger.valueOf(8)))
       .flags(VaultCreateFlags.of(VaultCreateFlags.VAULT_PRIVATE.getValue() |
-        VaultCreateFlags.VAULT_SHARE_NON_TRANSFERABLE.getValue()))
+        VaultCreateFlags.VAULT_SHARE_NON_TRANSFERABLE.getValue() |
+        VaultCreateFlags.VAULT_OWNER_CAN_BLOCK_DEPOSIT.getValue()))
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
@@ -63,7 +66,7 @@ public class VaultCreateJsonTest extends AbstractJsonTest {
       "  \"WithdrawalPolicy\": 1," +
       "  \"Data\": \"48656C6C6F\"," +
       "  \"Scale\": 8," +
-      "  \"Flags\": 196608," +
+      "  \"Flags\": 458752," +
       "  \"Fee\": \"10\"," +
       "  \"Sequence\": 1," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
@@ -146,6 +149,38 @@ public class VaultCreateJsonTest extends AbstractJsonTest {
       "  \"Asset\": {" +
       "    \"currency\": \"XRP\"" +
       "  }," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultCreate\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(vaultCreate, json);
+  }
+
+  @Test
+  public void testVaultCreateJsonWithClosedEndedVaultKind() throws JsonProcessingException, JSONException {
+    VaultCreate vaultCreate = VaultCreate.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(1))
+      .asset(Issue.XRP)
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(UnsignedLong.valueOf(1000))
+      .redemptionDate(UnsignedLong.valueOf(1000).plus(VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    String json = "{" +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"Asset\": {" +
+      "    \"currency\": \"XRP\"" +
+      "  }," +
+      "  \"VaultKind\": 1," +
+      "  \"SubscriptionDate\": 1000," +
+      "  \"RedemptionDate\": 1180," +
       "  \"Fee\": \"10\"," +
       "  \"Sequence\": 1," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +

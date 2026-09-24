@@ -3549,6 +3549,16 @@
       }
     ],
     [
+      "LEVersion",
+      {
+        "isSerialized": true,
+        "isSigningField": true,
+        "isVLEncoded": false,
+        "nth": 6,
+        "type": "UInt8"
+      }
+    ],
+    [
       "TickSize",
       {
         "isSerialized": true,
@@ -5282,6 +5292,10 @@
         "optionality": 2
       },
       {
+        "name": "LEVersion",
+        "optionality": 2
+      },
+      {
         "name": "VaultKind",
         "optionality": 2
       },
@@ -6143,6 +6157,10 @@
       {
         "name": "DestinationTag",
         "optionality": 1
+      },
+      {
+        "name": "CredentialIDs",
+        "optionality": 1
       }
     ],
     "LoanBrokerDelete": [
@@ -6850,6 +6868,10 @@
       },
       {
         "name": "DestinationTag",
+        "optionality": 1
+      },
+      {
+        "name": "CredentialIDs",
         "optionality": 1
       }
     ],

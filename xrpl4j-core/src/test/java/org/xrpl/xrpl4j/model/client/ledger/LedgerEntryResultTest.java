@@ -873,6 +873,7 @@ class LedgerEntryResultTest extends AbstractJsonTest {
       "    \"ShareMPTID\": \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\"," +
       "    \"WithdrawalPolicy\": 1," +
       "    \"Scale\": 8," +
+      "    \"LEVersion\": 0," +
       "    \"VaultKind\": 0," +
       "    \"index\": \"6BCD7E451DDA015FB307DAD9208A98A2DC3AC4D1448E624B42C89246DCF08692\"" +
       "  }," +

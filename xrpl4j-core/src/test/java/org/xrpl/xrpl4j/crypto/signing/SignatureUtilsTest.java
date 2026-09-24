@@ -1570,6 +1570,24 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addSignatureToVaultWithdrawWithCredentialIds() {
+    VaultWithdraw transaction = VaultWithdraw.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .amount(XrpCurrencyAmount.ofDrops(500))
+      .addCredentialIds(
+        Hash256.of("000000000000000000000000000000000000000000000000000000000000000A"),
+        Hash256.of("000000000000000000000000000000000000000000000000000000000000000B")
+      )
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
   void addSignatureToVaultClawback() {
     VaultClawback transaction = VaultClawback.builder()
       .account(sourcePublicKey.deriveAddress())

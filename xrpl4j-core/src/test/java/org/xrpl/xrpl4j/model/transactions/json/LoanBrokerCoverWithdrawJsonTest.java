@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions.json;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -9,6 +11,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.ImmutableLoanBrokerCoverWithdraw;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.LoanBrokerCoverWithdraw;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -146,5 +149,77 @@ public class LoanBrokerCoverWithdrawJsonTest extends AbstractJsonTest {
       "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(withdraw, json);
+  }
+
+  @Test
+  public void testLoanBrokerCoverWithdrawJsonWithCredentialIds() throws JsonProcessingException, JSONException {
+    LoanBrokerCoverWithdraw withdraw = LoanBrokerCoverWithdraw.builder()
+      .account(Address.of("rU1Cm8GymH5U1WuTcmMTUZ5XjwJbanQoA8"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(192))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey(
+          "ED1F863E4E0957C6965B7B0563D56C77E4F68D571E8026251834F0ADBB0411D6FD"
+        )
+      )
+      .loanBrokerId(Hash256.of("79E25403E9FC010A277D80410EED5494FDD033A09FD4C1432335A1734A1D099D"))
+      .amount(XrpCurrencyAmount.ofDrops(25000))
+      .addCredentialIds(
+        Hash256.of("000000000000000000000000000000000000000000000000000000000000000A"),
+        Hash256.of("000000000000000000000000000000000000000000000000000000000000000B")
+      )
+      .build();
+
+    String json = "{" +
+      "  \"Account\": \"rU1Cm8GymH5U1WuTcmMTUZ5XjwJbanQoA8\"," +
+      "  \"TransactionType\": \"LoanBrokerCoverWithdraw\"," +
+      "  \"Fee\": \"15\"," +
+      "  \"Sequence\": 192," +
+      "  \"SigningPubKey\": \"ED1F863E4E0957C6965B7B0563D56C77E4F68D571E8026251834F0ADBB0411D6FD\"," +
+      "  \"LoanBrokerID\": \"79E25403E9FC010A277D80410EED5494FDD033A09FD4C1432335A1734A1D099D\"," +
+      "  \"Amount\": \"25000\"," +
+      "  \"CredentialIDs\": [" +
+      "    \"000000000000000000000000000000000000000000000000000000000000000A\"," +
+      "    \"000000000000000000000000000000000000000000000000000000000000000B\"" +
+      "  ]" +
+      "}";
+
+    assertCanSerializeAndDeserialize(withdraw, json);
+  }
+
+  @Test
+  public void testLoanBrokerCoverWithdrawWithTooManyCredentialIds() {
+    ImmutableLoanBrokerCoverWithdraw.Builder builder = LoanBrokerCoverWithdraw.builder()
+      .account(Address.of("rU1Cm8GymH5U1WuTcmMTUZ5XjwJbanQoA8"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(192))
+      .loanBrokerId(Hash256.of("79E25403E9FC010A277D80410EED5494FDD033A09FD4C1432335A1734A1D099D"))
+      .amount(XrpCurrencyAmount.ofDrops(25000));
+
+    for (int i = 0; i < 9; i++) {
+      builder.addCredentialIds(Hash256.of(String.format("%064X", i)));
+    }
+
+    assertThatThrownBy(builder::build)
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("CredentialIDs should have less than or equal to 8 items.");
+  }
+
+  @Test
+  public void testLoanBrokerCoverWithdrawWithDuplicateCredentialIds() {
+    ImmutableLoanBrokerCoverWithdraw.Builder builder = LoanBrokerCoverWithdraw.builder()
+      .account(Address.of("rU1Cm8GymH5U1WuTcmMTUZ5XjwJbanQoA8"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(192))
+      .loanBrokerId(Hash256.of("79E25403E9FC010A277D80410EED5494FDD033A09FD4C1432335A1734A1D099D"))
+      .amount(XrpCurrencyAmount.ofDrops(25000))
+      .addCredentialIds(
+        Hash256.of("000000000000000000000000000000000000000000000000000000000000000A"),
+        Hash256.of("000000000000000000000000000000000000000000000000000000000000000A")
+      );
+
+    assertThatThrownBy(builder::build)
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("CredentialIDs should have unique values.");
   }
 }

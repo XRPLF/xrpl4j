@@ -46,6 +46,7 @@ class VaultObjectTest extends AbstractJsonTest {
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
       .scale(AssetScale.of(UnsignedInteger.valueOf(8)))
       .flags(VaultFlags.VAULT_PRIVATE)
+      .leVersion(UnsignedInteger.ONE)
       .vaultKind(VaultKind.CLOSED_ENDED)
       .subscriptionDate(UnsignedLong.valueOf(1000))
       .redemptionDate(UnsignedLong.valueOf(2000))
@@ -53,6 +54,7 @@ class VaultObjectTest extends AbstractJsonTest {
       .build();
 
     assertThat(vault.vaultKind()).isEqualTo(VaultKind.CLOSED_ENDED);
+    assertThat(vault.leVersion()).isEqualTo(UnsignedInteger.ONE);
 
     String json = String.format("{\n" +
       "    \"LedgerEntryType\" : \"Vault\",\n" +
@@ -75,6 +77,7 @@ class VaultObjectTest extends AbstractJsonTest {
       "    \"ShareMPTID\" : \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\",\n" +
       "    \"WithdrawalPolicy\" : 1,\n" +
       "    \"Scale\" : 8,\n" +
+      "    \"LEVersion\" : 1,\n" +
       "    \"VaultKind\" : 1,\n" +
       "    \"SubscriptionDate\" : 1000,\n" +
       "    \"RedemptionDate\" : 2000,\n" +
@@ -118,6 +121,7 @@ class VaultObjectTest extends AbstractJsonTest {
       "    \"ShareMPTID\" : \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\",\n" +
       "    \"WithdrawalPolicy\" : 1,\n" +
       "    \"Scale\" : 0,\n" +
+      "    \"LEVersion\" : 0,\n" +
       "    \"VaultKind\" : 0,\n" +
       "    \"index\" : %s\n" +
       "}", HASH_256);
@@ -170,6 +174,7 @@ class VaultObjectTest extends AbstractJsonTest {
       "    \"ShareMPTID\" : \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\",\n" +
       "    \"WithdrawalPolicy\" : 1,\n" +
       "    \"Scale\" : 0,\n" +
+      "    \"LEVersion\" : 0,\n" +
       "    \"VaultKind\" : 0,\n" +
       "    \"index\" : %s\n" +
       "}", HASH_256);

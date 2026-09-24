@@ -198,6 +198,20 @@ public interface VaultObject extends LedgerObject {
   }
 
   /**
+   * The ledger-entry version of this vault, which selects the accounting rules rippled applies to it. Vaults
+   * created before the {@code LendingProtocolV1_1} amendment activated carry no {@code LEVersion} field and are
+   * treated as version {@code 0} (legacy accounting); vaults created afterwards carry version {@code 1}
+   * (LoanBroker cash-basis accounting).
+   *
+   * @return An {@link UnsignedInteger}, defaulting to {@link UnsignedInteger#ZERO}.
+   */
+  @JsonProperty("LEVersion")
+  @Value.Default
+  default UnsignedInteger leVersion() {
+    return UnsignedInteger.ZERO;
+  }
+
+  /**
    * Distinguishes a closed-ended vault from the default open-ended kind. Only a closed-ended vault may have a
    * {@code LoanBroker} attached to it once the {@code LendingProtocolV1_1} amendment is enabled.
    *

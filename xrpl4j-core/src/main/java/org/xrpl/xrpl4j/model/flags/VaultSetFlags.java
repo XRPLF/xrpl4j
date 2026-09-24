@@ -16,12 +16,14 @@ import org.xrpl.xrpl4j.model.transactions.VaultSet;
 public class VaultSetFlags extends TransactionFlags {
 
   /**
-   * Constant {@link VaultSetFlags} for the {@code tfVaultDepositBlock} flag.
+   * Constant {@link VaultSetFlags} for the {@code tfVaultDepositBlock} flag. Requires the
+   * {@code LendingProtocolV1_2} amendment; rippled rejects the flag when that amendment is not enabled.
    */
   public static final VaultSetFlags VAULT_DEPOSIT_BLOCK = new VaultSetFlags(0x00010000L);
 
   /**
-   * Constant {@link VaultSetFlags} for the {@code tfVaultDepositUnblock} flag.
+   * Constant {@link VaultSetFlags} for the {@code tfVaultDepositUnblock} flag. Requires the
+   * {@code LendingProtocolV1_2} amendment; rippled rejects the flag when that amendment is not enabled.
    */
   public static final VaultSetFlags VAULT_DEPOSIT_UNBLOCK = new VaultSetFlags(0x00020000L);
 

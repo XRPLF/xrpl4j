@@ -22,14 +22,16 @@ public class VaultFlags extends Flags {
   public static final VaultFlags VAULT_PRIVATE = new VaultFlags(0x00010000);
 
   /**
-   * Constant {@link VaultFlags} for the {@code lsfVaultDepositBlocked} flag.
+   * Constant {@link VaultFlags} for the {@code lsfVaultDepositBlocked} flag. Only ever set on vaults created under
+   * the {@code LendingProtocolV1_2} amendment.
    *
    * @see "https://github.com/XRPLF/XRPL-Standards/pull/469"
    */
   public static final VaultFlags VAULT_DEPOSIT_BLOCKED = new VaultFlags(0x00020000);
 
   /**
-   * Constant {@link VaultFlags} for the {@code lsfVaultOwnerCanBlockDeposit} flag.
+   * Constant {@link VaultFlags} for the {@code lsfVaultOwnerCanBlockDeposit} flag. Only ever set on vaults created
+   * under the {@code LendingProtocolV1_2} amendment.
    *
    * @see "https://github.com/XRPLF/XRPL-Standards/pull/469"
    */

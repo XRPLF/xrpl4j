@@ -23,7 +23,8 @@ Version 7.0.0 introduces several breaking changes:
    `Optional<String>`.
 5. **`VaultDeposit` and `VaultSet` `flags()` type change** — now return `VaultDepositFlags` and `VaultSetFlags`
    respectively instead of `TransactionFlags`, to support the new `tfVaultDonate` flag on `VaultDeposit` and the new
-   `tfVaultDepositBlock`/`tfVaultDepositUnblock` flags on `VaultSet`.
+   `tfVaultDepositBlock`/`tfVaultDepositUnblock` flags on `VaultSet`. Those flags require the
+   `LendingProtocolV1_2` amendment, which is not yet available in rippled.
 6. **`ValidatedLedger.age()` type change** — now returns `Optional<UnsignedInteger>` instead of `UnsignedInteger`,
    since rippled omits this field when it cannot compute a valid age.
 
@@ -288,6 +289,10 @@ Optional<String> hexString = metadata.map(MpTokenMetadata::value);
 The return type of `VaultDeposit.flags()` changed from `TransactionFlags` to `VaultDepositFlags`, and the return type
 of `VaultSet.flags()` changed from `TransactionFlags` to `VaultSetFlags`. This supports the new `tfVaultDonate` flag on
 `VaultDeposit`, and the new `tfVaultDepositBlock`/`tfVaultDepositUnblock` flags on `VaultSet`.
+
+Note that all three of those flags are gated on the `LendingProtocolV1_2` amendment, which rippled has not shipped
+yet. The types are in place now so the narrowing lands once rather than as a second breaking change, but rippled will
+reject a transaction carrying any of these flags until that amendment activates.
 
 **Migration:**
 

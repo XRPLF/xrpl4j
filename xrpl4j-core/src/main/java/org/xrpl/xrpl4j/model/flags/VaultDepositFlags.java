@@ -15,7 +15,8 @@ import org.xrpl.xrpl4j.model.transactions.VaultDeposit;
 public class VaultDepositFlags extends TransactionFlags {
 
   /**
-   * Constant {@link VaultDepositFlags} for the {@code tfVaultDonate} flag.
+   * Constant {@link VaultDepositFlags} for the {@code tfVaultDonate} flag. Requires the
+   * {@code LendingProtocolV1_2} amendment; rippled rejects the flag when that amendment is not enabled.
    */
   public static final VaultDepositFlags VAULT_DONATE = new VaultDepositFlags(0x00010000L);
 

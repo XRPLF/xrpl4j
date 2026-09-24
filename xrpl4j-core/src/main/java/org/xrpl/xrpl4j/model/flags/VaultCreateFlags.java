@@ -23,7 +23,8 @@ public class VaultCreateFlags extends TransactionFlags {
   public static final VaultCreateFlags VAULT_SHARE_NON_TRANSFERABLE = new VaultCreateFlags(0x00020000L);
 
   /**
-   * Constant {@link VaultCreateFlags} for the {@code tfVaultOwnerCanBlockDeposit} flag.
+   * Constant {@link VaultCreateFlags} for the {@code tfVaultOwnerCanBlockDeposit} flag. Requires the
+   * {@code LendingProtocolV1_2} amendment; rippled rejects the flag when that amendment is not enabled.
    *
    * @see "https://github.com/XRPLF/XRPL-Standards/pull/469"
    */

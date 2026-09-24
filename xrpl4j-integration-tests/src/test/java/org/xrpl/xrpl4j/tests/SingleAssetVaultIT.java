@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -1380,8 +1381,14 @@ public class SingleAssetVaultIT extends AbstractIT {
   /**
    * Test {@code VaultSet}'s deposit-block/unblock flags. Verifies that a vault created with
    * {@code VaultCreateFlags#VAULT_OWNER_CAN_BLOCK_DEPOSIT} can have deposits blocked and later unblocked.
+   *
+   * <p>Disabled until rippled ships the {@code LendingProtocolV1_2} amendment that gates these flags. Until then
+   * every rippled build rejects the {@code VaultCreate} below with {@code temINVALID_FLAG}, because
+   * {@code tfVaultOwnerCanBlockDeposit} is part of the invalid-flag mask whenever that amendment is disabled. See
+   * <a href="https://github.com/XRPLF/rippled/pull/6361">rippled #6361</a>.</p>
    */
   @Test
+  @Disabled("Requires the LendingProtocolV1_2 amendment, which rippled has not shipped yet (rippled #6361).")
   void vaultSetDepositBlockAndUnblock() throws Exception {
     KeyPair vaultOwnerKeyPair = createRandomAccountEd25519();
     final KeyPair depositorKeyPair = createRandomAccountEd25519();

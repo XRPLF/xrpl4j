@@ -119,6 +119,7 @@ public class LendingProtocolIT extends AbstractIT {
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
 
@@ -210,6 +211,7 @@ public class LendingProtocolIT extends AbstractIT {
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
 
@@ -279,6 +281,7 @@ public class LendingProtocolIT extends AbstractIT {
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
 
@@ -352,6 +355,7 @@ public class LendingProtocolIT extends AbstractIT {
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .build();
 
     final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
@@ -423,6 +427,7 @@ public class LendingProtocolIT extends AbstractIT {
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .build();
 
     final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
@@ -545,6 +550,15 @@ public class LendingProtocolIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
     );
 
+    // LoanBrokerSet requires a closed-ended Vault once LendingProtocolV1_1 is enabled, so this Vault must define a
+    // SubscriptionDate/RedemptionDate pair, and this method must wait for the ledger to pass SubscriptionDate before
+    // attaching a LoanBroker to it, below. See setupLoanBrokerAndXrpVault() for why RedemptionDate is padded well
+    // past MIN_INVESTMENT_PERIOD_SECONDS.
+    final UnsignedLong subscriptionDate = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5)));
+    final UnsignedLong redemptionDate = subscriptionDate.plus(
+      VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.plus(UnsignedLong.valueOf(3600))
+    );
+
     VaultCreate vaultCreate = VaultCreate.builder()
       .account(loanBrokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
@@ -552,6 +566,9 @@ public class LendingProtocolIT extends AbstractIT {
       .asset(usdIssue)
       .assetsMaximum(Amount.of("500000"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(subscriptionDate)
+      .redemptionDate(redemptionDate)
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
 
@@ -598,6 +615,13 @@ public class LendingProtocolIT extends AbstractIT {
     xrplClient.submit(signedDeposit);
     this.scanForResult(
       () -> this.getValidatedTransaction(signedDeposit.hash(), VaultDeposit.class)
+    );
+
+    // LoanBrokerSet requires the Vault to be past its SubscriptionDate once it is closed-ended.
+    this.scanForResult(
+      this::getValidatedLedger,
+      ledgerResult -> FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
+        .greaterThan(subscriptionDate)
     );
 
     // ========== LOAN BROKER SET ==========
@@ -730,6 +754,7 @@ public class LendingProtocolIT extends AbstractIT {
       .principalRequested(Amount.of("50000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .data(LoanData.of("AABBCC"))
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
@@ -1297,9 +1322,16 @@ public class LendingProtocolIT extends AbstractIT {
     // LoanBrokerSet requires a closed-ended Vault once LendingProtocolV1_1 is enabled, so this Vault must
     // define a SubscriptionDate/RedemptionDate pair and this method must wait for the ledger to pass
     // SubscriptionDate before attaching a LoanBroker to it, below.
+    //
+    // RedemptionDate must also clear the Loan's own finalPayment date (StartDate + PaymentTotal * PaymentInterval,
+    // plus rippled's kLoanRedemptionBuffer), or the LoanSet submitted after this setup returns tecNO_PERMISSION.
+    // StartDate is whenever LoanSet actually validates, which is after this method already waited past
+    // SubscriptionDate and closed ledgers for LoanBrokerSet and LoanBrokerCoverDeposit, so a window sized to just
+    // the loan term leaves no slack for that setup latency. Pad it generously; VaultCreate allows up to
+    // MAX_INVESTMENT_PERIOD_SECONDS (~30 years), so there is ample room.
     final UnsignedLong subscriptionDate = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5)));
     final UnsignedLong redemptionDate = subscriptionDate.plus(
-      VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.plus(UnsignedLong.valueOf(60))
+      VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.plus(UnsignedLong.valueOf(3600))
     );
 
     final VaultCreate vaultCreate = VaultCreate.builder()

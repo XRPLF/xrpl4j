@@ -552,9 +552,9 @@ public class LendingProtocolIT extends AbstractIT {
 
     // LoanBrokerSet requires a closed-ended Vault once LendingProtocolV1_1 is enabled, so this Vault must define a
     // SubscriptionDate/RedemptionDate pair, and this method must wait for the ledger to pass SubscriptionDate before
-    // attaching a LoanBroker to it, below. See setupLoanBrokerAndXrpVault() for why RedemptionDate is padded well
-    // past MIN_INVESTMENT_PERIOD_SECONDS.
-    final UnsignedLong subscriptionDate = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5)));
+    // attaching a LoanBroker to it, below. See setupLoanBrokerAndXrpVault() for why SubscriptionDate and
+    // RedemptionDate are padded well past their minimums.
+    final UnsignedLong subscriptionDate = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(60)));
     final UnsignedLong redemptionDate = subscriptionDate.plus(
       VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.plus(UnsignedLong.valueOf(3600))
     );
@@ -1323,13 +1323,19 @@ public class LendingProtocolIT extends AbstractIT {
     // define a SubscriptionDate/RedemptionDate pair and this method must wait for the ledger to pass
     // SubscriptionDate before attaching a LoanBroker to it, below.
     //
+    // SubscriptionDate must also leave enough real time for the VaultDeposit below to land before it -- deposits
+    // into a closed-ended Vault are only accepted before SubscriptionDate. A 5-second buffer is enough on a local
+    // rippled node with near-instant round trips, but against a real network (e.g. Devnet, ~4-5s ledger closes plus
+    // RPC latency for every call between VaultCreate and VaultDeposit) that window routinely closes before the
+    // deposit is submitted, and rippled rejects it with tecEXPIRED.
+    //
     // RedemptionDate must also clear the Loan's own finalPayment date (StartDate + PaymentTotal * PaymentInterval,
     // plus rippled's kLoanRedemptionBuffer), or the LoanSet submitted after this setup returns tecNO_PERMISSION.
     // StartDate is whenever LoanSet actually validates, which is after this method already waited past
     // SubscriptionDate and closed ledgers for LoanBrokerSet and LoanBrokerCoverDeposit, so a window sized to just
     // the loan term leaves no slack for that setup latency. Pad it generously; VaultCreate allows up to
     // MAX_INVESTMENT_PERIOD_SECONDS (~30 years), so there is ample room.
-    final UnsignedLong subscriptionDate = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5)));
+    final UnsignedLong subscriptionDate = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(60)));
     final UnsignedLong redemptionDate = subscriptionDate.plus(
       VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.plus(UnsignedLong.valueOf(3600))
     );

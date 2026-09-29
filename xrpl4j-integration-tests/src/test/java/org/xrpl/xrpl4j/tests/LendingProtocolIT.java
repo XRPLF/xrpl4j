@@ -618,11 +618,7 @@ public class LendingProtocolIT extends AbstractIT {
     );
 
     // LoanBrokerSet requires the Vault to be past its SubscriptionDate once it is closed-ended.
-    this.scanForResult(
-      this::getValidatedLedger,
-      ledgerResult -> FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
-        .greaterThan(subscriptionDate)
-    );
+    awaitSubscriptionDatePassed(subscriptionDate);
 
     // ========== LOAN BROKER SET ==========
     loanBrokerAccountInfo = this.scanForResult(
@@ -1392,11 +1388,7 @@ public class LendingProtocolIT extends AbstractIT {
     this.scanForResult(() -> this.getValidatedTransaction(signedDeposit.hash(), VaultDeposit.class));
 
     // LoanBrokerSet requires the Vault to be past its SubscriptionDate once it is closed-ended.
-    this.scanForResult(
-      this::getValidatedLedger,
-      ledgerResult -> FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
-        .greaterThan(subscriptionDate)
-    );
+    awaitSubscriptionDatePassed(subscriptionDate);
 
     brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
@@ -1450,6 +1442,24 @@ public class LendingProtocolIT extends AbstractIT {
     this.scanForResult(() -> this.getValidatedTransaction(signedCoverDeposit.hash(), LoanBrokerCoverDeposit.class));
 
     return loanBrokerId;
+  }
+
+  /**
+   * Waits for the ledger's close time to pass {@code subscriptionDate}. {@link AbstractIT#scanForResult} caps its
+   * wait at {@link AbstractIT#AT_MOST_INTERVAL} (30 seconds), which is too short once SubscriptionDate is padded out
+   * far enough to survive real network latency (see setupLoanBrokerAndXrpVault()), so this polls with its own,
+   * longer timeout instead.
+   */
+  private void awaitSubscriptionDatePassed(UnsignedLong subscriptionDate) {
+    given()
+      .pollInterval(POLL_INTERVAL)
+      .atMost(Duration.ofSeconds(120))
+      .await()
+      .until(
+        this::getValidatedLedger,
+        ledgerResult -> FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
+          .greaterThan(subscriptionDate)
+      );
   }
 
   /**

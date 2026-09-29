@@ -1131,9 +1131,11 @@ public class LendingProtocolIT extends AbstractIT {
    * strictly past the loan's {@code NextPaymentDueDate}.
    *
    * <p>Under the {@code fixCleanup3_4_0} amendment, rippled only permits impairing a loan whose payment is actually
-   * late (see rippled's {@code LoanManage::impairLoan}, which otherwise returns {@code tecTOO_SOON}). A standalone
-   * rippled's close time advances much faster than wall-clock time, so pinning the loan to the 60-second minimum
-   * {@code PaymentInterval} keeps this wait well under a second.</p>
+   * late (see rippled's {@code LoanManage::impairLoan}, which otherwise returns {@code tecTOO_SOON}). A standalone,
+   * local rippled's close time can advance much faster than wall-clock time, so pinning the loan to the 60-second
+   * minimum {@code PaymentInterval} keeps this wait well under a second there. Against a real network (e.g. Devnet),
+   * though, ledger close time tracks wall-clock time roughly 1:1, so this genuinely takes close to a full
+   * {@code PaymentInterval} of real time to resolve; the timeout below is sized for that case.</p>
    *
    * <p>Note that rippled evaluates lateness against the <em>applying</em> ledger's {@code parentCloseTime}, whereas
    * this polls the <em>validated</em> ledger's {@code closeTime}. Waiting on the latter is sufficient because close
@@ -1156,7 +1158,7 @@ public class LendingProtocolIT extends AbstractIT {
 
     given()
       .pollInterval(Durations.ONE_HUNDRED_MILLISECONDS)
-      .atMost(Duration.of(1, ChronoUnit.MINUTES))
+      .atMost(Duration.of(3, ChronoUnit.MINUTES))
       .await()
       .until(() -> getValidatedLedger().ledger().closeTime()
         .orElseThrow(() -> new IllegalStateException("Validated ledger must have a closeTime."))

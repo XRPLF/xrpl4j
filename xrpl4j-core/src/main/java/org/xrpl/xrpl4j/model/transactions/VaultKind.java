@@ -56,4 +56,16 @@ public enum VaultKind {
     }
     throw new IllegalArgumentException("No matching VaultKind for value " + value);
   }
+
+  /**
+   * Used with {@link com.fasterxml.jackson.annotation.JsonInclude.Include#CUSTOM} to omit {@link #OPEN_ENDED} from
+   * serialized JSON, matching how rippled omits {@code VaultKind} for open-ended vaults.
+   */
+  public static class OpenEndedFilter {
+
+    @Override
+    public boolean equals(Object obj) {
+      return obj == VaultKind.OPEN_ENDED;
+    }
+  }
 }

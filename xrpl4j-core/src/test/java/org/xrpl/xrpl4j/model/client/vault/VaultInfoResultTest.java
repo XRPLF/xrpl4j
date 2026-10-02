@@ -80,7 +80,6 @@ class VaultInfoResultTest extends AbstractJsonTest {
       "        \"WithdrawalPolicy\" : 1,\n" +
       "        \"Scale\" : 6,\n" +
       "        \"LEVersion\" : 0,\n" +
-      "        \"VaultKind\" : 0,\n" +
       "        \"shares\" : {\n" +
       "            \"Flags\" : 0,\n" +
       "            \"Issuer\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +

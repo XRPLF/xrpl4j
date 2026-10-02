@@ -32,6 +32,7 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.LoanManageFlags;
 import org.xrpl.xrpl4j.model.flags.LoanPayFlags;
+import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -64,6 +65,7 @@ import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.VaultCreate;
 import org.xrpl.xrpl4j.model.transactions.VaultDeposit;
+import org.xrpl.xrpl4j.model.transactions.VaultKind;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -117,6 +119,7 @@ public class LendingProtocolIT extends AbstractIT {
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
 
@@ -208,6 +211,7 @@ public class LendingProtocolIT extends AbstractIT {
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
 
@@ -277,6 +281,7 @@ public class LendingProtocolIT extends AbstractIT {
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
 
@@ -350,6 +355,7 @@ public class LendingProtocolIT extends AbstractIT {
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .build();
 
     final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
@@ -421,6 +427,7 @@ public class LendingProtocolIT extends AbstractIT {
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .build();
 
     final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
@@ -543,6 +550,15 @@ public class LendingProtocolIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
     );
 
+    // LoanBrokerSet requires a closed-ended Vault once LendingProtocolV1_1 is enabled, so this Vault must define a
+    // SubscriptionDate/RedemptionDate pair, and this method must wait for the ledger to pass SubscriptionDate before
+    // attaching a LoanBroker to it, below. See setupLoanBrokerAndXrpVault() for why SubscriptionDate and
+    // RedemptionDate are padded well past their minimums.
+    final UnsignedLong subscriptionDate = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(60)));
+    final UnsignedLong redemptionDate = subscriptionDate.plus(
+      VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.plus(UnsignedLong.valueOf(3600))
+    );
+
     VaultCreate vaultCreate = VaultCreate.builder()
       .account(loanBrokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
@@ -550,6 +566,9 @@ public class LendingProtocolIT extends AbstractIT {
       .asset(usdIssue)
       .assetsMaximum(Amount.of("500000"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(subscriptionDate)
+      .redemptionDate(redemptionDate)
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
 
@@ -597,6 +616,9 @@ public class LendingProtocolIT extends AbstractIT {
     this.scanForResult(
       () -> this.getValidatedTransaction(signedDeposit.hash(), VaultDeposit.class)
     );
+
+    // LoanBrokerSet requires the Vault to be past its SubscriptionDate once it is closed-ended.
+    awaitSubscriptionDatePassed(subscriptionDate);
 
     // ========== LOAN BROKER SET ==========
     loanBrokerAccountInfo = this.scanForResult(
@@ -728,6 +750,7 @@ public class LendingProtocolIT extends AbstractIT {
       .principalRequested(Amount.of("50000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .data(LoanData.of("AABBCC"))
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
@@ -1108,9 +1131,11 @@ public class LendingProtocolIT extends AbstractIT {
    * strictly past the loan's {@code NextPaymentDueDate}.
    *
    * <p>Under the {@code fixCleanup3_4_0} amendment, rippled only permits impairing a loan whose payment is actually
-   * late (see rippled's {@code LoanManage::impairLoan}, which otherwise returns {@code tecTOO_SOON}). A standalone
-   * rippled's close time advances much faster than wall-clock time, so pinning the loan to the 60-second minimum
-   * {@code PaymentInterval} keeps this wait well under a second.</p>
+   * late (see rippled's {@code LoanManage::impairLoan}, which otherwise returns {@code tecTOO_SOON}). A standalone,
+   * local rippled's close time can advance much faster than wall-clock time, so pinning the loan to the 60-second
+   * minimum {@code PaymentInterval} keeps this wait well under a second there. Against a real network (e.g. Devnet),
+   * though, ledger close time tracks wall-clock time roughly 1:1, so this genuinely takes close to a full
+   * {@code PaymentInterval} of real time to resolve; the timeout below is sized for that case.</p>
    *
    * <p>Note that rippled evaluates lateness against the <em>applying</em> ledger's {@code parentCloseTime}, whereas
    * this polls the <em>validated</em> ledger's {@code closeTime}. Waiting on the latter is sufficient because close
@@ -1133,7 +1158,7 @@ public class LendingProtocolIT extends AbstractIT {
 
     given()
       .pollInterval(Durations.ONE_HUNDRED_MILLISECONDS)
-      .atMost(Duration.of(1, ChronoUnit.MINUTES))
+      .atMost(Duration.of(3, ChronoUnit.MINUTES))
       .await()
       .until(() -> getValidatedLedger().ledger().closeTime()
         .orElseThrow(() -> new IllegalStateException("Validated ledger must have a closeTime."))
@@ -1292,6 +1317,27 @@ public class LendingProtocolIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
 
+    // LoanBrokerSet requires a closed-ended Vault once LendingProtocolV1_1 is enabled, so this Vault must
+    // define a SubscriptionDate/RedemptionDate pair and this method must wait for the ledger to pass
+    // SubscriptionDate before attaching a LoanBroker to it, below.
+    //
+    // SubscriptionDate must also leave enough real time for the VaultDeposit below to land before it -- deposits
+    // into a closed-ended Vault are only accepted before SubscriptionDate. A 5-second buffer is enough on a local
+    // rippled node with near-instant round trips, but against a real network (e.g. Devnet, ~4-5s ledger closes plus
+    // RPC latency for every call between VaultCreate and VaultDeposit) that window routinely closes before the
+    // deposit is submitted, and rippled rejects it with tecEXPIRED.
+    //
+    // RedemptionDate must also clear the Loan's own finalPayment date (StartDate + PaymentTotal * PaymentInterval,
+    // plus rippled's kLoanRedemptionBuffer), or the LoanSet submitted after this setup returns tecNO_PERMISSION.
+    // StartDate is whenever LoanSet actually validates, which is after this method already waited past
+    // SubscriptionDate and closed ledgers for LoanBrokerSet and LoanBrokerCoverDeposit, so a window sized to just
+    // the loan term leaves no slack for that setup latency. Pad it generously; VaultCreate allows up to
+    // MAX_INVESTMENT_PERIOD_SECONDS (~30 years), so there is ample room.
+    final UnsignedLong subscriptionDate = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(60)));
+    final UnsignedLong redemptionDate = subscriptionDate.plus(
+      VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.plus(UnsignedLong.valueOf(3600))
+    );
+
     final VaultCreate vaultCreate = VaultCreate.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
@@ -1299,6 +1345,9 @@ public class LendingProtocolIT extends AbstractIT {
       .asset(Issue.XRP)
       .assetsMaximum(Amount.of("10000000000"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(subscriptionDate)
+      .redemptionDate(redemptionDate)
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
 
@@ -1339,6 +1388,9 @@ public class LendingProtocolIT extends AbstractIT {
     final SubmitResult<VaultDeposit> depositResult = xrplClient.submit(signedDeposit);
     assertThat(depositResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(() -> this.getValidatedTransaction(signedDeposit.hash(), VaultDeposit.class));
+
+    // LoanBrokerSet requires the Vault to be past its SubscriptionDate once it is closed-ended.
+    awaitSubscriptionDatePassed(subscriptionDate);
 
     brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
@@ -1392,6 +1444,24 @@ public class LendingProtocolIT extends AbstractIT {
     this.scanForResult(() -> this.getValidatedTransaction(signedCoverDeposit.hash(), LoanBrokerCoverDeposit.class));
 
     return loanBrokerId;
+  }
+
+  /**
+   * Waits for the ledger's close time to pass {@code subscriptionDate}. {@link AbstractIT#scanForResult} caps its
+   * wait at {@link AbstractIT#AT_MOST_INTERVAL} (30 seconds), which is too short once SubscriptionDate is padded out
+   * far enough to survive real network latency (see setupLoanBrokerAndXrpVault()), so this polls with its own,
+   * longer timeout instead.
+   */
+  private void awaitSubscriptionDatePassed(UnsignedLong subscriptionDate) {
+    given()
+      .pollInterval(POLL_INTERVAL)
+      .atMost(Duration.ofSeconds(120))
+      .await()
+      .until(
+        this::getValidatedLedger,
+        ledgerResult -> FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
+          .greaterThan(subscriptionDate)
+      );
   }
 
   /**

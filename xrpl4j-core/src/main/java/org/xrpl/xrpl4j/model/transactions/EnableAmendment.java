@@ -68,7 +68,8 @@ public interface EnableAmendment extends Transaction {
 
   /**
    * Set of {@link TransactionFlags}s for this {@link EnableAmendment}. Pseudo-transactions have no flags, so this is
-   * always empty. Overridden so that {@link Transaction#transactionFlags()} can resolve it without a reflective failure.
+   * always empty. Overridden so that {@link Transaction#transactionFlags()} can resolve it without a reflective
+   * failure.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only.
    *

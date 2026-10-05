@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
 
@@ -64,4 +65,18 @@ public interface EnableAmendment extends Transaction {
    */
   @JsonProperty("LedgerSequence")
   Optional<LedgerIndex> ledgerSequence();
+
+  /**
+   * Set of {@link TransactionFlags}s for this {@link EnableAmendment}. Pseudo-transactions have no flags, so this is always
+   * empty. Overridden so that {@link Transaction#transactionFlags()} can resolve it without a reflective failure.
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only.
+   *
+   * @return Always {@link TransactionFlags#EMPTY}.
+   */
+  @JsonProperty("Flags")
+  @Value.Default
+  default TransactionFlags flags() {
+    return TransactionFlags.EMPTY;
+  }
 }

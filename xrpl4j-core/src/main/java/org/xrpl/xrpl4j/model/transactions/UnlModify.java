@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 /**
  * A {@link UnlModify} pseudo-transaction marks a change to the Negative UNL, indicating that a trusted validator has
@@ -91,4 +92,18 @@ public interface UnlModify extends Transaction {
    */
   @JsonProperty("UNLModifyValidator")
   String unlModifyValidator();
+
+  /**
+   * Set of {@link TransactionFlags}s for this {@link UnlModify}. Pseudo-transactions have no flags, so this is always
+   * empty. Overridden so that {@link Transaction#transactionFlags()} can resolve it without a reflective failure.
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only.
+   *
+   * @return Always {@link TransactionFlags#EMPTY}.
+   */
+  @JsonProperty("Flags")
+  @Value.Default
+  default TransactionFlags flags() {
+    return TransactionFlags.EMPTY;
+  }
 }

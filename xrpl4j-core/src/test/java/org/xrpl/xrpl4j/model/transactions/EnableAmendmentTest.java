@@ -26,10 +26,12 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.AbstractJsonTest;
 
 import java.util.Optional;
 
-public class EnableAmendmentTest {
+public class EnableAmendmentTest extends AbstractJsonTest {
 
   @Test
   public void testBuilder() {
@@ -50,5 +52,27 @@ public class EnableAmendmentTest {
     assertThat(enableAmendment.ledgerSequence()).isNotEmpty().get()
       .isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(67850752)));
     assertThat(enableAmendment.amendment()).isEqualTo(amendment);
+  }
+
+  @Test
+  public void flagsAreEmptyAndFlagsFieldIsNotUnknown() throws Exception {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Amendment\":\"42426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369F97ABF044EE\"," +
+      "\"Fee\":\"12\"," +
+      "\"Flags\":0," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"EnableAmendment\"}";
+
+    EnableAmendment enableAmendment = (EnableAmendment) objectMapper.readValue(json, Transaction.class);
+
+    assertThat(enableAmendment.flags()).isEqualTo(TransactionFlags.EMPTY);
+    assertThat(enableAmendment.transactionFlags()).isEqualTo(TransactionFlags.EMPTY);
+    assertThat(enableAmendment.getClass().getMethod("flags").invoke(enableAmendment))
+      .isEqualTo(TransactionFlags.EMPTY);
+    assertThat(enableAmendment.unknownFields()).doesNotContainKey("Flags");
+    assertThat(objectMapper.readTree(objectMapper.writeValueAsString(enableAmendment)).get("Flags").asInt()).isZero();
   }
 }

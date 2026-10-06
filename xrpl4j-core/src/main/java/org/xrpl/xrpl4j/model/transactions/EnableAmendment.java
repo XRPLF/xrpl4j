@@ -67,13 +67,16 @@ public interface EnableAmendment extends Transaction {
   Optional<LedgerIndex> ledgerSequence();
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link EnableAmendment}. Pseudo-transactions have no flags, so this is
-   * always empty. Overridden so that {@link Transaction#transactionFlags()} can resolve it without a reflective
-   * failure.
+   * Set of {@link TransactionFlags}s for this {@link EnableAmendment}. Defaults to {@link TransactionFlags#EMPTY},
+   * which indicates the amendment was enabled. Transactions received from rippled may carry nonzero flags, which are
+   * preserved: {@code 0x00010000} ({@code tfGotMajority}) means the amendment gained majority support and
+   * {@code 0x00020000} ({@code tfLostMajority}) means it lost majority support. Callers should inspect these values to
+   * distinguish an amendment's status.
    *
-   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only.
+   * <p>Also overridden so that {@link Transaction#transactionFlags()} can resolve it without a reflective failure.
    *
-   * @return Always {@link TransactionFlags#EMPTY}.
+   * @return The {@link TransactionFlags}; {@link TransactionFlags#EMPTY} unless supplied by a deserialized
+   *   transaction.
    */
   @JsonProperty("Flags")
   @Value.Default

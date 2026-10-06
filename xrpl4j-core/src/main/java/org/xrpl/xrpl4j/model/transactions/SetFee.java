@@ -155,12 +155,12 @@ public interface SetFee extends Transaction {
   Optional<LedgerIndex> ledgerSequence();
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link SetFee}. Pseudo-transactions have no flags, so this is always
-   * empty. Overridden so that {@link Transaction#transactionFlags()} can resolve it without a reflective failure.
+   * Set of {@link TransactionFlags}s for this {@link SetFee}. Pseudo-transactions have no defined flags, so this
+   * defaults to {@link TransactionFlags#EMPTY}; any value present in a deserialized transaction is preserved.
+   * Overridden so that {@link Transaction#transactionFlags()} can resolve it without a reflective failure.
    *
-   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only.
-   *
-   * @return Always {@link TransactionFlags#EMPTY}.
+   * @return The {@link TransactionFlags}; {@link TransactionFlags#EMPTY} unless supplied by a deserialized
+   *   transaction.
    */
   @JsonProperty("Flags")
   @Value.Default

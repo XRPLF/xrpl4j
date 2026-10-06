@@ -25,6 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
@@ -74,5 +76,27 @@ public class EnableAmendmentTest extends AbstractJsonTest {
       .isEqualTo(TransactionFlags.EMPTY);
     assertThat(enableAmendment.unknownFields()).doesNotContainKey("Flags");
     assertThat(objectMapper.readTree(objectMapper.writeValueAsString(enableAmendment)).get("Flags").asInt()).isZero();
+  }
+
+  @ParameterizedTest
+  @ValueSource(longs = {65536L, 131072L})
+  public void majorityFlagsArePreservedOnRoundTrip(long flags) throws Exception {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Amendment\":\"42426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369F97ABF044EE\"," +
+      "\"Fee\":\"12\"," +
+      "\"Flags\":" + flags + "," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"EnableAmendment\"}";
+
+    EnableAmendment enableAmendment = (EnableAmendment) objectMapper.readValue(json, Transaction.class);
+
+    assertThat(enableAmendment.flags().getValue()).isEqualTo(flags);
+    assertThat(enableAmendment.transactionFlags().getValue()).isEqualTo(flags);
+    assertThat(enableAmendment.unknownFields()).doesNotContainKey("Flags");
+    assertThat(objectMapper.readTree(objectMapper.writeValueAsString(enableAmendment)).get("Flags").asLong())
+      .isEqualTo(flags);
   }
 }

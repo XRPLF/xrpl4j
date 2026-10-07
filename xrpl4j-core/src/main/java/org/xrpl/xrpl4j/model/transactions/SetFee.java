@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.jackson.modules.BaseFeeDropsDeserializer;
 
 import java.util.Optional;
@@ -152,4 +153,20 @@ public interface SetFee extends Transaction {
    */
   @JsonProperty("LedgerSequence")
   Optional<LedgerIndex> ledgerSequence();
+
+  /**
+   * The {@link TransactionFlags} for this {@link SetFee}. xrpld defines no type-specific flags for this
+   * pseudo-transaction, so this defaults to {@link TransactionFlags#EMPTY}; a value present in a deserialized
+   * transaction is preserved.
+   *
+   * <p>Every {@link Transaction} subtype declares {@code flags()} so that {@link Transaction#transactionFlags()} can
+   * resolve it reflectively.</p>
+   *
+   * @return The {@link TransactionFlags} for this transaction.
+   */
+  @JsonProperty("Flags")
+  @Value.Default
+  default TransactionFlags flags() {
+    return TransactionFlags.EMPTY;
+  }
 }

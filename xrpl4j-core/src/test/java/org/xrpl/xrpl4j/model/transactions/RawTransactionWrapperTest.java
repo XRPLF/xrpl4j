@@ -29,12 +29,20 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
+import org.xrpl.xrpl4j.model.flags.EnableAmendmentFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
+
+import java.util.stream.Stream;
 
 /**
  * Unit tests for {@link RawTransactionWrapper}.
@@ -103,6 +111,58 @@ class RawTransactionWrapperTest {
       .build())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("Inner transaction must have the `tfInnerBatchTxn` flag set.");
+  }
+
+  /**
+   * Pseudo-transactions carrying {@code tfInnerBatchTxn}, each of which would otherwise satisfy the flag check. The
+   * ledger emits these itself and xrpld rejects them from users, so they must never be wrapped as inner
+   * transactions no matter which flags they carry.
+   */
+  static Stream<Arguments> pseudoTransactionsWithInnerBatchFlag() {
+    return Stream.of(
+      Arguments.of(
+        EnableAmendment.builder()
+          .account(ACCOUNT)
+          .fee(XrpCurrencyAmount.ofDrops(0))
+          .sequence(UnsignedInteger.ONE)
+          .amendment(Hash256.of("42426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369F97ABF044EE"))
+          .flags(EnableAmendmentFlags.of(TransactionFlags.INNER_BATCH_TXN.getValue()))
+          .build()
+      ),
+      Arguments.of(
+        SetFee.builder()
+          .account(ACCOUNT)
+          .fee(XrpCurrencyAmount.ofDrops(0))
+          .sequence(UnsignedInteger.ONE)
+          .baseFeeDrops(XrpCurrencyAmount.ofDrops(10))
+          .reserveBaseDrops(XrpCurrencyAmount.ofDrops(20_000_000))
+          .reserveIncrementDrops(XrpCurrencyAmount.ofDrops(5_000_000))
+          .flags(TransactionFlags.INNER_BATCH_TXN)
+          .build()
+      ),
+      Arguments.of(
+        UnlModify.builder()
+          .fee(XrpCurrencyAmount.ofDrops(0))
+          .sequence(UnsignedInteger.ONE)
+          .ledgerSequence(LedgerIndex.of(UnsignedInteger.valueOf(67850752)))
+          .unlModifyValidator("EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539")
+          .unlModifyDisabling(UnsignedInteger.ONE)
+          .flags(TransactionFlags.INNER_BATCH_TXN)
+          .build()
+      )
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource("pseudoTransactionsWithInnerBatchFlag")
+  void testValidationFailsForPseudoTransaction(Transaction pseudoTransaction) {
+    // Precondition: the flag check alone would have let this through.
+    assertThat(pseudoTransaction.transactionFlags().tfInnerBatchTxn()).isTrue();
+
+    assertThatThrownBy(() -> RawTransactionWrapper.of(pseudoTransaction))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Inner transaction must not be a pseudo-transaction, but was " +
+        pseudoTransaction.transactionType() + ".");
   }
 
   @Test

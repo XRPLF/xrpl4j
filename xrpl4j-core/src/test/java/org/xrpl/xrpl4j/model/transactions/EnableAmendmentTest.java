@@ -26,9 +26,10 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.flags.EnableAmendmentFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
@@ -54,6 +55,10 @@ public class EnableAmendmentTest extends AbstractJsonTest {
     assertThat(enableAmendment.ledgerSequence()).isNotEmpty().get()
       .isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(67850752)));
     assertThat(enableAmendment.amendment()).isEqualTo(amendment);
+    assertThat(enableAmendment.flags()).isEqualTo(EnableAmendmentFlags.empty());
+    assertThat(enableAmendment.flags().tfGotMajority()).isFalse();
+    assertThat(enableAmendment.flags().tfLostMajority()).isFalse();
+    assertThat(enableAmendment.flags().isEnabled()).isTrue();
   }
 
   @Test
@@ -70,7 +75,11 @@ public class EnableAmendmentTest extends AbstractJsonTest {
 
     EnableAmendment enableAmendment = (EnableAmendment) objectMapper.readValue(json, Transaction.class);
 
+    assertThat(enableAmendment.flags()).isInstanceOf(EnableAmendmentFlags.class);
     assertThat(enableAmendment.flags()).isEqualTo(TransactionFlags.EMPTY);
+    assertThat(enableAmendment.flags().tfGotMajority()).isFalse();
+    assertThat(enableAmendment.flags().tfLostMajority()).isFalse();
+    assertThat(enableAmendment.flags().isEnabled()).isTrue();
     assertThat(enableAmendment.transactionFlags()).isEqualTo(TransactionFlags.EMPTY);
     assertThat(enableAmendment.getClass().getMethod("flags").invoke(enableAmendment))
       .isEqualTo(TransactionFlags.EMPTY);
@@ -79,8 +88,15 @@ public class EnableAmendmentTest extends AbstractJsonTest {
   }
 
   @ParameterizedTest
-  @ValueSource(longs = {65536L, 131072L})
-  public void majorityFlagsArePreservedOnRoundTrip(long flags) throws Exception {
+  @CsvSource({
+    "65536, true, false",
+    "131072, false, true"
+  })
+  public void majorityFlagsArePreservedOnRoundTrip(
+    long flags,
+    boolean expectedGotMajority,
+    boolean expectedLostMajority
+  ) throws Exception {
     String json = "{" +
       "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
       "\"Amendment\":\"42426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369F97ABF044EE\"," +
@@ -93,7 +109,11 @@ public class EnableAmendmentTest extends AbstractJsonTest {
 
     EnableAmendment enableAmendment = (EnableAmendment) objectMapper.readValue(json, Transaction.class);
 
+    assertThat(enableAmendment.flags()).isInstanceOf(EnableAmendmentFlags.class);
     assertThat(enableAmendment.flags().getValue()).isEqualTo(flags);
+    assertThat(enableAmendment.flags().tfGotMajority()).isEqualTo(expectedGotMajority);
+    assertThat(enableAmendment.flags().tfLostMajority()).isEqualTo(expectedLostMajority);
+    assertThat(enableAmendment.flags().isEnabled()).isFalse();
     assertThat(enableAmendment.transactionFlags().getValue()).isEqualTo(flags);
     assertThat(enableAmendment.unknownFields()).doesNotContainKey("Flags");
     assertThat(objectMapper.readTree(objectMapper.writeValueAsString(enableAmendment)).get("Flags").asLong())

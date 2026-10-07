@@ -155,12 +155,14 @@ public interface SetFee extends Transaction {
   Optional<LedgerIndex> ledgerSequence();
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link SetFee}. Pseudo-transactions have no defined flags, so this
-   * defaults to {@link TransactionFlags#EMPTY}; any value present in a deserialized transaction is preserved.
-   * Overridden so that {@link Transaction#transactionFlags()} can resolve it without a reflective failure.
+   * The {@link TransactionFlags} for this {@link SetFee}. xrpld defines no type-specific flags for this
+   * pseudo-transaction, so this defaults to {@link TransactionFlags#EMPTY}; a value present in a deserialized
+   * transaction is preserved.
    *
-   * @return The {@link TransactionFlags}; {@link TransactionFlags#EMPTY} unless supplied by a deserialized
-   *   transaction.
+   * <p>Every {@link Transaction} subtype declares {@code flags()} so that {@link Transaction#transactionFlags()} can
+   * resolve it reflectively.</p>
+   *
+   * @return The {@link TransactionFlags} for this transaction.
    */
   @JsonProperty("Flags")
   @Value.Default

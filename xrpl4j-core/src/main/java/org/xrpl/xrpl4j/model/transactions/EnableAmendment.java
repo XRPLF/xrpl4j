@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.flags.EnableAmendmentFlags;
 
 import java.util.Optional;
 
@@ -67,20 +67,29 @@ public interface EnableAmendment extends Transaction {
   Optional<LedgerIndex> ledgerSequence();
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link EnableAmendment}. Defaults to {@link TransactionFlags#EMPTY},
-   * which indicates the amendment was enabled. Transactions received from rippled may carry nonzero flags, which are
-   * preserved: {@code 0x00010000} ({@code tfGotMajority}) means the amendment gained majority support and
-   * {@code 0x00020000} ({@code tfLostMajority}) means it lost majority support. Callers should inspect these values to
-   * distinguish an amendment's status.
+   * The {@link EnableAmendmentFlags} for this {@link EnableAmendment}, which identify <em>which</em> status transition
+   * this pseudo-transaction records. xrpld emits an {@link EnableAmendment} at each of three transitions and
+   * distinguishes them solely by {@code Flags}:
+   * <ul>
+   *   <li>{@link EnableAmendmentFlags#tfGotMajority()}: the amendment gained support from more than 80% of trusted
+   *       validators, starting the two-week activation countdown;</li>
+   *   <li>{@link EnableAmendmentFlags#tfLostMajority()}: support fell below 80%, cancelling the countdown;</li>
+   *   <li>neither flag set (i.e. {@code Flags} is {@code 0} or absent): the countdown completed and the amendment is
+   *       now enabled on the ledger. Use {@link EnableAmendmentFlags#isEnabled()} for this case rather than testing
+   *       for empty flags.</li>
+   * </ul>
+   * Defaults to {@link EnableAmendmentFlags#empty()}; a value present in a deserialized transaction is preserved.
    *
-   * <p>Also overridden so that {@link Transaction#transactionFlags()} can resolve it without a reflective failure.
+   * <p>Every {@link Transaction} subtype declares {@code flags()} so that {@link Transaction#transactionFlags()} can
+   * resolve it reflectively.</p>
    *
-   * @return The {@link TransactionFlags}; {@link TransactionFlags#EMPTY} unless supplied by a deserialized
-   *   transaction.
+   * @return The {@link EnableAmendmentFlags} for this transaction.
+   *
+   * @see "https://xrpl.org/enableamendment.html#enableamendment-flags"
    */
   @JsonProperty("Flags")
   @Value.Default
-  default TransactionFlags flags() {
-    return TransactionFlags.EMPTY;
+  default EnableAmendmentFlags flags() {
+    return EnableAmendmentFlags.empty();
   }
 }

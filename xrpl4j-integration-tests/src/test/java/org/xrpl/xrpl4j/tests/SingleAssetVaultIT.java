@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -24,6 +25,7 @@ import org.xrpl.xrpl4j.model.client.vault.VaultInfoResult;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
 import org.xrpl.xrpl4j.model.flags.VaultCreateFlags;
 import org.xrpl.xrpl4j.model.flags.VaultFlags;
+import org.xrpl.xrpl4j.model.flags.VaultSetFlags;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -1374,6 +1376,150 @@ public class SingleAssetVaultIT extends AbstractIT {
     this.scanForResult(
       () -> this.getValidatedTransaction(signedVaultDelete.hash(), VaultDelete.class)
     );
+  }
+
+  /**
+   * Test {@code VaultSet}'s deposit-block/unblock flags. Verifies that a vault created with
+   * {@code VaultCreateFlags#VAULT_OWNER_CAN_BLOCK_DEPOSIT} can have deposits blocked and later unblocked.
+   *
+   * <p>Disabled until rippled ships the {@code LendingProtocolV1_2} amendment that gates these flags. Until then
+   * every rippled build rejects the {@code VaultCreate} below with {@code temINVALID_FLAG}, because
+   * {@code tfVaultOwnerCanBlockDeposit} is part of the invalid-flag mask whenever that amendment is disabled. See
+   * <a href="https://github.com/XRPLF/rippled/pull/6361">rippled #6361</a>.</p>
+   */
+  @Test
+  @Disabled("Requires the LendingProtocolV1_2 amendment, which rippled has not shipped yet (rippled #6361).")
+  void vaultSetDepositBlockAndUnblock() throws Exception {
+    KeyPair vaultOwnerKeyPair = createRandomAccountEd25519();
+    final KeyPair depositorKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    AccountInfoResult vaultOwnerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(vaultOwnerKeyPair.publicKey().deriveAddress())
+    );
+
+    VaultCreate vaultCreate = VaultCreate.builder()
+      .account(vaultOwnerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(vaultOwnerAccountInfo.accountData().sequence())
+      .asset(Issue.XRP)
+      .flags(VaultCreateFlags.VAULT_OWNER_CAN_BLOCK_DEPOSIT)
+      .signingPublicKey(vaultOwnerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<VaultCreate> signedVaultCreate = signatureService.sign(
+      vaultOwnerKeyPair.privateKey(), vaultCreate
+    );
+    assertThat(xrplClient.submit(signedVaultCreate).engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedVaultCreate.hash(), VaultCreate.class));
+
+    LedgerEntryResult<VaultObject> vaultLedgerEntry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.vault(
+        VaultLedgerEntryParams.builder()
+          .owner(vaultOwnerKeyPair.publicKey().deriveAddress())
+          .seq(vaultOwnerAccountInfo.accountData().sequence())
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    );
+    Hash256 vaultId = vaultLedgerEntry.node().index();
+    assertThat(vaultLedgerEntry.node().flags().lsfVaultOwnerCanBlockDeposit()).isTrue();
+
+    // Deposit succeeds before the vault is blocked
+    AccountInfoResult depositorAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(depositorKeyPair.publicKey().deriveAddress())
+    );
+    VaultDeposit deposit = VaultDeposit.builder()
+      .account(depositorKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(depositorAccountInfo.accountData().sequence())
+      .vaultId(vaultId)
+      .amount(XrpCurrencyAmount.ofDrops(1000000))
+      .signingPublicKey(depositorKeyPair.publicKey())
+      .build();
+    SingleSignedTransaction<VaultDeposit> signedDeposit = signatureService.sign(
+      depositorKeyPair.privateKey(), deposit
+    );
+    assertThat(xrplClient.submit(signedDeposit).engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedDeposit.hash(), VaultDeposit.class));
+
+    // Owner blocks deposits
+    vaultOwnerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(vaultOwnerKeyPair.publicKey().deriveAddress())
+    );
+    VaultSet blockDeposits = VaultSet.builder()
+      .account(vaultOwnerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(vaultOwnerAccountInfo.accountData().sequence())
+      .vaultId(vaultId)
+      .flags(VaultSetFlags.builder().tfVaultDepositBlock(true).build())
+      .signingPublicKey(vaultOwnerKeyPair.publicKey())
+      .build();
+    SingleSignedTransaction<VaultSet> signedBlockDeposits = signatureService.sign(
+      vaultOwnerKeyPair.privateKey(), blockDeposits
+    );
+    assertThat(xrplClient.submit(signedBlockDeposits).engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedBlockDeposits.hash(), VaultSet.class));
+
+    VaultInfoResult vaultInfoAfterBlock = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
+    assertThat(vaultInfoAfterBlock.vault().flags().lsfVaultDepositBlocked()).isTrue();
+
+    // Deposits now fail
+    depositorAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(depositorKeyPair.publicKey().deriveAddress())
+    );
+    VaultDeposit blockedDeposit = VaultDeposit.builder()
+      .account(depositorKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(depositorAccountInfo.accountData().sequence())
+      .vaultId(vaultId)
+      .amount(XrpCurrencyAmount.ofDrops(500000))
+      .signingPublicKey(depositorKeyPair.publicKey())
+      .build();
+    SingleSignedTransaction<VaultDeposit> signedBlockedDeposit = signatureService.sign(
+      depositorKeyPair.privateKey(), blockedDeposit
+    );
+    assertThat(xrplClient.submit(signedBlockedDeposit).engineResult()).isEqualTo("tecNO_PERMISSION");
+
+    // Owner unblocks deposits
+    vaultOwnerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(vaultOwnerKeyPair.publicKey().deriveAddress())
+    );
+    VaultSet unblockDeposits = VaultSet.builder()
+      .account(vaultOwnerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(vaultOwnerAccountInfo.accountData().sequence())
+      .vaultId(vaultId)
+      .flags(VaultSetFlags.builder().tfVaultDepositUnblock(true).build())
+      .signingPublicKey(vaultOwnerKeyPair.publicKey())
+      .build();
+    SingleSignedTransaction<VaultSet> signedUnblockDeposits = signatureService.sign(
+      vaultOwnerKeyPair.privateKey(), unblockDeposits
+    );
+    assertThat(xrplClient.submit(signedUnblockDeposits).engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedUnblockDeposits.hash(), VaultSet.class));
+
+    VaultInfoResult vaultInfoAfterUnblock = xrplClient.vaultInfo(VaultInfoRequestParams.of(vaultId));
+    assertThat(vaultInfoAfterUnblock.vault().flags().lsfVaultDepositBlocked()).isFalse();
+
+    // Deposits succeed again
+    depositorAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(depositorKeyPair.publicKey().deriveAddress())
+    );
+    VaultDeposit unblockedDeposit = VaultDeposit.builder()
+      .account(depositorKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(depositorAccountInfo.accountData().sequence())
+      .vaultId(vaultId)
+      .amount(XrpCurrencyAmount.ofDrops(500000))
+      .signingPublicKey(depositorKeyPair.publicKey())
+      .build();
+    SingleSignedTransaction<VaultDeposit> signedUnblockedDeposit = signatureService.sign(
+      depositorKeyPair.privateKey(), unblockedDeposit
+    );
+    assertThat(xrplClient.submit(signedUnblockedDeposit).engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedUnblockedDeposit.hash(), VaultDeposit.class));
   }
 
   /**

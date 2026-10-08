@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.immutables.value.Value;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -17,9 +19,26 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.math.BigDecimal;
 
+/**
+ * Unit tests for {@link VoteWeight}.
+ */
 public class VoteWeightTest {
 
-  ObjectMapper objectMapper = ObjectMapperFactory.create();
+  private static final VoteWeight VOTE_WEIGHT = VoteWeight.of(UnsignedInteger.ZERO);
+
+  private ObjectMapper objectMapper = ObjectMapperFactory.create();
+
+  @Test
+  void testNull() {
+    assertThrows(NullPointerException.class, () -> VoteWeight.of(null));
+  }
+
+  @Test
+  void testEquality() {
+    AssertionsForClassTypes.assertThat(VOTE_WEIGHT).isEqualTo(VOTE_WEIGHT);
+    AssertionsForClassTypes.assertThat(VOTE_WEIGHT).isNotEqualTo(new Object());
+    AssertionsForClassTypes.assertThat(VOTE_WEIGHT.equals(null)).isFalse();
+  }
 
   @Test
   void bigDecimalValue() {
@@ -41,8 +60,7 @@ public class VoteWeightTest {
 
   @Test
   void testToString() {
-    VoteWeight weight = VoteWeight.of(UnsignedInteger.ZERO);
-    assertThat(weight.toString()).isEqualTo(UnsignedInteger.ZERO.toString());
+    assertThat(VOTE_WEIGHT.toString()).isEqualTo(UnsignedInteger.ZERO.toString());
   }
 
   @Test

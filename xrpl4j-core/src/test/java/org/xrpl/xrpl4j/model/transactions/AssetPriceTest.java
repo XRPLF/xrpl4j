@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.immutables.value.Value;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -20,7 +22,21 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
  */
 public class AssetPriceTest {
 
+  private static final AssetPrice ZERO_ASSET_PRICE = AssetPrice.of(UnsignedLong.ZERO);
+
   ObjectMapper objectMapper = ObjectMapperFactory.create();
+
+  @Test
+  void testNull() {
+    assertThrows(NullPointerException.class, () -> AssetPrice.of(null));
+  }
+
+  @Test
+  void testEquality() {
+    AssertionsForClassTypes.assertThat(ZERO_ASSET_PRICE).isEqualTo(ZERO_ASSET_PRICE);
+    AssertionsForClassTypes.assertThat(ZERO_ASSET_PRICE).isNotEqualTo(new Object());
+    AssertionsForClassTypes.assertThat(ZERO_ASSET_PRICE.equals(null)).isFalse();
+  }
 
   @Test
   void testToString() {

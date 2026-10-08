@@ -60,6 +60,26 @@ class ServerSecretTest {
     org.assertj.core.api.Assertions.assertThat(Arrays.equals(serverSecret1.value(), new byte[5])).isTrue();
   }
 
+  /**
+   * Regression test for RXB-382: {@link ServerSecret#of(byte[])} must defensively copy its input so that destroying
+   * the returned {@link ServerSecret} never mutates the caller's original array. Without this, a caller that
+   * supplies a persistent, reused {@code byte[]} (the documented usage pattern for {@link ServerSecretSupplier})
+   * would have that array zeroed out the first time the returned {@link ServerSecret} is destroyed.
+   */
+  @Test
+  void destroyDoesNotMutateCallersOriginalArray() {
+    final byte[] callerOwnedSecret = "super-secret-value".getBytes(StandardCharsets.UTF_8);
+    final byte[] originalCopy = Arrays.copyOf(callerOwnedSecret, callerOwnedSecret.length);
+
+    final ServerSecret serverSecret = ServerSecret.of(callerOwnedSecret);
+    serverSecret.destroy();
+
+    assertThat(serverSecret.isDestroyed()).isTrue();
+    assertThat(Arrays.equals(serverSecret.value(), new byte[callerOwnedSecret.length])).isTrue();
+    // The caller's original array must remain untouched.
+    assertThat(callerOwnedSecret).isEqualTo(originalCopy);
+  }
+
   @Test
   void equals() {
     assertThat(serverSecret1).isEqualTo(serverSecret1);

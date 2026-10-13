@@ -53,28 +53,44 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
   public AffectedNode deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
     ObjectMapper codec = (ObjectMapper) jsonParser.getCodec();
     JsonNode jsonNode = jsonParser.readValueAsTree();
+    if (jsonNode == null || jsonNode.size() != 1) {
+      return ctxt.reportInputMismatch(
+        AffectedNode.class,
+        "An AffectedNode must be a JSON object with exactly one field (CreatedNode, ModifiedNode, or DeletedNode)."
+      );
+    }
     Map.Entry<String, JsonNode> nodeFieldAndValue = jsonNode.fields().next();
     String affectedNodeType = nodeFieldAndValue.getKey();
+    JsonNode nodeValue = nodeFieldAndValue.getValue();
+    if (!nodeValue.isObject()) {
+      return ctxt.reportInputMismatch(
+        AffectedNode.class, "The value of %s must be a JSON object.", affectedNodeType
+      );
+    }
+    JsonNode ledgerEntryTypeNode = nodeValue.get("LedgerEntryType");
+    if (ledgerEntryTypeNode == null || !ledgerEntryTypeNode.isTextual()) {
+      return ctxt.reportInputMismatch(
+        AffectedNode.class, "%s is missing required field LedgerEntryType.", affectedNodeType
+      );
+    }
 
-    MetaLedgerEntryType ledgerEntryType = MetaLedgerEntryType.of(
-      nodeFieldAndValue.getValue().get("LedgerEntryType").asText()
-    );
+    MetaLedgerEntryType ledgerEntryType = MetaLedgerEntryType.of(ledgerEntryTypeNode.asText());
     Class<? extends MetaLedgerObject> ledgerObjectClass = ledgerEntryType.ledgerObjectType();
 
     switch (affectedNodeType) {
       case "CreatedNode":
         return codec.treeToValue(
-          nodeFieldAndValue.getValue(),
+          nodeValue,
           codec.getTypeFactory().constructParametricType(CreatedNode.class, ledgerObjectClass)
         );
       case "ModifiedNode":
         return codec.treeToValue(
-          nodeFieldAndValue.getValue(),
+          nodeValue,
           codec.getTypeFactory().constructParametricType(ModifiedNode.class, ledgerObjectClass)
         );
       case "DeletedNode":
         return codec.treeToValue(
-          nodeFieldAndValue.getValue(),
+          nodeValue,
           codec.getTypeFactory().constructParametricType(DeletedNode.class, ledgerObjectClass)
         );
       default:

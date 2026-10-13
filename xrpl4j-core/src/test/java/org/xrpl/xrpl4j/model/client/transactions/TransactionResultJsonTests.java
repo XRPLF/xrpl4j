@@ -37,6 +37,10 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
+import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableMetaAccountRootObject;
+import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableModifiedNode;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaAccountRootObject;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.time.LocalDateTime;
@@ -211,5 +215,55 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
       "                }";
 
     assertCanDeserialize(json, paymentResult);
+  }
+
+  @Test
+  public void testRoundTripTransactionResultWithAffectedNodes() throws JsonProcessingException {
+    XrpCurrencyAmount amount = XrpCurrencyAmount.of(UnsignedLong.valueOf(1000000000));
+    TransactionResult<Payment> paymentResult = TransactionResult.<Payment>builder()
+      .transaction(Payment.builder()
+        .account(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
+        .amount(amount)
+        .destination(Address.of("r3ubyDp4gPGKH5bJx9KMmzpTSTW7EtRixS"))
+        .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(12)))
+        .sequence(UnsignedInteger.valueOf(2062126))
+        .signingPublicKey(
+          PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+        )
+        .build())
+      .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
+      .metadata(TransactionMetadata.builder()
+        .transactionResult("tesSUCCESS")
+        .transactionIndex(UnsignedInteger.ONE)
+        .deliveredAmount(amount)
+        .addAffectedNodes(
+          ImmutableModifiedNode.<MetaAccountRootObject>builder()
+            .ledgerEntryType(MetaLedgerEntryType.ACCOUNT_ROOT)
+            .ledgerIndex(Hash256.of("D6C4EE995A40D6A22172016806CE813DE1578B11158B4EAA5115C563B4DC4B29"))
+            .finalFields(
+              ImmutableMetaAccountRootObject.builder()
+                .account(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
+                .balance(XrpCurrencyAmount.of(UnsignedLong.valueOf(999)))
+                .sequence(UnsignedInteger.valueOf(2062127))
+                .build()
+            )
+            .previousFields(
+              ImmutableMetaAccountRootObject.builder()
+                .balance(XrpCurrencyAmount.of(UnsignedLong.valueOf(1000000999)))
+                .sequence(UnsignedInteger.valueOf(2062126))
+                .build()
+            )
+            .build()
+        )
+        .build()
+      )
+      .build();
+
+    String serialized = objectMapper.writeValueAsString(paymentResult);
+    TransactionResult<Payment> deserialized = objectMapper.readValue(
+      serialized,
+      objectMapper.getTypeFactory().constructParametricType(TransactionResult.class, Payment.class)
+    );
+    assertThat(deserialized).isEqualTo(paymentResult);
   }
 }

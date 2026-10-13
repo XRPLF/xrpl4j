@@ -88,7 +88,13 @@ public interface EscrowFinish extends Transaction {
    * @return An {@link XrpCurrencyAmount} representing the computed fee.
    *
    * @see "https://xrpl.org/escrowfinish.html"
+   *
+   * @deprecated This omits the per-signature terms that rippled's {@code EscrowFinish::calculateBaseFee} adds the
+   *   fulfillment surcharge to, so it is correct only for a single-signed, unsponsored {@code EscrowFinish}. Use
+   *   {@code FeeUtils#computeFee(FeeParams)}, which derives the surcharge from {@link #fulfillment()} and adds it to
+   *   the full base-fee formula.
    */
+  @Deprecated
   static XrpCurrencyAmount computeFee(
     final XrpCurrencyAmount currentLedgerBaseFeeDrops,
     final Fulfillment<?> fulfillment

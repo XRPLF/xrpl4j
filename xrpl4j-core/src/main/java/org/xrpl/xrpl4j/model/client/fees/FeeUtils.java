@@ -24,28 +24,40 @@ import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP_IN_DROPS
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.ledger.SignerListObject;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.BatchSignerWrapper;
+import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
+import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Utils relating to XRPL fees.
  */
 public class FeeUtils {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(FeeUtils.class);
 
   private static final BigInteger MAX_UNSIGNED_LONG = UnsignedLong.MAX_VALUE.bigIntegerValue();
 
@@ -66,16 +78,39 @@ public class FeeUtils {
   private static final BigInteger ONE_THOUSAND = BigInteger.valueOf(1000);
 
   /**
-   * Computes the fee necessary for a multisigned transaction.
-   *
-   * <p>The transaction cost of a multisigned transaction must be at least {@code (N + 1) * (the normal
-   * transaction cost)}, where {@code N} is the number of signatures provided.
+   * The extra base fees rippled charges a confidential MPT transaction, on top of the base fee every transaction
+   * pays. This is rippled's {@code kConfidentialFeeMultiplier}.
+   */
+  private static final long CONFIDENTIAL_FEE_MULTIPLIER = 9L;
+
+  /**
+   * The {@link TransactionType}s that rippled charges {@link #CONFIDENTIAL_FEE_MULTIPLIER} extra base fees for.
+   */
+  private static final Set<TransactionType> CONFIDENTIAL_MPT_TRANSACTION_TYPES = ImmutableSet.of(
+    TransactionType.CONFIDENTIAL_MPT_CONVERT,
+    TransactionType.CONFIDENTIAL_MPT_CONVERT_BACK,
+    TransactionType.CONFIDENTIAL_MPT_SEND,
+    TransactionType.CONFIDENTIAL_MPT_CLAWBACK,
+    TransactionType.CONFIDENTIAL_MPT_MERGE_INBOX
+  );
+
+  /**
+   * Calculate a suggested fee for submitting a multi-signed transaction to the XRPL, being at least
+   * {@code (N + 1) * (the normal transaction cost)}, where {@code N} is the number of signatures provided.
    *
    * @param feeResult  {@link FeeResult} object obtained by querying the ledger (e.g., via an `XrplClient#fee()` call).
    * @param signerList The {@link SignerListObject} containing the signers of the transaction.
    *
-   * @return An {@link XrpCurrencyAmount} representing the multisig fee.
+   * @return {@link ComputedNetworkFees} with low, medium and high fee levels to choose from for the transaction.
+   *
+   * @see "https://xrpl.org/fee.html"
+   *
+   * @deprecated This counts entries in {@code signerList} rather than the signatures the transaction will actually
+   *   carry, so it over-charges whenever a quorum is met by fewer signers than the list holds, and it has no term for
+   *   a sponsor's signatures. Use {@link #computeFee(FeeParams)}, supplying {@link FeeParams#signersCount()} and
+   *   {@link FeeParams#sponsorSignersCount()}, so that there is a single way to price a transaction.
    */
+  @Deprecated
   public static ComputedNetworkFees computeMultisigNetworkFees(
     final FeeResult feeResult,
     final SignerListObject signerList
@@ -83,7 +118,7 @@ public class FeeUtils {
     Objects.requireNonNull(feeResult);
     Objects.requireNonNull(signerList);
 
-    ComputedNetworkFees computedNetworkFees = computeNetworkFees(feeResult);
+    ComputedNetworkFees computedNetworkFees = computeBaseFees(feeResult);
     XrpCurrencyAmount numberOfSignersAsAmount = XrpCurrencyAmount.of(
       UnsignedLong.valueOf(signerList.signerEntries().size() + 1)
     );
@@ -104,9 +139,28 @@ public class FeeUtils {
    * @return {@link ComputedNetworkFees} with low, medium and high fee levels to choose from for the transaction.
    *
    * @see "https://xrpl.org/fee.html"
-   * @see "https://github.com/XRPL-Labs/XUMM-App/blob/master/src/services/LedgerService.ts#L244"
+   *
+   * @deprecated This returns only the ledger's base fee levels, so it silently under-charges any transaction that
+   *   does not cost exactly one base fee — a multi-signed or sponsored transaction, or one of the types with a rule
+   *   of its own ({@link Batch}, {@code EscrowFinish} with a fulfillment, confidential MPT, {@code LoanSet},
+   *   {@code LoanPay}, {@code AccountDelete}, {@code AMMCreate}). Use {@link #computeFee(FeeParams)}, which starts
+   *   from these same levels and applies the transaction's rule, so that there is a single way to price a
+   *   transaction.
    */
+  @Deprecated
   public static ComputedNetworkFees computeNetworkFees(final FeeResult feeResult) {
+    return computeBaseFees(feeResult);
+  }
+
+  /**
+   * The ledger's base fee levels, being the queue heuristic that turns a {@link FeeResult} into low, medium and high
+   * levels, before any per-transaction multiplier is applied.
+   *
+   * @param feeResult The {@link FeeResult} obtained by querying the ledger.
+   *
+   * @return A {@link ComputedNetworkFees} whose every level is one base fee.
+   */
+  private static ComputedNetworkFees computeBaseFees(final FeeResult feeResult) {
     Objects.requireNonNull(feeResult);
 
     final DecomposedFees decomposedFees = DecomposedFees.builder(feeResult);
@@ -121,199 +175,418 @@ public class FeeUtils {
   }
 
   /**
-   * Calculate a suggested fee to be used for submitting a transaction to the XRPL. The calculated value depends on the
-   * current size of the job queue as compared to its total capacity.
+   * Computes the fee for any transaction, applying whichever of rippled's fee rules its type calls for.
    *
-   * @param feeResult {@link FeeResult} object obtained by querying the ledger (e.g., via an `XrplClient#fee()` call).
+   * <p>The rules, all of which derive from rippled's {@code calculateBaseFee} overrides:
+   * <ul>
+   *   <li>Every transaction pays {@code base × (1 + signersCount + sponsorSignersCount)}.</li>
+   *   <li>A confidential MPT transaction adds {@code 9 × base}.</li>
+   *   <li>An {@code EscrowFinish} carrying a fulfillment adds {@code base × (32 + fulfillmentBytes / 16)}.</li>
+   *   <li>A {@code LoanSet} adds {@code base × counterpartySignatureCount}.</li>
+   *   <li>A {@code LoanPay} multiplies the whole amount by its number of fee increments.</li>
+   *   <li>An {@code AccountDelete} or {@code AMMCreate} costs one owner reserve increment instead, flat.</li>
+   *   <li>A {@link Batch} costs {@code base × (2 + batchSignatures + signersCount + sponsorSignersCount)} plus the
+   *       fee of each inner transaction, computed by these same rules but without signature terms, since rippled
+   *       does not permit an inner transaction to carry signatures or fee sponsorship.</li>
+   * </ul>
    *
-   * @return {@link ComputedNetworkFees} with low, medium and high fee levels to choose from for the transaction.
+   * <p>Because the fee is signed over, it must be computed before signing, and the intended flow is therefore: build
+   * the transaction without a fee (which defaults to zero and is ignored while pricing), price it, attach the fee,
+   * then sign:
+   * <pre>{@code
+   * Payment unpriced = Payment.builder()
+   *   // ... every other field ...
+   *   .build();
+   * XrpCurrencyAmount fee = FeeUtils.computeFee(FeeParams.of(feeResult, unpriced).build()).recommendedFee();
+   * Payment payment = ImmutablePayment.copyOf(unpriced).withFee(fee);
+   * // sign and submit `payment`
+   * }</pre>
    *
-   * @see "https://xrpl.org/fee.html"
-   * @see "https://github.com/XRPL-Labs/XUMM-App/blob/master/src/services/LedgerService.ts#L244"
+   * @param feeParams The {@link FeeParams} describing the transaction and how it will be signed. Prefer the
+   *                  type-scoped entry points ({@link FeeParams#of}, {@link FeeParams#forBatch},
+   *                  {@link FeeParams#forLoanSet}, {@link FeeParams#forLoanPay},
+   *                  {@link FeeParams#forOwnerReserve}), which expose exactly the inputs the transaction's type
+   *                  prices by.
+   *
+   * @return A {@link ComputedNetworkFees} whose low, medium and high levels are each priced for this transaction, and
+   *   whose {@link ComputedNetworkFees#feeBreakdown()} itemizes how.
+   *
+   * @see "https://github.com/XRPLF/rippled/blob/develop/src/libxrpl/tx/Transactor.cpp"
    */
-  public static XrpCurrencyAmount computeBatchFee(
-    final FeeResult feeResult,
-    final UnsignedInteger numBatchSigners
-  ) {
-    Objects.requireNonNull(feeResult);
-    Objects.requireNonNull(numBatchSigners);
+  public static ComputedNetworkFees computeFee(final FeeParams feeParams) {
+    Objects.requireNonNull(feeParams);
 
-    final XrpCurrencyAmount recommendedFee = computeNetworkFees(feeResult).recommendedFee();
-    final UnsignedLong allInnerTransactionFees = recommendedFee.value()
-      .times(UnsignedLong.valueOf(numBatchSigners.longValue()));
+    final FeeBreakdown feeBreakdown = computeFeeBreakdown(feeParams);
+    warnIfAssumed(feeParams, feeBreakdown);
+    final ComputedNetworkFees baseFees = computeBaseFees(feeParams.feeResult());
 
-    return computeBatchFee(recommendedFee, numBatchSigners, XrpCurrencyAmount.of(allInnerTransactionFees));
+    final long feeUnits = feeBreakdown.totalFeeUnits();
+    final Optional<XrpCurrencyAmount> flatAmount = feeBreakdown.totalFlatAmount();
+
+    // An owner-reserve transaction has no base-fee term at all; everything else is a base-fee multiple plus any flat
+    // owner reserves its Batch inners contribute.
+    final ComputedNetworkFees pricedFees = feeUnits == 0L ?
+      flatFee(flatAmount.get(), baseFees.queuePercentage()) :
+      flatAmount
+        .map(flat -> plusFlatFee(scaleByBaseFees(baseFees, feeUnits), flat))
+        .orElseGet(() -> scaleByBaseFees(baseFees, feeUnits));
+
+    return ComputedNetworkFees.builder().from(pricedFees).feeBreakdown(feeBreakdown).build();
   }
 
   /**
-   * Computes the fee necessary for a Batch transaction per XLS-0056 section 2.2.
+   * Logs a warning naming every {@link FeeTerm.Provenance#ASSUMED} term in {@code feeBreakdown}, so that a developer
+   * who left an input unset — a Batch participant assumed to single-sign, or a {@code LoanSet} counterparty assumed to
+   * use one key — has a chance to notice before trusting the computed fee.
    *
-   * <p>The formula is: {@code (n + 2) * baseFee + sum(innerTransactionFees)} where {@code n} is the number of
-   * additional signatures from BatchSigners (0 for single-account batches).
+   * <p>Every assumption is reported, including one that costs nothing, because the point is to say "you did not set
+   * this field, so the library chose for you" rather than to predict which assumptions will prove expensive. A caller
+   * who has deliberately accepted a default can silence the warning by supplying the value explicitly:
+   * {@link FeeParams#signersCount()} set to {@link UnsignedInteger#ZERO} is a stated single-signature rather than an
+   * assumed one.
    *
-   * <p>In other words, the fee is twice the base fee (a total of 20 drops when there is no fee escalation), plus
-   * the sum of the transaction fees of all the inner transactions, plus an additional base fee amount for each
-   * additional signature in the transaction (e.g. from BatchSigners).
+   * @param feeParams    The {@link FeeParams} that produced {@code feeBreakdown}, identifying the transaction in the
+   *                     log message.
+   * @param feeBreakdown The {@link FeeBreakdown} to inspect.
+   */
+  private static void warnIfAssumed(final FeeParams feeParams, final FeeBreakdown feeBreakdown) {
+    if (!LOGGER.isWarnEnabled()) {
+      return;
+    }
+
+    final boolean hasAssumedTerm = feeBreakdown.terms().stream()
+      .anyMatch(term -> term.provenance() == FeeTerm.Provenance.ASSUMED);
+
+    if (hasAssumedTerm) {
+      LOGGER.warn(
+        "computeFee assumed one or more unspecified inputs while pricing a {} transaction. If any assumption does " +
+          "not hold, the computed fee will be wrong. Review the [assumed] lines and supply the named FeeParams " +
+          "input:\n{}",
+        feeParams.transaction().transactionType().value(),
+        feeBreakdown.summary()
+      );
+    }
+  }
+
+  /**
+   * Itemizes the fee of {@link FeeParams#transaction()} as a {@link FeeBreakdown}: one {@link FeeTerm} per reason the
+   * transaction owes something, each tagged {@code specified}, {@code assumed} or {@code derived}. This is the same
+   * computation {@link #computeFee(FeeParams)} prices from — the breakdown's totals <em>are</em> the fee — factored
+   * out so {@link #computeFee(FeeParams)} can populate {@link ComputedNetworkFees#feeBreakdown()} from it.
    *
-   * @param baseFee                The base transaction fee (e.g., from {@link FeeDrops#baseFee()}).
-   * @param numBatchSigners        The number of BatchSigners (additional signatures beyond the outer transaction
-   *                               signer). Use 0 for single-account batches.
-   * @param innerTransactionFeeSum The sum of all inner transaction fees.
+   * @param feeParams The {@link FeeParams} describing the transaction and how it will be signed.
    *
-   * @return An {@link XrpCurrencyAmount} representing the computed batch transaction fee.
-   *
-   * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0056-batch"
+   * @return A {@link FeeBreakdown}.
    */
   @VisibleForTesting
-  protected static XrpCurrencyAmount computeBatchFee(
-    final XrpCurrencyAmount baseFee,
-    final UnsignedInteger numBatchSigners,
-    final XrpCurrencyAmount innerTransactionFeeSum
-  ) {
-    Objects.requireNonNull(baseFee);
-    Objects.requireNonNull(innerTransactionFeeSum);
+  static FeeBreakdown computeFeeBreakdown(final FeeParams feeParams) {
+    Objects.requireNonNull(feeParams);
 
-    // Formula: (n + 2) * base_fee + sum(innerTxn.Fee)
-    final UnsignedLong nPlusTwo = UnsignedLong.valueOf(numBatchSigners.intValue()).plus(UnsignedLong.valueOf(2L));
-    final UnsignedLong baseFeeDrops = baseFee.value();
-    final UnsignedLong innerTransactionFeeSumDrops = innerTransactionFeeSum.value();
+    final Transaction transaction = feeParams.transaction();
+    final TransactionType transactionType = transaction.transactionType();
 
-    final UnsignedLong batchFeeDrops = nPlusTwo.times(baseFeeDrops)
-      .plus(innerTransactionFeeSumDrops);
+    if (FeeParams.OWNER_RESERVE_TRANSACTION_TYPES.contains(transactionType)) {
+      // The owner reserve replaces the base-fee formula rather than adding to it, so signature counts do not apply.
+      return FeeBreakdown.of(FeeTerm.flat(
+        transactionType.value() + ": one owner reserve increment, flat (replaces the base-fee formula, so " +
+          "signature counts are ignored)",
+        feeParams.ownerReserve().get(),
+        FeeTerm.Provenance.DERIVED
+      ));
+    }
 
-    return XrpCurrencyAmount.ofDrops(batchFeeDrops);
+    if (transactionType == TransactionType.BATCH) {
+      return computeBatchFeeBreakdown(feeParams, (Batch) transaction);
+    }
+
+    if (transactionType == TransactionType.LOAN_PAY) {
+      return computeLoanPayFeeBreakdown(feeParams);
+    }
+
+    final List<FeeTerm> terms = new ArrayList<>();
+    terms.add(FeeTerm.of("base fee (" + transactionType.value() + ")", 1L, FeeTerm.Provenance.DERIVED));
+    terms.addAll(signerCountTerms(feeParams, transaction));
+    surchargeTerm(feeParams, transaction).ifPresent(terms::add);
+    return FeeBreakdown.of(terms);
   }
 
   /**
-   * Computes the fee necessary for a {@code LoanSet} transaction with a {@code CounterpartySignature}.
+   * Itemizes the fee of a {@link Batch}: two base fees for the outer transaction and batch processing, the outer
+   * account's own signature terms, one base fee per collected batch signature, and each inner transaction's fee —
+   * computed without signature terms, since rippled does not permit an inner transaction to carry signatures or fee
+   * sponsorship.
    *
-   * <p>Per the Lending Protocol specification, the total fee for a standalone {@code LoanSet}
-   * transaction (not part of a Batch) is {@code (1 + |tx.Signers| + |signatures|) × base_fee}, where
-   * {@code |signatures| = max(1, |tx.CounterpartySignature.Signers|)}. The minimum fee is always
-   * {@code 2 × base_fee}, even without a {@code tx.Signers} list.</p>
+   * @param feeParams The {@link FeeParams} describing the Batch and how it will be signed.
+   * @param batch     The {@link Batch} being priced.
    *
-   * @param feeResult              {@link FeeResult} obtained by querying the ledger (e.g., via
-   *                               {@code XrplClient#fee()}).
-   * @param numFirstPartySigners   The number of signers in the transaction's {@code Signers} array. Use 0 for
-   *                               single-signed transactions.
-   * @param numCounterpartySigners The number of signers in the {@code CounterpartySignature.Signers} array. Use 0 for
-   *                               single-signed counterparty.
-   *
-   * @return A {@link ComputedNetworkFees} with low, medium and high fee levels scaled for the LoanSet transaction.
+   * @return A {@link FeeBreakdown}.
    */
-  public static ComputedNetworkFees computeLoanSetNetworkFees(
-    final FeeResult feeResult,
-    final UnsignedInteger numFirstPartySigners,
-    final UnsignedInteger numCounterpartySigners
-  ) {
-    Objects.requireNonNull(feeResult);
-    Objects.requireNonNull(numFirstPartySigners);
-    Objects.requireNonNull(numCounterpartySigners);
-    Preconditions.checkArgument(
-      numFirstPartySigners.compareTo(UnsignedInteger.valueOf(32)) <= 0,
-      "numFirstPartySigners must not exceed 32 (XRPL signer list limit)."
-    );
-    Preconditions.checkArgument(
-      numCounterpartySigners.compareTo(UnsignedInteger.valueOf(32)) <= 0,
-      "numCounterpartySigners must not exceed 32 (XRPL signer list limit)."
-    );
+  private static FeeBreakdown computeBatchFeeBreakdown(final FeeParams feeParams, final Batch batch) {
+    final List<FeeTerm> terms = new ArrayList<>();
+    terms.add(FeeTerm.of("Batch outer: base fee + batch processing fee", 2L, FeeTerm.Provenance.DERIVED));
+    terms.addAll(signerCountTerms(feeParams, batch));
 
-    ComputedNetworkFees computedNetworkFees = computeNetworkFees(feeResult);
-    // |signatures| = max(1, |tx.CounterpartySignature.Signers|)
-    // Fee multiplier = (1 + |tx.Signers| + |signatures|)
-    final long counterpartySigCount = Math.max(1L, numCounterpartySigners.longValue());
-    XrpCurrencyAmount numberOfSignaturesAsAmount = XrpCurrencyAmount.of(
-      UnsignedLong.valueOf(1L + numFirstPartySigners.longValue() + counterpartySigCount)
-    );
+    // Every count is a fact read from the collected signatures; FeeParams#check rejects an unsigned Batch, so there is
+    // nothing to forecast here.
+    batch.batchSigners().stream()
+      .map(BatchSignerWrapper::batchSigner)
+      .forEach(batchSigner -> {
+        final long count = batchSigner.transactionSignature().isPresent() ? 1L : batchSigner.signers().size();
+        terms.add(FeeTerm.of(
+          "batch signer " + batchSigner.account() + ": " + count + " collected signature(s)",
+          count, FeeTerm.Provenance.DERIVED
+        ));
+      });
+
+    for (final RawTransactionWrapper wrapper : batch.rawTransactions()) {
+      terms.add(innerTransactionTerm(feeParams, wrapper.rawTransaction()));
+    }
+    return FeeBreakdown.of(terms);
+  }
+
+  /**
+   * Itemizes the fee of a {@code LoanPay} as a single term, because its increment count multiplies the whole fee
+   * rather than adding to it: {@code increments × (1 + signersCount + sponsorSignersCount)} base fees.
+   *
+   * @param feeParams The {@link FeeParams} describing the LoanPay and how it will be signed.
+   *
+   * @return A {@link FeeBreakdown}.
+   */
+  private static FeeBreakdown computeLoanPayFeeBreakdown(final FeeParams feeParams) {
+    final long perIncrementUnits = signatureUnits(feeParams);
+    final Optional<UnsignedInteger> specifiedIncrements = feeParams.loanPaymentFeeIncrements();
+    final long increments = specifiedIncrements.orElse(UnsignedInteger.ONE).longValue();
+
+    final String formula =
+      "LoanPay: " + increments + " fee increment(s) x " + perIncrementUnits + " base fee(s) for the transaction " +
+        "and its signatures";
+    return FeeBreakdown.of(specifiedIncrements.isPresent() ?
+      FeeTerm.of(formula, increments * perIncrementUnits, FeeTerm.Provenance.SPECIFIED) :
+      FeeTerm.of(
+        formula + " (assumed a single payment; set loanPaymentFeeIncrements when the payment spans more)",
+        increments * perIncrementUnits, FeeTerm.Provenance.ASSUMED
+      ));
+  }
+
+  /**
+   * The terms a transaction owes for its own and its sponsor's multi-signatures, plus zero-unit "assumed" terms that
+   * surface the overridable single-signing assumptions — including a sponsor term only when the transaction actually
+   * carries a {@code Sponsor}, so the hint appears exactly where it is relevant.
+   *
+   * @param feeParams   The {@link FeeParams} being applied.
+   * @param transaction The {@link Transaction} being priced.
+   *
+   * @return A {@link List} of {@link FeeTerm}.
+   */
+  private static List<FeeTerm> signerCountTerms(final FeeParams feeParams, final Transaction transaction) {
+    final List<FeeTerm> terms = new ArrayList<>();
+
+    terms.add(feeParams.signersCount()
+      .map(count -> FeeTerm.of(
+        count.longValue() > 0L ?
+          "own multi-signature: " + count + " Signers entries" :
+          "single-signed as specified: a lone TxnSignature is free",
+        count.longValue(), FeeTerm.Provenance.SPECIFIED
+      ))
+      .orElseGet(() -> FeeTerm.of(
+        "assumed single-signed: a lone TxnSignature is free (set signersCount if this account will multi-sign)",
+        0L, FeeTerm.Provenance.ASSUMED
+      )));
+
+    // A sponsor term exists only when its count was supplied, or when the transaction carries a Sponsor at all.
+    feeParams.sponsorSignersCount()
+      .map(count -> FeeTerm.of(
+        count.longValue() > 0L ?
+          "sponsor multi-signature: " + count + " SponsorSignature.Signers entries" :
+          "sponsor single-signed as specified: a lone SponsorSignature.TxnSignature is free",
+        count.longValue(), FeeTerm.Provenance.SPECIFIED
+      ))
+      .map(Optional::of)
+      .orElseGet(() -> transaction.sponsor().map(sponsor -> FeeTerm.of(
+        "assumed the sponsor signs with a single key: a lone SponsorSignature.TxnSignature is free (set " +
+          "sponsorSignersCount if the sponsor will multi-sign)",
+        0L, FeeTerm.Provenance.ASSUMED
+      )))
+      .ifPresent(terms::add);
+    return terms;
+  }
+
+  /**
+   * The term a Batch inner transaction contributes: its flat owner reserve for an {@code AccountDelete} or
+   * {@code AMMCreate}, or one base fee plus its type's surcharge otherwise. An inner never carries signatures or fee
+   * sponsorship, so it has no signature terms, and a {@code LoanSet} inner's counterparty is counted among the batch
+   * signers rather than here.
+   *
+   * @param feeParams The {@link FeeParams} being applied.
+   * @param inner     The inner {@link Transaction}.
+   *
+   * @return A {@link FeeTerm}.
+   */
+  private static FeeTerm innerTransactionTerm(final FeeParams feeParams, final Transaction inner) {
+    final TransactionType innerType = inner.transactionType();
+    final String label = "inner " + innerType.value() + " (" + inner.account() + ")";
+
+    if (FeeParams.OWNER_RESERVE_TRANSACTION_TYPES.contains(innerType)) {
+      return FeeTerm.flat(
+        label + ": one owner reserve increment, flat", feeParams.ownerReserve().get(), FeeTerm.Provenance.DERIVED
+      );
+    }
+    if (CONFIDENTIAL_MPT_TRANSACTION_TYPES.contains(innerType)) {
+      return FeeTerm.of(
+        label + ": base fee + " + CONFIDENTIAL_FEE_MULTIPLIER + " confidential MPT surcharge",
+        1L + CONFIDENTIAL_FEE_MULTIPLIER, FeeTerm.Provenance.DERIVED
+      );
+    }
+    if (inner instanceof EscrowFinish) {
+      final long fulfillmentUnits = fulfillmentUnits((EscrowFinish) inner);
+      if (fulfillmentUnits > 0L) {
+        return FeeTerm.of(
+          label + ": base fee + " + fulfillmentUnits + " fulfillment surcharge (32 + fulfillmentBytes / 16)",
+          1L + fulfillmentUnits, FeeTerm.Provenance.DERIVED
+        );
+      }
+    }
+    if (innerType == TransactionType.LOAN_SET) {
+      return FeeTerm.of(
+        label + ": base fee (its counterparty signature is counted among the batch signers, not here)",
+        1L, FeeTerm.Provenance.DERIVED
+      );
+    }
+    return FeeTerm.of(label + ": base fee", 1L, FeeTerm.Provenance.DERIVED);
+  }
+
+  /**
+   * The number of base fees a transaction owes for its signatures, being one for the transaction itself plus one for
+   * each additional signature of a multi-signature, on the transaction or on its sponsor.
+   *
+   * @param feeParams The {@link FeeParams} being applied.
+   *
+   * @return A number of base fees, at least one.
+   */
+  private static long signatureUnits(final FeeParams feeParams) {
+    return 1L +
+      feeParams.signersCount().orElse(UnsignedInteger.ZERO).longValue() +
+      feeParams.sponsorSignersCount().orElse(UnsignedInteger.ZERO).longValue();
+  }
+
+  /**
+   * The extra term a transaction owes because of its type, over and above what every transaction pays.
+   *
+   * @param feeParams   The {@link FeeParams} being applied.
+   * @param transaction The {@link Transaction} being priced.
+   *
+   * @return An optionally-present {@link FeeTerm}, empty for the many transaction types with no surcharge.
+   */
+  private static Optional<FeeTerm> surchargeTerm(final FeeParams feeParams, final Transaction transaction) {
+    final TransactionType transactionType = transaction.transactionType();
+
+    if (CONFIDENTIAL_MPT_TRANSACTION_TYPES.contains(transactionType)) {
+      return Optional.of(FeeTerm.of(
+        "confidential MPT surcharge (rippled's kConfidentialFeeMultiplier)",
+        CONFIDENTIAL_FEE_MULTIPLIER, FeeTerm.Provenance.DERIVED
+      ));
+    }
+    if (transaction instanceof EscrowFinish) {
+      final long fulfillmentUnits = fulfillmentUnits((EscrowFinish) transaction);
+      return fulfillmentUnits == 0L ? Optional.empty() : Optional.of(FeeTerm.of(
+        "EscrowFinish fulfillment surcharge: 32 + fulfillmentBytes / 16",
+        fulfillmentUnits, FeeTerm.Provenance.DERIVED
+      ));
+    }
+    if (transactionType == TransactionType.LOAN_SET) {
+      return Optional.of(feeParams.counterpartySignatureCount()
+        .map(count -> FeeTerm.of(
+          "LoanSet counterparty multi-signature: " + count + " signature(s)",
+          count.longValue(), FeeTerm.Provenance.SPECIFIED
+        ))
+        .orElseGet(() -> FeeTerm.of(
+          "LoanSet counterparty signature: assumed a single key, which is itself charged (set " +
+            "counterpartySignatureCount if the counterparty will multi-sign)",
+          1L, FeeTerm.Provenance.ASSUMED
+        )));
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * The number of extra base fees an {@code EscrowFinish} owes for the fulfillment it carries, being
+   * {@code 32 + fulfillmentBytes / 16}, or zero when it carries none.
+   *
+   * @param escrowFinish The {@link EscrowFinish} being priced.
+   *
+   * @return A number of extra base fees.
+   */
+  private static long fulfillmentUnits(final EscrowFinish escrowFinish) {
+    // rippled charges by the on-wire size of the sfFulfillment blob:
+    //   extraFee = base * (32 + fulfillmentBytes / 16)   (EscrowFinish::calculateBaseFee)
+    // fulfillmentRawValue() is that exact blob, hex-encoded — the DER-encoded crypto-condition fulfillment that
+    // EscrowFinish#normalizeFulfillment always populates. It is NOT the decoded preimage: for a PREIMAGE-SHA-256
+    // fulfillment the DER wrapper adds a few bytes, which can change the /16 term near a boundary. Measuring the
+    // blob (not the preimage) is what matches rippled.
+    return escrowFinish.fulfillmentRawValue()
+      .map(fulfillmentHex -> 32L + ((fulfillmentHex.length() / 2L) / 16L))
+      .orElse(0L);
+  }
+
+  /**
+   * Scales each of the supplied fee levels by a number of base fees.
+   *
+   * @param computedNetworkFees The {@link ComputedNetworkFees} to scale, each level of which is one base fee.
+   * @param feeUnits            The number of base fees the transaction costs.
+   *
+   * @return A {@link ComputedNetworkFees} with every level scaled by {@code feeUnits}.
+   */
+  private static ComputedNetworkFees scaleByBaseFees(
+    final ComputedNetworkFees computedNetworkFees,
+    final long feeUnits
+  ) {
+    final XrpCurrencyAmount feeUnitsAsAmount = XrpCurrencyAmount.of(UnsignedLong.valueOf(feeUnits));
     return ComputedNetworkFees.builder()
-      .feeLow(computedNetworkFees.feeLow().times(numberOfSignaturesAsAmount))
-      .feeMedium(computedNetworkFees.feeMedium().times(numberOfSignaturesAsAmount))
-      .feeHigh(computedNetworkFees.feeHigh().times(numberOfSignaturesAsAmount))
+      .feeLow(computedNetworkFees.feeLow().times(feeUnitsAsAmount))
+      .feeMedium(computedNetworkFees.feeMedium().times(feeUnitsAsAmount))
+      .feeHigh(computedNetworkFees.feeHigh().times(feeUnitsAsAmount))
       .queuePercentage(computedNetworkFees.queuePercentage())
       .build();
   }
 
   /**
-   * Computes the fee necessary for a confidential MPT transaction (i.e., {@code ConfidentialMPTConvert},
-   * {@code ConfidentialMPTConvertBack}, {@code ConfidentialMPTSend}, {@code ConfidentialMPTClawback}, and
-   * {@code ConfidentialMPTMergeInbox}).
+   * Adds a flat amount to each of the supplied fee levels, for a cost that is not a multiple of the base fee.
    *
-   * <p>rippled charges confidential MPT transactions an extra base-fee multiplier
-   * ({@code kConfidentialFeeMultiplier = 9}) on top of the standard transaction cost, which itself includes one
-   * base fee per multisigner. The total cost of a confidential transaction is therefore
-   * {@code (1 + numMultisigners + kConfidentialFeeMultiplier) * (the normal transaction cost)}.
+   * @param computedNetworkFees The {@link ComputedNetworkFees} to add to.
+   * @param flatAmount          The {@link XrpCurrencyAmount} to add to every level.
    *
-   * @param feeResult       {@link FeeResult} object obtained by querying the ledger (e.g., via an
-   *                        `XrplClient#fee()` call).
-   * @param numMultisigners The number of multisigners in the transaction's {@code Signers} array. Use 0 for
-   *                        single-signed transactions.
-   *
-   * @return A {@link ComputedNetworkFees} with low, medium and high fee levels scaled for confidential MPT
-   *   transactions.
+   * @return A {@link ComputedNetworkFees} with {@code flatAmount} added to every level.
    */
-  public static ComputedNetworkFees computeConfidentialMptNetworkFees(
-    final FeeResult feeResult,
-    final UnsignedInteger numMultisigners
+  private static ComputedNetworkFees plusFlatFee(
+    final ComputedNetworkFees computedNetworkFees,
+    final XrpCurrencyAmount flatAmount
   ) {
-    Objects.requireNonNull(feeResult);
-    Objects.requireNonNull(numMultisigners);
-
-    // kConfidentialFeeMultiplier in rippled's Protocol.h
-    final long confidentialFeeMultiplier = 9L;
-
-    ComputedNetworkFees computedNetworkFees = computeNetworkFees(feeResult);
-    XrpCurrencyAmount multiplierAsAmount = XrpCurrencyAmount.of(
-      UnsignedLong.valueOf(1L + numMultisigners.longValue() + confidentialFeeMultiplier)
-    );
     return ComputedNetworkFees.builder()
-      .feeLow(computedNetworkFees.feeLow().times(multiplierAsAmount))
-      .feeMedium(computedNetworkFees.feeMedium().times(multiplierAsAmount))
-      .feeHigh(computedNetworkFees.feeHigh().times(multiplierAsAmount))
+      .feeLow(computedNetworkFees.feeLow().plus(flatAmount))
+      .feeMedium(computedNetworkFees.feeMedium().plus(flatAmount))
+      .feeHigh(computedNetworkFees.feeHigh().plus(flatAmount))
       .queuePercentage(computedNetworkFees.queuePercentage())
       .build();
   }
 
   /**
-   * Computes the fee necessary for a multi-signed {@code SponsorshipTransfer} transaction that is sponsored.
+   * A {@link ComputedNetworkFees} whose every level is the same flat amount, for a cost that does not vary with the
+   * base fee.
    *
-   * <p>Per XLS-0068, the fee for such a transaction must cover {@code baseFee * (1 + |sponseeSigners| +
-   * |sponsorSigners|)}, further scaled by load (see rippled's {@code Transactor::calculateBaseFee()} and
-   * {@code scaleFeeLoad()}).</p>
+   * @param flatAmount      The {@link XrpCurrencyAmount} every level should carry.
+   * @param queuePercentage How full the transaction queue is.
    *
-   * @param feeResult          {@link FeeResult} obtained by querying the ledger (e.g., via {@code XrplClient#fee()}).
-   * @param numSponseeSigners  The number of signers multi-signing as the sponsee. Use 0 for a single-signed sponsee.
-   * @param numSponsorSigners  The number of signers multi-signing as the sponsor. Use 0 for a single-signed sponsor.
-   *
-   * @return A {@link ComputedNetworkFees} with low, medium and high fee levels scaled for the SponsorshipTransfer
-   *   transaction.
+   * @return A {@link ComputedNetworkFees}.
    */
-  public static ComputedNetworkFees computeSponsorshipTransferNetworkFees(
-    final FeeResult feeResult,
-    final UnsignedInteger numSponseeSigners,
-    final UnsignedInteger numSponsorSigners
+  private static ComputedNetworkFees flatFee(
+    final XrpCurrencyAmount flatAmount,
+    final BigDecimal queuePercentage
   ) {
-    Objects.requireNonNull(feeResult);
-    Objects.requireNonNull(numSponseeSigners);
-    Objects.requireNonNull(numSponsorSigners);
-    Preconditions.checkArgument(
-      numSponseeSigners.compareTo(UnsignedInteger.valueOf(32)) <= 0,
-      "numSponseeSigners must not exceed 32 (XRPL signer list limit)."
-    );
-    Preconditions.checkArgument(
-      numSponsorSigners.compareTo(UnsignedInteger.valueOf(32)) <= 0,
-      "numSponsorSigners must not exceed 32 (XRPL signer list limit)."
-    );
-
-    ComputedNetworkFees computedNetworkFees = computeNetworkFees(feeResult);
-    // Fee multiplier = (1 + |sponseeSigners| + |sponsorSigners|)
-    XrpCurrencyAmount numberOfSignaturesAsAmount = XrpCurrencyAmount.of(
-      UnsignedLong.valueOf(1L + numSponseeSigners.longValue() + numSponsorSigners.longValue())
-    );
     return ComputedNetworkFees.builder()
-      .feeLow(computedNetworkFees.feeLow().times(numberOfSignaturesAsAmount))
-      .feeMedium(computedNetworkFees.feeMedium().times(numberOfSignaturesAsAmount))
-      .feeHigh(computedNetworkFees.feeHigh().times(numberOfSignaturesAsAmount))
-      .queuePercentage(computedNetworkFees.queuePercentage())
+      .feeLow(flatAmount)
+      .feeMedium(flatAmount)
+      .feeHigh(flatAmount)
+      .queuePercentage(queuePercentage)
       .build();
   }
 

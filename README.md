@@ -60,6 +60,9 @@ found in the BOM to your `pom.xml`. For example:
 </dependencies>
 ```
 
+See the [`xrpl4j-client` README](./xrpl4j-client/README.md) for details on configuring `XrplClient`, including how
+to supply a pooled HTTP client.
+
 ### Core Objects
 
 This library provides Java objects modeling [XRP Ledger Objects](https://xrpl.org/ledger-data-formats.html),

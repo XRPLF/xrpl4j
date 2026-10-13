@@ -21,36 +21,81 @@ package org.xrpl.xrpl4j.model.client.fees;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeBatchFee;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeConfidentialMptNetworkFees;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeLoanSetNetworkFees;
+import static org.mockito.Mockito.when;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeMultisigNetworkFees;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeNetworkFees;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeSponsorshipTransferNetworkFees;
 import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP;
 import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP_IN_DROPS;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.confidential.model.Commitment;
+import org.xrpl.xrpl4j.crypto.confidential.model.EncryptedAmount;
+import org.xrpl.xrpl4j.crypto.confidential.model.proof.ConfidentialMptSendProof;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.SignerListFlags;
+import org.xrpl.xrpl4j.model.flags.SponsorFlags;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
 import org.xrpl.xrpl4j.model.ledger.SignerListObject;
+import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.AmmCreate;
+import org.xrpl.xrpl4j.model.transactions.Amount;
+import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.BatchSigner;
+import org.xrpl.xrpl4j.model.transactions.BatchSignerWrapper;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMptSend;
+import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.ImmutableEscrowFinish;
+import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.LoanPay;
+import org.xrpl.xrpl4j.model.transactions.LoanSet;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
+import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
+import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
+import org.xrpl.xrpl4j.model.transactions.Signer;
+import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
+import org.xrpl.xrpl4j.model.transactions.TradingFee;
+import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransactionType;
+import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Unit tests for {@link FeeUtils}.
  */
 public class FeeUtilsTest {
+
+  private static final Address ALICE = Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV");
+  private static final Address BOB = Address.of("r3nCVTbZGGYoWvZ58BcxDmiMUU7ChMa1eC");
+  private static final Address CAROL = Address.of("r3ubyDp4gPGKH5bJx9KMmzpTSTW7EtRixS");
+  private static final Address DAVE = Address.of("r3vi7mWxru9rJCxETCyA1CHvzL96eZWx5z");
+  private static final Address FRANK = Address.of("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK");
+
+  private static final PublicKey PUBLIC_KEY = PublicKey.fromBase16EncodedPublicKey(
+    "ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A"
+  );
+
 
   @Test
   public void nullInputForComputeMultiSigFee() {
@@ -560,439 +605,663 @@ public class FeeUtilsTest {
     )).isEqualTo(new BigInteger("340282366920938463426481119284349108225"));
   }
 
-  @Test
-  void testComputeBatchFeeNullBaseFee() {
-    assertThrows(NullPointerException.class,
-      () -> computeBatchFee(null, UnsignedInteger.ZERO, XrpCurrencyAmount.ofDrops(0)));
-    assertThrows(NullPointerException.class,
-      () -> computeBatchFee(XrpCurrencyAmount.ofDrops(10), null, XrpCurrencyAmount.ofDrops(0)));
-    assertThrows(NullPointerException.class,
-      () -> computeBatchFee(XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ZERO, null));
-  }
-
-  @Test
-  void testComputeBatchFeeNullInnerFeeSum() {
-    assertThrows(NullPointerException.class, () ->
-      computeBatchFee(XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ZERO, null)
-    );
-  }
-
-  @Test
-  void testComputeBatchFeeSingleAccountNoInnerFees() {
-    // (0+2)*10 + 0 = 20
-    XrpCurrencyAmount result = computeBatchFee(
-      XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ZERO, XrpCurrencyAmount.ofDrops(0)
-    );
-    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(20));
-  }
-
-  @Test
-  void testComputeBatchFeeOneBatchSigner() {
-    // (1+2)*10 + 0 = 30
-    XrpCurrencyAmount result = computeBatchFee(
-      XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ONE, XrpCurrencyAmount.ofDrops(0)
-    );
-    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(30));
-  }
-
-  @Test
-  void testComputeBatchFeeWithInnerFees() {
-    // (0+2)*10 + 20 = 40
-    XrpCurrencyAmount result = computeBatchFee(
-      XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ZERO, XrpCurrencyAmount.ofDrops(20)
-    );
-    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(40));
-  }
-
-  @Test
-  void testComputeBatchFeeCombined() {
-    // (2+2)*10 + 50 = 90
-    XrpCurrencyAmount result = computeBatchFee(
-      XrpCurrencyAmount.ofDrops(10), UnsignedInteger.valueOf(2), XrpCurrencyAmount.ofDrops(50)
-    );
-    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(90));
-  }
-
   // /////////////////
-  // computeBatchFee(FeeResult, UnsignedInteger) - Public method tests
+  // Generic — the types with no special rule
   // /////////////////
 
   @Test
-  void testComputeBatchFeeWithFeeResultNullFeeResult() {
-    assertThrows(NullPointerException.class,
-      () -> FeeUtils.computeBatchFee(null, UnsignedInteger.ZERO));
+  void singleSignedPaymentCostsOneBaseFee() {
+    assertFeeUnits(paramsFor(payment()), 1);
   }
 
   @Test
-  void testComputeBatchFeeWithFeeResultNullNumBatchSigners() {
-    FeeResult feeResult = feeResultBuilder().build();
-    assertThrows(NullPointerException.class,
-      () -> FeeUtils.computeBatchFee(feeResult, null));
+  void multiSignedPaymentChargesEachAdditionalSignature() {
+    assertFeeUnits(
+      FeeParams.builder()
+        .feeResult(feeResultBuilder().build())
+        .transaction(payment())
+        .signersCount(UnsignedInteger.valueOf(3)),
+      4
+    );
   }
 
   @Test
-  void testComputeBatchFeeWithFeeResultZeroBatchSigners() {
-    // Test with empty queue (recommendedFee = feeLow = 1000 drops)
-    FeeResult feeResult = FeeResult.builder()
-      .currentLedgerSize(UnsignedInteger.valueOf(56))
-      .currentQueueSize(UnsignedInteger.valueOf(0))
-      .drops(
-        FeeDrops.builder()
-          .baseFee(XrpCurrencyAmount.ofDrops(10))
-          .medianFee(XrpCurrencyAmount.ofDrops(100))
-          .minimumFee(XrpCurrencyAmount.ofDrops(10))
-          .openLedgerFee(XrpCurrencyAmount.ofDrops(2657))
-          .build()
-      )
-      .expectedLedgerSize(UnsignedInteger.valueOf(55))
-      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(26575101)))
-      .levels(
-        FeeLevels.builder()
-          .medianLevel(XrpCurrencyAmount.ofDrops(256000))
-          .minimumLevel(XrpCurrencyAmount.ofDrops(256))
-          .openLedgerLevel(XrpCurrencyAmount.ofDrops(67940792))
-          .referenceLevel(XrpCurrencyAmount.ofDrops(256))
-          .build()
-      )
-      .maxQueueSize(UnsignedInteger.valueOf(110))
-      .status("success")
+  void singleKeySponsorIsFree() {
+    // The sponsor signature lives in SponsorSignature.TxnSignature, which rippled does not charge for.
+    assertFeeUnits(paramsFor(sponsoredPayment()), 1);
+  }
+
+  @Test
+  void multiSignedSponsorChargesEachSponsorSignature() {
+    assertFeeUnits(
+      FeeParams.builder().feeResult(feeResultBuilder().build()).transaction(sponsoredPayment())
+        .sponsorSignersCount(UnsignedInteger.valueOf(3)),
+      4
+    );
+  }
+
+  @Test
+  void ownAndSponsorSignaturesBothCount() {
+    assertFeeUnits(
+      FeeParams.builder().feeResult(feeResultBuilder().build()).transaction(sponsoredPayment())
+        .signersCount(UnsignedInteger.valueOf(2))
+        .sponsorSignersCount(UnsignedInteger.valueOf(3)),
+      6
+    );
+  }
+
+  @Test
+  void dynamicMpTokenIssuanceSetIsPricedGenerically() {
+    // Dynamic MPT (XLS-94) carries no surcharge of its own: 1 + 3 sponsor signatures (issue #829 case 4).
+    assertFeeUnits(
+      paramsFor(sponsoredMpTokenIssuanceSet()).sponsorSignersCount(UnsignedInteger.valueOf(3)),
+      4
+    );
+  }
+
+  @Test
+  void trustSetIsPricedGenerically() {
+    // 1 + 2 own + 3 sponsor (issue #829 case 5).
+    assertFeeUnits(
+      paramsFor(sponsoredTrustSet())
+        .signersCount(UnsignedInteger.valueOf(2))
+        .sponsorSignersCount(UnsignedInteger.valueOf(3)),
+      6
+    );
+  }
+
+  @Test
+  void setRegularKeyConditionalZeroFeeIsNotModeled() {
+    // rippled charges zero for a SetRegularKey signed by the master key while lsfPasswordSpent is unset
+    // (SetRegularKey.cpp:19). That rule depends on ledger state (the account root's flags), which FeeParams does not
+    // model, so computeFee prices a single-signed SetRegularKey at the generic one base fee — a safe overestimate of
+    // the zero-fee path. This test pins that behavior; it is NOT the rippled-derived zero.
+    assertFeeUnits(paramsFor(setRegularKey()), 1);
+  }
+
+  @Test
+  void setRegularKeyInAnyOtherStateFallsBackToTheGenericFormula() {
+    // 1 + 2 + 3 (issue #829 case 22).
+    assertFeeUnits(
+      paramsFor(setRegularKey())
+        .signersCount(UnsignedInteger.valueOf(2))
+        .sponsorSignersCount(UnsignedInteger.valueOf(3)),
+      6
+    );
+  }
+
+  @Test
+  void allThreeFeeLevelsAreScaled() {
+    ComputedNetworkFees fees = FeeUtils.computeFee(paramsFor(payment()).signersCount(UnsignedInteger.ONE).build());
+    assertThat(fees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(2000));
+    assertThat(fees.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(10016));
+    assertThat(fees.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(20000));
+  }
+
+  // /////////////////
+  // EscrowFinish
+  // /////////////////
+
+  @Test
+  void escrowFinishWithoutFulfillmentCostsOneBaseFee() {
+    assertFeeUnits(paramsFor(escrowFinish(0)), 1);
+  }
+
+  @Test
+  void escrowFinishWithFulfillmentAddsTheSizeSurcharge() {
+    // rippled charges by the on-wire fulfillment blob, not the preimage. A 32-byte preimage DER-encodes to a
+    // 36-byte blob, so the surcharge is 32 + 36/16 = 34: total 1 + 34 = 35.
+    assertFeeUnits(paramsFor(escrowFinish(32)), 35);
+  }
+
+  @Test
+  void escrowFinishSurchargeUsesTheEncodedBlobSizeNotThePreimageSize() {
+    // Boundary case exposing the difference: a 28-byte preimage DER-encodes to a 32-byte blob. Measuring the blob
+    // (correct, matches rippled) gives 32 + 32/16 = 34 -> total 35. Measuring the preimage (the old, buggy
+    // behavior) would give 32 + 28/16 = 33 -> total 34, underpaying by one base fee.
+    assertFeeUnits(paramsFor(escrowFinish(28)), 35);
+  }
+
+  @Test
+  void escrowFinishSurchargeIsAddedToTheSignatureTerms() {
+    // (1 + 2) + (32 + 32/16) = 37 — the signer terms EscrowFinish.computeFee omits.
+    assertFeeUnits(
+      FeeParams.builder().feeResult(feeResultBuilder().build()).transaction(escrowFinish(32))
+        .signersCount(UnsignedInteger.valueOf(2)),
+      37
+    );
+  }
+
+  // /////////////////
+  // Lending
+  // /////////////////
+
+  @Test
+  void loanSetChargesASingleCounterpartySignature() {
+    // 1 + 1. Unlike the transaction's own signature, a lone counterparty signature is charged, which is why
+    // counterpartySignatureCount defaults to one rather than zero.
+    assertFeeUnits(paramsFor(loanSet()), 2);
+  }
+
+  @Test
+  void loanSetChargesOwnSponsorAndCounterpartySignatures() {
+    // 1 + 2 own + 2 sponsor + 3 counterparty
+    assertFeeUnits(
+      paramsFor(loanSet())
+        .signersCount(UnsignedInteger.valueOf(2))
+        .sponsorSignersCount(UnsignedInteger.valueOf(2))
+        .counterpartySignatureCount(UnsignedInteger.valueOf(3)),
+      8
+    );
+  }
+
+  @Test
+  void loanPayMultipliesTheWholeFeeByItsIncrements() {
+    // 4 increments x (1 + 0 + 0)
+    assertFeeUnits(paramsFor(loanPay()).loanPaymentFeeIncrements(UnsignedInteger.valueOf(4)), 4);
+  }
+
+  @Test
+  void loanPayIncrementsMultiplyTheSignatureTermsToo() {
+    // 2 increments x (1 + 2 own)
+    assertFeeUnits(
+      paramsFor(loanPay())
+        .loanPaymentFeeIncrements(UnsignedInteger.valueOf(2))
+        .signersCount(UnsignedInteger.valueOf(2)),
+      6
+    );
+  }
+
+  @Test
+  void rejectsLoanPaymentFeeIncrementsOutsideTheAllowedRange() {
+    assertThatThrownBy(() -> paramsFor(loanPay()).loanPaymentFeeIncrements(UnsignedInteger.ZERO).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("must be between 1 and 20");
+
+    assertThatThrownBy(() -> paramsFor(loanPay()).loanPaymentFeeIncrements(UnsignedInteger.valueOf(21)).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("must be between 1 and 20");
+  }
+
+  // /////////////////
+  // Owner reserve
+  // /////////////////
+
+  @Test
+  void accountDeleteCostsOneOwnerReserveFlat() {
+    ComputedNetworkFees fees = FeeUtils.computeFee(FeeParams.builder()
+      .feeResult(feeResultBuilder().build())
+      .transaction(accountDelete())
+      .ownerReserve(XrpCurrencyAmount.ofDrops(200000))
+      .build());
+
+    assertThat(fees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(200000));
+    assertThat(fees.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(200000));
+    assertThat(fees.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(200000));
+  }
+
+  @Test
+  void accountDeleteIgnoresSignatureCounts() {
+    // calculateOwnerReserveFee returns the increment flat, so a multi-signed AccountDelete costs the same.
+    ComputedNetworkFees fees = FeeUtils.computeFee(FeeParams.builder()
+      .feeResult(feeResultBuilder().build())
+      .transaction(accountDelete())
+      .ownerReserve(XrpCurrencyAmount.ofDrops(200000))
+      .signersCount(UnsignedInteger.valueOf(5))
+      .build());
+
+    assertThat(fees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(200000));
+  }
+
+  @Test
+  void ammCreateCostsOneOwnerReserveFlat() {
+    // AMMCreate.cpp:88 — a flat owner reserve, with signer terms ignored, exactly like AccountDelete
+    // (issue #829 case 23).
+    ComputedNetworkFees fees = FeeUtils.computeFee(FeeParams.builder()
+      .feeResult(feeResultBuilder().build())
+      .transaction(ammCreate())
+      .ownerReserve(XrpCurrencyAmount.ofDrops(200000))
+      .signersCount(UnsignedInteger.valueOf(3))
+      .build());
+
+    assertThat(fees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(200000));
+    assertThat(fees.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(200000));
+    assertThat(fees.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(200000));
+  }
+
+  // /////////////////
+  // Batch
+  // /////////////////
+
+  @Test
+  void singleAccountBatchRequiresNoBatchSigners() {
+    // 2 outer + 0 batchSigners + (1 + 1) inners
+    Batch batch = batch(ALICE, innerPayment(ALICE, 1), innerPayment(ALICE, 2));
+    assertThat(batch.requiredSigners()).isEmpty();
+    assertFeeUnits(paramsFor(batch), 4);
+  }
+
+  @Test
+  void multiAccountBatchDerivesItsSignersFromTheInners() {
+    // 2 outer + 2 batchSigners + (1 + 1) inners
+    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
+    assertThat(batch.requiredSigners()).containsExactlyInAnyOrder(BOB, CAROL);
+    assertFeeUnits(paramsFor(signedByAllRequiredSigners(batch)), 6);
+  }
+
+  @Test
+  void batchReadsSignatureCountsFromCollectedBatchSigners() {
+    // 2 outer + (1 bob + 3 carol) + (1 + 1) inners
+    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
+    Batch signed = Batch.builder().from(batch)
+      .batchSigners(Lists.newArrayList(singleSignature(BOB), multiSignature(CAROL, 3)))
       .build();
 
-    // recommendedFee = 15 drops (from computeNetworkFeesForEmptyQueue test)
-    // numBatchSigners = 0
-    // Formula: (0 + 2) * 15 + 0 = 30 drops
-    XrpCurrencyAmount result = FeeUtils.computeBatchFee(feeResult, UnsignedInteger.ZERO);
-    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(30));
+    assertFeeUnits(paramsFor(signed), 8);
   }
 
   @Test
-  void testComputeBatchFeeWithFeeResultOneBatchSigner() {
-    // Test with empty queue
-    FeeResult feeResult = FeeResult.builder()
-      .currentLedgerSize(UnsignedInteger.valueOf(56))
-      .currentQueueSize(UnsignedInteger.valueOf(0))
-      .drops(
-        FeeDrops.builder()
-          .baseFee(XrpCurrencyAmount.ofDrops(10))
-          .medianFee(XrpCurrencyAmount.ofDrops(100))
-          .minimumFee(XrpCurrencyAmount.ofDrops(10))
-          .openLedgerFee(XrpCurrencyAmount.ofDrops(2657))
-          .build()
-      )
-      .expectedLedgerSize(UnsignedInteger.valueOf(55))
-      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(26575101)))
-      .levels(
-        FeeLevels.builder()
-          .medianLevel(XrpCurrencyAmount.ofDrops(256000))
-          .minimumLevel(XrpCurrencyAmount.ofDrops(256))
-          .openLedgerLevel(XrpCurrencyAmount.ofDrops(67940792))
-          .referenceLevel(XrpCurrencyAmount.ofDrops(256))
-          .build()
-      )
-      .maxQueueSize(UnsignedInteger.valueOf(110))
-      .status("success")
+  void refusesToPriceABatchBeforeItsSignaturesAreCollected() {
+    // Each batch signature costs one base fee, and the only exact source of that count is BatchSigners.
+    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
+    assertThatThrownBy(() -> paramsFor(batch).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("cannot be priced until its BatchSigners are collected");
+  }
+
+  @Test
+  void batchRequiredSignerNeedNotBeAnInnerAccount() {
+    // 2 outer + 3 batchSigners + (1 + 1 + 1) inners, where the signers are {carol, dave, frank}.
+    Batch batch = batch(ALICE,
+      innerPayment(CAROL, 1),
+      Payment.builder().from(innerPayment(BOB, 1)).delegate(DAVE).build(),
+      Payment.builder().from(innerPayment(CAROL, 2))
+        .sponsor(FRANK)
+        .sponsorFlags(SponsorFlags.SPONSOR_RESERVE)
+        .sponsorSignature(org.xrpl.xrpl4j.model.transactions.SponsorSignature.builder().build())
+        .build()
+    );
+
+    assertThat(batch.requiredSigners()).containsExactlyInAnyOrder(CAROL, DAVE, FRANK);
+    assertFeeUnits(paramsFor(signedByAllRequiredSigners(batch)), 8);
+  }
+
+  @Test
+  void batchPricesConfidentialInnersAtTenBaseFeesEach() {
+    // 2 outer + 0 batchSigners + (10 + 10) inners
+    Batch batch = batch(ALICE, innerConfidentialSend(ALICE, 1), innerConfidentialSend(ALICE, 2));
+    assertFeeUnits(paramsFor(batch), 22);
+  }
+
+  @Test
+  void batchPricesAMixOfConfidentialAndRegularInners() {
+    // 2 outer + 2 batchSigners + 2 outer signers + 3 sponsor signers + (10 + 1) inners
+    Batch batch = batch(ALICE, innerConfidentialSend(BOB, 1), innerPayment(CAROL, 1));
+    assertFeeUnits(
+      paramsFor(signedByAllRequiredSigners(batch))
+        .signersCount(UnsignedInteger.valueOf(2))
+        .sponsorSignersCount(UnsignedInteger.valueOf(3)),
+      20
+    );
+  }
+
+  @Test
+  void batchDoesNotDoubleChargeALoanSetInnerCounterparty() {
+    // The counterparty is counted once among the batchSigners; the inner adds no counterparty surcharge, so 7 not 8.
+    // 2 outer + 3 batchSigners {bob, carol, dave} + (1 payment + 1 loanSet) inners
+    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerLoanSet(CAROL, DAVE, 1));
+    assertThat(batch.requiredSigners()).containsExactlyInAnyOrder(BOB, CAROL, DAVE);
+    assertFeeUnits(paramsFor(signedByAllRequiredSigners(batch)), 7);
+  }
+
+  @Test
+  void standaloneConfidentialSendCostsTenBaseFees() {
+    assertFeeUnits(paramsFor(innerConfidentialSend(ALICE, 1)), 10);
+  }
+
+  @Test
+  void confidentialSendChargesOwnAndSponsorSignaturesOnTopOfTheSurcharge() {
+    // 1 + 2 own + 3 sponsor + 9 = 15 — the combination that has no answer today.
+    assertFeeUnits(
+      paramsFor(innerConfidentialSend(ALICE, 1))
+        .signersCount(UnsignedInteger.valueOf(2))
+        .sponsorSignersCount(UnsignedInteger.valueOf(3)),
+      15
+    );
+  }
+
+  @Test
+  void batchChargesOuterSignatureAndSponsorTerms() {
+    // 2 outer + 2 batchSigners + 2 outer signers + 3 sponsor signers + (1 + 1) inners
+    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
+    assertFeeUnits(
+      paramsFor(signedByAllRequiredSigners(batch))
+        .signersCount(UnsignedInteger.valueOf(2))
+        .sponsorSignersCount(UnsignedInteger.valueOf(3)),
+      11
+    );
+  }
+
+  @Test
+  void batchPricesAnEscrowFinishInnerWithItsFulfillmentSurcharge() {
+    // 2 outer + 0 batchSigners + (1 base + (32 + 36/16) surcharge) EscrowFinish inner + 1 payment inner = 2 + 35 + 1
+    Batch batch = batch(ALICE, innerEscrowFinish(ALICE, 1, 32), innerPayment(ALICE, 2));
+    assertFeeUnits(paramsFor(batch), 38);
+  }
+
+  @Test
+  void batchPricesAnEscrowFinishInnerWithoutFulfillmentAtOneBaseFee() {
+    // 2 outer + 0 batchSigners + 1 EscrowFinish inner (no surcharge) + 1 payment inner
+    Batch batch = batch(ALICE, innerEscrowFinish(ALICE, 1, 0), innerPayment(ALICE, 2));
+    assertFeeUnits(paramsFor(batch), 4);
+  }
+
+  @Test
+  void batchAddsAnOwnerReserveForEachOwnerReserveInner() {
+    // 2 outer + 0 batchSigners + 1 payment inner = 3 base fees, plus one flat owner reserve.
+    Batch batch = batch(ALICE, innerPayment(ALICE, 1), innerAccountDelete(ALICE, 2));
+    ComputedNetworkFees fees = FeeUtils.computeFee(FeeParams.builder()
+      .feeResult(feeResultBuilder().build())
+      .transaction(batch)
+      .ownerReserve(XrpCurrencyAmount.ofDrops(200000))
+      .build());
+
+    assertThat(fees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(3 * 1000 + 200000));
+    assertThat(fees.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(3 * 5008 + 200000));
+    assertThat(fees.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(3 * 10000 + 200000));
+  }
+
+  // /////////////////
+  // FeeParams validation
+  // /////////////////
+
+  @Test
+  void namesTheAccountsThatMustSignWhenRefusingAnUnsignedBatch() {
+    Batch batch = batch(ALICE, innerPayment(BOB, 1), innerPayment(CAROL, 1));
+    assertThatThrownBy(() -> paramsFor(batch).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining(BOB.value())
+      .hasMessageContaining(CAROL.value());
+  }
+
+  @Test
+  void rejectsFieldsThatDoNotApplyToTheTransaction() {
+    assertThatThrownBy(() -> paramsFor(payment()).counterpartySignatureCount(UnsignedInteger.valueOf(2)).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("applies only to a LoanSet");
+
+    assertThatThrownBy(() -> paramsFor(payment()).loanPaymentFeeIncrements(UnsignedInteger.valueOf(2)).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("applies only to a LoanPay");
+  }
+
+  @Test
+  void rejectsAMissingOrSuperfluousOwnerReserve() {
+    assertThatThrownBy(() -> paramsFor(accountDelete()).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("ownerReserve must be supplied");
+
+    assertThatThrownBy(() -> paramsFor(payment()).ownerReserve(XrpCurrencyAmount.ofDrops(1)).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("ownerReserve must be supplied");
+  }
+
+  @Test
+  void rejectsAPseudoTransaction() {
+    for (TransactionType pseudoType : new TransactionType[] {
+      TransactionType.ENABLE_AMENDMENT, TransactionType.SET_FEE, TransactionType.UNL_MODIFY
+    }) {
+      Transaction pseudoTransaction = mock(Transaction.class);
+      when(pseudoTransaction.transactionType()).thenReturn(pseudoType);
+      assertThatThrownBy(() -> paramsFor(pseudoTransaction).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("pseudo-transaction");
+    }
+  }
+
+  @Test
+  void rejectsAnUnknownTransactionType() {
+    Transaction unknown = mock(Transaction.class);
+    when(unknown.transactionType()).thenReturn(TransactionType.UNKNOWN);
+    assertThatThrownBy(() -> paramsFor(unknown).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("fee rules are not known");
+  }
+
+  @Test
+  void rejectsSignatureCountsBeyondTheSignerListLimit() {
+    assertThatThrownBy(() -> paramsFor(payment()).signersCount(UnsignedInteger.valueOf(33)).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("signersCount must be between 0 and 32");
+  }
+
+  @Test
+  void rejectsZeroCounterpartySignatureCount() {
+    // A LoanSet always carries a counterparty signature, so zero would understate the fee by one base fee.
+    assertThatThrownBy(() -> paramsFor(loanSet()).counterpartySignatureCount(UnsignedInteger.ZERO).build())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("counterpartySignatureCount must be between 1 and 32");
+  }
+
+  // /////////////////
+  // Helpers
+  // /////////////////
+
+  private void assertFeeUnits(final ImmutableFeeParams.Builder builder, final long expectedUnits) {
+    assertThat(FeeUtils.computeFee(builder.build()).feeLow())
+      .isEqualTo(XrpCurrencyAmount.ofDrops(expectedUnits * 1000));
+  }
+
+  private ImmutableFeeParams.Builder paramsFor(final Transaction transaction) {
+    return FeeParams.builder().feeResult(feeResultBuilder().build()).transaction(transaction);
+  }
+
+  private Payment payment() {
+    return Payment.builder()
+      .account(ALICE)
+      .destination(BOB)
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY)
       .build();
-
-    // recommendedFee = 15 drops
-    // numBatchSigners = 1
-    // Formula: (1 + 2) * 15 + 15 = 60 drops
-    XrpCurrencyAmount result = FeeUtils.computeBatchFee(feeResult, UnsignedInteger.ONE);
-    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(60));
   }
 
-  @Test
-  void testComputeBatchFeeWithFeeResultMultipleBatchSigners() {
-    // Test with moderately filled queue
-    FeeResult feeResult = FeeResult.builder()
-      .currentLedgerSize(UnsignedInteger.valueOf(56))
-      .currentQueueSize(UnsignedInteger.valueOf(220))
-      .drops(
-        FeeDrops.builder()
-          .baseFee(XrpCurrencyAmount.ofDrops(10))
-          .medianFee(XrpCurrencyAmount.ofDrops(10000))
-          .minimumFee(XrpCurrencyAmount.ofDrops(10))
-          .openLedgerFee(XrpCurrencyAmount.ofDrops(2653937))
-          .build()
-      )
-      .expectedLedgerSize(UnsignedInteger.valueOf(55))
-      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(26575101)))
-      .levels(
-        FeeLevels.builder()
-          .medianLevel(XrpCurrencyAmount.ofDrops(256000))
-          .minimumLevel(XrpCurrencyAmount.ofDrops(256))
-          .openLedgerLevel(XrpCurrencyAmount.ofDrops(67940792))
-          .referenceLevel(XrpCurrencyAmount.ofDrops(256))
-          .build()
-      )
-      .maxQueueSize(UnsignedInteger.valueOf(1100))
-      .status("success")
+  private Payment sponsoredPayment() {
+    return Payment.builder().from(payment())
+      .sponsor(FRANK)
+      .sponsorFlags(SponsorFlags.SPONSOR_FEE)
       .build();
-
-    // recommendedFee = 10000 drops (from computeNetworkFeesForModeratelyFilledQueue test)
-    // numBatchSigners = 3
-    // Formula: (3 + 2) * 10000 + (3 * 10000) = 50000 + 30000 = 80000 drops
-    XrpCurrencyAmount result = FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(3));
-    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(80000));
   }
 
-  @Test
-  void testComputeBatchFeeWithFeeResultHighTraffic() {
-    // Test with completely filled queue
-    FeeResult feeResult = FeeResult.builder()
-      .currentLedgerSize(UnsignedInteger.valueOf(56))
-      .currentQueueSize(UnsignedInteger.valueOf(110))
-      .drops(
-        FeeDrops.builder()
-          .baseFee(XrpCurrencyAmount.ofDrops(10))
-          .medianFee(XrpCurrencyAmount.ofDrops(100))
-          .minimumFee(XrpCurrencyAmount.ofDrops(10))
-          .openLedgerFee(XrpCurrencyAmount.ofDrops(2657))
-          .build()
-      )
-      .expectedLedgerSize(UnsignedInteger.valueOf(55))
-      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(26575101)))
-      .levels(
-        FeeLevels.builder()
-          .medianLevel(XrpCurrencyAmount.ofDrops(256000))
-          .minimumLevel(XrpCurrencyAmount.ofDrops(256))
-          .openLedgerLevel(XrpCurrencyAmount.ofDrops(67940792))
-          .referenceLevel(XrpCurrencyAmount.ofDrops(256))
-          .build()
-      )
-      .maxQueueSize(UnsignedInteger.valueOf(110))
-      .status("success")
+  private MpTokenIssuanceSet sponsoredMpTokenIssuanceSet() {
+    return MpTokenIssuanceSet.builder()
+      .account(ALICE)
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY)
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179" + Strings.repeat("11", 20)))
+      .flags(MpTokenIssuanceSetFlags.LOCK)
+      .sponsor(FRANK)
+      .sponsorFlags(SponsorFlags.SPONSOR_FEE)
       .build();
-
-    // recommendedFee = 2923 drops (from computeNetworkFeesForCompletelyFilledQueue test)
-    // numBatchSigners = 5
-    // Formula: (5 + 2) * 2923 + (5 * 2923) = 20461 + 14615 = 35076 drops
-    XrpCurrencyAmount result = FeeUtils.computeBatchFee(feeResult, UnsignedInteger.valueOf(5));
-    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(35076));
   }
 
-  // /////////////////
-  // computeLoanSetNetworkFees
-  // /////////////////
-
-  @Test
-  void testComputeLoanSetNetworkFeesNullInputs() {
-    assertThrows(NullPointerException.class,
-      () -> computeLoanSetNetworkFees(null, UnsignedInteger.ZERO, UnsignedInteger.ZERO));
-    assertThrows(NullPointerException.class,
-      () -> computeLoanSetNetworkFees(mock(FeeResult.class), null, UnsignedInteger.ZERO));
-    assertThrows(NullPointerException.class,
-      () -> computeLoanSetNetworkFees(mock(FeeResult.class), UnsignedInteger.ZERO, null));
-  }
-
-  @Test
-  void testComputeLoanSetNetworkFeesFirstPartySignersExceedsLimit() {
-    FeeResult feeResult = feeResultBuilder().build();
-    assertThrows(IllegalArgumentException.class,
-      () -> computeLoanSetNetworkFees(feeResult, UnsignedInteger.valueOf(33), UnsignedInteger.ZERO));
-  }
-
-  @Test
-  void testComputeLoanSetNetworkFeesCounterpartySignersExceedsLimit() {
-    FeeResult feeResult = feeResultBuilder().build();
-    assertThrows(IllegalArgumentException.class,
-      () -> computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.valueOf(33)));
-  }
-
-  @Test
-  void testComputeLoanSetNetworkFeesAtSignerLimit() {
-    FeeResult feeResult = feeResultBuilder().build();
-    // 32 is the max — should not throw
-    assertThat(computeLoanSetNetworkFees(feeResult, UnsignedInteger.valueOf(32), UnsignedInteger.valueOf(32)))
-      .isNotNull();
-  }
-
-  @Test
-  void testComputeLoanSetNetworkFeesSingleSignBothParties() {
-    // Case 1: Single-sign broker + single-sign counterparty
-    // Multiplier: (1 + 0 + max(1, 0)) = 2
-    FeeResult feeResult = feeResultBuilder().build();
-    ComputedNetworkFees result = computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO);
-    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(2000));
-    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(10016));
-    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(20000));
-  }
-
-  @Test
-  void testComputeLoanSetNetworkFeesSingleSignBrokerMultiSignCounterparty() {
-    // Case 2: Single-sign broker + 2 counterparty signers
-    // Multiplier: (1 + 0 + max(1, 2)) = 3
-    FeeResult feeResult = feeResultBuilder().build();
-    ComputedNetworkFees result = computeLoanSetNetworkFees(
-      feeResult, UnsignedInteger.ZERO, UnsignedInteger.valueOf(2)
-    );
-    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(3000));
-    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(15024));
-    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(30000));
-  }
-
-  @Test
-  void testComputeLoanSetNetworkFeesMultiSignBrokerSingleSignCounterparty() {
-    // Case 3: 2 broker signers + single-sign counterparty
-    // Multiplier: (1 + 2 + max(1, 0)) = 4
-    FeeResult feeResult = feeResultBuilder().build();
-    ComputedNetworkFees result = computeLoanSetNetworkFees(
-      feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.ZERO
-    );
-    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(4000));
-    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(20032));
-    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(40000));
-  }
-
-  @Test
-  void testComputeLoanSetNetworkFeesMultiSignBothParties() {
-    // Case 4: 2 broker signers + 2 counterparty signers
-    // Multiplier: (1 + 2 + max(1, 2)) = 5
-    FeeResult feeResult = feeResultBuilder().build();
-    ComputedNetworkFees result = computeLoanSetNetworkFees(
-      feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.valueOf(2)
-    );
-    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(5000));
-    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(25040));
-    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(50000));
-  }
-
-  @Test
-  void testComputeLoanSetNetworkFeesWithOneCounterpartySigner() {
-    // 1 counterparty signer: max(1, 1) = 1, same multiplier as single-sign counterparty
-    // Multiplier: (1 + 0 + 1) = 2
-    FeeResult feeResult = feeResultBuilder().build();
-    ComputedNetworkFees result = computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ONE);
-    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(2000));
-    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(10016));
-    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(20000));
-  }
-
-  // /////////////////
-  // computeConfidentialMptNetworkFees
-  // /////////////////
-
-  @Test
-  void testComputeConfidentialMptNetworkFeesNullInputs() {
-    assertThrows(NullPointerException.class,
-      () -> computeConfidentialMptNetworkFees(null, UnsignedInteger.ZERO));
-    assertThrows(NullPointerException.class,
-      () -> computeConfidentialMptNetworkFees(mock(FeeResult.class), null));
-  }
-
-  @Test
-  void testComputeConfidentialMptNetworkFeesSingleSigned() {
-    // Multiplier: (1 + 0 signers + 9) = 10
-    FeeResult feeResult = feeResultBuilder().build();
-    ComputedNetworkFees result = computeConfidentialMptNetworkFees(feeResult, UnsignedInteger.ZERO);
-    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
-    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(50080));
-    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(100000));
-    assertThat(result.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(50080));
-  }
-
-  @Test
-  void testComputeConfidentialMptNetworkFeesForEmptyQueue() {
-    FeeResult feeResult = feeResultBuilder()
-      .currentQueueSize(UnsignedInteger.ZERO)
-      .drops(
-        FeeDrops.builder()
-          .baseFee(XrpCurrencyAmount.ofDrops(10))
-          .medianFee(XrpCurrencyAmount.ofDrops(100))
-          .minimumFee(XrpCurrencyAmount.ofDrops(10))
-          .openLedgerFee(XrpCurrencyAmount.ofDrops(2657))
-          .build()
-      )
-      .maxQueueSize(UnsignedInteger.valueOf(110))
+  private TrustSet sponsoredTrustSet() {
+    return TrustSet.builder()
+      .account(ALICE)
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY)
+      .limitAmount(IssuedCurrencyAmount.builder().issuer(BOB).currency("USD").value("10").build())
+      .sponsor(FRANK)
+      .sponsorFlags(SponsorFlags.SPONSOR_FEE)
       .build();
-    ComputedNetworkFees result = computeConfidentialMptNetworkFees(feeResult, UnsignedInteger.ZERO);
-    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(150));
-    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(1500));
-    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(29230));
-    assertThat(result.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(150));
   }
 
-  @Test
-  void testComputeConfidentialMptNetworkFeesMultisigned() {
-    // Multiplier: (1 + 2 signers + 9) = 12
-    FeeResult feeResult = feeResultBuilder().build();
-    ComputedNetworkFees result = computeConfidentialMptNetworkFees(feeResult, UnsignedInteger.valueOf(2));
-    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(12000));
-    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(60096));
-    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(120000));
-    assertThat(result.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(60096));
+  private Payment innerPayment(final Address account, final int sequence) {
+    return Payment.builder()
+      .account(account)
+      .destination(DAVE)
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .sequence(UnsignedInteger.valueOf(sequence))
+      .flags(PaymentFlags.INNER_BATCH_TXN)
+      .build();
   }
 
-  // /////////////////
-  // computeSponsorshipTransferNetworkFees
-  // /////////////////
-
-  @Test
-  void testComputeSponsorshipTransferNetworkFeesNullInputs() {
-    assertThrows(NullPointerException.class,
-      () -> computeSponsorshipTransferNetworkFees(null, UnsignedInteger.ZERO, UnsignedInteger.ZERO));
-    assertThrows(NullPointerException.class,
-      () -> computeSponsorshipTransferNetworkFees(mock(FeeResult.class), null, UnsignedInteger.ZERO));
-    assertThrows(NullPointerException.class,
-      () -> computeSponsorshipTransferNetworkFees(mock(FeeResult.class), UnsignedInteger.ZERO, null));
+  private ConfidentialMptSend innerConfidentialSend(final Address account, final int sequence) {
+    return ConfidentialMptSend.builder()
+      .account(account)
+      .destination(DAVE)
+      .sequence(UnsignedInteger.valueOf(sequence))
+      .flags(org.xrpl.xrpl4j.model.flags.TransactionFlags.INNER_BATCH_TXN)
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179" + Strings.repeat("11", 20)))
+      .senderEncryptedAmount(EncryptedAmount.of(Strings.repeat("AB", 66)))
+      .destinationEncryptedAmount(EncryptedAmount.of(Strings.repeat("CD", 66)))
+      .issuerEncryptedAmount(EncryptedAmount.of(Strings.repeat("EF", 66)))
+      .zkProof(ConfidentialMptSendProof.fromHex(Strings.repeat("34", 946)))
+      .amountCommitment(Commitment.of(Strings.repeat("02", 33)))
+      .balanceCommitment(Commitment.of(Strings.repeat("03", 33)))
+      .build();
   }
 
-  @Test
-  void testComputeSponsorshipTransferNetworkFeesSponseeSignersExceedsLimit() {
-    FeeResult feeResult = feeResultBuilder().build();
-    assertThrows(IllegalArgumentException.class,
-      () -> computeSponsorshipTransferNetworkFees(feeResult, UnsignedInteger.valueOf(33), UnsignedInteger.ZERO));
+  private AccountDelete innerAccountDelete(final Address account, final int sequence) {
+    return AccountDelete.builder()
+      .account(account)
+      .destination(DAVE)
+      .sequence(UnsignedInteger.valueOf(sequence))
+      .flags(org.xrpl.xrpl4j.model.flags.TransactionFlags.INNER_BATCH_TXN)
+      .build();
   }
 
-  @Test
-  void testComputeSponsorshipTransferNetworkFeesSponsorSignersExceedsLimit() {
-    FeeResult feeResult = feeResultBuilder().build();
-    assertThrows(IllegalArgumentException.class,
-      () -> computeSponsorshipTransferNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.valueOf(33)));
+  private LoanSet loanSet() {
+    return LoanSet.builder()
+      .account(ALICE)
+      .sequence(UnsignedInteger.ONE)
+      .loanBrokerId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
+      .principalRequested(Amount.of("1000000"))
+      .signingPublicKey(PUBLIC_KEY)
+      .build();
   }
 
-  @Test
-  void testComputeSponsorshipTransferNetworkFeesAtSignerLimit() {
-    FeeResult feeResult = feeResultBuilder().build();
-    // 32 is the max for each party — should not throw
-    assertThat(
-      computeSponsorshipTransferNetworkFees(feeResult, UnsignedInteger.valueOf(32), UnsignedInteger.valueOf(32))
-    ).isNotNull();
+  private LoanSet innerLoanSet(final Address account, final Address counterparty, final int sequence) {
+    return LoanSet.builder()
+      .account(account)
+      .counterparty(counterparty)
+      .sequence(UnsignedInteger.valueOf(sequence))
+      .flags(org.xrpl.xrpl4j.model.flags.LoanSetFlags.of(
+        org.xrpl.xrpl4j.model.flags.TransactionFlags.INNER_BATCH_TXN.getValue()))
+      .loanBrokerId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
+      .principalRequested(Amount.of("1000000"))
+      .build();
   }
 
-  @Test
-  void testComputeSponsorshipTransferNetworkFeesSingleSignBothParties() {
-    // Multiplier: (1 + 0 + 0) = 1
-    FeeResult feeResult = feeResultBuilder().build();
-    ComputedNetworkFees result = computeSponsorshipTransferNetworkFees(
-      feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO
-    );
-    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(1000));
-    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
-    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
+  private LoanPay loanPay() {
+    return LoanPay.builder()
+      .account(ALICE)
+      .sequence(UnsignedInteger.ONE)
+      .loanId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
+      .amount(XrpCurrencyAmount.ofDrops(50000))
+      .signingPublicKey(PUBLIC_KEY)
+      .build();
   }
 
-  @Test
-  void testComputeSponsorshipTransferNetworkFeesMultiSignSponsee() {
-    // Multiplier: (1 + 2 + 0) = 3
-    FeeResult feeResult = feeResultBuilder().build();
-    ComputedNetworkFees result = computeSponsorshipTransferNetworkFees(
-      feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.ZERO
-    );
-    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(3000));
-    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(15024));
-    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(30000));
+  private AccountDelete accountDelete() {
+    return AccountDelete.builder()
+      .account(ALICE)
+      .destination(BOB)
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY)
+      .build();
   }
 
-  @Test
-  void testComputeSponsorshipTransferNetworkFeesMultiSignBothParties() {
-    // Multiplier: (1 + 2 + 2) = 5
-    FeeResult feeResult = feeResultBuilder().build();
-    ComputedNetworkFees result = computeSponsorshipTransferNetworkFees(
-      feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.valueOf(2)
-    );
-    assertThat(result.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(5000));
-    assertThat(result.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(25040));
-    assertThat(result.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(50000));
+  private AmmCreate ammCreate() {
+    return AmmCreate.builder()
+      .account(ALICE)
+      .amount(IssuedCurrencyAmount.builder().issuer(BOB).currency("TST").value("25").build())
+      .amount2(XrpCurrencyAmount.ofDrops(250000000))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY)
+      .build();
+  }
+
+  private SetRegularKey setRegularKey() {
+    return SetRegularKey.builder()
+      .account(ALICE)
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY)
+      .build();
+  }
+
+  /**
+   * An {@link EscrowFinish} carrying a PREIMAGE-SHA-256 fulfillment built from a {@code preimageBytes}-byte preimage,
+   * or no fulfillment when {@code preimageBytes} is 0.
+   */
+  private EscrowFinish escrowFinish(final int preimageBytes) {
+    ImmutableEscrowFinish.Builder builder = EscrowFinish.builder()
+      .account(ALICE)
+      .owner(BOB)
+      .offerSequence(UnsignedInteger.ONE)
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY);
+    return preimageBytes == 0 ?
+      builder.build() : builder.fulfillment(PreimageSha256Fulfillment.from(new byte[preimageBytes])).build();
+  }
+
+  /**
+   * An {@link EscrowFinish} valid as a Batch inner (empty SigningPublicKey, tfInnerBatchTxn), carrying a
+   * PREIMAGE-SHA-256 fulfillment built from a {@code preimageBytes}-byte preimage, or no fulfillment when
+   * {@code preimageBytes} is 0.
+   */
+  private EscrowFinish innerEscrowFinish(final Address account, final int sequence, final int preimageBytes) {
+    ImmutableEscrowFinish.Builder builder = EscrowFinish.builder()
+      .account(account)
+      .owner(BOB)
+      .offerSequence(UnsignedInteger.ONE)
+      .sequence(UnsignedInteger.valueOf(sequence))
+      .flags(org.xrpl.xrpl4j.model.flags.TransactionFlags.INNER_BATCH_TXN);
+    return preimageBytes == 0 ?
+      builder.build() : builder.fulfillment(PreimageSha256Fulfillment.from(new byte[preimageBytes])).build();
+  }
+
+  private Batch batch(final Address outerAccount, final Transaction... inners) {
+    List<RawTransactionWrapper> wrappers = Lists.newArrayList();
+    for (Transaction inner : inners) {
+      wrappers.add(RawTransactionWrapper.of(inner));
+    }
+    return Batch.builder()
+      .account(outerAccount)
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PUBLIC_KEY)
+      .rawTransactions(wrappers)
+      .build();
+  }
+
+  /**
+   * Attaches a single-signature {@code BatchSigner} for every account {@code batch} requires, so that it can be
+   * priced. A Batch must carry its {@code BatchSigners} before {@link FeeUtils#computeFee(FeeParams)} will price it.
+   */
+  private Batch signedByAllRequiredSigners(final Batch batch) {
+    return Batch.builder().from(batch)
+      .batchSigners(batch.requiredSigners().stream().map(this::singleSignature).collect(Collectors.toList()))
+      .build();
+  }
+
+  private BatchSignerWrapper singleSignature(final Address account) {
+    return BatchSignerWrapper.of(BatchSigner.builder()
+      .account(account)
+      .signingPublicKey(PUBLIC_KEY)
+      .transactionSignature(Signature.fromBase16("ABCD"))
+      .build());
+  }
+
+  private BatchSignerWrapper multiSignature(final Address account, final int signatureCount) {
+    List<SignerWrapper> signers = Lists.newArrayList();
+    for (int i = 0; i < signatureCount; i++) {
+      signers.add(SignerWrapper.of(Signer.builder()
+        .signingPublicKey(PUBLIC_KEY)
+        .transactionSignature(Signature.fromBase16("ABCD"))
+        .build()));
+    }
+    return BatchSignerWrapper.of(BatchSigner.builder().account(account).signers(signers).build());
   }
 
   private ImmutableFeeResult.Builder feeResultBuilder() {

@@ -29,6 +29,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
 
@@ -188,5 +189,28 @@ public class SetFeeTest extends AbstractJsonTest {
     Transaction redeserialized = objectMapper.readValue(reserialized, Transaction.class);
 
     assertThat(redeserialized).isEqualTo(expected);
+  }
+
+  @Test
+  public void flagsAreEmptyAndFlagsFieldIsNotUnknown() throws Exception {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"12\"," +
+      "\"Flags\":0," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"SetFee\"," +
+      "\"BaseFeeDrops\":\"10\"," +
+      "\"ReserveBaseDrops\":\"20000000\"," +
+      "\"ReserveIncrementDrops\":\"5000000\"}";
+
+    SetFee setFee = (SetFee) objectMapper.readValue(json, Transaction.class);
+
+    assertThat(setFee.flags()).isEqualTo(TransactionFlags.EMPTY);
+    assertThat(setFee.transactionFlags()).isEqualTo(TransactionFlags.EMPTY);
+    assertThat(setFee.getClass().getMethod("flags").invoke(setFee)).isEqualTo(TransactionFlags.EMPTY);
+    assertThat(setFee.unknownFields()).doesNotContainKey("Flags");
+    assertThat(objectMapper.readTree(objectMapper.writeValueAsString(setFee)).get("Flags").asInt()).isZero();
   }
 }

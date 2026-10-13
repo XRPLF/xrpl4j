@@ -2,18 +2,27 @@ package org.xrpl.xrpl4j.client;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import feign.Client;
+import feign.Request;
+import feign.Response;
+import okhttp3.HttpUrl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 /**
@@ -209,6 +218,40 @@ class JsonRpcClientTest {
     );
     // It must NOT be the "missing result" exception — the guard should have been bypassed.
     assertThat(error.getMessage()).doesNotContain("Response did not contain a 'result' field");
+  }
+
+  //////////////////
+  // construct()
+  //////////////////
+
+  @Test
+  void testConstructWithCustomFeignClientRoutesRequestsThroughIt() throws IOException {
+    Client feignClient = mock(Client.class);
+    when(feignClient.execute(any(Request.class), any(Request.Options.class)))
+      .thenAnswer(invocation -> Response.builder()
+        .request(invocation.getArgument(0))
+        .status(200)
+        .headers(Collections.emptyMap())
+        .body("{\"result\":{\"status\":\"success\",\"custom\":true}}", StandardCharsets.UTF_8)
+        .build());
+
+    Request.Options options = new Request.Options();
+    JsonRpcClient client = JsonRpcClient.construct(
+      HttpUrl.get("http://localhost:1/"), feignClient, options
+    );
+    JsonNode response = client.postRpcRequest(JsonRpcRequest.builder().method("server_info").build());
+
+    assertThat(response.get("result").get("custom").asBoolean()).isTrue();
+
+    ArgumentCaptor<Request.Options> optionsCaptor = ArgumentCaptor.forClass(Request.Options.class);
+    verify(feignClient).execute(any(Request.class), optionsCaptor.capture());
+    assertThat(optionsCaptor.getValue()).isSameAs(options);
+  }
+
+  @Test
+  void testConstructWithNullFeignClientThrows() {
+    assertThrows(NullPointerException.class,
+      () -> JsonRpcClient.construct(HttpUrl.get("http://localhost:1/"), null, new Request.Options()));
   }
 
   //////////////////

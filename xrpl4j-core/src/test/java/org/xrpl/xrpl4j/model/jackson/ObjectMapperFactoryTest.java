@@ -24,16 +24,23 @@ class ObjectMapperFactoryTest {
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   /**
+   * A mapper with Jackson's default configuration for {@link java.time} types, used as the reference for how a
+   * consumer-owned {@link ZonedDateTime} should behave.
+   */
+  private final ObjectMapper referenceMapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
+
+  /**
    * {@link ObjectMapperFactory#create()} is the documented mapper for xrpl4j types. A consumer whose own types share an
    * object graph with xrpl4j types (e.g., a DTO holding a {@code TransactionResult}) must run both through it, so its
-   * handling of a consumer-owned {@link ZonedDateTime} must stay the Jackson default (ISO-8601).
+   * handling of a consumer-owned {@link ZonedDateTime} must match Jackson's default rather than xrpld's format.
    */
   @Test
-  void unannotatedZonedDateTimeSerializesAsIso8601() throws JsonProcessingException {
+  void unannotatedZonedDateTimeSerializesLikeJacksonDefault() throws JsonProcessingException {
     ConsumerType consumerType = new ConsumerType();
     consumerType.when = WHEN;
 
-    assertThat(objectMapper.writeValueAsString(consumerType)).isEqualTo(ISO_JSON);
+    assertThat(objectMapper.writeValueAsString(consumerType))
+      .isEqualTo(referenceMapper.writeValueAsString(consumerType));
   }
 
   @Test
@@ -41,6 +48,16 @@ class ObjectMapperFactoryTest {
     ConsumerType consumerType = objectMapper.readValue(ISO_JSON, ConsumerType.class);
 
     assertThat(consumerType.when.toInstant()).isEqualTo(WHEN.toInstant());
+  }
+
+  @Test
+  void unannotatedZonedDateTimeRoundTrips() throws JsonProcessingException {
+    ConsumerType consumerType = new ConsumerType();
+    consumerType.when = WHEN;
+
+    ConsumerType roundTripped = objectMapper.readValue(objectMapper.writeValueAsString(consumerType), ConsumerType.class);
+
+    assertThat(roundTripped.when.toInstant()).isEqualTo(WHEN.toInstant());
   }
 
   /**

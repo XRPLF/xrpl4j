@@ -52,7 +52,9 @@ public class ObjectMapperFactory {
       .addModule(new CryptoConditionsModule(Encoding.HEX))
       .addModule(new JavaTimeModule())
       .addModule(new Xrpl4jModule())
-      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+      // Developer Note: WRITE_DATES_AS_TIMESTAMPS is intentionally left at Jackson's default. The xrpld date fields
+      // that need xrpld's human-readable format bind ZonedDateTimeSerializer explicitly and ignore this feature, so
+      // overriding it here would only change how consumer-owned java.time values serialize.
       .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
       .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)

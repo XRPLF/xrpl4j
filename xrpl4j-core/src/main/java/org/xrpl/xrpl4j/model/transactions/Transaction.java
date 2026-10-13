@@ -320,6 +320,17 @@ public interface Transaction {
   Optional<SponsorSignature> sponsorSignature();
 
   /**
+   * The set of {@link TransactionType}s that are pseudo-transactions: emitted by the ledger itself during consensus
+   * and never signed or submitted by an account. xrpld rejects any pseudo-transaction that arrives from a user, so
+   * these types are also never valid as inner transactions of a {@link Batch}.
+   */
+  Set<TransactionType> PSEUDO_TRANSACTION_TYPES = ImmutableSet.of(
+    TransactionType.ENABLE_AMENDMENT,
+    TransactionType.SET_FEE,
+    TransactionType.UNL_MODIFY
+  );
+
+  /**
    * The set of {@link TransactionType}s for which reserve sponsorship ({@code spfSponsorReserve}) is allowed, per
    * rippled's {@code isReserveSponsorAllowed} allow-list.
    */

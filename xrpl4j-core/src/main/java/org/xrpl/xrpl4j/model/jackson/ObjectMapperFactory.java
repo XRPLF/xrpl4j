@@ -50,8 +50,6 @@ public class ObjectMapperFactory {
       .addModule(new Jdk8Module())
       .addModule(new GuavaModule())
       .addModule(new CryptoConditionsModule(Encoding.HEX))
-      // Developer Note: The ordering here is important. The JavaTimeModule must be added before the Xrpl4jModule so
-      // that the ZonedDateTimeSerializer is not overridden by the JavaTimeModule.
       .addModule(new JavaTimeModule())
       .addModule(new Xrpl4jModule())
       .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)

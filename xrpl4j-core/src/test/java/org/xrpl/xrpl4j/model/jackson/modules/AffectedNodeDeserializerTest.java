@@ -159,6 +159,18 @@ class AffectedNodeDeserializerTest extends AbstractJsonTest {
   }
 
   @Test
+  void deserializeSingleElementArray() {
+    String json = "[{\"CreatedNode\":{" +
+      "\"LedgerEntryType\":\"AccountRoot\"," +
+      "\"LedgerIndex\":\"" + LEDGER_INDEX + "\"" +
+      "}}]";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, AffectedNode.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("exactly one field");
+  }
+
+  @Test
   void deserializeEmptyWrapper() {
     String json = "{}";
 

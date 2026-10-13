@@ -53,7 +53,7 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
   public AffectedNode deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
     ObjectMapper codec = (ObjectMapper) jsonParser.getCodec();
     JsonNode jsonNode = jsonParser.readValueAsTree();
-    if (jsonNode == null || jsonNode.size() != 1) {
+    if (jsonNode == null || !jsonNode.isObject() || jsonNode.size() != 1) {
       return ctxt.reportInputMismatch(
         AffectedNode.class,
         "An AffectedNode must be a JSON object with exactly one field (CreatedNode, ModifiedNode, or DeletedNode)."

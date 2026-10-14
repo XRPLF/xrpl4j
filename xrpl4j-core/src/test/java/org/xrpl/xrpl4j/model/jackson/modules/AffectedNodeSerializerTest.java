@@ -4,7 +4,14 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.ContextualSerializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -27,6 +34,9 @@ import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableModifiedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaAccountRootObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
 import org.xrpl.xrpl4j.model.transactions.metadata.ModifiedNode;
+
+import java.io.IOException;
+import java.io.StringWriter;
 
 /**
  * Unit tests for {@link AffectedNodeSerializer}, verifying that each {@link AffectedNode} subtype is written with
@@ -127,6 +137,47 @@ class AffectedNodeSerializerTest extends AbstractJsonTest {
     JSONAssert.assertEquals(expected, serialized, JSONCompareMode.STRICT);
   }
 
+  /**
+   * With a delegate that is neither {@code ResolvableSerializer} nor {@link ContextualSerializer}, the wrapper has
+   * nothing to forward to: {@code resolve} is a no-op and {@code createContextual} returns the wrapper itself.
+   */
+  @Test
+  void resolveAndCreateContextualWithPlainDelegate() throws JsonMappingException {
+    AffectedNodeSerializer serializer = new AffectedNodeSerializer(markerSerializer("plain"));
+    SerializerProvider provider = objectMapper.getSerializerProvider();
+
+    serializer.resolve(provider);
+
+    assertThat(serializer.createContextual(provider, null)).isSameAs(serializer);
+  }
+
+  /**
+   * When the delegate's {@code createContextual} hands back a different serializer, the wrapper must re-wrap that
+   * replacement so the node is still written inside its wrapper key.
+   */
+  @Test
+  void createContextualRewrapsReplacementDelegate() throws IOException {
+    JsonSerializer<Object> replacement = markerSerializer("replaced");
+    AffectedNodeSerializer serializer = new AffectedNodeSerializer(new ReplacingSerializer(replacement));
+    SerializerProvider provider = objectMapper.getSerializerProvider();
+
+    JsonSerializer<?> contextual = serializer.createContextual(provider, null);
+
+    assertThat(contextual).isInstanceOf(AffectedNodeSerializer.class);
+    assertThat(contextual).isNotSameAs(serializer);
+
+    CreatedNode<MetaAccountRootObject> node = ImmutableCreatedNode.<MetaAccountRootObject>builder()
+      .ledgerEntryType(MetaLedgerEntryType.ACCOUNT_ROOT)
+      .ledgerIndex(LEDGER_INDEX)
+      .newFields(ACCOUNT_ROOT)
+      .build();
+    StringWriter writer = new StringWriter();
+    try (JsonGenerator gen = objectMapper.createGenerator(writer)) {
+      ((AffectedNodeSerializer) contextual).serialize(node, gen, provider);
+    }
+    assertThat(writer.toString()).isEqualTo("{\"CreatedNode\":\"replaced\"}");
+  }
+
   private void assertCanSerializeAndDeserialize(AffectedNode node, String expectedJson)
     throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(node);
@@ -134,6 +185,44 @@ class AffectedNodeSerializerTest extends AbstractJsonTest {
 
     AffectedNode deserialized = objectMapper.readValue(serialized, AffectedNode.class);
     assertThat(deserialized).isEqualTo(node);
+  }
+
+  /**
+   * A stand-in delegate that writes a fixed marker string instead of the node's fields, so tests can tell which
+   * delegate the wrapper invoked.
+   */
+  private static JsonSerializer<Object> markerSerializer(final String marker) {
+    return new StdSerializer<Object>(Object.class) {
+      @Override
+      public void serialize(final Object value, final JsonGenerator gen, final SerializerProvider provider)
+        throws IOException {
+        gen.writeString(marker);
+      }
+    };
+  }
+
+  /**
+   * A {@link ContextualSerializer} delegate whose {@code createContextual} always returns a replacement serializer.
+   */
+  private static final class ReplacingSerializer extends StdSerializer<Object> implements ContextualSerializer {
+
+    private final JsonSerializer<Object> replacement;
+
+    private ReplacingSerializer(final JsonSerializer<Object> replacement) {
+      super(Object.class);
+      this.replacement = replacement;
+    }
+
+    @Override
+    public void serialize(final Object value, final JsonGenerator gen, final SerializerProvider provider)
+      throws IOException {
+      gen.writeString("original");
+    }
+
+    @Override
+    public JsonSerializer<?> createContextual(final SerializerProvider provider, final BeanProperty property) {
+      return replacement;
+    }
   }
 
   /**

@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
@@ -27,6 +28,8 @@ import org.xrpl.xrpl4j.model.transactions.metadata.MetaAccountRootObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaUnknownObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.ModifiedNode;
+
+import java.io.IOException;
 
 /**
  * Unit tests for {@link AffectedNodeDeserializer}.
@@ -188,6 +191,21 @@ class AffectedNodeDeserializerTest extends AbstractJsonTest {
       .isInstanceOf(MismatchedInputException.class)
       .hasMessageContaining("exactly one field")
       .hasMessageContaining("but was a JSON object with 0 field(s)");
+  }
+
+  /**
+   * {@code JsonParser#readValueAsTree()} returns {@code null} when the parser has no content, so the deserializer
+   * must report that as a mismatch rather than throw a {@link NullPointerException}.
+   */
+  @Test
+  void deserializeNoContentReportsMissing() throws IOException {
+    JsonParser parser = objectMapper.createParser("");
+    AffectedNodeDeserializer deserializer = new AffectedNodeDeserializer();
+
+    assertThatThrownBy(() -> deserializer.deserialize(parser, objectMapper.getDeserializationContext()))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("exactly one field")
+      .hasMessageContaining("but was missing");
   }
 
   @Test

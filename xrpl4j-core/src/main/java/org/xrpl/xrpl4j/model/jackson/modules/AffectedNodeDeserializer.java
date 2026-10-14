@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.CreatedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.DeletedNode;
@@ -55,8 +56,8 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
     ObjectMapper codec = (ObjectMapper) jsonParser.getCodec();
     JsonNode jsonNode = jsonParser.readValueAsTree();
     if (jsonNode == null || !jsonNode.isObject() || jsonNode.size() != 1) {
-      return ctxt.reportInputMismatch(
-        AffectedNode.class,
+      throw inputMismatch(
+        jsonParser,
         "An AffectedNode must be a JSON object with exactly one field (CreatedNode, ModifiedNode, or DeletedNode), " +
           "but was %s.",
         describe(jsonNode)
@@ -66,19 +67,15 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
     String affectedNodeType = nodeFieldAndValue.getKey();
     JsonNode nodeValue = nodeFieldAndValue.getValue();
     if (!nodeValue.isObject()) {
-      return ctxt.reportInputMismatch(
-        AffectedNode.class, "The value of %s must be a JSON object.", affectedNodeType
-      );
+      throw inputMismatch(jsonParser, "The value of %s must be a JSON object.", affectedNodeType);
     }
     JsonNode ledgerEntryTypeNode = nodeValue.get("LedgerEntryType");
     if (ledgerEntryTypeNode == null) {
-      return ctxt.reportInputMismatch(
-        AffectedNode.class, "%s is missing required field LedgerEntryType.", affectedNodeType
-      );
+      throw inputMismatch(jsonParser, "%s is missing required field LedgerEntryType.", affectedNodeType);
     }
     if (!ledgerEntryTypeNode.isTextual()) {
-      return ctxt.reportInputMismatch(
-        AffectedNode.class, "LedgerEntryType of %s must be a string, but was %s.",
+      throw inputMismatch(
+        jsonParser, "LedgerEntryType of %s must be a string, but was %s.",
         affectedNodeType, describe(ledgerEntryTypeNode)
       );
     }
@@ -110,6 +107,25 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
   }
 
   /**
+   * Builds a {@link MismatchedInputException} for malformed {@link AffectedNode} input. Callers {@code throw} the
+   * result directly rather than calling {@code DeserializationContext#reportInputMismatch}, because an exception
+   * raised inside that call is invisible to JaCoCo and leaves the whole statement reported as uncovered.
+   *
+   * @param jsonParser The {@link JsonParser} being read, used for location information.
+   * @param message    A {@link String#format} message template.
+   * @param args       Arguments for {@code message}.
+   *
+   * @return A {@link MismatchedInputException} describing the malformed input.
+   */
+  private static MismatchedInputException inputMismatch(
+    final JsonParser jsonParser,
+    final String message,
+    final Object... args
+  ) {
+    return MismatchedInputException.from(jsonParser, AffectedNode.class, String.format(message, args));
+  }
+
+  /**
    * Describes the shape of a {@link JsonNode} for use in error messages, e.g. {@code "a JSON array"} or
    * {@code "a JSON object with 2 fields"}.
    *
@@ -118,7 +134,7 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
    * @return A human-readable description of the node's shape.
    */
   private static String describe(final JsonNode jsonNode) {
-    if (jsonNode == null || jsonNode.isMissingNode()) {
+    if (jsonNode == null) {
       return "missing";
     }
     if (jsonNode.isObject()) {

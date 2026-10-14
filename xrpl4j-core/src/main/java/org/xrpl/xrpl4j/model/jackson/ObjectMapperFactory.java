@@ -20,12 +20,7 @@ package org.xrpl.xrpl4j.model.jackson;
  * =========================LICENSE_END==================================
  */
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -46,25 +41,16 @@ public class ObjectMapperFactory {
    */
   public static ObjectMapper create() {
 
+    // Developer Note: This mapper deliberately configures nothing mapper-wide beyond the modules it registers. The
+    // behaviors xrpl4j types rely on (NON_EMPTY inclusion, ignoring unknown properties, xrpld date formats) are
+    // scoped to xrpl4j classes by Xrpl4jModule, so a consumer-owned type handled by this mapper keeps Jackson's
+    // defaults. See Xrpl4jAnnotationIntrospector and ZonedDateTimeFieldAnnotationTest.
     return JsonMapper.builder()
       .addModule(new Jdk8Module())
       .addModule(new GuavaModule())
       .addModule(new CryptoConditionsModule(Encoding.HEX))
       .addModule(new JavaTimeModule())
       .addModule(new Xrpl4jModule())
-      // Developer Note: WRITE_DATES_AS_TIMESTAMPS is intentionally left at Jackson's default. The xrpld date fields
-      // that need xrpld's human-readable format bind ZonedDateTimeSerializer explicitly and ignore this feature, so
-      // overriding it here would only change how consumer-owned java.time values serialize.
-      .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
-      .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
-      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-      // Developer NOTE: Despite `serializationInclusion` being deprecated, we continue using it to for maximum
-      // compatibility with software using xrpl4j that uses older versions of Jackson. While newer versions of
-      // Jackson will define a more granular way to configure this behavior that we should actually use at some point
-      // (e.g., see https://github.com/XRPLF/xrpl4j/issues/671), we purposefully don't change this behavior for now
-      // to ensure maximum compatibility.
-      .serializationInclusion(JsonInclude.Include.NON_EMPTY)
-      .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
       .build();
   }
 }

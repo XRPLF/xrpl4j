@@ -1,15 +1,20 @@
 package org.xrpl.xrpl4j.model.jackson;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+import com.example.consumer.ConsumerDateType;
+import com.example.consumer.ConsumerDecimalType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.jackson.modules.Xrpl4jModule;
 
+import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -36,7 +41,7 @@ class ObjectMapperFactoryTest {
    */
   @Test
   void unannotatedZonedDateTimeSerializesLikeJacksonDefault() throws JsonProcessingException {
-    ConsumerType consumerType = new ConsumerType();
+    ConsumerDateType consumerType = new ConsumerDateType();
     consumerType.when = WHEN;
 
     assertThat(objectMapper.writeValueAsString(consumerType))
@@ -45,19 +50,57 @@ class ObjectMapperFactoryTest {
 
   @Test
   void unannotatedZonedDateTimeDeserializesFromIso8601() throws JsonProcessingException {
-    ConsumerType consumerType = objectMapper.readValue(ISO_JSON, ConsumerType.class);
+    ConsumerDateType consumerType = objectMapper.readValue(ISO_JSON, ConsumerDateType.class);
 
     assertThat(consumerType.when.toInstant()).isEqualTo(WHEN.toInstant());
   }
 
   @Test
   void unannotatedZonedDateTimeRoundTrips() throws JsonProcessingException {
-    ConsumerType consumerType = new ConsumerType();
+    ConsumerDateType consumerType = new ConsumerDateType();
     consumerType.when = WHEN;
 
-    ConsumerType roundTripped = objectMapper.readValue(objectMapper.writeValueAsString(consumerType), ConsumerType.class);
+    ConsumerDateType roundTripped = objectMapper.readValue(objectMapper.writeValueAsString(consumerType), ConsumerDateType.class);
 
     assertThat(roundTripped.when.toInstant()).isEqualTo(WHEN.toInstant());
+  }
+
+  /**
+   * The factory must not impose xrpl4j's inclusion rules on consumer-owned types: a null property is written as
+   * {@code null}, which is Jackson's default.
+   */
+  @Test
+  void consumerTypeKeepsNullProperties() throws JsonProcessingException {
+    assertThat(objectMapper.writeValueAsString(new ConsumerDateType())).isEqualTo("{\"when\":null}");
+  }
+
+  /**
+   * The factory must not impose xrpl4j's unknown-property leniency on consumer-owned types.
+   */
+  @Test
+  void consumerTypeFailsOnUnknownProperties() {
+    assertThatThrownBy(() -> objectMapper.readValue("{\"when\":null,\"typo\":1}", ConsumerDateType.class))
+      .isInstanceOf(UnrecognizedPropertyException.class);
+  }
+
+  /**
+   * The factory must not impose case-insensitive property matching on consumer-owned types.
+   */
+  @Test
+  void consumerTypePropertiesAreCaseSensitive() {
+    assertThatThrownBy(() -> objectMapper.readValue("{\"WHEN\":null}", ConsumerDateType.class))
+      .isInstanceOf(UnrecognizedPropertyException.class);
+  }
+
+  /**
+   * The factory must not impose xrpl4j's plain-notation {@link BigDecimal} rendering on consumer-owned types.
+   */
+  @Test
+  void consumerTypeWritesBigDecimalLikeJacksonDefault() throws JsonProcessingException {
+    ConsumerDecimalType consumerType = new ConsumerDecimalType();
+    consumerType.amount = new BigDecimal("1E-7");
+
+    assertThat(objectMapper.writeValueAsString(consumerType)).isEqualTo("{\"amount\":1E-7}");
   }
 
   /**
@@ -72,18 +115,10 @@ class ObjectMapperFactoryTest {
       .addModule(new Xrpl4jModule())
       .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
       .build();
-    ConsumerType consumerType = new ConsumerType();
+    ConsumerDateType consumerType = new ConsumerDateType();
     consumerType.when = WHEN;
 
     assertThat(mapperWithModule.writeValueAsString(consumerType)).isEqualTo(ISO_JSON);
-    assertThat(mapperWithModule.readValue(ISO_JSON, ConsumerType.class).when.toInstant()).isEqualTo(WHEN.toInstant());
-  }
-
-  /**
-   * Stands in for a type owned by a consumer of xrpl4j that has no xrpl4j-specific annotations.
-   */
-  public static class ConsumerType {
-
-    public ZonedDateTime when;
+    assertThat(mapperWithModule.readValue(ISO_JSON, ConsumerDateType.class).when.toInstant()).isEqualTo(WHEN.toInstant());
   }
 }

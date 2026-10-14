@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.CreatedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.DeletedNode;
@@ -104,6 +105,25 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
           jsonParser, String.format("Unrecognized AffectedNode type %s.", affectedNodeType)
         );
     }
+  }
+
+  /**
+   * Called instead of {@link #deserialize} when Jackson has polymorphic type handling enabled for the value being
+   * read, e.g. via {@code @JsonTypeInfo} on a property or {@code ObjectMapper.activateDefaultTyping(...)}.
+   *
+   * <p>The inherited implementation asks the {@link TypeDeserializer} to find a Jackson type id in the input and
+   * fails when there is none. {@link AffectedNodeSerializer#serializeWithType} deliberately writes no such id,
+   * because the {@code CreatedNode}/{@code ModifiedNode}/{@code DeletedNode} wrapper key already identifies the
+   * concrete node type. This override is the symmetric counterpart: it ignores the type deserializer and dispatches
+   * on the wrapper key, so an {@link AffectedNode} property with type handling enabled round-trips.</p>
+   */
+  @Override
+  public Object deserializeWithType(
+    final JsonParser jsonParser,
+    final DeserializationContext ctxt,
+    final TypeDeserializer typeDeserializer
+  ) throws IOException {
+    return deserialize(jsonParser, ctxt);
   }
 
   /**

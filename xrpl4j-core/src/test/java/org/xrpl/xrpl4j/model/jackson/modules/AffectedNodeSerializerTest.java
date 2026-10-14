@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -117,10 +118,12 @@ class AffectedNodeSerializerTest extends AbstractJsonTest {
   /**
    * When polymorphic type handling is enabled for a property, Jackson calls
    * {@link AffectedNodeSerializer#serializeWithType} instead of {@code serialize}. The wrapper key already identifies
-   * the concrete node type, so no Jackson type id is written and the output is identical to the plain case.
+   * the concrete node type, so no Jackson type id is written and the output is identical to the plain case. The
+   * property must also read back through {@link AffectedNodeDeserializer#deserializeWithType}, which likewise
+   * ignores the Jackson type id.
    */
   @Test
-  void serializeWithTypeInfoWritesWrapperWithoutTypeId() throws JsonProcessingException, JSONException {
+  void roundTripWithTypeInfoWritesWrapperWithoutTypeId() throws JsonProcessingException, JSONException {
     CreatedNode<MetaAccountRootObject> node = ImmutableCreatedNode.<MetaAccountRootObject>builder()
       .ledgerEntryType(MetaLedgerEntryType.ACCOUNT_ROOT)
       .ledgerIndex(LEDGER_INDEX)
@@ -135,6 +138,9 @@ class AffectedNodeSerializerTest extends AbstractJsonTest {
 
     String serialized = objectMapper.writeValueAsString(new PolymorphicHolder(node));
     JSONAssert.assertEquals(expected, serialized, JSONCompareMode.STRICT);
+
+    PolymorphicHolder deserialized = objectMapper.readValue(serialized, PolymorphicHolder.class);
+    assertThat(deserialized.node).isEqualTo(node);
   }
 
   /**
@@ -235,7 +241,8 @@ class AffectedNodeSerializerTest extends AbstractJsonTest {
     @JsonProperty("node")
     private final AffectedNode node;
 
-    private PolymorphicHolder(final AffectedNode node) {
+    @JsonCreator
+    private PolymorphicHolder(@JsonProperty("node") final AffectedNode node) {
       this.node = node;
     }
   }

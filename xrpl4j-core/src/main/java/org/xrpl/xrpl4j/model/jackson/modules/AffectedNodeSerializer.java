@@ -81,6 +81,12 @@ public class AffectedNodeSerializer extends StdSerializer<AffectedNode>
    * dispatches on that key rather than on a Jackson type id. So the {@link TypeSerializer} is intentionally ignored
    * here, which keeps the output identical to xrpld's format even when a caller has enabled default typing on their
    * {@link com.fasterxml.jackson.databind.ObjectMapper}.</p>
+   *
+   * <p>Writing a Jackson type id here instead would not help: with {@code JsonTypeInfo.Id.CLASS} the id would name
+   * the generated {@code Immutable*} class, and on read Jackson would hand the wrapped object to that class's bean
+   * deserializer, which expects the unwrapped node fields and fails.
+   * {@link AffectedNodeDeserializer#deserializeWithType} is the symmetric counterpart: it ignores the type
+   * deserializer and dispatches on the wrapper key.</p>
    */
   @Override
   public void serializeWithType(

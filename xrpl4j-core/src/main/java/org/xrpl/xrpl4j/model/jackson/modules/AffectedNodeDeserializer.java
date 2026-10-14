@@ -35,6 +35,7 @@ import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.ModifiedNode;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -56,7 +57,9 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
     if (jsonNode == null || !jsonNode.isObject() || jsonNode.size() != 1) {
       return ctxt.reportInputMismatch(
         AffectedNode.class,
-        "An AffectedNode must be a JSON object with exactly one field (CreatedNode, ModifiedNode, or DeletedNode)."
+        "An AffectedNode must be a JSON object with exactly one field (CreatedNode, ModifiedNode, or DeletedNode), " +
+          "but was %s.",
+        describe(jsonNode)
       );
     }
     Map.Entry<String, JsonNode> nodeFieldAndValue = jsonNode.fields().next();
@@ -68,9 +71,15 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
       );
     }
     JsonNode ledgerEntryTypeNode = nodeValue.get("LedgerEntryType");
-    if (ledgerEntryTypeNode == null || !ledgerEntryTypeNode.isTextual()) {
+    if (ledgerEntryTypeNode == null) {
       return ctxt.reportInputMismatch(
         AffectedNode.class, "%s is missing required field LedgerEntryType.", affectedNodeType
+      );
+    }
+    if (!ledgerEntryTypeNode.isTextual()) {
+      return ctxt.reportInputMismatch(
+        AffectedNode.class, "LedgerEntryType of %s must be a string, but was %s.",
+        affectedNodeType, describe(ledgerEntryTypeNode)
       );
     }
 
@@ -98,5 +107,23 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
           jsonParser, String.format("Unrecognized AffectedNode type %s.", affectedNodeType)
         );
     }
+  }
+
+  /**
+   * Describes the shape of a {@link JsonNode} for use in error messages, e.g. {@code "a JSON array"} or
+   * {@code "a JSON object with 2 fields"}.
+   *
+   * @param jsonNode The {@link JsonNode} to describe, which may be {@code null}.
+   *
+   * @return A human-readable description of the node's shape.
+   */
+  private static String describe(final JsonNode jsonNode) {
+    if (jsonNode == null || jsonNode.isMissingNode()) {
+      return "missing";
+    }
+    if (jsonNode.isObject()) {
+      return String.format("a JSON object with %d field(s)", jsonNode.size());
+    }
+    return "a JSON " + jsonNode.getNodeType().name().toLowerCase(Locale.ROOT);
   }
 }

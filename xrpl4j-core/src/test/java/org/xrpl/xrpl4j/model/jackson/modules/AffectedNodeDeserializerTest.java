@@ -150,6 +150,15 @@ class AffectedNodeDeserializerTest extends AbstractJsonTest {
   }
 
   @Test
+  void deserializeNonStringLedgerEntryType() {
+    String json = "{\"CreatedNode\":{\"LedgerEntryType\":97,\"LedgerIndex\":\"" + LEDGER_INDEX + "\"}}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, AffectedNode.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("LedgerEntryType of CreatedNode must be a string, but was a JSON number");
+  }
+
+  @Test
   void deserializeNonObjectNodeValue() {
     String json = "{\"CreatedNode\":\"not-an-object\"}";
 
@@ -167,7 +176,8 @@ class AffectedNodeDeserializerTest extends AbstractJsonTest {
 
     assertThatThrownBy(() -> objectMapper.readValue(json, AffectedNode.class))
       .isInstanceOf(MismatchedInputException.class)
-      .hasMessageContaining("exactly one field");
+      .hasMessageContaining("exactly one field")
+      .hasMessageContaining("but was a JSON array");
   }
 
   @Test
@@ -176,6 +186,17 @@ class AffectedNodeDeserializerTest extends AbstractJsonTest {
 
     assertThatThrownBy(() -> objectMapper.readValue(json, AffectedNode.class))
       .isInstanceOf(MismatchedInputException.class)
-      .hasMessageContaining("exactly one field");
+      .hasMessageContaining("exactly one field")
+      .hasMessageContaining("but was a JSON object with 0 field(s)");
+  }
+
+  @Test
+  void deserializeWrapperWithTwoFields() {
+    String json = "{\"CreatedNode\":{},\"DeletedNode\":{}}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, AffectedNode.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("exactly one field")
+      .hasMessageContaining("but was a JSON object with 2 field(s)");
   }
 }

@@ -746,8 +746,14 @@ class TransactionMetadataTest {
     assertThat(objectMapper.readValue(serialized, TransactionMetadata.class)).isEqualTo(transactionMetadata);
   }
 
+  /**
+   * {@code DirectoryNode} is a declared {@link MetaLedgerEntryType}, but no dedicated {@link MetaLedgerObject}
+   * model exists for it, so its fields deserialize into a {@link MetaUnknownObject}, which keeps no fields. The
+   * node itself round-trips, but the contents of {@code FinalFields} are dropped on serialization. This test pins
+   * that lossy behaviour so that it is a documented limitation rather than a surprise.
+   */
   @Test
-  void testRoundTripUnknownLedgerEntryType() throws JsonProcessingException {
+  void testRoundTripLedgerEntryTypeWithoutDedicatedModelIsLossy() throws JsonProcessingException, JSONException {
     String json = "{\n" +
       "  \"AffectedNodes\": [\n" +
       "    {\n" +
@@ -765,10 +771,29 @@ class TransactionMetadataTest {
       "}";
 
     TransactionMetadata transactionMetadata = objectMapper.readValue(json, TransactionMetadata.class);
+    ModifiedNode<?> modifiedNode = (ModifiedNode<?>) transactionMetadata.affectedNodes().get(0);
+    assertThat(modifiedNode.ledgerEntryType()).isEqualTo(MetaLedgerEntryType.DIRECTORY_NODE);
+    assertThat(modifiedNode.finalFields().get()).isInstanceOf(MetaUnknownObject.class);
+
+    // The Owner field is lost because MetaUnknownObject has no properties.
+    String expectedLossyJson = "{\n" +
+      "  \"AffectedNodes\": [\n" +
+      "    {\n" +
+      "      \"ModifiedNode\": {\n" +
+      "        \"FinalFields\": {},\n" +
+      "        \"LedgerEntryType\": \"DirectoryNode\",\n" +
+      "        \"LedgerIndex\": \"D6C4EE995A40D6A22172016806CE813DE1578B11158B4EAA5115C563B4DC4B29\"\n" +
+      "      }\n" +
+      "    }\n" +
+      "  ],\n" +
+      "  \"TransactionIndex\": 1,\n" +
+      "  \"TransactionResult\": \"tesSUCCESS\"\n" +
+      "}";
     String serialized = objectMapper.writeValueAsString(transactionMetadata);
+    JSONAssert.assertEquals(expectedLossyJson, serialized, JSONCompareMode.STRICT);
+
     TransactionMetadata deserialized = objectMapper.readValue(serialized, TransactionMetadata.class);
     assertThat(deserialized).isEqualTo(transactionMetadata);
-    assertThat(deserialized.affectedNodes().get(0).ledgerEntryType()).isEqualTo(MetaLedgerEntryType.DIRECTORY_NODE);
   }
 
   /**

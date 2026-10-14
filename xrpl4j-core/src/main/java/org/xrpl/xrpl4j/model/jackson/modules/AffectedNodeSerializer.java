@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -68,6 +69,27 @@ public class AffectedNodeSerializer extends StdSerializer<AffectedNode>
     gen.writeFieldName(wrapperFieldName(node));
     delegate.serialize(node, gen, provider);
     gen.writeEndObject();
+  }
+
+  /**
+   * Called instead of {@link #serialize} when Jackson has polymorphic type handling enabled for the value being
+   * written, e.g. via {@code @JsonTypeInfo} on a property or {@code ObjectMapper.activateDefaultTyping(...)}.
+   *
+   * <p>The inherited implementation throws because this serializer does not write a Jackson type id. That is
+   * deliberate: the {@code CreatedNode}/{@code ModifiedNode}/{@code DeletedNode} wrapper key written by
+   * {@link #serialize} already identifies the concrete node type on the wire, and {@link AffectedNodeDeserializer}
+   * dispatches on that key rather than on a Jackson type id. So the {@link TypeSerializer} is intentionally ignored
+   * here, which keeps the output identical to xrpld's format even when a caller has enabled default typing on their
+   * {@link com.fasterxml.jackson.databind.ObjectMapper}.</p>
+   */
+  @Override
+  public void serializeWithType(
+    final AffectedNode node,
+    final JsonGenerator gen,
+    final SerializerProvider provider,
+    final TypeSerializer typeSer
+  ) throws IOException {
+    serialize(node, gen, provider);
   }
 
   @Override

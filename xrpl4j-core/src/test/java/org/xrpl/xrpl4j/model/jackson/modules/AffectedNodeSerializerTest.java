@@ -2,6 +2,8 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
@@ -102,6 +104,29 @@ class AffectedNodeSerializerTest extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(node, expected);
   }
 
+  /**
+   * When polymorphic type handling is enabled for a property, Jackson calls
+   * {@link AffectedNodeSerializer#serializeWithType} instead of {@code serialize}. The wrapper key already identifies
+   * the concrete node type, so no Jackson type id is written and the output is identical to the plain case.
+   */
+  @Test
+  void serializeWithTypeInfoWritesWrapperWithoutTypeId() throws JsonProcessingException, JSONException {
+    CreatedNode<MetaAccountRootObject> node = ImmutableCreatedNode.<MetaAccountRootObject>builder()
+      .ledgerEntryType(MetaLedgerEntryType.ACCOUNT_ROOT)
+      .ledgerIndex(LEDGER_INDEX)
+      .newFields(ACCOUNT_ROOT)
+      .build();
+
+    String expected = "{\"node\":{\"CreatedNode\":{" +
+      "\"LedgerEntryType\":\"AccountRoot\"," +
+      "\"LedgerIndex\":\"" + LEDGER_INDEX.value() + "\"," +
+      "\"NewFields\":" + ACCOUNT_ROOT_JSON +
+      "}}}";
+
+    String serialized = objectMapper.writeValueAsString(new PolymorphicHolder(node));
+    JSONAssert.assertEquals(expected, serialized, JSONCompareMode.STRICT);
+  }
+
   private void assertCanSerializeAndDeserialize(AffectedNode node, String expectedJson)
     throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(node);
@@ -109,5 +134,20 @@ class AffectedNodeSerializerTest extends AbstractJsonTest {
 
     AffectedNode deserialized = objectMapper.readValue(serialized, AffectedNode.class);
     assertThat(deserialized).isEqualTo(node);
+  }
+
+  /**
+   * Holder whose {@code node} property has polymorphic type handling enabled, forcing Jackson to route through
+   * {@link AffectedNodeSerializer#serializeWithType}.
+   */
+  private static final class PolymorphicHolder {
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
+    @JsonProperty("node")
+    private final AffectedNode node;
+
+    private PolymorphicHolder(final AffectedNode node) {
+      this.node = node;
+    }
   }
 }

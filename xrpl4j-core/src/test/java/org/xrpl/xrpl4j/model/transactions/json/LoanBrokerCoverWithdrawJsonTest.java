@@ -207,7 +207,7 @@ public class LoanBrokerCoverWithdrawJsonTest extends AbstractJsonTest {
 
   @Test
   public void testLoanBrokerCoverWithdrawWithDuplicateCredentialIds() {
-    ImmutableLoanBrokerCoverWithdraw.Builder builder = LoanBrokerCoverWithdraw.builder()
+    assertThatThrownBy(() -> LoanBrokerCoverWithdraw.builder()
       .account(Address.of("rU1Cm8GymH5U1WuTcmMTUZ5XjwJbanQoA8"))
       .fee(XrpCurrencyAmount.ofDrops(15))
       .sequence(UnsignedInteger.valueOf(192))
@@ -216,9 +216,8 @@ public class LoanBrokerCoverWithdrawJsonTest extends AbstractJsonTest {
       .addCredentialIds(
         Hash256.of("000000000000000000000000000000000000000000000000000000000000000A"),
         Hash256.of("000000000000000000000000000000000000000000000000000000000000000A")
-      );
-
-    assertThatThrownBy(builder::build)
+      )
+      .build())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("CredentialIDs should have unique values.");
   }

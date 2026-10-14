@@ -204,7 +204,7 @@ public class VaultWithdrawJsonTest extends AbstractJsonTest {
 
   @Test
   public void testVaultWithdrawWithDuplicateCredentialIds() {
-    ImmutableVaultWithdraw.Builder builder = VaultWithdraw.builder()
+    assertThatThrownBy(() -> VaultWithdraw.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(1))
@@ -213,9 +213,8 @@ public class VaultWithdrawJsonTest extends AbstractJsonTest {
       .addCredentialIds(
         Hash256.of("000000000000000000000000000000000000000000000000000000000000000A"),
         Hash256.of("000000000000000000000000000000000000000000000000000000000000000A")
-      );
-
-    assertThatThrownBy(builder::build)
+      )
+      .build())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("CredentialIDs should have unique values.");
   }

@@ -67,5 +67,10 @@ public enum VaultKind {
     public boolean equals(Object obj) {
       return obj == VaultKind.OPEN_ENDED;
     }
+
+    @Override
+    public int hashCode() {
+      return VaultKind.OPEN_ENDED.hashCode();
+    }
   }
 }

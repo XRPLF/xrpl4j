@@ -80,4 +80,11 @@ public class Xrpl4jModule extends SimpleModule {
     // @JsonSerialize(using = ZonedDateTimeSerializer.class) and @JsonDeserialize(using = ZonedDateTimeDeserializer
     // .class). ZonedDateTimeFieldAnnotationTest enforces this.
   }
+
+  @Override
+  public void setupModule(final SetupContext context) {
+    super.setupModule(context);
+    // Lowest priority, so explicit Jackson annotations on xrpl4j classes still win.
+    context.appendAnnotationIntrospector(new Xrpl4jAnnotationIntrospector());
+  }
 }

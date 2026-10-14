@@ -350,6 +350,48 @@ xrpl4j model does:
 ZonedDateTime closeTime();
 ```
 
+### 7. `ObjectMapperFactory` no longer configures mapper-wide features
+
+Previously, the mapper returned by `ObjectMapperFactory.create()` set several features for every type it handled:
+
+| Setting | Previous value | Jackson default |
+|---|---|---|
+| `serializationInclusion` | `NON_EMPTY` | `ALWAYS` |
+| `DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES` | `false` | `true` |
+| `MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES` | enabled | disabled |
+| `JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN` | `true` | `false` |
+| `SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS` | `false` | `true` |
+
+In v7.0.0 the factory configures none of these. The two that xrpl4j's own types rely on, `NON_EMPTY` inclusion and
+ignoring unknown properties, are now supplied by `Xrpl4jModule` through a package-scoped `AnnotationIntrospector`
+that applies only to classes under `org.xrpl.xrpl4j`. xrpl4j's JSON output and parsing are unchanged, with one
+exception: `BigDecimal` values in xrpl4j response types (for example `server_info.load_factor`) now use Jackson's
+default rendering, which can produce exponent notation such as `1E-7` for very small or very large values where
+plain notation was produced before. Values sent to xrpld are unaffected, since xrpl4j does not serialize
+`BigDecimal` into requests.
+
+For your own types handled by the factory mapper, Jackson's defaults now apply:
+
+- `null` and empty properties are written rather than omitted.
+- Unknown properties in input cause an `UnrecognizedPropertyException` rather than being ignored.
+- Property names are matched case-sensitively.
+- `BigDecimal` may be written in exponent notation, and `Duration` is written as a numeric timestamp.
+
+**Migration:**
+
+If your own types relied on the previous behavior, either handle them with a separate mapper, or annotate them:
+
+```java
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+public class MyDto { ... }
+```
+
+If you build your own mapper and register `Xrpl4jModule` on it, note that the module now carries the inclusion and
+unknown-property behavior for xrpl4j types itself. You still need `Jdk8Module`, `GuavaModule`, `JavaTimeModule`, and
+`CryptoConditionsModule(Encoding.HEX)` registered for xrpl4j types to work, as `ObjectMapperFactory.create()` does.
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.

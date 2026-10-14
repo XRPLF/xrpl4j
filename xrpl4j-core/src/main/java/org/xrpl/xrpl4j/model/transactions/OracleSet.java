@@ -1,12 +1,13 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
-import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
+import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.List;
@@ -96,5 +97,6 @@ public interface OracleSet extends Transaction {
    * @return A {@link List} of {@link PriceData}.
    */
   @JsonProperty("PriceDataSeries")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   List<PriceDataWrapper> priceDataSeries();
 }

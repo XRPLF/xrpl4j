@@ -229,6 +229,7 @@ public interface Transaction {
    * @return A {@link List} of {@link MemoWrapper}s.
    */
   @JsonProperty("Memos")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   List<MemoWrapper> memos();
 
   /**
@@ -237,6 +238,7 @@ public interface Transaction {
    * @return A {@link List} of {@link SignerWrapper}s.
    */
   @JsonProperty("Signers")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   List<SignerWrapper> signers();
 
   /**

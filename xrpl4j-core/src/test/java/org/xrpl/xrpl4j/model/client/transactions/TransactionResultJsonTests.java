@@ -37,11 +37,11 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableMetaAccountRootObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableModifiedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaAccountRootObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

@@ -751,6 +751,10 @@ class TransactionMetadataTest {
    * model exists for it, so its fields deserialize into a {@link MetaUnknownObject}, which keeps no fields. The
    * node itself round-trips, but the contents of {@code FinalFields} are dropped on serialization. This test pins
    * that lossy behaviour so that it is a documented limitation rather than a surprise.
+   *
+   * <p>TODO: Once a dedicated model exists for {@code DirectoryNode}, update this test to assert a lossless round
+   * trip (or point it at another type that still lacks a model). See
+   * <a href="https://github.com/XRPLF/xrpl4j/issues/854">#854</a>.</p>
    */
   @Test
   void testRoundTripLedgerEntryTypeWithoutDedicatedModelIsLossy() throws JsonProcessingException, JSONException {

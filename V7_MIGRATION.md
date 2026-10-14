@@ -362,13 +362,11 @@ Previously, the mapper returned by `ObjectMapperFactory.create()` set several fe
 | `JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN` | `true` | `false` |
 | `SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS` | `false` | `true` |
 
-In v7.0.0 the factory configures none of these. The two that xrpl4j's own types rely on, `NON_EMPTY` inclusion and
-ignoring unknown properties, are now supplied by `Xrpl4jModule` through a package-scoped `AnnotationIntrospector`
-that applies only to classes under `org.xrpl.xrpl4j`. xrpl4j's JSON output and parsing are unchanged, with one
-exception: `BigDecimal` values in xrpl4j response types (for example `server_info.load_factor`) now use Jackson's
-default rendering, which can produce exponent notation such as `1E-7` for very small or very large values where
-plain notation was produced before. Values sent to xrpld are unaffected, since xrpl4j does not serialize
-`BigDecimal` into requests.
+In v7.0.0 the factory configures none of these. The behaviors xrpl4j's own types rely on are instead supplied by
+`Xrpl4jModule` through a package-scoped `AnnotationIntrospector` that applies only to classes under
+`org.xrpl.xrpl4j`: `NON_EMPTY` inclusion, ignoring unknown properties, case-insensitive property matching, and
+plain-notation rendering of `BigDecimal` values. xrpl4j's JSON output and parsing are therefore unchanged in both
+directions. (`WRITE_DURATIONS_AS_TIMESTAMPS` is dropped outright; xrpl4j has no `Duration` fields.)
 
 For your own types handled by the factory mapper, Jackson's defaults now apply:
 
@@ -388,8 +386,8 @@ If your own types relied on the previous behavior, either handle them with a sep
 public class MyDto { ... }
 ```
 
-If you build your own mapper and register `Xrpl4jModule` on it, note that the module now carries the inclusion and
-unknown-property behavior for xrpl4j types itself. You still need `Jdk8Module`, `GuavaModule`, `JavaTimeModule`, and
+If you build your own mapper and register `Xrpl4jModule` on it, note that the module now carries all of the above
+behaviors for xrpl4j types itself. You still need `Jdk8Module`, `GuavaModule`, `JavaTimeModule`, and
 `CryptoConditionsModule(Encoding.HEX)` registered for xrpl4j types to work, as `ObjectMapperFactory.create()` does.
 
 ## Backward Compatibility

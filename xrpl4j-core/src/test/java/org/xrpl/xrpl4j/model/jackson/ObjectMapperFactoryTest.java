@@ -4,6 +4,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.example.consumer.ConsumerDateType;
+import com.example.consumer.ConsumerDecimalType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.jackson.modules.Xrpl4jModule;
 
+import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -88,6 +90,17 @@ class ObjectMapperFactoryTest {
   void consumerTypePropertiesAreCaseSensitive() {
     assertThatThrownBy(() -> objectMapper.readValue("{\"WHEN\":null}", ConsumerDateType.class))
       .isInstanceOf(UnrecognizedPropertyException.class);
+  }
+
+  /**
+   * The factory must not impose xrpl4j's plain-notation {@link BigDecimal} rendering on consumer-owned types.
+   */
+  @Test
+  void consumerTypeWritesBigDecimalLikeJacksonDefault() throws JsonProcessingException {
+    ConsumerDecimalType consumerType = new ConsumerDecimalType();
+    consumerType.amount = new BigDecimal("1E-7");
+
+    assertThat(objectMapper.writeValueAsString(consumerType)).isEqualTo("{\"amount\":1E-7}");
   }
 
   /**

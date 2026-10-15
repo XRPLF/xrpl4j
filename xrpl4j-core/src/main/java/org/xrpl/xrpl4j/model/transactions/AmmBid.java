@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -105,6 +106,7 @@ public interface AmmBid extends Transaction {
    * @return A {@link List}
    */
   @JsonProperty("AuthAccounts")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   List<AuthAccountWrapper> authAccounts();
 
 }

@@ -94,9 +94,9 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
   }
 
   /**
-   * If present, filters the response to only include {@link org.xrpl.xrpl4j.model.ledger.LedgerObject}s whose
-   * sponsored state matches this value: {@code true} to only return sponsored objects, {@code false} to only
-   * return objects that are not sponsored. If omitted, no filtering is applied.
+   * If present, filters the response to only include {@link org.xrpl.xrpl4j.model.ledger.LedgerObject}s whose sponsored
+   * state matches this value: {@code true} to only return sponsored objects, {@code false} to only return objects that
+   * are not sponsored. If omitted, no filtering is applied.
    *
    * <p>This field will be marked {@link com.google.common.annotations.Beta} until the featureSponsorship
    * amendment is enabled on mainnet. Its API is subject to change.</p>
@@ -155,6 +155,26 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
      */
     ESCROW("escrow"),
     /**
+     * LoanBroker account object type.
+     */
+    LOAN_BROKER("loan_broker"),
+    /**
+     * Loan account object type.
+     */
+    LOAN("loan"),
+    /**
+     * MPToken Issuance object type.
+     */
+    MPT_ISSUANCE("mpt_issuance"),
+    /**
+     * MPToken object type.
+     */
+    MP_TOKEN("mptoken"),
+    /**
+     * NFT offer object type.
+     */
+    NFT_OFFER("nft_offer"),
+    /**
      * Offer account object type.
      */
     OFFER("offer"),
@@ -175,36 +195,20 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
      */
     TICKET("ticket"),
     /**
+     * Sponsorship object type.
+     *
+     * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
+     */
+    @Beta
+    SPONSORSHIP("sponsorship"),
+    /**
      * State account object type.
      */
     STATE("state"),
     /**
      * Vault account object type.
      */
-    VAULT("vault"),
-    /**
-     * LoanBroker account object type.
-     */
-    LOAN_BROKER("loan_broker"),
-    /**
-     * Loan account object type.
-     */
-    LOAN("loan"),
-    /**
-     * MPToken Issuance object type.
-     */
-    MPT_ISSUANCE("mpt_issuance"),
-    /**
-     * MPToken object type.
-     */
-    MP_TOKEN("mptoken"),
-    /**
-     * Sponsorship object type.
-     *
-     * @see "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0068-sponsored-fees-and-reserves/README.md"
-     */
-    @Beta
-    SPONSORSHIP("sponsorship");
+    VAULT("vault");
 
     private final String value;
 

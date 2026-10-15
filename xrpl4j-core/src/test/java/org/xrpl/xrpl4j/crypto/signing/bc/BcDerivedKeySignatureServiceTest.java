@@ -66,6 +66,7 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -1501,6 +1502,90 @@ class BcDerivedKeySignatureServiceTest {
         1
       );
     });
+  }
+
+  /**
+   * Regression test for RXB-382: a {@link ServerSecretSupplier} that wraps a persistent, reused {@code byte[]} (the
+   * documented usage pattern -- e.g., a secret loaded once from a keystore or environment variable) must keep
+   * producing correct, secret-derived keys across multiple derivations. Before the fix, the first derivation would
+   * destroy the caller's shared array (via {@link ServerSecret#destroy()} zeroing an un-copied backing array), so any
+   * subsequent derivation would silently use an all-zero HMAC key instead of the real secret.
+   */
+  @Test
+  void persistentArrayBackedSupplierProducesCorrectKeysAcrossMultipleDerivations() {
+    final byte[] persistentSecret = "a-persistent-server-secret-loaded-once".getBytes(StandardCharsets.UTF_8);
+    final byte[] originalSecretCopy = Arrays.copyOf(persistentSecret, persistentSecret.length);
+
+    // Mimics the natural/documented usage pattern: the supplier wraps the *same* backing array on every call.
+    final ServerSecretSupplier persistentSupplier = () -> ServerSecret.of(persistentSecret);
+    final BcDerivedKeySignatureService serviceUnderTest = new BcDerivedKeySignatureService(persistentSupplier);
+
+    // First derivation. Pre-fix, this would zero out `persistentSecret` as a side-effect.
+    final Seed seedA = serviceUnderTest.generateEd25519XrplSeed("identifier-A");
+    assertThat(seedA).isNotNull();
+
+    // The caller's persistent array must be untouched by the derivation above.
+    assertThat(persistentSecret).isEqualTo(originalSecretCopy);
+
+    // Second derivation, using a different identifier, from the same (still-intact) persistent array.
+    final Seed seedB = serviceUnderTest.generateEd25519XrplSeed("identifier-B");
+
+    // Independently derive the expected seed for "identifier-B" from a supplier that returns a fresh copy of the
+    // original secret bytes every time (i.e., a supplier immune to the bug even before the fix).
+    final BcDerivedKeySignatureService independentService = new BcDerivedKeySignatureService(
+      () -> ServerSecret.of(Arrays.copyOf(originalSecretCopy, originalSecretCopy.length))
+    );
+    final Seed expectedSeedB = independentService.generateEd25519XrplSeed("identifier-B");
+
+    assertThat(seedB.decodedSeed().bytes()).isEqualTo(expectedSeedB.decodedSeed().bytes());
+
+    // Sanity check: this must NOT equal what a zeroed-out secret would derive for "identifier-B" (i.e., the bug).
+    final BcDerivedKeySignatureService zeroSecretService = new BcDerivedKeySignatureService(
+      () -> ServerSecret.of(new byte[originalSecretCopy.length])
+    );
+    final Seed zeroSecretSeedB = zeroSecretService.generateEd25519XrplSeed("identifier-B");
+    assertThat(seedB.decodedSeed().bytes()).isNotEqualTo(zeroSecretSeedB.decodedSeed().bytes());
+
+    // Repeat the same check for the secp256k1 derivation path, which has the identical destroy()-in-finally pattern.
+    final Seed secp256k1SeedC = serviceUnderTest.generateSecp256k1Seed("identifier-C");
+    assertThat(persistentSecret).isEqualTo(originalSecretCopy);
+
+    final Seed expectedSecp256k1SeedC = independentService.generateSecp256k1Seed("identifier-C");
+    assertThat(secp256k1SeedC.decodedSeed().bytes()).isEqualTo(expectedSecp256k1SeedC.decodedSeed().bytes());
+
+    final Seed zeroSecretSecp256k1SeedC = zeroSecretService.generateSecp256k1Seed("identifier-C");
+    assertThat(secp256k1SeedC.decodedSeed().bytes()).isNotEqualTo(zeroSecretSecp256k1SeedC.decodedSeed().bytes());
+  }
+
+  /**
+   * Regression test for RXB-382, covering a second variant of the same root cause: a {@link ServerSecretSupplier}
+   * that caches and returns the exact same {@link ServerSecret} instance on every call (e.g., a singleton Spring
+   * bean) must also keep producing correct, secret-derived keys across multiple derivations. This service must never
+   * call {@link ServerSecret#destroy()} on the object the supplier returns, since doing so would permanently zero
+   * out a secret that's shared across every future derivation.
+   */
+  @Test
+  void cachedServerSecretInstanceSupplierProducesCorrectKeysAcrossMultipleDerivations() {
+    final byte[] originalSecret = "another-persistent-secret-value".getBytes(StandardCharsets.UTF_8);
+    final ServerSecret cachedServerSecret = ServerSecret.of(originalSecret);
+
+    // Mimics a supplier that always returns the same, already-constructed ServerSecret instance.
+    final ServerSecretSupplier cachingSupplier = () -> cachedServerSecret;
+    final BcDerivedKeySignatureService serviceUnderTest = new BcDerivedKeySignatureService(cachingSupplier);
+
+    final Seed seedA = serviceUnderTest.generateEd25519XrplSeed("identifier-A");
+    assertThat(seedA).isNotNull();
+    // Pre-fix, the line above would have destroyed `cachedServerSecret`'s internal state.
+    assertThat(cachedServerSecret.isDestroyed()).isFalse();
+
+    final Seed seedB = serviceUnderTest.generateEd25519XrplSeed("identifier-B");
+
+    final BcDerivedKeySignatureService independentService = new BcDerivedKeySignatureService(
+      () -> ServerSecret.of(Arrays.copyOf(originalSecret, originalSecret.length))
+    );
+    final Seed expectedSeedB = independentService.generateEd25519XrplSeed("identifier-B");
+
+    assertThat(seedB.decodedSeed().bytes()).isEqualTo(expectedSeedB.decodedSeed().bytes());
   }
 
   //////////////////

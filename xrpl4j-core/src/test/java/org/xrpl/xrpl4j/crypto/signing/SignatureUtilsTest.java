@@ -58,8 +58,6 @@ import org.xrpl.xrpl4j.model.flags.BatchFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
-import org.xrpl.xrpl4j.model.flags.VaultDepositFlags;
-import org.xrpl.xrpl4j.model.flags.VaultSetFlags;
 import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
 import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
@@ -1504,20 +1502,6 @@ public class SignatureUtilsTest {
     VaultSet transaction = VaultSet.builder()
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
-      .flags(VaultSetFlags.builder().tfVaultDepositBlock(true).build())
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.valueOf(391))
-      .signingPublicKey(sourcePublicKey)
-      .build();
-
-    addSignatureToTransactionHelper(transaction);
-  }
-
-  @Test
-  void addSignatureToVaultSetWithoutFlags() {
-    VaultSet transaction = VaultSet.builder()
-      .account(sourcePublicKey.deriveAddress())
-      .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))
       .signingPublicKey(sourcePublicKey)
@@ -1545,7 +1529,6 @@ public class SignatureUtilsTest {
     VaultDeposit transaction = VaultDeposit.builder()
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
-      .flags(VaultDepositFlags.builder().tfVaultDonate(true).build())
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))
@@ -2108,7 +2091,6 @@ public class SignatureUtilsTest {
     VaultSet transaction = VaultSet.builder()
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
-      .flags(VaultSetFlags.builder().tfVaultDepositBlock(true).build())
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))
       .build();
@@ -2134,7 +2116,6 @@ public class SignatureUtilsTest {
     VaultDeposit transaction = VaultDeposit.builder()
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
-      .flags(VaultDepositFlags.builder().tfVaultDonate(true).build())
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.VaultDepositFlags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 /**
  * Deposit assets into a single asset vault in exchange for vault shares.
@@ -29,14 +29,14 @@ public interface VaultDeposit extends Transaction {
   }
 
   /**
-   * Set of {@link VaultDepositFlags}s for this {@link VaultDeposit}.
+   * Set of {@link TransactionFlags}s for this {@link VaultDeposit}.
    *
-   * @return A {@link VaultDepositFlags}, which defaults to {@link VaultDepositFlags#empty()}.
+   * @return Always {@link TransactionFlags#EMPTY}.
    */
   @JsonProperty("Flags")
   @Value.Default
-  default VaultDepositFlags flags() {
-    return VaultDepositFlags.empty();
+  default TransactionFlags flags() {
+    return TransactionFlags.EMPTY;
   }
 
   /**

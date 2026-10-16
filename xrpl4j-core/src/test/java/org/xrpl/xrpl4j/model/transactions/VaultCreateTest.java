@@ -21,13 +21,10 @@ class VaultCreateTest {
   @Test
   void flagAccessors() {
     VaultCreateFlags flags = VaultCreateFlags.of(
-      VaultCreateFlags.VAULT_PRIVATE.getValue() |
-        VaultCreateFlags.VAULT_SHARE_NON_TRANSFERABLE.getValue() |
-        VaultCreateFlags.VAULT_OWNER_CAN_BLOCK_DEPOSIT.getValue()
+      VaultCreateFlags.VAULT_PRIVATE.getValue() | VaultCreateFlags.VAULT_SHARE_NON_TRANSFERABLE.getValue()
     );
     assertThat(flags.tfVaultPrivate()).isTrue();
     assertThat(flags.tfVaultShareNonTransferable()).isTrue();
-    assertThat(flags.tfVaultOwnerCanBlockDeposit()).isTrue();
     assertThat(flags.tfInnerBatchTxn()).isFalse();
   }
 

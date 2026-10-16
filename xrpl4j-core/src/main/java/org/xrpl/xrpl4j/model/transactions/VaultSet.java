@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.VaultSetFlags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
 
@@ -31,14 +31,15 @@ public interface VaultSet extends Transaction {
   }
 
   /**
-   * Set of {@link VaultSetFlags}s for this {@link VaultSet}.
+   * Set of {@link TransactionFlags}s for this {@link VaultSet}, which only allows the
+   * {@code tfFullyCanonicalSig} flag, which is deprecated.
    *
-   * @return A {@link VaultSetFlags}, which defaults to {@link VaultSetFlags#empty()}.
+   * @return Always {@link TransactionFlags#EMPTY}.
    */
   @JsonProperty("Flags")
   @Value.Default
-  default VaultSetFlags flags() {
-    return VaultSetFlags.empty();
+  default TransactionFlags flags() {
+    return TransactionFlags.EMPTY;
   }
 
   /**
@@ -72,17 +73,5 @@ public interface VaultSet extends Transaction {
    */
   @JsonProperty("Data")
   Optional<VaultData> data();
-
-  /**
-   * Validate VaultSet preconditions.
-   */
-  @Value.Check
-  default void check() {
-    if (flags().tfVaultDepositBlock() && flags().tfVaultDepositUnblock()) {
-      throw new IllegalArgumentException(
-        "tfVaultDepositBlock and tfVaultDepositUnblock cannot both be set."
-      );
-    }
-  }
 
 }

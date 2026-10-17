@@ -74,6 +74,7 @@ public class Xrpl4jModule extends SimpleModule {
     addSerializer(Flags.class, new FlagsSerializer());
 
     addDeserializer(AffectedNode.class, new AffectedNodeDeserializer());
+    setSerializerModifier(new AffectedNodeSerializerModifier());
 
     addSerializer(ZonedDateTime.class, new ZonedDateTimeSerializer());
     addDeserializer(ZonedDateTime.class, new ZonedDateTimeDeserializer());

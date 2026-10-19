@@ -591,7 +591,12 @@ public class LendingProtocolIT extends AbstractIT {
         LedgerSpecifier.VALIDATED
       )
     );
-    Hash256 vaultId = vaultLedgerEntry.node().index();
+    VaultObject vault = vaultLedgerEntry.node();
+    assertThat(vault.vaultKind()).isEqualTo(VaultKind.CLOSED_ENDED);
+    assertThat(vault.subscriptionDate()).hasValue(subscriptionDate);
+    assertThat(vault.redemptionDate()).hasValue(redemptionDate);
+    assertThat(vault.leVersion()).isEqualTo(UnsignedInteger.ONE);
+    Hash256 vaultId = vault.index();
     logger.info("Vault created: {}", vaultId);
 
     // Deposit into vault
@@ -1367,7 +1372,12 @@ public class LendingProtocolIT extends AbstractIT {
         LedgerSpecifier.VALIDATED
       )
     );
-    final Hash256 vaultId = vaultEntry.node().index();
+    final VaultObject vault = vaultEntry.node();
+    assertThat(vault.vaultKind()).isEqualTo(VaultKind.CLOSED_ENDED);
+    assertThat(vault.subscriptionDate()).hasValue(subscriptionDate);
+    assertThat(vault.redemptionDate()).hasValue(redemptionDate);
+    assertThat(vault.leVersion()).isEqualTo(UnsignedInteger.ONE);
+    final Hash256 vaultId = vault.index();
 
     final AccountInfoResult depositorAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(depositorKeyPair.publicKey().deriveAddress())

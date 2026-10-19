@@ -165,26 +165,28 @@ class VaultCreateTest {
   }
 
   @Test
-  void closedEndedVaultGapMustMeetMinimum() {
+  void closedEndedVaultGapBelowMinimumStillBuilds() {
     UnsignedLong tooSmallGap = VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.minus(UnsignedLong.ONE);
-    assertThatThrownBy(() -> baseBuilder()
+    VaultCreate vaultCreate = baseBuilder()
       .vaultKind(VaultKind.CLOSED_ENDED)
       .subscriptionDate(UnsignedLong.valueOf(1000))
       .redemptionDate(UnsignedLong.valueOf(1000).plus(tooSmallGap))
-      .build()
-    ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageStartingWith("The gap between SubscriptionDate and RedemptionDate must be at least");
+      .build();
+
+    assertThat(vaultCreate.redemptionDate())
+      .hasValue(UnsignedLong.valueOf(1000).plus(tooSmallGap));
   }
 
   @Test
-  void closedEndedVaultGapMustBeBelowMaximum() {
-    assertThatThrownBy(() -> baseBuilder()
+  void closedEndedVaultGapAboveMaximumStillBuilds() {
+    VaultCreate vaultCreate = baseBuilder()
       .vaultKind(VaultKind.CLOSED_ENDED)
       .subscriptionDate(UnsignedLong.valueOf(1000))
       .redemptionDate(UnsignedLong.valueOf(1000).plus(VaultCreate.MAX_INVESTMENT_PERIOD_SECONDS))
-      .build()
-    ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageStartingWith("The gap between SubscriptionDate and RedemptionDate must be at least");
+      .build();
+
+    assertThat(vaultCreate.redemptionDate())
+      .hasValue(UnsignedLong.valueOf(1000).plus(VaultCreate.MAX_INVESTMENT_PERIOD_SECONDS));
   }
 
   /**

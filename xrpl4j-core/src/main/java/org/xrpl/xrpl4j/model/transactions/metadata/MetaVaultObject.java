@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.VaultFlags;
 import org.xrpl.xrpl4j.model.ledger.Issue;
@@ -14,6 +15,7 @@ import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.VaultData;
+import org.xrpl.xrpl4j.model.transactions.VaultKind;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 
 import java.util.Optional;
@@ -157,5 +159,39 @@ public interface MetaVaultObject extends MetaLedgerObject {
    */
   @JsonProperty("Scale")
   Optional<AssetScale> scale();
+
+  /**
+   * The ledger-entry version of this vault, which selects the accounting rules rippled applies to it.
+   *
+   * @return An optionally-present {@link UnsignedInteger}.
+   */
+  @JsonProperty("LEVersion")
+  Optional<UnsignedInteger> leVersion();
+
+  /**
+   * Distinguishes a closed-ended vault from the default open-ended kind.
+   *
+   * @return An optionally-present {@link VaultKind}.
+   */
+  @JsonProperty("VaultKind")
+  Optional<VaultKind> vaultKind();
+
+  /**
+   * The time, in seconds since the Ripple Epoch, after which this closed-ended vault's Subscription phase ends
+   * and its Investment phase begins. Only present when {@link #vaultKind()} is {@link VaultKind#CLOSED_ENDED}.
+   *
+   * @return An optionally-present {@link UnsignedLong}.
+   */
+  @JsonProperty("SubscriptionDate")
+  Optional<UnsignedLong> subscriptionDate();
+
+  /**
+   * The time, in seconds since the Ripple Epoch, after which this closed-ended vault's Investment phase ends and
+   * its Redemption phase begins. Only present when {@link #vaultKind()} is {@link VaultKind#CLOSED_ENDED}.
+   *
+   * @return An optionally-present {@link UnsignedLong}.
+   */
+  @JsonProperty("RedemptionDate")
+  Optional<UnsignedLong> redemptionDate();
 
 }

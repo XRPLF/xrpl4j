@@ -186,14 +186,6 @@ public interface VaultCreate extends Transaction {
       if (redemption.compareTo(subscription) <= 0) {
         throw new IllegalArgumentException("RedemptionDate must be strictly after SubscriptionDate.");
       }
-      UnsignedLong gap = redemption.minus(subscription);
-      if (gap.compareTo(MIN_INVESTMENT_PERIOD_SECONDS) < 0 || gap.compareTo(MAX_INVESTMENT_PERIOD_SECONDS) >= 0) {
-        throw new IllegalArgumentException(
-          "The gap between SubscriptionDate and RedemptionDate must be at least " +
-            MIN_INVESTMENT_PERIOD_SECONDS + " seconds and less than " + MAX_INVESTMENT_PERIOD_SECONDS +
-            " seconds."
-        );
-      }
     }
   }
 

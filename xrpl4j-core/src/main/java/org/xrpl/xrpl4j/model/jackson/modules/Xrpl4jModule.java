@@ -72,6 +72,7 @@ public class Xrpl4jModule extends SimpleModule {
     addSerializer(Flags.class, new FlagsSerializer());
 
     addDeserializer(AffectedNode.class, new AffectedNodeDeserializer());
+    setSerializerModifier(new AffectedNodeSerializerModifier());
 
     // Developer Note: ZonedDateTimeSerializer and ZonedDateTimeDeserializer are deliberately NOT registered here for
     // ZonedDateTime.class. A type-level registration is mapper-wide, so it would change date handling for every

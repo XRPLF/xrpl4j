@@ -119,21 +119,23 @@ public interface Batch extends Transaction {
   /**
    * Optional list of batch signers for multi-account batch transactions.
    *
-   * <p>A {@link BatchSigner} entry is required for every account that has at least one inner transaction, <em>or</em>
-   * that would ordinarily have to sign at least one of the inner transactions (e.g., a co-signer or delegate). When
-   * multiple such accounts exist and no {@code BatchSigners} array is provided, rippled rejects the outer transaction
-   * with {@code tefBAD_AUTH}.
+   * <p>A {@link BatchSigner} entry is required for every account, other than the outer {@link #account()}, that
+   * would ordinarily have to sign at least one of the inner transactions: the inner {@code Account} (or its
+   * {@code Delegate} when one is present), a {@code Sponsor} that carries a {@code SponsorSignature}, and a
+   * {@code LoanSet} {@code Counterparty}. This set is exposed by {@link #requiredSigners()}. When such accounts exist
+   * and no {@code BatchSigners} array is provided, xrpld rejects the outer transaction with {@code temBAD_SIGNER}.
    *
    * <p>Pseudo-accounts (e.g., vault or MPT-issuance accounts) cannot sign batch entries. A {@link BatchSigner} entry
-   * that references a pseudo-account is rejected by rippled with {@code tefBAD_AUTH}. xrpl4j does not enforce this
+   * that references a pseudo-account is rejected by xrpld with {@code tefBAD_AUTH}. xrpl4j does not enforce this
    * at construction time because pseudo-account status is ledger state that is unknowable from an address alone.
    *
    * <p>Notes on the current ({@code V1_1}) design:
    * <ul>
    *   <li>Entries are auto-sorted ascending by {@code Account} address (required by the wire format).</li>
    *   <li>There is a hard cap of 24 entries, independent of the number of inner transactions.</li>
-   *   <li>Extra signers are allowed: an account may sign without having its own inner transaction (e.g.,
-   *       co-signer or delegate).</li>
+   *   <li>When non-empty, entries must match {@link #requiredSigners()} exactly (no missing and no extra
+   *       accounts). A co-signer of a multi-signing account belongs in that entry's nested {@code Signers} array,
+   *       not as its own BatchSigner; the outer account may itself appear there as such a co-signer.</li>
    * </ul>
    *
    * @return A {@link List} of {@link BatchSignerWrapper} containing the batch signers.

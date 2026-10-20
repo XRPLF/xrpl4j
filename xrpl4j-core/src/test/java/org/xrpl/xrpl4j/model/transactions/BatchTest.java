@@ -320,8 +320,10 @@ public class BatchTest {
       RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.valueOf(2)))
     );
 
-    // The test checks that the outer signer cannot be in BatchSigners (even via multi-sig)
-    assertThatThrownBy(() -> Batch.builder()
+    // The outer account may appear in another BatchSigner's nested Signers: it is a member of innerAccount's
+    // SignerList there, not a signer of an inner transaction. xrpld accepts this shape (only the BatchSigner's own
+    // Account is barred from being the outer account), so xrpl4j must too.
+    Batch batch = Batch.builder()
       .account(outerAccount) // <-- The crux of the test
       .fee(XrpCurrencyAmount.ofDrops(100))
       .sequence(UnsignedInteger.ONE)
@@ -340,9 +342,12 @@ public class BatchTest {
               )
             )).build()
         )))
-      .build()
-    ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("The Account submitting a Batch transaction must not sign any inner transactions.");
+      .build();
+
+    assertThat(batch.batchSigners()).hasSize(1);
+    assertThat(batch.batchSigners().get(0).batchSigner().account()).isEqualTo(innerAccount);
+    assertThat(batch.batchSigners().get(0).batchSigner().signers().get(0).signer().account())
+      .isEqualTo(outerAccount);
   }
 
   @Test
@@ -410,7 +415,9 @@ public class BatchTest {
         )))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("BatchSigners must contain signatures from all accounts with inner transactions")
+      .hasMessageContaining(
+        "BatchSigners must contain signatures from all accounts required to sign an inner transaction"
+      )
       .hasMessageContaining(innerAccount2.value());
   }
 
@@ -513,7 +520,9 @@ public class BatchTest {
         )))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("BatchSigners must contain signatures from all accounts with inner transactions")
+      .hasMessageContaining(
+        "BatchSigners must contain signatures from all accounts required to sign an inner transaction"
+      )
       .hasMessageContaining(delegateAccount.value());
   }
 
@@ -546,7 +555,9 @@ public class BatchTest {
         )))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("BatchSigners must contain signatures from all accounts with inner transactions")
+      .hasMessageContaining(
+        "BatchSigners must contain signatures from all accounts required to sign an inner transaction"
+      )
       .hasMessageContaining(counterpartyAccount.value());
 
     // Should succeed once BatchSigners includes both the Account and the Counterparty.
@@ -972,9 +983,10 @@ public class BatchTest {
   }
 
   @Test
-  void testBatchSignersMayIncludeAccountWithoutInnerTransaction() {
-    // V1_1: a BatchSigner may be a co-signer or delegate for an inner transaction even if that
-    // account has no inner transaction of its own. Previously this was rejected; it is now allowed.
+  void testBatchSignersMustNotIncludeAccountThatIsNotARequiredSigner() {
+    // XLS-56 §2.3 (BatchSigners item 5): BatchSigners must match the required-signer set exactly, so an entry for an
+    // account that is not a required signer of any inner transaction is rejected (xrpld: temBAD_SIGNER). A co-signer
+    // of a multi-signing account belongs in that account's nested Signers array, not as its own BatchSigner.
     Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
     Address coSignerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
     PublicKey innerKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
@@ -985,7 +997,7 @@ public class BatchTest {
       RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.valueOf(2)))
     );
 
-    Batch batch = Batch.builder()
+    assertThatThrownBy(() -> Batch.builder()
       .account(ACCOUNT)
       .fee(XrpCurrencyAmount.ofDrops(100))
       .sequence(UnsignedInteger.ONE)
@@ -998,14 +1010,14 @@ public class BatchTest {
           .transactionSignature(Signature.fromBase16("00112233"))
           .build()),
         BatchSignerWrapper.of(BatchSigner.builder()
-          .account(coSignerAccount)
+          .account(coSignerAccount) // <-- Not a required signer of any inner transaction
           .signingPublicKey(coSignerKey)
           .transactionSignature(Signature.fromBase16("44556677"))
           .build())
       ))
-      .build();
-
-    assertThat(batch.batchSigners()).hasSize(2);
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Found BatchSigner for account that is not a required signer: " + coSignerAccount);
   }
 
   @Test
@@ -1120,8 +1132,10 @@ public class BatchTest {
       RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.valueOf(2)))
     );
 
-    // The test checks that the outer signer cannot be in BatchSigners (even via multi-sig)
-    assertThatThrownBy(() -> Batch.builder()
+    // The outer account may appear in another BatchSigner's nested Signers: it is a member of innerAccount's
+    // SignerList there, not a signer of an inner transaction. xrpld accepts this shape (only the BatchSigner's own
+    // Account is barred from being the outer account), so xrpl4j must too.
+    Batch batch = Batch.builder()
       .account(outerAccount) // <-- The crux of the test
       .fee(XrpCurrencyAmount.ofDrops(100))
       .sequence(UnsignedInteger.ONE)
@@ -1140,9 +1154,12 @@ public class BatchTest {
               )
             )).build()
         )))
-      .build()
-    ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("The Account submitting a Batch transaction must not sign any inner transactions.");
+      .build();
+
+    assertThat(batch.batchSigners()).hasSize(1);
+    assertThat(batch.batchSigners().get(0).batchSigner().account()).isEqualTo(innerAccount);
+    assertThat(batch.batchSigners().get(0).batchSigner().signers().get(0).signer().account())
+      .isEqualTo(outerAccount);
   }
 
   // ///////////////

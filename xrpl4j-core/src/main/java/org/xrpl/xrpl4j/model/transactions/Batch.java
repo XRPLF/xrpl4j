@@ -144,10 +144,10 @@ public interface Batch extends Transaction {
   /**
    * The set of accounts that must appear in {@link #batchSigners()}, derived from the inner transactions.
    *
-   * <p>rippled builds the identical set in {@code Batch::preflightSigValidated}, which requires the
+   * <p>xrpld builds the identical set in {@code Batch::preflightSigValidated}, which requires the
    * {@code BatchSigners} to match it exactly — rejecting an array that omits a required signer <em>or</em> carries an
-   * extra one. xrpl4j's own construction-time validation ({@link #checkBatchSigners()}) enforces only that no
-   * required signer is missing, deferring the stricter extra-signer check to the server. Each inner contributes:
+   * extra one (XLS-56 §2.3, BatchSigners items 5 and 6). {@link #checkBatchSigners()} enforces the same exact match
+   * whenever {@code BatchSigners} is non-empty. Each inner contributes:
    * <ul>
    *   <li>its <em>initiator</em> — its {@code Delegate} when one is present, otherwise its {@code Account};</li>
    *   <li>its {@code Sponsor}, when the inner also carries a {@code SponsorSignature}; and</li>
@@ -306,13 +306,28 @@ public interface Batch extends Transaction {
    * Validates BatchSigners constraints and auto-sorts entries by {@code Account} in ascending order (required by
    * V1_1). Follows the same normalizing {@link Value.Check} pattern as {@link BatchSigner#checkAndNormalize()}.
    *
-   * <p>Notes on the current ({@code V1_1}) design:
+   * <p>Each rule below maps to the {@code BatchSigners} failure conditions in XLS-56 §2.3 and to
+   * {@code Batch::preflight} / {@code Batch::preflightSigValidated} in xrpld:
    * <ul>
-   *   <li>BatchSigners are auto-sorted ascending by Account (temBAD_SIGNER if out of order on-chain).</li>
-   *   <li>There is a hard cap of 24 BatchSigners, independent of the number of inner transactions.</li>
-   *   <li>No "extra signers" check is performed: co-signers/delegates are allowed without their own inner
-   *       transaction.</li>
+   *   <li>Item 1: at most 24 BatchSigners, independent of the number of inner transactions.</li>
+   *   <li>Item 2: the outer {@link #account()} must not be a BatchSigner {@code Account}.</li>
+   *   <li>Item 3: no duplicate BatchSigner {@code Account}s.</li>
+   *   <li>Item 4: BatchSigners must be strictly ascending by {@code Account}. xrpld rejects an unsorted array;
+   *       xrpl4j instead normalizes by auto-sorting on construction, so callers need not pre-sort. This cannot
+   *       invalidate any signature: a BatchSigner's signature covers only the outer Account, sequence, Flags, the
+   *       inner transaction IDs and the signer's own Account (never the BatchSigners array), and the outer
+   *       signature is always computed over an already-constructed, and therefore already-sorted, Batch.</li>
+   *   <li>Items 5 and 6: when BatchSigners is non-empty it must equal {@link #requiredSigners()} exactly, with no
+   *       extra and no missing entries.</li>
    * </ul>
+   *
+   * <p>Deliberate deviation: XLS-56 item 6 also rejects a Batch whose {@code BatchSigners} is absent while inner
+   * transactions require signers. xrpl4j does <em>not</em> enforce that at construction time, because the
+   * multi-account signing workflow must first build the Batch without any BatchSigners in order to produce the
+   * payload that each BatchSigner signs, and only afterwards rebuild it with the collected signatures. xrpld makes
+   * the same allowance for unsigned proposals (the {@code TapProposal} exemption in
+   * {@code Batch::preflightSigValidated}); a submitted Batch that still lacks required BatchSigners is rejected by
+   * the server with {@code temBAD_SIGNER}.
    */
   @Value.Check
   default Batch checkBatchSigners() {
@@ -336,16 +351,15 @@ public interface Batch extends Transaction {
       this.batchSigners().size()
     );
 
-    // Check 3: Outer account must not appear in BatchSigners (directly or via nested Signers)
+    // Check 3: Outer account must not appear as a BatchSigner Account (XLS-56 §2.3 item 1.2; xrpld returns
+    // temBAD_SIGNER). Only the BatchSigner's own Account is compared, mirroring xrpld's Batch::preflight. The outer
+    // account MAY legitimately appear inside another BatchSigner's nested `Signers` array: there it is merely a
+    // member of that account's SignerList contributing quorum weight, not a signer of an inner transaction. xrpld
+    // only forbids a nested signer from being the BatchSigner account itself (see STTx::checkBatchMultiSign), and
+    // Testnet has validated Batch transactions with the outer account nested in this way.
     final Optional<BatchSigner> firstSignerMatchingOuterAccount = this.batchSigners().stream()
       .map(BatchSignerWrapper::batchSigner)
-      .filter(batchSigner -> {
-        if (batchSigner.account().equals(this.account())) {
-          return true;
-        }
-        return batchSigner.signers().stream()
-          .anyMatch(signerWrapper -> signerWrapper.signer().account().equals(this.account()));
-      })
+      .filter(batchSigner -> batchSigner.account().equals(this.account()))
       .findFirst();
 
     Preconditions.checkArgument(
@@ -355,28 +369,40 @@ public interface Batch extends Transaction {
       firstSignerMatchingOuterAccount.orElse(null)
     );
 
-    // Check 4: When BatchSigners is non-empty, every account required to sign an inner transaction must have a
-    // corresponding BatchSigner entry. The required-signer set (initiator, sponsor, and LoanSet counterparty, with
-    // the outer account excluded) is derived by requiredSigners(), which is the single source of truth.
+    // Checks 4 and 5: When BatchSigners is non-empty it must match the required-signer set exactly (XLS-56 §2.3,
+    // BatchSigners items 5 and 6; xrpld returns temBAD_SIGNER for either a missing or an extra entry). The
+    // required-signer set (initiator, sponsor, and LoanSet counterparty, with the outer account excluded) is derived
+    // by requiredSigners(), which is the single source of truth. That set depends only on the inner transactions'
+    // fields, never on ledger state, so it can be checked here. Note that the co-signers of a multi-signing
+    // BatchSigner belong in that entry's nested `Signers` array, not as additional BatchSigner entries.
     if (!this.batchSigners().isEmpty()) {
+      final Set<Address> requiredSignerAccounts = this.requiredSigners();
       final Set<Address> actualSignerAccounts = this.batchSigners().stream()
         .map(wrapper -> wrapper.batchSigner().account())
         .collect(Collectors.toSet());
 
-      // Find the first required signer that has no BatchSigner entry.
-      final Optional<Address> missingSignerAccount = this.requiredSigners().stream()
+      // Check 4: Find the first required signer that has no BatchSigner entry.
+      final Optional<Address> missingSignerAccount = requiredSignerAccounts.stream()
         .filter(account -> !actualSignerAccounts.contains(account))
         .findFirst();
 
-      // Note: we intentionally do NOT check for extra BatchSigners (accounts with no inner transaction).
-      // V1_1 allows co-signers and delegates who sign on behalf of an inner-transaction account without
-      // having their own inner transaction. Whether an extra signer is legitimate requires ledger state
-      // (e.g. SignerList entries), so that check belongs on the server, not here.
       Preconditions.checkArgument(
         !missingSignerAccount.isPresent(),
-        "BatchSigners must contain signatures from all accounts with inner transactions " +
+        "BatchSigners must contain signatures from all accounts required to sign an inner transaction " +
           "(excluding outer signer). Missing BatchSigner for account: %s",
         missingSignerAccount.orElse(null)
+      );
+
+      // Check 5: Find the first BatchSigner entry whose account is not a required signer.
+      final Optional<Address> extraSignerAccount = actualSignerAccounts.stream()
+        .filter(account -> !requiredSignerAccounts.contains(account))
+        .findFirst();
+
+      Preconditions.checkArgument(
+        !extraSignerAccount.isPresent(),
+        "BatchSigners must only contain signatures from accounts required to sign an inner transaction. " +
+          "Found BatchSigner for account that is not a required signer: %s",
+        extraSignerAccount.orElse(null)
       );
     }
 

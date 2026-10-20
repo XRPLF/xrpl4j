@@ -1421,6 +1421,9 @@ public class BatchTransactionIT extends AbstractIT {
       innerAccountKeyPair, outerKeyPair, innerAccountOtherSignerKeyPair
     );
     final AccountInfoResult outerInfo = this.scanForResult(() -> this.getValidatedAccountInfo(outerAddress));
+    final XrpCurrencyAmount destinationBalanceBefore = this.scanForResult(
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress())
+    ).accountData().balance();
 
     final Payment innerPaymentFromOuter = createInnerPayment(
       outerAddress,
@@ -1506,10 +1509,15 @@ public class BatchTransactionIT extends AbstractIT {
       .extracting(wrapper -> wrapper.signer().account())
       .contains(outerAddress);
 
-    final AccountInfoResult destInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress())
+    // AllOrNothing, UntilFailure and Independent apply both inner payments (10000 + 20000 drops). OnlyOne stops after
+    // the first inner transaction that succeeds, so only the first payment (10000 drops) lands.
+    final long expectedDropsReceived = batchFlags.tfOnlyOne() ? 10000 : 30000;
+    final XrpCurrencyAmount expectedDestinationBalance =
+      destinationBalanceBefore.plus(XrpCurrencyAmount.ofDrops(expectedDropsReceived));
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().balance().equals(expectedDestinationBalance)
     );
-    assertThat(destInfo.accountData().balance()).isNotNull();
   }
 
   // //////////////////////

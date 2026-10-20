@@ -158,6 +158,12 @@ public interface Batch extends Transaction {
    * The outer {@link #account()} is excluded throughout, because it authorises its own inner transactions with the
    * signature it puts on the Batch itself.
    *
+   * <p>Maintenance note: xrpld keys the Counterparty rule on the presence of the {@code Counterparty} field on
+   * <em>any</em> inner transaction, whereas this method keys on {@code instanceof LoanSet} because {@code LoanSet} is
+   * currently the only transaction type that carries that field. If a future transaction type gains a
+   * {@code Counterparty}, this method must be extended or {@link #checkBatchSigners()} will reject validated Batches
+   * containing it.
+   *
    * <p>Each account in this set also contributes at least one base fee to the Batch's transaction cost. When pricing
    * a Batch before its signatures exist, use
    * {@link org.xrpl.xrpl4j.model.client.fees.FeeParams#forBatch(org.xrpl.xrpl4j.model.client.fees.FeeResult, Batch)}
@@ -353,9 +359,9 @@ public interface Batch extends Transaction {
       this.batchSigners().size()
     );
 
-    // Check 3: Outer account must not appear as a BatchSigner Account (XLS-56 §2.3 item 1.2; xrpld returns
-    // temBAD_SIGNER). Only the BatchSigner's own Account is compared, mirroring xrpld's Batch::preflight. The outer
-    // account MAY legitimately appear inside another BatchSigner's nested `Signers` array: there it is merely a
+    // Check 3: Outer account must not appear as a BatchSigner Account (XLS-56 §2.3, BatchSigners item 2; xrpld
+    // returns temBAD_SIGNER). Only the BatchSigner's own Account is compared, mirroring xrpld's Batch::preflight. The
+    // outer account MAY legitimately appear inside another BatchSigner's nested `Signers` array: there it is merely a
     // member of that account's SignerList contributing quorum weight, not a signer of an inner transaction. xrpld
     // only forbids a nested signer from being the BatchSigner account itself (see STTx::checkBatchMultiSign), and
     // Testnet has validated Batch transactions with the outer account nested in this way.
@@ -366,8 +372,8 @@ public interface Batch extends Transaction {
 
     Preconditions.checkArgument(
       !firstSignerMatchingOuterAccount.isPresent(),
-      "The Account submitting a Batch transaction must not sign any inner transactions. " +
-        "Found BatchSigner matching outer account: %s",
+      "The outer Account must not appear as a BatchSigner Account; it authorises its own inner transactions " +
+        "with the Batch signature itself. Found BatchSigner for the outer Account: %s",
       firstSignerMatchingOuterAccount.orElse(null)
     );
 

@@ -313,6 +313,41 @@ validatedLedger.age().ifPresent(ageValue -> {
 UnsignedInteger ageValue = validatedLedger.age().orElse(UnsignedInteger.ZERO);
 ```
 
+### 6. `Batch.batchSigners()` validation now matches XLS-56 exactly
+
+Two construction-time rules in `Batch` changed to match XLS-56 §2.3 and xrpld:
+
+- **Extra BatchSigners are now rejected.** When `BatchSigners` is non-empty it must contain exactly the accounts in
+  `Batch.requiredSigners()`: each inner transaction's `Account` (or its `Delegate`), a `Sponsor` that carries a
+  `SponsorSignature`, and a `LoanSet` `Counterparty`, excluding the outer account. Previously an entry for any other
+  account was accepted at construction time and rejected by xrpld with `temBAD_SIGNER` at submission.
+- **The outer account may now appear as a nested multi-signer.** Previously `Batch` rejected any BatchSigner whose
+  nested `Signers` array contained the outer account. xrpld only forbids the outer account from being a BatchSigner
+  `Account`; a nested signer is simply a member of that account's SignerList. Validated ledger Batches with this shape
+  could not be deserialized before this change.
+
+**Migration:**
+
+```java
+// Before (v6.x.x): a co-signer added as its own BatchSigner entry — now throws IllegalArgumentException.
+Batch.builder()
+  .batchSigners(
+    BatchSignerWrapper.of(BatchSigner.builder().account(innerAccount).signers(innerSigners).build()),
+    BatchSignerWrapper.of(BatchSigner.builder().account(coSigner).signingPublicKey(k).transactionSignature(s).build())
+  )
+  ...
+
+// After (v7.0.0): a co-signer belongs inside the nested Signers of the account it signs for.
+Batch.builder()
+  .batchSigners(
+    BatchSignerWrapper.of(BatchSigner.builder()
+      .account(innerAccount)
+      .signers(SignerWrapper.of(coSignerSigner), SignerWrapper.of(otherSigner))
+      .build())
+  )
+  ...
+```
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.

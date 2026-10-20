@@ -144,21 +144,24 @@ class BatchTransactionResultFixtureTest {
   /**
    * Every captured Batch transaction deserializes (typed and generic), satisfies the structural invariants of a
    * validated Batch, and survives a serialize/deserialize round trip.
+   *
+   * <p>Every fixture that has a BatchSigner has exactly one, multi-signed by a SignerList that includes the OUTER
+   * account. That shape was rejected by xrpl4j before the fix this test guards, so it is asserted explicitly below.
    */
   @ParameterizedTest
   @ValueSource(strings = {
-    "tx-result-21670012-565E70B3.json", // AllOrNothing, 3 Payments (XRP, IOU, MPT), 1 multi-signed BatchSigner
-    "tx-result-21670068-B93223CE.json", // AllOrNothing, 2 Payments, 1 BatchSigner
-    "tx-result-21670074-BBA1B829.json", // AllOrNothing, 2 Payments, 1 BatchSigner
-    "tx-result-21670080-798B9F5C.json", // AllOrNothing, 2 Payments, 1 BatchSigner
-    "tx-result-21670126-BB84DB4F.json", // AllOrNothing, 3 Payments, 1 BatchSigner
-    "tx-result-21670169-553E3A16.json", // AllOrNothing, 2 Payments, 1 BatchSigner
-    "tx-result-21670175-E8BAD2C4.json", // AllOrNothing, 2 Payments, 1 BatchSigner
-    "tx-result-21670181-CF6877D3.json", // AllOrNothing, 2 Payments, 1 BatchSigner
-    "tx-result-21670231-02984846.json", // AllOrNothing, 3 Payments, 1 BatchSigner
+    "tx-result-21670012-565E70B3.json", // AllOrNothing, 3 Payments (XRP, IOU, MPT), outer account nested signer
+    "tx-result-21670068-B93223CE.json", // AllOrNothing, 2 Payments, outer account nested signer
+    "tx-result-21670074-BBA1B829.json", // AllOrNothing, 2 Payments, outer account nested signer
+    "tx-result-21670080-798B9F5C.json", // AllOrNothing, 2 Payments, outer account nested signer
+    "tx-result-21670126-BB84DB4F.json", // AllOrNothing, 3 Payments, outer account nested signer
+    "tx-result-21670169-553E3A16.json", // AllOrNothing, 2 Payments, outer account nested signer
+    "tx-result-21670175-E8BAD2C4.json", // AllOrNothing, 2 Payments, outer account nested signer
+    "tx-result-21670181-CF6877D3.json", // AllOrNothing, 2 Payments, outer account nested signer
+    "tx-result-21670231-02984846.json", // AllOrNothing, 3 Payments, outer account nested signer
     "tx-result-21670276-02807423.json", // Independent, 2 TrustSets, no BatchSigners
-    "tx-result-21670276-C82F6B33.json", // AllOrNothing, 3 Payments, 1 BatchSigner
-    "tx-result-21670284-3FB70CCC.json"  // Independent, 2 Payments, 1 BatchSigner
+    "tx-result-21670276-C82F6B33.json", // AllOrNothing, 3 Payments, outer account nested signer
+    "tx-result-21670284-3FB70CCC.json"  // Independent, 2 Payments, outer account nested signer
   })
   void deserializeEveryCapturedBatchTransactionResult(String fixtureName) throws IOException {
     File fixture = new File(FIXTURE_DIR + fixtureName);
@@ -198,6 +201,15 @@ class BatchTransactionResultFixtureTest {
       assertThat(signer.account()).isNotEqualTo(batch.account());
       assertThat(signer.transactionSignature().isPresent() || !signer.signers().isEmpty()).isTrue();
     });
+
+    // Regression guard: in every multi-account fixture the OUTER account is one of the nested multi-signers of the
+    // inner account's BatchSigner (XLS-56 only bars it from being a BatchSigner Account; xrpld accepts it nested).
+    if (!batch.batchSigners().isEmpty()) {
+      assertThat(batch.batchSigners())
+        .flatExtracting(wrapper -> wrapper.batchSigner().signers())
+        .extracting(wrapper -> wrapper.signer().account())
+        .contains(batch.account());
+    }
 
     // Generic (client-style) deserialization resolves to a Batch.
     TransactionResult<Transaction> generic = objectMapper.readValue(

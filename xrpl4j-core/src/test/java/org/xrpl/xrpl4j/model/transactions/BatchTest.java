@@ -305,8 +305,8 @@ public class BatchTest {
         )))
       .build()
     ).isInstanceOf(IllegalArgumentException.class).hasMessageContaining(
-      "The Account submitting a Batch transaction must not sign any inner transactions. " +
-        "Found BatchSigner matching outer account:");
+      "The outer Account must not appear as a BatchSigner Account; it authorises its own inner transactions " +
+        "with the Batch signature itself. Found BatchSigner for the outer Account:");
   }
 
   @Test
@@ -1119,12 +1119,13 @@ public class BatchTest {
   }
 
   @Test
-  void testBatchWithOuterSignerAsMultiSigSignerInBatchSigner() {
-    // Create accounts
+  void testBatchWithOuterSignerAsOneOfSeveralMultiSigSignersInBatchSigner() {
+    // Create accounts: the inner account's SignerList is {outerAccount, otherSigner}, mirroring the Testnet fixtures.
     Address outerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
     Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address otherSignerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
     PublicKey outerPubKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
-    PublicKey innerPubKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
+    PublicKey otherSignerPubKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
 
     // Create inner transactions from innerAccount
     List<RawTransactionWrapper> innerTransactions = Lists.newArrayList(
@@ -1151,6 +1152,12 @@ public class BatchTest {
                 .signingPublicKey(outerPubKey)
                 .transactionSignature(Signature.fromBase16("00112233"))
                 .build()
+              ),
+              SignerWrapper.of(Signer.builder()
+                .account(otherSignerAccount)
+                .signingPublicKey(otherSignerPubKey)
+                .transactionSignature(Signature.fromBase16("44556677"))
+                .build()
               )
             )).build()
         )))
@@ -1158,8 +1165,9 @@ public class BatchTest {
 
     assertThat(batch.batchSigners()).hasSize(1);
     assertThat(batch.batchSigners().get(0).batchSigner().account()).isEqualTo(innerAccount);
-    assertThat(batch.batchSigners().get(0).batchSigner().signers().get(0).signer().account())
-      .isEqualTo(outerAccount);
+    assertThat(batch.batchSigners().get(0).batchSigner().signers())
+      .extracting(wrapper -> wrapper.signer().account())
+      .containsExactlyInAnyOrder(outerAccount, otherSignerAccount);
   }
 
   // ///////////////

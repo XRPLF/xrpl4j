@@ -9,7 +9,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedInteger;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -684,6 +687,117 @@ class TransactionMetadataTest {
     AffectedNode deletedNode = transactionMetadata.affectedNodes().get(2);
     assertThat(deletedNode).isInstanceOf(DeletedNode.class);
     assertThat(deletedNode.ledgerEntryType()).isEqualTo(MetaLedgerEntryType.DELEGATE);
+  }
+
+  @Test
+  void testRoundTripAffectedNodes() throws JsonProcessingException, JSONException {
+    String json = "{\n" +
+      "  \"AffectedNodes\": [\n" +
+      "    {\n" +
+      "      \"CreatedNode\": {\n" +
+      "        \"LedgerEntryType\": \"AccountRoot\",\n" +
+      "        \"LedgerIndex\": \"13F1A95D7AAB7108D4CF4A3F4F3B5F7E7F4E3B3F3E5D4C3B2A1F0E9D8C7B6A5F\",\n" +
+      "        \"NewFields\": {\n" +
+      "          \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "          \"Balance\": \"1000\",\n" +
+      "          \"Sequence\": 1\n" +
+      "        }\n" +
+      "      }\n" +
+      "    },\n" +
+      "    {\n" +
+      "      \"ModifiedNode\": {\n" +
+      "        \"FinalFields\": {\n" +
+      "          \"Account\": \"rB3JmRd5m292YjCsCr65tc8dwZz2WN7HQu\",\n" +
+      "          \"Balance\": \"953788095\",\n" +
+      "          \"Flags\": 0,\n" +
+      "          \"OwnerCount\": 82,\n" +
+      "          \"Sequence\": 35260003\n" +
+      "        },\n" +
+      "        \"LedgerEntryType\": \"AccountRoot\",\n" +
+      "        \"LedgerIndex\": \"D6C4EE995A40D6A22172016806CE813DE1578B11158B4EAA5115C563B4DC4B29\",\n" +
+      "        \"PreviousFields\": {\n" +
+      "          \"Balance\": \"953788294\",\n" +
+      "          \"OwnerCount\": 83,\n" +
+      "          \"Sequence\": 35260002\n" +
+      "        },\n" +
+      "        \"PreviousTxnID\": \"A39E1C58CC442D99123D6EA0BA3E25995BC6221D98F9A191FAC04FDDC583BF63\",\n" +
+      "        \"PreviousTxnLgrSeq\": 39480040\n" +
+      "      }\n" +
+      "    },\n" +
+      "    {\n" +
+      "      \"DeletedNode\": {\n" +
+      "        \"FinalFields\": {\n" +
+      "          \"Account\": \"rB3JmRd5m292YjCsCr65tc8dwZz2WN7HQu\",\n" +
+      "          \"Flags\": 0,\n" +
+      "          \"TicketSequence\": 35260003\n" +
+      "        },\n" +
+      "        \"LedgerEntryType\": \"Ticket\",\n" +
+      "        \"LedgerIndex\": \"0F512CD1108EF19E3662FB0F830C803853DCBAE8B5FEF2A46E2A99ACCE1E8177\"\n" +
+      "      }\n" +
+      "    }\n" +
+      "  ],\n" +
+      "  \"TransactionIndex\": 1,\n" +
+      "  \"TransactionResult\": \"tesSUCCESS\"\n" +
+      "}";
+
+    TransactionMetadata transactionMetadata = objectMapper.readValue(json, TransactionMetadata.class);
+    String serialized = objectMapper.writeValueAsString(transactionMetadata);
+    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+    assertThat(objectMapper.readValue(serialized, TransactionMetadata.class)).isEqualTo(transactionMetadata);
+  }
+
+  /**
+   * {@code DirectoryNode} is a declared {@link MetaLedgerEntryType}, but no dedicated {@link MetaLedgerObject}
+   * model exists for it, so its fields deserialize into a {@link MetaUnknownObject}, which keeps no fields. The
+   * node itself round-trips, but the contents of {@code FinalFields} are dropped on serialization. This test pins
+   * that lossy behaviour so that it is a documented limitation rather than a surprise.
+   *
+   * <p>TODO: Once a dedicated model exists for {@code DirectoryNode}, update this test to assert a lossless round
+   * trip (or point it at another type that still lacks a model). See
+   * <a href="https://github.com/XRPLF/xrpl4j/issues/854">#854</a>.</p>
+   */
+  @Test
+  void testRoundTripLedgerEntryTypeWithoutDedicatedModelIsLossy() throws JsonProcessingException, JSONException {
+    String json = "{\n" +
+      "  \"AffectedNodes\": [\n" +
+      "    {\n" +
+      "      \"ModifiedNode\": {\n" +
+      "        \"FinalFields\": {\n" +
+      "          \"Owner\": \"rB3JmRd5m292YjCsCr65tc8dwZz2WN7HQu\"\n" +
+      "        },\n" +
+      "        \"LedgerEntryType\": \"DirectoryNode\",\n" +
+      "        \"LedgerIndex\": \"D6C4EE995A40D6A22172016806CE813DE1578B11158B4EAA5115C563B4DC4B29\"\n" +
+      "      }\n" +
+      "    }\n" +
+      "  ],\n" +
+      "  \"TransactionIndex\": 1,\n" +
+      "  \"TransactionResult\": \"tesSUCCESS\"\n" +
+      "}";
+
+    TransactionMetadata transactionMetadata = objectMapper.readValue(json, TransactionMetadata.class);
+    ModifiedNode<?> modifiedNode = (ModifiedNode<?>) transactionMetadata.affectedNodes().get(0);
+    assertThat(modifiedNode.ledgerEntryType()).isEqualTo(MetaLedgerEntryType.DIRECTORY_NODE);
+    assertThat(modifiedNode.finalFields().get()).isInstanceOf(MetaUnknownObject.class);
+
+    // The Owner field is lost because MetaUnknownObject has no properties.
+    String expectedLossyJson = "{\n" +
+      "  \"AffectedNodes\": [\n" +
+      "    {\n" +
+      "      \"ModifiedNode\": {\n" +
+      "        \"FinalFields\": {},\n" +
+      "        \"LedgerEntryType\": \"DirectoryNode\",\n" +
+      "        \"LedgerIndex\": \"D6C4EE995A40D6A22172016806CE813DE1578B11158B4EAA5115C563B4DC4B29\"\n" +
+      "      }\n" +
+      "    }\n" +
+      "  ],\n" +
+      "  \"TransactionIndex\": 1,\n" +
+      "  \"TransactionResult\": \"tesSUCCESS\"\n" +
+      "}";
+    String serialized = objectMapper.writeValueAsString(transactionMetadata);
+    JSONAssert.assertEquals(expectedLossyJson, serialized, JSONCompareMode.STRICT);
+
+    TransactionMetadata deserialized = objectMapper.readValue(serialized, TransactionMetadata.class);
+    assertThat(deserialized).isEqualTo(transactionMetadata);
   }
 
   /**

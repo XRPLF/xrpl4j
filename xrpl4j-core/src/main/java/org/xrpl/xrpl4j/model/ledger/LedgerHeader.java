@@ -29,6 +29,8 @@ import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.jackson.modules.ZonedDateTimeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ZonedDateTimeSerializer;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -96,6 +98,8 @@ public interface LedgerHeader {
    */
   @JsonProperty("close_time_human")
   @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", locale = "en_US")
+  @JsonSerialize(contentUsing = ZonedDateTimeSerializer.class)
+  @JsonDeserialize(contentUsing = ZonedDateTimeDeserializer.class)
   Optional<ZonedDateTime> closeTimeHuman();
 
   /**

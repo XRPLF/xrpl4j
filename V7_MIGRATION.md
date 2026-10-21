@@ -313,7 +313,44 @@ validatedLedger.age().ifPresent(ageValue -> {
 UnsignedInteger ageValue = validatedLedger.age().orElse(UnsignedInteger.ZERO);
 ```
 
-### 6. `Batch.batchSigners()` validation now matches XLS-56 exactly
+### 6. `ObjectMapperFactory` no longer overrides `ZonedDateTime` handling globally
+
+Through `6.1.0-rc.x` and `7.0.0-rc.x`, the mapper returned by `ObjectMapperFactory.create()` registered an
+xrpld-specific `ZonedDateTime` serializer and deserializer for the whole mapper, and it has always disabled
+`SerializationFeature.WRITE_DATES_AS_TIMESTAMPS`. Both settings applied to every `ZonedDateTime` the mapper touched,
+including types you own that share an object graph with xrpl4j types (for example, a DTO holding a
+`TransactionResult`).
+
+In v7.0.0 the xrpld-specific serializer and deserializer are bound only to the xrpld date fields that need them
+(`LedgerHeader.closeTimeHuman()`, `ServerInfo.time()`, and `AmmInfoAuctionSlot.expiration()`), and
+`WRITE_DATES_AS_TIMESTAMPS` is left at Jackson's default. xrpl4j's own JSON output is unchanged. For your own
+`java.time` fields handled by the factory mapper:
+
+- Serialization now follows Jackson's default, which writes `ZonedDateTime` and `Instant` as numeric timestamps
+  (e.g., `1704164645.000000000`) rather than ISO-8601 strings.
+- Deserialization of ISO-8601 strings (e.g., `"2024-01-02T03:04:05Z"`) works again; the xrpld format
+  (`"2024-Jan-02 03:04:05.000000000 UTC"`) is no longer accepted for unannotated fields.
+
+**Migration:**
+
+If you relied on ISO-8601 output for your own types, use a separate mapper for them, or annotate the field:
+
+```java
+@JsonFormat(shape = JsonFormat.Shape.STRING)
+ZonedDateTime createdAt();
+```
+
+If you need xrpld's human-readable format on a field you own, bind the xrpl4j serializers explicitly, exactly as the
+xrpl4j model does:
+
+```java
+@JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", locale = "en_US")
+@JsonSerialize(using = ZonedDateTimeSerializer.class)
+@JsonDeserialize(using = ZonedDateTimeDeserializer.class)
+ZonedDateTime closeTime();
+```
+
+### 7. `Batch.batchSigners()` validation now matches XLS-56 exactly
 
 Two construction-time rules in `Batch` changed to match XLS-56 §2.3 and xrpld:
 

@@ -1358,6 +1358,169 @@ public class BatchTransactionIT extends AbstractIT {
   }
 
   // //////////////////////
+  // 8b. This section tests a Batch transaction whose outer account is also a member of an inner account's SignerList,
+  // and therefore appears inside that inner account's multi-signed BatchSigner (as a nested Signer). XLS-56 §2.3
+  // (BatchSigners item 2) only forbids the outer account from being a BatchSigner `Account`; xrpld permits it as a
+  // nested co-signer of a different BatchSigner. This shape has been validated on Testnet.
+  // //////////////////////
+
+  /**
+   * Test a batch transaction where the outer account is one of the nested multi-signers of another account's
+   * BatchSigner.
+   */
+  @Test
+  void batchWithOuterAccountAsNestedSignerOfInnerBatchSigner()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    final KeyPair outerKeyPair = createRandomAccountEd25519();
+    final KeyPair innerAccountKeyPair = createRandomAccountEd25519();
+    final KeyPair innerAccountOtherSignerKeyPair = createRandomAccountEd25519();
+    final KeyPair destinationKeyPair = createRandomAccountEd25519();
+
+    batchWithOuterAccountAsNestedSignerOfInnerBatchSignerHelper(
+      outerKeyPair, innerAccountKeyPair, innerAccountOtherSignerKeyPair, destinationKeyPair,
+      BatchFlags.ofAllOrNothing()
+    );
+    batchWithOuterAccountAsNestedSignerOfInnerBatchSignerHelper(
+      outerKeyPair, innerAccountKeyPair, innerAccountOtherSignerKeyPair, destinationKeyPair,
+      BatchFlags.ofOnlyOne()
+    );
+    batchWithOuterAccountAsNestedSignerOfInnerBatchSignerHelper(
+      outerKeyPair, innerAccountKeyPair, innerAccountOtherSignerKeyPair, destinationKeyPair,
+      BatchFlags.ofUntilFailure()
+    );
+    batchWithOuterAccountAsNestedSignerOfInnerBatchSignerHelper(
+      outerKeyPair, innerAccountKeyPair, innerAccountOtherSignerKeyPair, destinationKeyPair,
+      BatchFlags.ofIndependent()
+    );
+  }
+
+  /**
+   * Helper for {@link #batchWithOuterAccountAsNestedSignerOfInnerBatchSigner()}: the outer account single-signs the
+   * Batch and also contributes one of the two nested signatures on the inner account's BatchSigner.
+   */
+  private void batchWithOuterAccountAsNestedSignerOfInnerBatchSignerHelper(
+    final KeyPair outerKeyPair,
+    final KeyPair innerAccountKeyPair,
+    final KeyPair innerAccountOtherSignerKeyPair,
+    final KeyPair destinationKeyPair,
+    final BatchFlags batchFlags
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    Objects.requireNonNull(outerKeyPair);
+    Objects.requireNonNull(innerAccountKeyPair);
+    Objects.requireNonNull(innerAccountOtherSignerKeyPair);
+    Objects.requireNonNull(destinationKeyPair);
+    Objects.requireNonNull(batchFlags);
+
+    final FeeResult feeResult = xrplClient.fee();
+    final Address outerAddress = outerKeyPair.publicKey().deriveAddress();
+    final Address innerAccountAddress = innerAccountKeyPair.publicKey().deriveAddress();
+
+    // The inner account's SignerList is {outer account, other signer} with quorum 2, so the OUTER account is a
+    // required co-signer of the inner account's BatchSigner.
+    final AccountInfoResult innerAccountInfo = setupMultiSigAccount(
+      innerAccountKeyPair, outerKeyPair, innerAccountOtherSignerKeyPair
+    );
+    final AccountInfoResult outerInfo = this.scanForResult(() -> this.getValidatedAccountInfo(outerAddress));
+    final XrpCurrencyAmount destinationBalanceBefore = this.scanForResult(
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress())
+    ).accountData().balance();
+
+    final Payment innerPaymentFromOuter = createInnerPayment(
+      outerAddress,
+      outerInfo.accountData().sequence().plus(UnsignedInteger.ONE),
+      destinationKeyPair.publicKey().deriveAddress(),
+      10000
+    );
+    final Payment innerPaymentFromInnerAccount = createInnerPayment(
+      innerAccountAddress,
+      innerAccountInfo.accountData().sequence(),
+      destinationKeyPair.publicKey().deriveAddress(),
+      20000
+    );
+
+    final Batch unpricedUnsignedBatch = Batch.builder()
+      .account(outerAddress)
+      .signingPublicKey(outerKeyPair.publicKey())
+      .sequence(outerInfo.accountData().sequence())
+      .flags(batchFlags)
+      .addRawTransactions(
+        RawTransactionWrapper.of(innerPaymentFromOuter),
+        RawTransactionWrapper.of(innerPaymentFromInnerAccount)
+      )
+      .build();
+
+    // ///////////////
+    // Inner Multisign: the outer account and the other signer both sign for the inner account.
+    // ///////////////
+
+    final List<SignerWrapper> innerAccountSignerWrappers = Lists.newArrayList(
+        outerKeyPair, innerAccountOtherSignerKeyPair
+      ).stream()
+      .map(keyPair -> SignerWrapper.of(Signer.builder()
+        .signingPublicKey(keyPair.publicKey())
+        .transactionSignature(
+          signatureService.multiSignInner(keyPair.privateKey(), unpricedUnsignedBatch, innerAccountAddress)
+        )
+        .build()))
+      .collect(Collectors.toList());
+
+    final Batch batchWithBatchSigners = Batch.builder()
+      .from(unpricedUnsignedBatch)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(innerAccountAddress)
+          .signers(innerAccountSignerWrappers)
+          .build())
+      ))
+      .build();
+
+    // The outer account must appear among the nested signers of the inner account's BatchSigner.
+    assertThat(batchWithBatchSigners.batchSigners().get(0).batchSigner().signers())
+      .extracting(wrapper -> wrapper.signer().account())
+      .contains(outerAddress);
+
+    final Batch pricedBatchWithBatchSigners = ImmutableBatch.copyOf(batchWithBatchSigners).withFee(
+      // Priced only once the BatchSigners exist: each batch signature costs one base fee. serializeBatch
+      // excludes the outer Fee, so the inner signatures taken above remain valid.
+      FeeUtils.computeFee(FeeParams.forBatch(feeResult, batchWithBatchSigners).build()).recommendedFee()
+    );
+
+    // ///////////////
+    // Outer Sign: the outer account single-signs the full Batch.
+    // ///////////////
+
+    final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(
+      outerKeyPair.privateKey(), pricedBatchWithBatchSigners
+    );
+
+    final SubmitResult<Batch> result = xrplClient.submit(signedBatch);
+    assertTesSuccess(result);
+    final TransactionResult<Batch> validatedBatch = this.scanForResult(
+      () -> this.getValidatedTransaction(result.transactionResult().hash(), Batch.class)
+    );
+    assertTesSuccess(validatedBatch);
+    verifyBatchMetadata(validatedBatch);
+
+    // The validated Batch, as read back from the ledger, still carries the outer account as a nested signer.
+    assertThat(validatedBatch.transaction().batchSigners()).hasSize(1);
+    assertThat(validatedBatch.transaction().batchSigners().get(0).batchSigner().account())
+      .isEqualTo(innerAccountAddress);
+    assertThat(validatedBatch.transaction().batchSigners().get(0).batchSigner().signers())
+      .extracting(wrapper -> wrapper.signer().account())
+      .contains(outerAddress);
+
+    // AllOrNothing, UntilFailure and Independent apply both inner payments (10000 + 20000 drops). OnlyOne stops after
+    // the first inner transaction that succeeds, so only the first payment (10000 drops) lands.
+    final long expectedDropsReceived = batchFlags.tfOnlyOne() ? 10000 : 30000;
+    final XrpCurrencyAmount expectedDestinationBalance =
+      destinationBalanceBefore.plus(XrpCurrencyAmount.ofDrops(expectedDropsReceived));
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().balance().equals(expectedDestinationBalance)
+    );
+  }
+
+  // //////////////////////
   // 9. This section tests a Batch transaction with an inner signer whose regular key has changed.
   // //////////////////////
 

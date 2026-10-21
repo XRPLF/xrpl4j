@@ -165,20 +165,19 @@ class VaultCreateTest {
   }
 
   @Test
-  void closedEndedVaultGapBelowMinimumStillBuilds() {
+  void closedEndedVaultGapBelowMinimumNotAllowed() {
     UnsignedLong tooSmallGap = VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.minus(UnsignedLong.ONE);
-    VaultCreate vaultCreate = baseBuilder()
+    assertThatThrownBy(() -> baseBuilder()
       .vaultKind(VaultKind.CLOSED_ENDED)
       .subscriptionDate(UnsignedLong.valueOf(1000))
       .redemptionDate(UnsignedLong.valueOf(1000).plus(tooSmallGap))
-      .build();
-
-    assertThat(vaultCreate.redemptionDate())
-      .hasValue(UnsignedLong.valueOf(1000).plus(tooSmallGap));
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("Investment period must be between MIN_INVESTMENT_PERIOD_SECONDS and MAX_INVESTMENT_PERIOD_SECONDS.");
   }
 
   @Test
-  void closedEndedVaultGapAboveMaximumStillBuilds() {
+  void closedEndedVaultGapAtMaximumAllowed() {
     VaultCreate vaultCreate = baseBuilder()
       .vaultKind(VaultKind.CLOSED_ENDED)
       .subscriptionDate(UnsignedLong.valueOf(1000))
@@ -187,6 +186,18 @@ class VaultCreateTest {
 
     assertThat(vaultCreate.redemptionDate())
       .hasValue(UnsignedLong.valueOf(1000).plus(VaultCreate.MAX_INVESTMENT_PERIOD_SECONDS));
+  }
+
+  @Test
+  void closedEndedVaultGapAboveMaximumNotAllowed() {
+    UnsignedLong tooLargeGap = VaultCreate.MAX_INVESTMENT_PERIOD_SECONDS.plus(UnsignedLong.ONE);
+    assertThatThrownBy(() -> baseBuilder()
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(UnsignedLong.valueOf(1000))
+      .redemptionDate(UnsignedLong.valueOf(1000).plus(tooLargeGap))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("Investment period must be between MIN_INVESTMENT_PERIOD_SECONDS and MAX_INVESTMENT_PERIOD_SECONDS.");
   }
 
   /**

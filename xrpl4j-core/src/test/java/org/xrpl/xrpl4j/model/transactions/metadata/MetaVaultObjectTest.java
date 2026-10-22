@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.model.transactions.metadata;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -13,6 +14,7 @@ import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.VaultData;
+import org.xrpl.xrpl4j.model.transactions.VaultKind;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 
 class MetaVaultObjectTest extends AbstractJsonTest {
@@ -41,6 +43,10 @@ class MetaVaultObjectTest extends AbstractJsonTest {
       .shareMptId(MpTokenIssuanceId.of("00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
       .scale(AssetScale.of(UnsignedInteger.valueOf(8)))
+      .leVersion(UnsignedInteger.ONE)
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(UnsignedLong.valueOf(1000))
+      .redemptionDate(UnsignedLong.valueOf(2000))
       .build();
 
     String json = "{" +
@@ -62,7 +68,11 @@ class MetaVaultObjectTest extends AbstractJsonTest {
       "  \"LossUnrealized\": \"100\"," +
       "  \"ShareMPTID\": \"00000005E54ZDVGNGHAOPOPCGVTIQWNQ3DU5Y836\"," +
       "  \"WithdrawalPolicy\": 1," +
-      "  \"Scale\": 8" +
+      "  \"Scale\": 8," +
+      "  \"LEVersion\": 1," +
+      "  \"VaultKind\": 1," +
+      "  \"SubscriptionDate\": 1000," +
+      "  \"RedemptionDate\": 2000" +
       "}";
 
     assertCanSerializeAndDeserialize(metaVaultObject, json, MetaVaultObject.class);

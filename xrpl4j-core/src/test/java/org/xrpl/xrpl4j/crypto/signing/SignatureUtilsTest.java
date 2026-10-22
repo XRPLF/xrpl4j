@@ -134,6 +134,7 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.VaultClawback;
 import org.xrpl.xrpl4j.model.transactions.VaultCreate;
+import org.xrpl.xrpl4j.model.transactions.VaultData;
 import org.xrpl.xrpl4j.model.transactions.VaultDelete;
 import org.xrpl.xrpl4j.model.transactions.VaultDeposit;
 import org.xrpl.xrpl4j.model.transactions.VaultSet;
@@ -1514,6 +1515,7 @@ public class SignatureUtilsTest {
     VaultDelete transaction = VaultDelete.builder()
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .memoData(VaultData.of("48656C6C6F"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))
       .signingPublicKey(sourcePublicKey)
@@ -1542,6 +1544,24 @@ public class SignatureUtilsTest {
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
       .amount(XrpCurrencyAmount.ofDrops(500))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToVaultWithdrawWithCredentialIds() {
+    VaultWithdraw transaction = VaultWithdraw.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .amount(XrpCurrencyAmount.ofDrops(500))
+      .addCredentialIds(
+        Hash256.of("000000000000000000000000000000000000000000000000000000000000000A"),
+        Hash256.of("000000000000000000000000000000000000000000000000000000000000000B")
+      )
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))
       .signingPublicKey(sourcePublicKey)
@@ -2083,6 +2103,7 @@ public class SignatureUtilsTest {
     VaultDelete transaction = VaultDelete.builder()
       .account(sourcePublicKey.deriveAddress())
       .vaultId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .memoData(VaultData.of("48656C6C6F"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))
       .build();

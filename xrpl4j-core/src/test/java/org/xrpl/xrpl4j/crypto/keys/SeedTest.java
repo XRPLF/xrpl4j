@@ -33,6 +33,7 @@ import org.mockito.MockedStatic;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteTestUtils;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.crypto.HashingUtils;
 import org.xrpl.xrpl4j.crypto.keys.Seed.DefaultSeed;
@@ -484,5 +485,24 @@ public class SeedTest {
     // The seed entropy is 16 bytes. With correct code, the second sha512Half call receives
     // seed + [0,0,0,1] = 20 bytes. With broken code it would receive seed + [0,0,0,0] + [0,0,0,1] = 24 bytes.
     assertThat(args.get(1).length()).isEqualTo(16 + 4);
+  }
+
+  /**
+   * Regression: ed25519 key derivation prepends the shared {@link PublicKey#ED2559_PREFIX}. Destroying a derived
+   * public key's bytes must not mutate that constant.
+   */
+  @Test
+  void destroyingDerivedEd25519PublicKeyValueLeavesSharedPrefixIntact() {
+    try {
+      KeyPair keyPair = Seed.ed25519Seed().deriveKeyPair();
+      assertThat(keyPair.publicKey().value().get(0)).isNotSameAs(PublicKey.ED2559_PREFIX);
+
+      keyPair.publicKey().value().destroy();
+      assertThat(PublicKey.ED2559_PREFIX.asInt()).isEqualTo(0xED);
+      assertThat(PublicKey.ED2559_PREFIX.isDestroyed()).isFalse();
+      assertThat(Seed.ed25519Seed().deriveKeyPair().publicKey().base16Value()).startsWith("ED");
+    } finally {
+      UnsignedByteTestUtils.reset(PublicKey.ED2559_PREFIX, 0xED);
+    }
   }
 }

@@ -95,10 +95,7 @@ public class PaymentChannelIT extends AbstractIT {
     // Validate that the transaction was submitted successfully
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
 
     //////////////////////////
     // Wait for the payment channel to exist in a validated ledger
@@ -169,10 +166,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
 
     //////////////////////////
     // Wait for the payment channel to exist in a validated ledger
@@ -239,10 +233,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelClaim> claimResult = xrplClient.submit(signedPaymentChannelClaim);
     assertThat(claimResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "PaymentChannelClaim transaction successful. https://testnet.xrpl.org/transactions/{}",
-      claimResult.transactionResult().hash()
-    );
+    logSubmitResult(claimResult);
 
     //////////////////////////
     // Validate that the destination account balance has gone up by the claim amount
@@ -305,10 +296,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
 
     //////////////////////////
     // Wait for the payment channel to exist in a validated ledger
@@ -382,10 +370,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelClaim> claimResult = xrplClient.submit(signedPaymentChannelClaim);
     assertThat(claimResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "PaymentChannelClaim transaction successful. https://testnet.xrpl.org/transactions/{}",
-      claimResult.transactionResult().hash()
-    );
+    logSubmitResult(claimResult);
 
     //////////////////////////
     // Validate that the destination account balance has gone up by the claim amount
@@ -449,10 +434,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
 
     //////////////////////////
     // Wait for the payment channel to exist in a validated ledger
@@ -554,10 +536,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
 
     //////////////////////////
     // Wait for the payment channel to exist in a validated ledger and validate its fields
@@ -595,10 +574,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelFund> fundResult = xrplClient.submit(signedPaymentChannelFund);
     assertThat(fundResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
-      fundResult.transactionResult().hash()
-    );
+    logSubmitResult(fundResult);
 
     //////////////////////////
     // Validate that the amount in the channel increased by the fund amount
@@ -641,10 +617,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelFund> expiryResult = xrplClient.submit(signedPaymentChannelFundWithExpiry);
     assertThat(expiryResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
-      expiryResult.transactionResult().hash()
-    );
+    logSubmitResult(expiryResult);
 
     //////////////////////////
     // Validate that the expiration was set properly
@@ -697,10 +670,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedCreatePaymentChannel);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
 
     //////////////////////////
     // Wait for the payment channel to exist in a validated ledger

@@ -458,11 +458,7 @@ class AccountDeleteIT extends AbstractIT {
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(signedAccountSet);
     assertThat(accountSetResult.engineResult()).isEqualTo("tesSUCCESS");
     xrplEnvironment.acceptLedger();
-
-    logger.info(
-      "AccountSet to enable Deposit Authorization successful. https://testnet.xrpl.org/transactions/{}",
-      accountSetResult.transactionResult().hash()
-    );
+    logSubmitResult(accountSetResult);
 
     this.scanForResult(
       () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress()),

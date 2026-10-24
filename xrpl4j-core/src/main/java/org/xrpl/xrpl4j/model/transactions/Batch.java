@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -114,6 +115,7 @@ public interface Batch extends Transaction {
    * @see "https://xls.xrpl.org/xls/XLS-0056-batch.html#23-failure-conditions"
    */
   @JsonProperty("RawTransactions")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   List<RawTransactionWrapper> rawTransactions();
 
   /**
@@ -141,6 +143,7 @@ public interface Batch extends Transaction {
    * @return A {@link List} of {@link BatchSignerWrapper} containing the batch signers.
    */
   @JsonProperty("BatchSigners")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   List<BatchSignerWrapper> batchSigners();
 
   /**

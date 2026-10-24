@@ -75,6 +75,8 @@ public class NfTokenOfferObjectJsonTests extends AbstractJsonTest {
       )
       .destination(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .offerNode("1")
+      .ownerNode("2")
       .previousTransactionId(Hash256.of("E3FE6EA3D48F0C2B639448020EA4F03D4F4F8FFDB243A852A0F59177921B4879"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14090896))
       .nfTokenId(NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65"))
@@ -90,6 +92,8 @@ public class NfTokenOfferObjectJsonTests extends AbstractJsonTest {
       "       \"value\": \"10\"" +
       "    },\n" +
       "    \"Owner\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+      "    \"NFTokenOfferNode\": \"1\",\n" +
+      "    \"OwnerNode\": \"2\",\n" +
       "    \"NFTokenID\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
       "    \"Destination\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"PreviousTxnID\": \"E3FE6EA3D48F0C2B639448020EA4F03D4F4F8FFDB243A852A0F59177921B4879\",\n" +

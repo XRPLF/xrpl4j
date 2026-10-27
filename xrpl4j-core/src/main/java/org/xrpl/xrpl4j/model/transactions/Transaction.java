@@ -76,6 +76,7 @@ public interface Transaction {
       .put(ImmutableNfTokenAcceptOffer.class, TransactionType.NFTOKEN_ACCEPT_OFFER)
       .put(ImmutableNfTokenCancelOffer.class, TransactionType.NFTOKEN_CANCEL_OFFER)
       .put(ImmutableNfTokenCreateOffer.class, TransactionType.NFTOKEN_CREATE_OFFER)
+      .put(ImmutableNfTokenModify.class, TransactionType.NFTOKEN_MODIFY)
       .put(ImmutableOfferCancel.class, TransactionType.OFFER_CANCEL)
       .put(ImmutableOfferCreate.class, TransactionType.OFFER_CREATE)
       .put(ImmutablePayment.class, TransactionType.PAYMENT)

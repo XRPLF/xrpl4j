@@ -1,0 +1,148 @@
+{
+  "Account": "rJoRnWmGuySwcKK61CULzxAPn75gFQ8qSk",
+  "Authorize": "rJm2W7c1RwrURVUYfRAJ4YumkwmNHpbwhV",
+  "Fee": "12",
+  "Flags": 0,
+  "LastLedgerSequence": 21867532,
+  "Permissions": [
+    {
+      "Permission": {
+        "PermissionValue": "CredentialCreate"
+      }
+    },
+    {
+      "Permission": {
+        "PermissionValue": "CredentialDelete"
+      }
+    },
+    {
+      "Permission": {
+        "PermissionValue": "NFTokenMint"
+      }
+    },
+    {
+      "Permission": {
+        "PermissionValue": "NFTokenModify"
+      }
+    },
+    {
+      "Permission": {
+        "PermissionValue": "NFTokenBurn"
+      }
+    },
+    {
+      "Permission": {
+        "PermissionValue": "NFTokenCreateOffer"
+      }
+    },
+    {
+      "Permission": {
+        "PermissionValue": "NFTokenCancelOffer"
+      }
+    }
+  ],
+  "Sequence": 21867507,
+  "SigningPubKey": "EDDAD16EE7FF5944034EA4D4516D44BD82CF77FE0A8E5560497DCF62C98AAB599B",
+  "TransactionType": "DelegateSet",
+  "TxnSignature": "929FF70C090C6EA590619FCE86B00579AB80555F5BE9BABF0FD0BCE96960B8BDA63F281BE6B1DE3B90141A652A1983D459338443EE9954DAA49A6C4856B06704",
+  "ctid": "C14DABFA00050001",
+  "date": 846432811,
+  "hash": "80F1983BFF069EFD5D79381EA382232D5A2384970BE8A7767AEBCEBED414EA91",
+  "inLedger": 21867514,
+  "ledger_index": 21867514,
+  "meta": {
+    "AffectedNodes": [
+      {
+        "CreatedNode": {
+          "LedgerEntryType": "DirectoryNode",
+          "LedgerIndex": "57CF1AEDFEA9962FD89719D79F069239E3A4DF7A6AC1793E3AC6D95C85D4C073",
+          "NewFields": {
+            "Owner": "rJoRnWmGuySwcKK61CULzxAPn75gFQ8qSk",
+            "RootIndex": "57CF1AEDFEA9962FD89719D79F069239E3A4DF7A6AC1793E3AC6D95C85D4C073"
+          }
+        }
+      },
+      {
+        "ModifiedNode": {
+          "FinalFields": {
+            "Account": "rJoRnWmGuySwcKK61CULzxAPn75gFQ8qSk",
+            "Balance": "99999988",
+            "Flags": 0,
+            "OwnerCount": 1,
+            "Sequence": 21867508
+          },
+          "LedgerEntryType": "AccountRoot",
+          "LedgerIndex": "808E5F052FABC1AF3DF386B38D2EA216404BA4D6D91C114F4CD19E07A96875E6",
+          "PreviousFields": {
+            "Balance": "100000000",
+            "OwnerCount": 0,
+            "Sequence": 21867507
+          },
+          "PreviousTxnID": "AD27564F0C83D42CAAA85BE87A51EB5D13F5670719D97420A265B328920A628F",
+          "PreviousTxnLgrSeq": 21867507
+        }
+      },
+      {
+        "CreatedNode": {
+          "LedgerEntryType": "DirectoryNode",
+          "LedgerIndex": "8414D693F02B9F0D585AAC558FE9B1424C224401CCE42341555CDF2155266D81",
+          "NewFields": {
+            "Owner": "rJm2W7c1RwrURVUYfRAJ4YumkwmNHpbwhV",
+            "RootIndex": "8414D693F02B9F0D585AAC558FE9B1424C224401CCE42341555CDF2155266D81"
+          }
+        }
+      },
+      {
+        "CreatedNode": {
+          "LedgerEntryType": "Delegate",
+          "LedgerIndex": "C6456ABCA442A5451664438A600CC159D3C50EC903CB62116E2577F57B648761",
+          "NewFields": {
+            "Account": "rJoRnWmGuySwcKK61CULzxAPn75gFQ8qSk",
+            "Authorize": "rJm2W7c1RwrURVUYfRAJ4YumkwmNHpbwhV",
+            "Permissions": [
+              {
+                "Permission": {
+                  "PermissionValue": "CredentialCreate"
+                }
+              },
+              {
+                "Permission": {
+                  "PermissionValue": "CredentialDelete"
+                }
+              },
+              {
+                "Permission": {
+                  "PermissionValue": "NFTokenMint"
+                }
+              },
+              {
+                "Permission": {
+                  "PermissionValue": "NFTokenModify"
+                }
+              },
+              {
+                "Permission": {
+                  "PermissionValue": "NFTokenBurn"
+                }
+              },
+              {
+                "Permission": {
+                  "PermissionValue": "NFTokenCreateOffer"
+                }
+              },
+              {
+                "Permission": {
+                  "PermissionValue": "NFTokenCancelOffer"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "TransactionIndex": 5,
+    "TransactionResult": "tesSUCCESS"
+  },
+  "status": "success",
+  "validated": true
+}

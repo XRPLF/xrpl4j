@@ -63,6 +63,19 @@ class PermissionDeserializerTest {
   }
 
   @Test
+  void testDeserializeNfTokenModifyTransactionTypePermission() throws IOException {
+    JsonParser mockJsonParser = mock(JsonParser.class);
+    when(mockJsonParser.getValueAsString()).thenReturn("NFTokenModify");
+
+    Permission permission = deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class));
+
+    assertThat(permission).isInstanceOf(TransactionTypePermission.class);
+    TransactionTypePermission txPermission = (TransactionTypePermission) permission;
+    assertThat(txPermission.transactionType()).isEqualTo(TransactionType.NFTOKEN_MODIFY);
+    assertThat(txPermission.value()).isEqualTo("NFTokenModify");
+  }
+
+  @Test
   void testDeserializeGranularPermissionValue() throws IOException {
     JsonParser mockJsonParser = mock(JsonParser.class);
     when(mockJsonParser.getValueAsString()).thenReturn("TrustlineAuthorize");

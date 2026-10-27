@@ -24,7 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.primitives.UnsignedInteger;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -130,17 +132,34 @@ public class LedgerResultIT extends AbstractIT {
    * Testnet ledger 21867514 contains a {@link DelegateSet} (80F1983B...) that delegates {@code NFTokenModify}. Before
    * {@link TransactionType#NFTOKEN_MODIFY} existed, the whole ledger failed to deserialize with
    * {@code Unknown permission value: NFTokenModify}.
+   *
+   * <p>This reads live Testnet, so it only runs when Testnet is selected explicitly, and it is skipped if Testnet no
+   * longer has the ledger (for example, after a Testnet reset). {@code DelegateSetTransactionResultFixtureTest}
+   * covers the same transaction from a committed fixture.</p>
    */
   @Test
+  @EnabledIf(
+    value = "isTestnetSelected",
+    disabledReason = "Reads historical Testnet data; runs only with -DuseTestnet or -DuseClioTestnet."
+  )
   void canDeserializeLedgerWithNfTokenModifyDelegation() throws JsonRpcClientErrorException {
     XrplClient testnetClient = XrplEnvironment.getConfiguredTestnetEnvironment().getXrplClient();
-    LedgerResult ledger = testnetClient.ledger(
-      LedgerRequestParams.builder()
-        .transactions(true)
-        .ledgerSpecifier(
-          LedgerSpecifier.of(Hash256.of("4DC9FDFC69AA0E2E36AFD44040E97AC52BD1779E5C0F36820FBE863555DFBF7D")))
-        .build()
-    );
+    LedgerResult ledger;
+    try {
+      ledger = testnetClient.ledger(
+        LedgerRequestParams.builder()
+          .transactions(true)
+          .ledgerSpecifier(
+            LedgerSpecifier.of(Hash256.of("4DC9FDFC69AA0E2E36AFD44040E97AC52BD1779E5C0F36820FBE863555DFBF7D")))
+          .build()
+      );
+    } catch (JsonRpcClientErrorException e) {
+      Assumptions.assumeFalse(
+        String.valueOf(e.getMessage()).startsWith("lgrNotFound"),
+        "Skipping: Testnet no longer has ledger 21867514"
+      );
+      throw e;
+    }
 
     assertThat(ledger.ledgerIndexSafe()).isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(21867514)));
 
@@ -155,5 +174,9 @@ public class LedgerResultIT extends AbstractIT {
     assertThat(delegateSet.permissions())
       .extracting(wrapper -> wrapper.permission().permissionValue())
       .contains(TransactionTypePermission.of(TransactionType.NFTOKEN_MODIFY));
+  }
+
+  private static boolean isTestnetSelected() {
+    return System.getProperty("useTestnet") != null || System.getProperty("useClioTestnet") != null;
   }
 }

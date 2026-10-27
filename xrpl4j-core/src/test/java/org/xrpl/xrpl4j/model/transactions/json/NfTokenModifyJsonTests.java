@@ -20,10 +20,13 @@ package org.xrpl.xrpl4j.model.transactions.json;
  * =========================LICENSE_END==================================
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -31,6 +34,7 @@ import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenModify;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
+import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class NfTokenModifyJsonTests extends AbstractJsonTest {
@@ -88,5 +92,42 @@ public class NfTokenModifyJsonTests extends AbstractJsonTest {
       "}";
 
     assertCanSerializeAndDeserialize(nfTokenModify, json);
+  }
+
+  /**
+   * Deserializes a validated, delegated {@link NfTokenModify} from Testnet (BDAC8AD4..., ledger 21867517) into the
+   * model and checks that re-serializing it yields exactly the binary that xrpld recorded on ledger.
+   */
+  @Test
+  public void testTestnetNfTokenModifyEncodesToXrpldBinary() throws JsonProcessingException {
+    String json = "{\n" +
+      "    \"Account\": \"rJoRnWmGuySwcKK61CULzxAPn75gFQ8qSk\",\n" +
+      "    \"Delegate\": \"rJm2W7c1RwrURVUYfRAJ4YumkwmNHpbwhV\",\n" +
+      "    \"Fee\": \"12\",\n" +
+      "    \"Flags\": 0,\n" +
+      "    \"LastLedgerSequence\": 21867536,\n" +
+      "    \"NFTokenID\": \"00190000C3415F2890DE754DA8EF18EB4E7F218787E5D7EA33F3E9A1014DABF4\",\n" +
+      "    \"Sequence\": 21867509,\n" +
+      "    \"SigningPubKey\": \"ED89E58C2B6C2E47281B77A215D1A4BC14634B314D747F5C4E08605534DF7DAB16\",\n" +
+      "    \"TransactionType\": \"NFTokenModify\",\n" +
+      "    \"TxnSignature\": \"F5078FB7BBBF0C1605CD449DE61F77F3EC4FDFA42210D86B499261FADF1FF1FCD78DAF4B4F0EF251" +
+      "761CB793D13625A3E9947B5632FD6B1F2B8CD97046E0600C\",\n" +
+      "    \"URI\": \"68747470733A2F2F687669332E636F6D2F746573742D34362D7632\"\n" +
+      "}";
+    String xrpldBinary =
+      "12003D220000000024014DABF5201B014DAC105A00190000C3415F2890DE754DA8EF18EB4E7F218787E5D7EA33F3E9A1014D" +
+      "ABF468400000000000000C7321ED89E58C2B6C2E47281B77A215D1A4BC14634B314D747F5C4E08605534DF7DAB167440F507" +
+      "8FB7BBBF0C1605CD449DE61F77F3EC4FDFA42210D86B499261FADF1FF1FCD78DAF4B4F0EF251761CB793D13625A3E9947B56" +
+      "32FD6B1F2B8CD97046E0600C751B68747470733A2F2F687669332E636F6D2F746573742D34362D76328114C3415F2890DE75" +
+      "4DA8EF18EB4E7F218787E5D7EA8C14C2E869717E7BE1DD92BD2BD383A341A9EE4E2C2C";
+
+    Transaction transaction = objectMapper.readValue(json, Transaction.class);
+
+    assertThat(transaction).isInstanceOf(NfTokenModify.class);
+    NfTokenModify nfTokenModify = (NfTokenModify) transaction;
+    assertThat(nfTokenModify.delegate()).hasValue(Address.of("rJm2W7c1RwrURVUYfRAJ4YumkwmNHpbwhV"));
+    assertThat(nfTokenModify.uri()).hasValue(NfTokenUri.of("68747470733A2F2F687669332E636F6D2F746573742D34362D7632"));
+    assertThat(XrplBinaryCodec.getInstance().encode(objectMapper.writeValueAsString(nfTokenModify)))
+      .isEqualTo(xrpldBinary);
   }
 }

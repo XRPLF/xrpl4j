@@ -121,8 +121,12 @@ class BinaryParserTest {
   @Test
   void roundTripSampledLengths() {
     IntStream.rangeClosed(0, MAX_ONE_BYTE_LENGTH).forEach(this::assertRoundTrip);
-    IntStream.iterate(MIN_TWO_BYTE_LENGTH, i -> i <= MAX_TWO_BYTE_LENGTH, i -> i + 61).forEach(this::assertRoundTrip);
-    IntStream.iterate(MIN_THREE_BYTE_LENGTH, i -> i <= 200_000, i -> i + 7_919).forEach(this::assertRoundTrip);
+    for (int i = MIN_TWO_BYTE_LENGTH; i <= MAX_TWO_BYTE_LENGTH; i += 61) {
+      assertRoundTrip(i);
+    }
+    for (int i = MIN_THREE_BYTE_LENGTH; i <= 200_000; i += 7_919) {
+      assertRoundTrip(i);
+    }
   }
 
   @ParameterizedTest

@@ -55,13 +55,27 @@ public class UnsignedByteArray implements Destroyable {
   }
 
   /**
+   * Marker used to select the non-copying private constructor. Exists only to make call sites self-documenting about
+   * the fact that the constructor takes ownership of (and does not copy) the supplied {@link List}.
+   */
+  private enum Ownership {
+    /**
+     * The caller guarantees that the supplied {@link List} and every {@link UnsignedByte} in it were freshly allocated
+     * and are not shared with anyone else.
+     */
+    TAKE
+  }
+
+  /**
    * Private constructor that takes ownership of {@code unsignedBytes} without copying. Only for use by
    * factories in this class that have just allocated fresh {@link UnsignedByte} instances.
    *
    * @param unsignedBytes A freshly allocated {@link List} of freshly allocated {@link UnsignedByte}s.
-   * @param ignored       Disambiguates this constructor from the public one.
+   * @param ownership     An {@link Ownership} marker that distinguishes this constructor from the public (copying) one
+   *                      and documents the caller's intent.
    */
-  private UnsignedByteArray(final List<UnsignedByte> unsignedBytes, final boolean ignored) {
+  private UnsignedByteArray(final List<UnsignedByte> unsignedBytes, final Ownership ownership) {
+    Objects.requireNonNull(ownership);
     this.unsignedBytes = Objects.requireNonNull(unsignedBytes);
   }
 
@@ -94,7 +108,7 @@ public class UnsignedByteArray implements Destroyable {
     for (int i = 0; i < bytes.length; i++) {
       unsignedBytes.add(i, UnsignedByte.of(bytes[i]));
     }
-    return new UnsignedByteArray(unsignedBytes, true); // <-- all instances freshly allocated above.
+    return new UnsignedByteArray(unsignedBytes, Ownership.TAKE); // <-- all instances freshly allocated above.
   }
 
   /**
@@ -112,7 +126,7 @@ public class UnsignedByteArray implements Destroyable {
     for (UnsignedByte unsignedByte : rest) {
       unsignedBytes.add(UnsignedByte.of(unsignedByte));
     }
-    return new UnsignedByteArray(unsignedBytes, true); // <-- all instances freshly copied above.
+    return new UnsignedByteArray(unsignedBytes, Ownership.TAKE); // <-- all instances freshly copied above.
   }
 
   /**
@@ -121,7 +135,7 @@ public class UnsignedByteArray implements Destroyable {
    * @return An empty {@link UnsignedByteArray}.
    */
   public static UnsignedByteArray empty() {
-    return new UnsignedByteArray(new ArrayList<>(), true);
+    return new UnsignedByteArray(new ArrayList<>(), Ownership.TAKE);
   }
 
   /**
@@ -132,7 +146,7 @@ public class UnsignedByteArray implements Destroyable {
    * @return An {@link UnsignedByteArray} of the requested size with all 0 {@link UnsignedByte}s
    */
   public static UnsignedByteArray ofSize(int size) {
-    return new UnsignedByteArray(fill(size), true); // <-- `fill` allocates fresh instances.
+    return new UnsignedByteArray(fill(size), Ownership.TAKE); // <-- `fill` allocates fresh instances.
   }
 
   /**
@@ -145,7 +159,7 @@ public class UnsignedByteArray implements Destroyable {
   public static UnsignedByteArray fromHex(String hex) {
     Objects.requireNonNull(hex);
     List<UnsignedByte> unsignedBytes = ByteUtils.parse(hex.toUpperCase(Locale.ENGLISH));
-    return new UnsignedByteArray(unsignedBytes, true); // <-- `parse` allocates fresh instances.
+    return new UnsignedByteArray(unsignedBytes, Ownership.TAKE); // <-- `parse` allocates fresh instances.
   }
 
   protected static List<UnsignedByte> fill(int amount) {
@@ -268,7 +282,7 @@ public class UnsignedByteArray implements Destroyable {
   public UnsignedByteArray reverse() {
     List<UnsignedByte> reversed = copyOf(unsignedBytes);
     Collections.reverse(reversed);
-    return new UnsignedByteArray(reversed, true); // <-- `copyOf` allocates fresh instances.
+    return new UnsignedByteArray(reversed, Ownership.TAKE); // <-- `copyOf` allocates fresh instances.
   }
 
   @Override

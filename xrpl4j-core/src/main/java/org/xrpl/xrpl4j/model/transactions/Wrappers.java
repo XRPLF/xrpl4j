@@ -950,22 +950,11 @@ public class Wrappers {
   @JsonSerialize(as = MpTokenMetadata.class, using = MpTokenMetadataSerializer.class)
   @JsonDeserialize(as = MpTokenMetadata.class, using = MpTokenMetadataDeserializer.class)
   @Beta
-  abstract static class _MpTokenMetadata extends Metadata {
+  abstract static class _MpTokenMetadata extends Wrapper<String> implements Serializable {
 
     @Override
-    protected UnsignedInteger maxBytes() {
-      return UnsignedInteger.valueOf(1024);
-    }
-
-    /**
-     * Constructs a {@link MpTokenMetadata} from a plaintext string by hex-encoding it.
-     *
-     * @param plaintext A string value representing the metadata in plaintext.
-     *
-     * @return A {@link MpTokenMetadata} of hex-encoded plaintext.
-     */
-    public static MpTokenMetadata ofPlainText(String plaintext) {
-      return MpTokenMetadata.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    public String toString() {
+      return this.value();
     }
 
   }

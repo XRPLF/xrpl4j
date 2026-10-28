@@ -21,9 +21,7 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.common.base.Strings;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -33,54 +31,14 @@ public class MpTokenMetadataTest {
 
   @Test
   void testToString() {
-    MpTokenMetadata metadata = MpTokenMetadata.of("ABCD");
+    MpTokenMetadata metadata = MpTokenMetadata.of("");
+    assertThat(metadata.toString()).isEqualTo("");
+
+    metadata = MpTokenMetadata.of("ABCD");
     assertThat(metadata.toString()).isEqualTo("ABCD");
 
     metadata = MpTokenMetadata.of("48656C6C6F20576F726C64");
     assertThat(metadata.toString()).isEqualTo("48656C6C6F20576F726C64");
   }
-
-  @Test
-  void testEmptyRejected() {
-    assertThatThrownBy(() -> MpTokenMetadata.of(""))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("must not be empty");
-  }
-
-  @Test
-  void testInvalidHexRejected() {
-    assertThatThrownBy(() -> MpTokenMetadata.of("ZZZZ"))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("hexadecimal");
-  }
-
-  @Test
-  void testExactMaxLength() {
-    String hex = Strings.repeat("AB", 1024);
-    assertThat(hex.length()).isEqualTo(2048);
-    MpTokenMetadata metadata = MpTokenMetadata.of(hex);
-    assertThat(metadata.value()).isEqualTo(hex);
-  }
-
-  @Test
-  void testExceedsMaxLength() {
-    String hex = Strings.repeat("AB", 1025);
-    assertThat(hex.length()).isEqualTo(2050);
-    assertThatThrownBy(() -> MpTokenMetadata.of(hex))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("1024 bytes");
-  }
-
-  @Test
-  void testOfPlainText() {
-    MpTokenMetadata metadata = MpTokenMetadata.ofPlainText("Hello");
-    assertThat(metadata.value()).isEqualTo("48656C6C6F");
-  }
-
-  @Test
-  void testCaseInsensitiveEquals() {
-    MpTokenMetadata lower = MpTokenMetadata.of("abcd");
-    MpTokenMetadata upper = MpTokenMetadata.of("ABCD");
-    assertThat(lower).isEqualTo(upper);
-  }
 }
+

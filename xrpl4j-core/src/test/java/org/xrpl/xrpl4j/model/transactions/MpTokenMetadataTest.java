@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.google.common.base.Strings;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -55,7 +56,7 @@ public class MpTokenMetadataTest {
 
   @Test
   void testExactMaxLength() {
-    String hex = "AB".repeat(1024);
+    String hex = Strings.repeat("AB", 1024);
     assertThat(hex.length()).isEqualTo(2048);
     MpTokenMetadata metadata = MpTokenMetadata.of(hex);
     assertThat(metadata.value()).isEqualTo(hex);
@@ -63,7 +64,7 @@ public class MpTokenMetadataTest {
 
   @Test
   void testExceedsMaxLength() {
-    String hex = "AB".repeat(1025);
+    String hex = Strings.repeat("AB", 1025);
     assertThat(hex.length()).isEqualTo(2050);
     assertThatThrownBy(() -> MpTokenMetadata.of(hex))
       .isInstanceOf(IllegalArgumentException.class)

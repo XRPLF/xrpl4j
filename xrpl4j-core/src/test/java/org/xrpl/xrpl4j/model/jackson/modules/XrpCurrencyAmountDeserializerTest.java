@@ -96,6 +96,13 @@ class XrpCurrencyAmountDeserializerTest extends AbstractJsonTest {
   }
 
   @Test
+  void rejectsNonScalarAmount() {
+    assertThatThrownBy(() -> objectMapper.readValue("{}", XrpCurrencyAmount.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("XRP drops amount must be a plain integer string");
+  }
+
+  @Test
   void rejectsOutOfRangeAmount() {
     assertThatThrownBy(() -> objectMapper.readValue("\"99999999999999999999\"", XrpCurrencyAmount.class))
       .isInstanceOf(MismatchedInputException.class)

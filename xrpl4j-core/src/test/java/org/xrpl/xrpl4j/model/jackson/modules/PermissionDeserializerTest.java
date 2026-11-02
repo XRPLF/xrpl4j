@@ -21,7 +21,6 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,6 +33,7 @@ import org.xrpl.xrpl4j.model.transactions.GranularPermissionValue;
 import org.xrpl.xrpl4j.model.transactions.Permission;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TransactionTypePermission;
+import org.xrpl.xrpl4j.model.transactions.UnknownPermission;
 
 import java.io.IOException;
 
@@ -88,7 +88,8 @@ class PermissionDeserializerTest {
       assertThat(permission).isInstanceOf(TransactionTypePermission.class);
       String value = permission.map(
         txPermission -> txPermission.value(),
-        granularPermission -> granularPermission.value()
+        granularPermission -> granularPermission.value(),
+        unknownPermission -> unknownPermission.value()
       );
       assertThat(value).isEqualTo(txType);
     }
@@ -107,34 +108,46 @@ class PermissionDeserializerTest {
       assertThat(permission).isInstanceOf(GranularPermissionValue.class);
       String value = permission.map(
         txPermission -> txPermission.value(),
-        granularPermission -> granularPermission.value()
+        granularPermission -> granularPermission.value(),
+        unknownPermission -> unknownPermission.value()
       );
       assertThat(value).isEqualTo(granularPerm);
     }
   }
 
   @Test
-  void testDeserializeInvalidPermissionThrowsException() throws IOException {
+  void testDeserializeUnrecognizedPermissionValueFallsBackToUnknownPermission() throws IOException {
+    // A transaction type that xrpld knows about but this version of xrpl4j does not. Deserialization must not fail,
+    // otherwise an entire DelegateSet transaction (or its metadata) becomes unparseable.
     JsonParser mockJsonParser = mock(JsonParser.class);
-    when(mockJsonParser.getValueAsString()).thenReturn("InvalidPermission");
-    
-    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-      deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class))
-    );
-    
-    assertThat(exception.getMessage()).contains("Unknown permission value: InvalidPermission");
+    when(mockJsonParser.getValueAsString()).thenReturn("SomeFutureTransactionType");
+
+    Permission permission = deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class));
+
+    assertThat(permission).isInstanceOf(UnknownPermission.class);
+    assertThat(((UnknownPermission) permission).value()).isEqualTo("SomeFutureTransactionType");
   }
 
   @Test
-  void testDeserializeEmptyStringThrowsException() throws IOException {
+  void testDeserializeUnknownPermissionPreservesOriginalCasing() throws IOException {
+    JsonParser mockJsonParser = mock(JsonParser.class);
+    when(mockJsonParser.getValueAsString()).thenReturn("sOmEfUtUrEtYpE");
+
+    Permission permission = deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class));
+
+    assertThat(permission).isInstanceOf(UnknownPermission.class);
+    assertThat(((UnknownPermission) permission).value()).isEqualTo("sOmEfUtUrEtYpE");
+  }
+
+  @Test
+  void testDeserializeEmptyStringFallsBackToUnknownPermission() throws IOException {
     JsonParser mockJsonParser = mock(JsonParser.class);
     when(mockJsonParser.getValueAsString()).thenReturn("");
-    
-    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-      deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class))
-    );
-    
-    assertThat(exception.getMessage()).contains("Unknown permission value");
+
+    Permission permission = deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class));
+
+    assertThat(permission).isInstanceOf(UnknownPermission.class);
+    assertThat(((UnknownPermission) permission).value()).isEmpty();
   }
 
   @Test

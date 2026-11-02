@@ -47,7 +47,8 @@ public class PermissionSerializer extends StdScalarSerializer<Permission> {
   ) throws IOException {
     String value = permission.map(
       transactionTypePermission -> transactionTypePermission.value(),
-      granularPermissionValue -> granularPermissionValue.value()
+      granularPermissionValue -> granularPermissionValue.value(),
+      unknownPermission -> unknownPermission.value()
     );
     gen.writeString(value);
   }

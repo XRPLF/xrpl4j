@@ -120,6 +120,7 @@ class ObjectMapperFactoryTest {
     consumerType.when = WHEN;
 
     assertThat(mapperWithModule.writeValueAsString(consumerType)).isEqualTo(ISO_JSON);
-    assertThat(mapperWithModule.readValue(ISO_JSON, ConsumerDateType.class).when.toInstant()).isEqualTo(WHEN.toInstant());
+    ConsumerDateType parsed = mapperWithModule.readValue(ISO_JSON, ConsumerDateType.class);
+    assertThat(parsed.when.toInstant()).isEqualTo(WHEN.toInstant());
   }
 }

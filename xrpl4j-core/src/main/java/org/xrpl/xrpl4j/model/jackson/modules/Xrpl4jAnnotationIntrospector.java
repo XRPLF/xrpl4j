@@ -34,7 +34,9 @@ import java.math.BigDecimal;
 
 /**
  * An {@link com.fasterxml.jackson.databind.AnnotationIntrospector} that supplies, for every class under
- * {@code org.xrpl.xrpl4j}, the Jackson behaviors xrpl4j's JSON bindings rely on:
+ * {@code org.xrpl.xrpl4j}, the Jackson behaviors xrpl4j's JSON bindings rely on.
+ *
+ * <p>The supplied behaviors are:</p>
  *
  * <ul>
  *   <li>{@link JsonInclude.Include#NON_EMPTY} property inclusion, so that absent {@link java.util.Optional}s, empty

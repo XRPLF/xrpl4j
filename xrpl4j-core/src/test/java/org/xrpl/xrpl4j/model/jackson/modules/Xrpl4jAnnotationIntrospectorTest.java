@@ -7,11 +7,13 @@ import com.example.consumer.ConsumerNamedType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.node.DecimalNode;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.base.Strings;
@@ -95,6 +97,22 @@ class Xrpl4jAnnotationIntrospectorTest {
 
     assertThat(roundTripped.plain()).isEqualByComparingTo(wrapper.plain());
     assertThat(roundTripped.optional()).isEmpty();
+  }
+
+  /**
+   * Tree conversion goes through a {@link com.fasterxml.jackson.databind.util.TokenBuffer}, where the serializer
+   * must keep the typed value so the tree holds a {@link DecimalNode} rather than a string, and the tree converts
+   * back to the original value.
+   */
+  @Test
+  void xrpl4jTypeBigDecimalTreeConversionKeepsDecimalNode() throws JsonProcessingException {
+    DecimalWrapper wrapper = ImmutableDecimalWrapper.builder().plain(new BigDecimal("1E-7")).build();
+
+    JsonNode tree = objectMapper.valueToTree(wrapper);
+
+    assertThat(tree.get("plain")).isInstanceOf(DecimalNode.class);
+    assertThat(tree.get("plain").decimalValue()).isEqualByComparingTo(new BigDecimal("1E-7"));
+    assertThat(objectMapper.treeToValue(tree, DecimalWrapper.class)).isEqualTo(wrapper);
   }
 
   @Test

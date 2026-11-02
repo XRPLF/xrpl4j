@@ -60,7 +60,8 @@ class ObjectMapperFactoryTest {
     ConsumerDateType consumerType = new ConsumerDateType();
     consumerType.when = WHEN;
 
-    ConsumerDateType roundTripped = objectMapper.readValue(objectMapper.writeValueAsString(consumerType), ConsumerDateType.class);
+    String json = objectMapper.writeValueAsString(consumerType);
+    ConsumerDateType roundTripped = objectMapper.readValue(json, ConsumerDateType.class);
 
     assertThat(roundTripped.when.toInstant()).isEqualTo(WHEN.toInstant());
   }

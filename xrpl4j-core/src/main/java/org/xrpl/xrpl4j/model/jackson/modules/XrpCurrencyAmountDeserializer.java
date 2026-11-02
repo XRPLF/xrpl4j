@@ -24,9 +24,12 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.google.common.primitives.UnsignedLong;
+import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.regex.Pattern;
 
 /**
@@ -52,27 +55,47 @@ public class XrpCurrencyAmountDeserializer extends StdDeserializer<XrpCurrencyAm
 
   @Override
   public XrpCurrencyAmount deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
-    String rawValue = jsonParser.getValueAsString();
+    return parse(jsonParser, jsonParser.getValueAsString());
+  }
+
+  /**
+   * Parses a raw drops string into an {@link XrpCurrencyAmount}, enforcing the same strict format and range checks
+   * as {@link #deserialize(JsonParser, DeserializationContext)}. Also used by {@link CurrencyAmountDeserializer} so
+   * scalar {@link CurrencyAmount} values get the same validation.
+   *
+   * @param jsonParser Used only to attach a location to any thrown exception.
+   * @param rawValue   The raw string value to parse.
+   *
+   * @return An {@link XrpCurrencyAmount} parsed from {@code rawValue}.
+   *
+   * @throws IOException If {@code rawValue} is not a valid XRP drops string.
+   */
+  static XrpCurrencyAmount parse(JsonParser jsonParser, String rawValue) throws IOException {
     if (rawValue == null || !DROPS_PATTERN.matcher(rawValue).matches()) {
+      throw invalidFormat(jsonParser, rawValue);
+    }
+
+    boolean isNegative = rawValue.charAt(0) == '-';
+    BigInteger drops = new BigInteger(isNegative ? rawValue.substring(1) : rawValue);
+
+    if (drops.compareTo(BigInteger.valueOf(CurrencyAmount.MAX_XRP_IN_DROPS)) > 0) {
       throw MismatchedInputException.from(
         jsonParser,
         XrpCurrencyAmount.class,
         String.format(
-          "XRP drops amount must be a plain integer string (e.g. \"1000000\"), but was \"%s\".", rawValue
+          "XRP drops amount \"%s\" exceeds the maximum of %,d drops.", rawValue, CurrencyAmount.MAX_XRP_IN_DROPS
         )
       );
     }
 
-    final long drops;
-    try {
-      drops = Long.parseLong(rawValue);
-    } catch (NumberFormatException e) {
-      throw MismatchedInputException.from(
-        jsonParser,
-        XrpCurrencyAmount.class,
-        String.format("XRP drops amount \"%s\" is out of range for a 64-bit integer.", rawValue)
-      );
-    }
-    return XrpCurrencyAmount.ofDrops(drops);
+    return XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(drops), isNegative);
+  }
+
+  private static MismatchedInputException invalidFormat(final JsonParser jsonParser, final String rawValue) {
+    return MismatchedInputException.from(
+      jsonParser,
+      XrpCurrencyAmount.class,
+      String.format("XRP drops amount must be a plain integer string (e.g. \"1000000\"), but was \"%s\".", rawValue)
+    );
   }
 }

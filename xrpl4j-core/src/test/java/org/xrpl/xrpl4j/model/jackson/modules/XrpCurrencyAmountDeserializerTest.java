@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -106,7 +107,21 @@ class XrpCurrencyAmountDeserializerTest extends AbstractJsonTest {
   void rejectsOutOfRangeAmount() {
     assertThatThrownBy(() -> objectMapper.readValue("\"99999999999999999999\"", XrpCurrencyAmount.class))
       .isInstanceOf(MismatchedInputException.class)
-      .hasMessageContaining("out of range for a 64-bit integer");
+      .hasMessageContaining("exceeds the maximum of 100,000,000,000,000,000 drops");
+  }
+
+  @Test
+  void rejectsOneDropOverMax() {
+    assertThatThrownBy(() -> objectMapper.readValue("\"100000000000000001\"", XrpCurrencyAmount.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("exceeds the maximum of 100,000,000,000,000,000 drops");
+  }
+
+  @Test
+  void rejectsLongMinValue() {
+    assertThatThrownBy(() -> objectMapper.readValue("\"-9223372036854775808\"", XrpCurrencyAmount.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("exceeds the maximum of 100,000,000,000,000,000 drops");
   }
 
   @Test
@@ -123,6 +138,23 @@ class XrpCurrencyAmountDeserializerTest extends AbstractJsonTest {
       "}";
 
     assertThatThrownBy(() -> objectMapper.readValue(json, PaymentChannelClaim.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("XRP drops amount must be a plain integer string");
+  }
+
+  @Test
+  void rejectsNonStandardAmountInPayment() {
+    String json = "{" +
+      "  \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"TransactionType\": \"Payment\"," +
+      "  \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
+      "  \"Amount\": \"1e6\"," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
+      "}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, Payment.class))
       .isInstanceOf(MismatchedInputException.class)
       .hasMessageContaining("XRP drops amount must be a plain integer string");
   }

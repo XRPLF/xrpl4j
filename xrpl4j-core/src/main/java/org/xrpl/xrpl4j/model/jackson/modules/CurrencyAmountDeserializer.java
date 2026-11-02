@@ -29,7 +29,6 @@ import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
 
@@ -37,6 +36,14 @@ import java.io.IOException;
  * Custom Jackson deserializer for {@link CurrencyAmount}s.
  */
 public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> {
+
+  /**
+   * rippled reports this literal string (rather than a drops value) as a transaction's {@code delivered_amount} when
+   * the delivered amount cannot be determined (e.g. for partial payments processed before the relevant amendment).
+   *
+   * @see "https://xrpl.org/docs/references/protocol/transactions/metadata#delivered_amount"
+   */
+  private static final String UNAVAILABLE = "unavailable";
 
   /**
    * No-args constructor.
@@ -71,8 +78,10 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
           .currency(currency)
           .build();
       }
+    } else if (UNAVAILABLE.equals(node.asText())) {
+      return null;
     } else {
-      return XrpCurrencyAmount.ofDrops(node.asLong());
+      return XrpCurrencyAmountDeserializer.parse(jsonParser, node.asText());
     }
   }
 }

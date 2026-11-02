@@ -4,15 +4,18 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.example.consumer.ConsumerNamedType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.immutables.value.Value;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -87,7 +90,8 @@ class Xrpl4jAnnotationIntrospectorTest {
   void xrpl4jTypeBigDecimalRoundTrips() throws JsonProcessingException {
     DecimalWrapper wrapper = ImmutableDecimalWrapper.builder().plain(new BigDecimal("1E-7")).build();
 
-    DecimalWrapper roundTripped = objectMapper.readValue(objectMapper.writeValueAsString(wrapper), DecimalWrapper.class);
+    String json = objectMapper.writeValueAsString(wrapper);
+    DecimalWrapper roundTripped = objectMapper.readValue(json, DecimalWrapper.class);
 
     assertThat(roundTripped.plain()).isEqualByComparingTo(wrapper.plain());
     assertThat(roundTripped.optional()).isEmpty();
@@ -107,6 +111,38 @@ class Xrpl4jAnnotationIntrospectorTest {
   }
 
   /**
+   * An explicit class-level {@link JsonInclude} on an xrpl4j type takes precedence over the introspector's
+   * {@code NON_EMPTY} default: the empty {@link Optional} is written as {@code null} rather than omitted.
+   */
+  @Test
+  void explicitJsonIncludeOnXrpl4jTypeWins() throws JsonProcessingException {
+    AlwaysIncluded value = ImmutableAlwaysIncluded.builder().build();
+
+    assertThat(objectMapper.writeValueAsString(value)).isEqualTo("{\"optional\":null}");
+  }
+
+  /**
+   * An explicit class-level {@link JsonIgnoreProperties} on an xrpl4j type takes precedence over the introspector's
+   * {@code ignoreUnknown = true} default.
+   */
+  @Test
+  void explicitJsonIgnorePropertiesOnXrpl4jTypeWins() {
+    assertThatThrownBy(() -> objectMapper.readValue("{\"optional\":null,\"typo\":1}", AlwaysIncluded.class))
+      .isInstanceOf(UnrecognizedPropertyException.class);
+  }
+
+  /**
+   * An explicit {@link JsonSerialize} on a {@link BigDecimal} property of an xrpl4j type takes precedence over the
+   * introspector's plain-notation serializer.
+   */
+  @Test
+  void explicitSerializerOnXrpl4jBigDecimalPropertyWins() throws JsonProcessingException {
+    StringDecimal value = ImmutableStringDecimal.builder().plain(new BigDecimal("1E-7")).build();
+
+    assertThat(objectMapper.writeValueAsString(value)).isEqualTo("{\"plain\":\"1E-7\"}");
+  }
+
+  /**
    * An xrpl4j-package type (by virtue of being nested in this test) covering both {@link BigDecimal} shapes used in
    * the model.
    */
@@ -118,5 +154,30 @@ class Xrpl4jAnnotationIntrospectorTest {
     BigDecimal plain();
 
     Optional<BigDecimal> optional();
+  }
+
+  /**
+   * An xrpl4j-package type whose explicit class-level annotations contradict the introspector's defaults.
+   */
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableAlwaysIncluded.class)
+  @JsonDeserialize(as = ImmutableAlwaysIncluded.class)
+  @JsonInclude(JsonInclude.Include.ALWAYS)
+  @JsonIgnoreProperties(ignoreUnknown = false)
+  interface AlwaysIncluded {
+
+    Optional<String> optional();
+  }
+
+  /**
+   * An xrpl4j-package type whose {@link BigDecimal} property binds its own serializer.
+   */
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableStringDecimal.class)
+  @JsonDeserialize(as = ImmutableStringDecimal.class)
+  interface StringDecimal {
+
+    @JsonSerialize(using = ToStringSerializer.class)
+    BigDecimal plain();
   }
 }

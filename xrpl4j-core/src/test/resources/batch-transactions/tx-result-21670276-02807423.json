@@ -1,0 +1,73 @@
+{
+  "Account": "rN7Evm6UwmMnbbN6USosRmJwGACsTvX359",
+  "Fee": "40",
+  "Flags": 524288,
+  "LastLedgerSequence": 21670304,
+  "RawTransactions": [
+    {
+      "RawTransaction": {
+        "Account": "rN7Evm6UwmMnbbN6USosRmJwGACsTvX359",
+        "Fee": "0",
+        "Flags": 1073872896,
+        "LimitAmount": {
+          "currency": "RW1",
+          "issuer": "rp991ugoTpwiEyVTY2mQVJkpRpDWTJkpaq",
+          "value": "1000000000"
+        },
+        "Sequence": 21670267,
+        "SigningPubKey": "",
+        "TransactionType": "TrustSet"
+      }
+    },
+    {
+      "RawTransaction": {
+        "Account": "rN7Evm6UwmMnbbN6USosRmJwGACsTvX359",
+        "Fee": "0",
+        "Flags": 1073872896,
+        "LimitAmount": {
+          "currency": "RW2",
+          "issuer": "rp991ugoTpwiEyVTY2mQVJkpRpDWTJkpaq",
+          "value": "1000000000"
+        },
+        "Sequence": 21670268,
+        "SigningPubKey": "",
+        "TransactionType": "TrustSet"
+      }
+    }
+  ],
+  "Sequence": 21670266,
+  "SigningPubKey": "EDA9DDF5561CD6786C2266159E7F9B6BC7DCACD389FD1C37A014115FB6F8D327D1",
+  "TransactionType": "Batch",
+  "TxnSignature": "26ADF5A96627B5CD61B6B10DDB4543873A581AEC129132945D57B6D617D23924B65EE75D393A65725D5197F39C646B14260519779121762C5E8586667286F708",
+  "ctid": "C14AA98400040001",
+  "date": 845771850,
+  "hash": "02807423A24CA1298A0ADCB078687C3168CE8FDAE03101B75413A8AE78A8DD90",
+  "inLedger": 21670276,
+  "ledger_index": 21670276,
+  "meta": {
+    "AffectedNodes": [
+      {
+        "ModifiedNode": {
+          "FinalFields": {
+            "Account": "rN7Evm6UwmMnbbN6USosRmJwGACsTvX359",
+            "Balance": "99999960",
+            "Flags": 0,
+            "OwnerCount": 0,
+            "Sequence": 21670267
+          },
+          "LedgerEntryType": "AccountRoot",
+          "LedgerIndex": "414ED162D3D9378F0565EB37F454032B584DF045B68F42EB89B8D9F09BB3FE33",
+          "PreviousFields": {
+            "Balance": "100000000",
+            "Sequence": 21670266
+          },
+          "PreviousTxnID": "AFFED63B62E8991870E0874A0156683E09C3A9628E4B9A44055FCA38AA1311E6",
+          "PreviousTxnLgrSeq": 21670266
+        }
+      }
+    ],
+    "TransactionIndex": 4,
+    "TransactionResult": "tesSUCCESS"
+  },
+  "validated": true
+}

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.reflect.ClassPath;
 import org.immutables.value.Value;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,7 @@ class TransactionCollectionInclusionTest {
         continue;
       }
       for (Method method : clazz.getDeclaredMethods()) {
-        if (isJsonBoundCollectionAccessor(method) && !method.isAnnotationPresent(JsonInclude.class)) {
+        if (isJsonBoundCollectionAccessor(method) && !declaresExplicitJsonInclude(method)) {
           violations.add(clazz.getSimpleName() + "#" + method.getName());
         }
       }
@@ -54,11 +55,20 @@ class TransactionCollectionInclusionTest {
     assertThat(violations)
       .withFailMessage(
         "Collection-typed accessors on Transaction types must declare @JsonInclude explicitly " +
-          "(NON_EMPTY to omit an empty value, ALWAYS to serialize it), so that the effect on the signed JSON is a " +
-          "deliberate, reviewable choice. Violations: %s",
+          "(NON_EMPTY to omit an empty value, ALWAYS to serialize it; USE_DEFAULTS is not accepted), so that the " +
+          "effect on the signed JSON is a deliberate, reviewable choice. Violations: %s",
         violations
       )
       .isEmpty();
+  }
+
+  /**
+   * Whether {@code method} carries a {@link JsonInclude} whose value is an actual choice. {@code USE_DEFAULTS} defers
+   * to the mapper-wide inclusion, so it would silently track a future change to that default and is rejected.
+   */
+  private static boolean declaresExplicitJsonInclude(Method method) {
+    JsonInclude jsonInclude = method.getAnnotation(JsonInclude.class);
+    return jsonInclude != null && jsonInclude.value() != JsonInclude.Include.USE_DEFAULTS;
   }
 
   /**
@@ -69,8 +79,11 @@ class TransactionCollectionInclusionTest {
     if (method.isSynthetic() || Modifier.isStatic(method.getModifiers()) || method.getParameterCount() != 0) {
       return false;
     }
-    // A default method is only an attribute if it is a @Value.Default; otherwise it is a helper.
-    if (method.isDefault() && !method.isAnnotationPresent(Value.Default.class)) {
+    // A default method is only serialized if it is a @Value.Default attribute or is bound explicitly with
+    // @JsonProperty; otherwise it is a helper.
+    if (method.isDefault() &&
+      !method.isAnnotationPresent(Value.Default.class) &&
+      !method.isAnnotationPresent(JsonProperty.class)) {
       return false;
     }
     if (method.isAnnotationPresent(JsonIgnore.class) ||

@@ -74,11 +74,13 @@ public class PaymentJsonTests extends AbstractJsonTest {
   }
 
   /**
-   * Pins the {@code @JsonInclude(NON_EMPTY)} declared on the collection accessors independently of the mapper-wide
-   * default: an explicitly empty {@code Paths}, {@code CredentialIDs}, {@code Memos} or {@code Signers} must be
-   * omitted from the JSON, since xrpld rejects an empty {@code Paths} with {@code temRIPPLE_EMPTY}, an empty
-   * {@code CredentialIDs} with {@code temMALFORMED}, and only skips signature checks in {@code simulate} when
-   * {@code Signers} is absent rather than empty.
+   * Pins the serialized effect of the {@code @JsonInclude(NON_EMPTY)} declared on the collection accessors: an
+   * explicitly empty {@code Paths}, {@code CredentialIDs}, {@code Memos} or {@code Signers} must be omitted from the
+   * JSON, since xrpld rejects an empty {@code Paths} with {@code temRIPPLE_EMPTY}, an empty {@code CredentialIDs}
+   * with {@code temMALFORMED}, and only skips signature checks in {@code simulate} when {@code Signers} is absent
+   * rather than empty. This test catches a switch to {@code ALWAYS}; {@link
+   * org.xrpl.xrpl4j.model.transactions.TransactionCollectionInclusionTest} catches a removed or {@code USE_DEFAULTS}
+   * annotation, which would otherwise be masked by the mapper-wide {@code NON_EMPTY} default.
    */
   @Test
   public void testExplicitlyEmptyCollectionsAreOmitted() throws JsonProcessingException, JSONException {

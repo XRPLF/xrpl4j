@@ -23,7 +23,9 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.jackson.modules.PermissionDeserializer;
 
 /**
  * A {@link Permission} whose value is not recognized by this version of xrpl4j, i.e. it is neither a known
@@ -71,4 +73,26 @@ public interface UnknownPermission extends Permission {
    * @return A {@link String}.
    */
   String value();
+
+  /**
+   * Enforce that an {@link UnknownPermission} only ever wraps a value that this version of xrpl4j genuinely does not
+   * recognize. {@link PermissionDeserializer} already resolves known names to {@link TransactionTypePermission} or
+   * {@link GranularPermissionValue} before falling back to this type, so this check only guards direct construction.
+   * Without it, a caller could wrap a known name (in any letter case) in an {@link UnknownPermission} and sidestep
+   * the name-based duplicate and non-delegatable checks in {@link DelegateSet}, which only inspect the typed
+   * subtypes. The same case-insensitive lookups the deserializer uses are applied here so the two can never disagree.
+   */
+  @Value.Check
+  default void validateValueIsNotKnown() {
+    Preconditions.checkArgument(
+      TransactionType.forValue(value()) == TransactionType.UNKNOWN,
+      String.format("UnknownPermission: value %s is a known TransactionType; use TransactionTypePermission instead",
+        value())
+    );
+    Preconditions.checkArgument(
+      !GranularPermission.forValue(value()).isPresent(),
+      String.format("UnknownPermission: value %s is a known GranularPermission; use GranularPermissionValue instead",
+        value())
+    );
+  }
 }

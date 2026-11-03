@@ -385,6 +385,51 @@ Batch.builder()
   ...
 ```
 
+### 8. `Permission.handle()` and `Permission.map()` take an `UnknownPermission` handler
+
+`Permission` (introduced in `6.1.0-rc.2`, `@Beta`) gains a third concrete subtype, `UnknownPermission`, which holds a
+`PermissionValue` string that xrpl4j does not recognize as either a `TransactionType` or a `GranularPermission`.
+`PermissionDeserializer` now falls back to `UnknownPermission` instead of throwing an `IllegalArgumentException`, so a
+`DelegateSet` transaction or `Delegate` ledger object that references a transaction type newer than the xrpl4j model
+no longer makes the enclosing transaction or metadata unparseable. `PermissionSerializer` writes the raw value back
+unchanged.
+
+To make that third case exhaustive, `Permission.handle()` and `Permission.map()` now require a third `Consumer` or
+`Function` for `UnknownPermission`. Two-argument calls no longer compile.
+
+**Migration:**
+
+```java
+// Before (v6.1.0-rc.2)
+permission.handle(
+  transactionTypePermission -> { /* ... */ },
+  granularPermissionValue -> { /* ... */ }
+);
+
+String value = permission.map(
+  transactionTypePermission -> transactionTypePermission.value(),
+  granularPermissionValue -> granularPermissionValue.value()
+);
+
+// After (v7.0.0)
+permission.handle(
+  transactionTypePermission -> { /* ... */ },
+  granularPermissionValue -> { /* ... */ },
+  unknownPermission -> { /* ... */ }
+);
+
+String value = permission.map(
+  transactionTypePermission -> transactionTypePermission.value(),
+  granularPermissionValue -> granularPermissionValue.value(),
+  unknownPermission -> unknownPermission.value()
+);
+```
+
+If you previously caught the deserialization exception to detect an unrecognized permission, dispatch on
+`UnknownPermission` instead. Note that `DelegateSet` still rejects an `UnknownPermission` whose value parses as an
+integer, so an unknown permission cannot be used to encode a numeric permission code that bypasses the name-based
+validation.
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.

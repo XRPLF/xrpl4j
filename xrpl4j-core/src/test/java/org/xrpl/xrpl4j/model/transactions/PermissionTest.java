@@ -123,6 +123,15 @@ public class PermissionTest {
   }
 
   @Test
+  void testHandleWithUnsupportedPermissionType() {
+    Permission unsupported = new Permission() { };
+
+    assertThrows(IllegalStateException.class, () ->
+      unsupported.handle(txPermission -> { }, granularPermission -> { }, unknownPermission -> { })
+    );
+  }
+
+  @Test
   void testMapWithTransactionTypePermission() {
     Permission permission = TransactionTypePermission.of(TransactionType.PAYMENT);
 
@@ -185,6 +194,15 @@ public class PermissionTest {
 
     assertThrows(NullPointerException.class, () ->
       permission.map(txPermission -> "test", granularPermission -> "test", null)
+    );
+  }
+
+  @Test
+  void testMapWithUnsupportedPermissionType() {
+    Permission unsupported = new Permission() { };
+
+    assertThrows(IllegalStateException.class, () ->
+      unsupported.map(txPermission -> "test", granularPermission -> "test", unknownPermission -> "test")
     );
   }
 

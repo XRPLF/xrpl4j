@@ -30,6 +30,7 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -76,19 +77,22 @@ public class XrpCurrencyAmountDeserializer extends StdDeserializer<XrpCurrencyAm
     }
 
     boolean isNegative = rawValue.charAt(0) == '-';
-    BigInteger drops = new BigInteger(isNegative ? rawValue.substring(1) : rawValue);
+    String digits = (isNegative ? rawValue.substring(1) : rawValue).replaceFirst("^0+(?=\\d)", "");
 
-    if (drops.compareTo(BigInteger.valueOf(CurrencyAmount.MAX_XRP_IN_DROPS)) > 0) {
+    // MAX_XRP_IN_DROPS has 18 digits; check length before constructing a BigInteger, which is quadratic in length.
+    if (digits.length() > 18 ||
+      new BigInteger(digits).compareTo(BigInteger.valueOf(CurrencyAmount.MAX_XRP_IN_DROPS)) > 0) {
       throw MismatchedInputException.from(
         jsonParser,
         XrpCurrencyAmount.class,
         String.format(
+          Locale.ROOT,
           "XRP drops amount \"%s\" exceeds the maximum of %,d drops.", rawValue, CurrencyAmount.MAX_XRP_IN_DROPS
         )
       );
     }
 
-    return XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(drops), isNegative);
+    return XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(digits), isNegative);
   }
 
   private static MismatchedInputException invalidFormat(final JsonParser jsonParser, final String rawValue) {

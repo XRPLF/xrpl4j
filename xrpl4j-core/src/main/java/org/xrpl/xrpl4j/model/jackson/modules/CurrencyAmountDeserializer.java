@@ -78,7 +78,7 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
           .currency(currency)
           .build();
       }
-    } else if (UNAVAILABLE.equals(node.asText())) {
+    } else if (UNAVAILABLE.equals(node.asText()) && "delivered_amount".equals(jsonParser.currentName())) {
       return null;
     } else {
       return XrpCurrencyAmountDeserializer.parse(jsonParser, node.asText());

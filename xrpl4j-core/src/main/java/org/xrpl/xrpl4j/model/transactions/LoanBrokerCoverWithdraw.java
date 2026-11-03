@@ -10,6 +10,8 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.AddressConstants;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -77,6 +79,15 @@ public interface LoanBrokerCoverWithdraw extends Transaction {
   Optional<UnsignedInteger> destinationTag();
 
   /**
+   * Set of Credentials to authorize a deposit made by this transaction. Each member of the array must be the ledger
+   * entry ID of a Credential entry in the ledger. Requires the {@code LendingProtocolV1_1} amendment.
+   *
+   * @return A list of type {@link Hash256}.
+   */
+  @JsonProperty("CredentialIDs")
+  List<Hash256> credentialIds();
+
+  /**
    * Validates LoanBrokerCoverWithdraw data verification preconditions.
    */
   @Value.Check
@@ -95,5 +106,16 @@ public interface LoanBrokerCoverWithdraw extends Transaction {
       !dest.equals(AddressConstants.ACCOUNT_ZERO),
       "Destination must not be the zero account."
     ));
+
+    if (!credentialIds().isEmpty()) {
+      Preconditions.checkArgument(
+        credentialIds().size() <= 8,
+        "CredentialIDs should have less than or equal to 8 items."
+      );
+      Preconditions.checkArgument(
+        new HashSet<>(credentialIds()).size() == credentialIds().size(),
+        "CredentialIDs should have unique values."
+      );
+    }
   }
 }

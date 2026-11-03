@@ -4,10 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -74,5 +77,32 @@ public interface VaultWithdraw extends Transaction {
    */
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
+
+  /**
+   * Set of Credentials to authorize a deposit made by this transaction. Each member of the array must be the ledger
+   * entry ID of a Credential entry in the ledger. Requires the {@code LendingProtocolV1_1} amendment.
+   *
+   * @return A list of type {@link Hash256}.
+   */
+  @JsonProperty("CredentialIDs")
+  List<Hash256> credentialIds();
+
+  /**
+   * Validate {@link VaultWithdraw#credentialIds} has less than or equal to 8 credentials, and that those
+   * credentials are unique.
+   */
+  @Value.Check
+  default void validateCredentialIds() {
+    if (!credentialIds().isEmpty()) {
+      Preconditions.checkArgument(
+        credentialIds().size() <= 8,
+        "CredentialIDs should have less than or equal to 8 items."
+      );
+      Preconditions.checkArgument(
+        new HashSet<>(credentialIds()).size() == credentialIds().size(),
+        "CredentialIDs should have unique values."
+      );
+    }
+  }
 
 }

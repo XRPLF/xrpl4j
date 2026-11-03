@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.jackson.modules.ZonedDateTimeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ZonedDateTimeSerializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
@@ -69,6 +71,8 @@ public interface AmmInfoAuctionSlot {
    */
   @JsonProperty("expiration")
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssZ", locale = "en_US")
+  @JsonSerialize(using = ZonedDateTimeSerializer.class)
+  @JsonDeserialize(using = ZonedDateTimeDeserializer.class)
   ZonedDateTime expiration();
 
   /**

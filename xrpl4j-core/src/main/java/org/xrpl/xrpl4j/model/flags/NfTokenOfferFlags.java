@@ -28,9 +28,9 @@ import org.xrpl.xrpl4j.model.ledger.NfTokenOfferObject;
 public class NfTokenOfferFlags extends Flags {
 
   /**
-   * Constant {@link NfTokenOfferFlags} for the {@code lsfBuyToken} flag.
+   * Constant {@link NfTokenOfferFlags} for the {@code lsfSellNFToken} flag.
    */
-  public static final NfTokenOfferFlags BUY_TOKEN = new NfTokenOfferFlags(0x00000001);
+  public static final NfTokenOfferFlags SELL_NFTOKEN = new NfTokenOfferFlags(0x00000001);
 
   /**
    * Constant {@link NfTokenOfferFlags} for the {@code lsfAuthorized} flag.
@@ -54,12 +54,12 @@ public class NfTokenOfferFlags extends Flags {
   }
 
   /**
-   * Indicates the offer is a buy offer.
+   * Indicates the offer is a sell offer. Otherwise, it is a buy offer.
    *
-   * @return {@code true} if {@code lsfBuyToken} is set, otherwise {@code false}.
+   * @return {@code true} if {@code lsfSellNFToken} is set, otherwise {@code false}.
    */
-  public boolean lsfBuyToken() {
-    return this.isSet(BUY_TOKEN);
+  public boolean lsfSellNfToken() {
+    return this.isSet(SELL_NFTOKEN);
   }
 
   /**

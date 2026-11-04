@@ -21,8 +21,10 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
@@ -155,6 +157,24 @@ public class SetFeeTest extends AbstractJsonTest {
     Transaction redeserialized = objectMapper.readValue(reserialized, Transaction.class);
 
     assertThat(redeserialized).isEqualTo(expected);
+  }
+
+  @Test
+  public void rejectsNonStandardBaseFeeDrops() {
+    String json = "{\n" +
+      "    \"Account\": \"rrrrrrrrrrrrrrrrrrrrrhoLvTp\",\n" +
+      "    \"BaseFeeDrops\": \"1e3\",\n" +
+      "    \"Fee\": \"0\",\n" +
+      "    \"LedgerSequence\": 66462465,\n" +
+      "    \"ReserveBaseDrops\": \"10000000\",\n" +
+      "    \"ReserveIncrementDrops\": \"2000000\",\n" +
+      "    \"Sequence\": 0,\n" +
+      "    \"SigningPubKey\": \"\",\n" +
+      "    \"TransactionType\": \"SetFee\"}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, Transaction.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("XRP drops amount must be a plain integer string");
   }
 
   @Test

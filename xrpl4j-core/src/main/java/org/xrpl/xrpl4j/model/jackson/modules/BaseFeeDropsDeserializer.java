@@ -55,7 +55,7 @@ public class BaseFeeDropsDeserializer extends StdDeserializer<XrpCurrencyAmount>
     if (jsonParser.currentName().equals("BaseFee")) {
       return XrpCurrencyAmount.of(UnsignedLong.valueOf(jsonParser.getText(), 16));
     } else {
-      return XrpCurrencyAmount.ofDrops(jsonParser.getValueAsLong());
+      return XrpCurrencyAmountDeserializer.parse(jsonParser, jsonParser.getValueAsString());
     }
   }
 }

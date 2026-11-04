@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.codec.binary;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -114,6 +115,32 @@ class XrplBinaryCodecTest {
     String hex = "684000000000000064";
     assertThat(encoder.encode(json)).isEqualTo(hex);
     assertThat(encoder.decode(hex)).isEqualTo(json);
+  }
+
+  @Test
+  void encodeUnknownPermissionValueNameFailsWithClearError() {
+    String json = "{\"PermissionValue\":\"SomeFutureTransactionType\"}";
+    assertThatThrownBy(() -> encoder.encode(json))
+      .isInstanceOf(IllegalArgumentException.class)
+      .isNotInstanceOf(NumberFormatException.class)
+      .hasMessageContaining("PermissionValue \"SomeFutureTransactionType\" is not a PermissionValue name known");
+  }
+
+  @Test
+  void encodeUnknownTransactionTypeNameFailsWithClearError() {
+    String json = "{\"TransactionType\":\"SomeFutureTransactionType\"}";
+    assertThatThrownBy(() -> encoder.encode(json))
+      .isInstanceOf(IllegalArgumentException.class)
+      .isNotInstanceOf(NumberFormatException.class)
+      .hasMessageContaining("TransactionType \"SomeFutureTransactionType\" is not a TransactionType name known");
+  }
+
+  @Test
+  void encodeNumericPermissionValueStillEncodes() throws JsonProcessingException {
+    // A numeric code bypasses the name lookup and is encoded verbatim, as before.
+    String byName = "{\"PermissionValue\":\"Payment\"}";
+    String byCode = "{\"PermissionValue\":\"1\"}";
+    assertThat(encoder.encode(byCode)).isEqualTo(encoder.encode(byName));
   }
 
   @Test

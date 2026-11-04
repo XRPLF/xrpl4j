@@ -21,10 +21,14 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -563,5 +567,28 @@ public class DelegateSetTest {
       assertThat(permissionValue).isEqualTo(granularPerm.value());
     }
   }
-}
 
+  @Test
+  public void testEncodingDelegateSetWithUnknownPermissionFailsWithClearError() throws JsonProcessingException {
+    // An UnknownPermission can be read from the ledger, but its name is by definition absent from the local codec
+    // definitions, so it cannot be binary-encoded (and therefore cannot be signed). The codec must say which value is
+    // at fault rather than surfacing a bare NumberFormatException from UInt32Type.
+    DelegateSet delegateSet = DelegateSet.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
+      .permissions(Collections.singletonList(
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(UnknownPermission.of("SomeFutureTransactionType")))
+          .build()
+      ))
+      .build();
+    String json = ObjectMapperFactory.create().writeValueAsString(delegateSet);
+
+    assertThatThrownBy(() -> XrplBinaryCodec.getInstance().encodeForSigning(json))
+      .isInstanceOf(IllegalArgumentException.class)
+      .isNotInstanceOf(NumberFormatException.class)
+      .hasMessageContaining("PermissionValue \"SomeFutureTransactionType\" is not a PermissionValue name known");
+  }
+}

@@ -36,6 +36,11 @@ import org.xrpl.xrpl4j.model.jackson.modules.PermissionDeserializer;
  * values are preserved verbatim in this type so that they survive a JSON round-trip, mirroring how
  * {@link UnknownTransaction} handles unrecognized transaction types.</p>
  *
+ * <p>An {@link UnknownPermission} is read-only in practice: the binary codec can only encode a {@code PermissionValue}
+ * whose name is present in its local definitions, so signing or encoding a {@link DelegateSet} that contains one
+ * fails with an {@link IllegalArgumentException} naming the offending value. Upgrade xrpl4j to a version that models
+ * the permission before trying to submit such a transaction.</p>
+ *
  * <p>This class will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
  * Its API is subject to change.</p>
  */

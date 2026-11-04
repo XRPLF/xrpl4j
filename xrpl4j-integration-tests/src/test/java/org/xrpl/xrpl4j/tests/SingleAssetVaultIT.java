@@ -1228,6 +1228,11 @@ public class SingleAssetVaultIT extends AbstractIT {
           .build()
       )
       .destination(authorizedDepositorKeyPair.publicKey().deriveAddress())
+      .credentialIds(
+        getCredentialObjectIds(
+          credentialIssuerKeyPair, authorizedDepositorKeyPair, new CredentialType[]{credentialType}
+        )
+      )
       .signingPublicKey(authorizedDepositorKeyPair.publicKey())
       .build();
 
@@ -1360,6 +1365,7 @@ public class SingleAssetVaultIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(vaultOwnerAccountInfo.accountData().sequence())
       .vaultId(vaultId)
+      .memoData(VaultData.ofPlainText("closing vault"))
       .signingPublicKey(vaultOwnerKeyPair.publicKey())
       .build();
 
@@ -1371,9 +1377,10 @@ public class SingleAssetVaultIT extends AbstractIT {
     assertThat(vaultDeleteSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
     // Wait for transaction to be validated
-    this.scanForResult(
+    VaultDelete validatedVaultDelete = this.scanForResult(
       () -> this.getValidatedTransaction(signedVaultDelete.hash(), VaultDelete.class)
-    );
+    ).transaction();
+    assertThat(validatedVaultDelete.memoData()).hasValue(VaultData.ofPlainText("closing vault"));
   }
 
   /**

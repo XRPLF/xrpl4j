@@ -100,6 +100,8 @@ class ZonedDateTimeSerializerTest {
 
     @JsonProperty("time")
     @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", locale = "en_US")
+    @JsonSerialize(using = ZonedDateTimeSerializer.class)
+    @JsonDeserialize(using = ZonedDateTimeDeserializer.class)
     ZonedDateTime time();
   }
 }

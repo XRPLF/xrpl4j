@@ -293,7 +293,12 @@ public interface AccountSet extends Transaction {
 
   /**
    * Tick size to use for offers involving a currency issued by this address. The exchange rates of those offers is
-   * rounded to this many significant digits. Valid values are 3 to 15 inclusive, or 0 to disable.
+   * rounded to this many significant digits. Valid values are 3 to 16 inclusive, or 0 to disable.
+   *
+   * <p>Note that both 0 and 16 disable the tick size: rippled treats 16 as full precision, which is equivalent to no
+   * tick size at all, and removes the {@code TickSize} field from the {@code AccountRoot} rather than storing it.
+   * Consequently, an {@code AccountRoot} only ever holds values in the range 3 to 15, whereas an {@code AccountSet}
+   * transaction may legitimately carry 16.
    *
    * @return An {@link Optional} of type {@link UnsignedInteger} representing the tick size.
    */
@@ -357,6 +362,9 @@ public interface AccountSet extends Transaction {
 
   /**
    * Check tick size.
+   *
+   * <p>The bounds here mirror {@code Quality::kMinTickSize} and {@code Quality::kMaxTickSize} in rippled, which accepts
+   * 0 or 3 to 16 inclusive and rejects anything else with {@code temBAD_TICK_SIZE}.
    */
   @Value.Check
   default void checkTickSize() {
@@ -364,8 +372,8 @@ public interface AccountSet extends Transaction {
       .ifPresent(tickSize ->
         Preconditions.checkArgument(tickSize.equals(UnsignedInteger.ZERO) ||
             (tickSize.compareTo(UnsignedInteger.valueOf(3)) >= 0 &&
-              tickSize.compareTo(UnsignedInteger.valueOf(15)) <= 0),
-          "tickSize must be between 3 and 15 inclusive or be equal to 0."
+              tickSize.compareTo(UnsignedInteger.valueOf(16)) <= 0),
+          "tickSize must be between 3 and 16 inclusive or be equal to 0."
         )
       );
 

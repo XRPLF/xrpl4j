@@ -27,6 +27,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.jackson.modules.ZonedDateTimeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ZonedDateTimeSerializer;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -193,6 +195,8 @@ public interface ReportingModeServerInfo extends ServerInfo {
    * @return A {@link ZonedDateTime} denoting the server clock time.
    */
   @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSS z", locale = "en_US")
+  @JsonSerialize(using = ZonedDateTimeSerializer.class)
+  @JsonDeserialize(using = ZonedDateTimeDeserializer.class)
   ZonedDateTime time();
 
   /**

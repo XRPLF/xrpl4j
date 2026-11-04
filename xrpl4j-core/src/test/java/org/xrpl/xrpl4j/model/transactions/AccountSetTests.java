@@ -417,7 +417,7 @@ public class AccountSetTests {
         .sequence(UnsignedInteger.valueOf(5))
         .tickSize(UnsignedInteger.valueOf(2))
         .build(),
-      "tickSize must be between 3 and 15 inclusive or be equal to 0."
+      "tickSize must be between 3 and 16 inclusive or be equal to 0."
     );
   }
 
@@ -429,10 +429,22 @@ public class AccountSetTests {
         .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
         .fee(XrpCurrencyAmount.ofDrops(12))
         .sequence(UnsignedInteger.valueOf(5))
-        .tickSize(UnsignedInteger.valueOf(16))
+        .tickSize(UnsignedInteger.valueOf(17))
         .build(),
-      "tickSize must be between 3 and 15 inclusive or be equal to 0."
+      "tickSize must be between 3 and 16 inclusive or be equal to 0."
     );
+  }
+
+  @Test
+  public void tickSizeIsMaximum() {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .tickSize(UnsignedInteger.valueOf(16))
+      .build();
+
+    assertThat(accountSet.tickSize()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(16));
   }
 
   @Test

@@ -33,6 +33,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.DelegateSet;
 import org.xrpl.xrpl4j.model.transactions.GranularPermission;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
+import org.xrpl.xrpl4j.model.transactions.UnknownPermission;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Arrays;
@@ -177,5 +178,42 @@ public class DelegateSetJsonTest extends AbstractJsonTest {
 
     assertCanSerializeAndDeserialize(delegateSet, json);
   }
-}
 
+  @Test
+  public void testDelegateSetJsonWithUnknownPermissionValue() throws JsonProcessingException, JSONException {
+    // Permission values that this version of xrpl4j does not recognize (e.g. a transaction type added to xrpld after
+    // this release) must round-trip without failing, preserving the original value.
+    DelegateSet delegateSet = DelegateSet.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
+      .permissions(Arrays.asList(
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
+          .build(),
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(UnknownPermission.of("SomeFutureTransactionType")))
+          .build()
+      ))
+      .sequence(UnsignedInteger.valueOf(2))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
+      )
+      .build();
+
+    String json = "{" +
+      "  \"Account\":\"rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8\"," +
+      "  \"Authorize\":\"rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de\"," +
+      "  \"Permissions\":[" +
+      "    {\"Permission\":{\"PermissionValue\":\"Payment\"}}," +
+      "    {\"Permission\":{\"PermissionValue\":\"SomeFutureTransactionType\"}}" +
+      "  ]," +
+      "  \"Fee\":\"10\"," +
+      "  \"Sequence\":2," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"TransactionType\":\"DelegateSet\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(delegateSet, json);
+  }
+}

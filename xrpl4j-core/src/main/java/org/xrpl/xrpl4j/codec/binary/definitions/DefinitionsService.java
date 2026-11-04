@@ -195,6 +195,30 @@ public class DefinitionsService {
   }
 
   /**
+   * Determine whether {@code fieldName} is one of the fields whose JSON value may be a symbolic name (for example
+   * {@code "Payment"} for {@code TransactionType}) that {@link #mapFieldSpecialization(String, String)} resolves to an
+   * integer code before binary encoding.
+   *
+   * @param fieldName A {@link String} representing the field name.
+   *
+   * @return {@code true} if the field's value is resolved by name; {@code false} otherwise.
+   */
+  public boolean isSpecializedField(String fieldName) {
+    if (fieldName == null) {
+      return false;
+    }
+    switch (fieldName) {
+      case "LedgerEntryType":
+      case "TransactionResult":
+      case "TransactionType":
+      case "PermissionValue":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Map a field's raw value to a specialied type.
    *
    * @param fieldName A {@link String} representing the name of the field to map.

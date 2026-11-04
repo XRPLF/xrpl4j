@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
@@ -142,7 +143,8 @@ public interface DelegateSet extends Transaction {
     for (AccountPermissionWrapper wrapper : permissions()) {
       String permissionValue = wrapper.permission().permissionValue().map(
         transactionTypePermission -> transactionTypePermission.value(),
-        granularPermissionValue -> granularPermissionValue.value()
+        granularPermissionValue -> granularPermissionValue.value(),
+        unknownPermission -> unknownPermission.value()
       );
       Preconditions.checkArgument(
         permissionValues.add(permissionValue),
@@ -170,23 +172,25 @@ public interface DelegateSet extends Transaction {
         },
         granularPermissionValue -> {
           // Granular permissions are always delegatable, no validation needed
+        },
+        unknownPermission -> {
+          // Unknown permissions cannot be validated locally; xrpld is the authority on whether they are delegatable.
         }
       );
     }
   }
 
   /**
-   * Validate that each permission value corresponds to either a valid TransactionType or GranularPermission.
-   * This validation is now handled by the Permission deserializer, so this method is no longer needed.
-   * However, we keep it for additional runtime validation.
+   * Validate that each {@link TransactionTypePermission} wraps a real {@link TransactionType} rather than
+   * {@link TransactionType#UNKNOWN}. Permission values that xrpl4j does not recognize at all are deserialized as
+   * {@link UnknownPermission} and are deliberately allowed through, so that a {@link DelegateSet} read from the ledger
+   * remains parseable even when it references a transaction type newer than this version of xrpl4j.
    */
   @Value.Check
   default void validatePermissionValuesAreValid() {
     for (AccountPermissionWrapper wrapper : permissions()) {
       Permission permission = wrapper.permission().permissionValue();
 
-      // The Permission type guarantees that it's either a TransactionTypePermission or GranularPermissionValue
-      // Additional validation: ensure TransactionTypePermission doesn't wrap UNKNOWN
       permission.handle(
         transactionTypePermission -> {
           Preconditions.checkArgument(
@@ -197,8 +201,39 @@ public interface DelegateSet extends Transaction {
         },
         granularPermissionValue -> {
           // GranularPermissionValue is always valid if it exists
+        },
+        unknownPermission -> {
+          // Unrecognized names are preserved verbatim (see Javadoc above). However, the binary codec encodes a
+          // PermissionValue it cannot map by name as a raw integer, so a purely numeric "unknown" value would encode
+          // as some real permission code while sidestepping the duplicate and non-delegatable checks above, which
+          // operate on names. xrpld always reports permissions by name, so a numeric value is never legitimate here.
+          // Deliberately use the same parser the codec uses (UInt32Type#fromJson) so the two can never disagree.
+          Preconditions.checkArgument(
+            !isCodecParseableAsInteger(unknownPermission.value()),
+            String.format("DelegateSet: PermissionValue %s must be a permission name, not a numeric code",
+              unknownPermission.value())
+          );
         }
       );
+    }
+  }
+
+  /**
+   * Determine whether the binary codec would treat {@code value} as a raw integer when encoding a
+   * {@code PermissionValue}. This intentionally mirrors {@code UInt32Type#fromJson}, which parses via
+   * {@link UnsignedLong#valueOf(String)}, rather than re-implementing "is numeric" with a regex: Java's {@code \d}
+   * is ASCII-only whereas {@link Long#parseUnsignedLong} accepts any Unicode digit, and the two must never disagree.
+   *
+   * @param value A {@link String} permission value.
+   *
+   * @return {@code true} if the codec would encode {@code value} as an integer.
+   */
+  static boolean isCodecParseableAsInteger(final String value) {
+    try {
+      UnsignedLong.valueOf(value);
+      return true;
+    } catch (NumberFormatException e) {
+      return false;
     }
   }
 }

@@ -32,6 +32,7 @@ import org.xrpl.xrpl4j.model.transactions.GranularPermissionValue;
 import org.xrpl.xrpl4j.model.transactions.Permission;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TransactionTypePermission;
+import org.xrpl.xrpl4j.model.transactions.UnknownPermission;
 
 import java.io.IOException;
 
@@ -65,6 +66,16 @@ class PermissionSerializerTest {
     serializer.serialize(permission, mockJsonGenerator, mock(SerializerProvider.class));
     
     verify(mockJsonGenerator).writeString("TrustlineAuthorize");
+  }
+
+  @Test
+  void testSerializeUnknownPermissionWritesRawValue() throws IOException {
+    Permission permission = UnknownPermission.of("SomeFutureTransactionType");
+    JsonGenerator mockJsonGenerator = mock(JsonGenerator.class);
+
+    serializer.serialize(permission, mockJsonGenerator, mock(SerializerProvider.class));
+
+    verify(mockJsonGenerator).writeString("SomeFutureTransactionType");
   }
 
   @Test

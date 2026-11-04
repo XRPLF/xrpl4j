@@ -28,6 +28,7 @@ import org.xrpl.xrpl4j.model.transactions.GranularPermissionValue;
 import org.xrpl.xrpl4j.model.transactions.Permission;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TransactionTypePermission;
+import org.xrpl.xrpl4j.model.transactions.UnknownPermission;
 
 import java.io.IOException;
 
@@ -53,13 +54,13 @@ public class PermissionDeserializer extends StdDeserializer<Permission> {
       return TransactionTypePermission.of(transactionType);
     }
 
-    // Try to parse as GranularPermission. If not present, throw an exception because one of
-    // either transactionType or granularPermission must be present.
+    // Try to parse as GranularPermission. If that fails too, the value is one that this version of xrpl4j does not
+    // recognize (e.g. a transaction type that xrpld added after this release). Preserve it verbatim as an
+    // UnknownPermission rather than failing, so that a single unrecognized value does not make an entire DelegateSet
+    // transaction (or its metadata) unparseable.
     return GranularPermission.forValue(value)
-      .map(GranularPermissionValue::of)
-      .orElseThrow(() -> new IllegalArgumentException(
-        String.format("Unknown permission value: %s", value)
-      ));
+      .<Permission>map(GranularPermissionValue::of)
+      .orElseGet(() -> UnknownPermission.of(value));
   }
 }
 

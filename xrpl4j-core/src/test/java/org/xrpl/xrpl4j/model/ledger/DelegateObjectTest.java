@@ -116,11 +116,11 @@ public class DelegateObjectTest extends AbstractJsonTest {
 
     assertThat(delegateObject.permissions()).hasSize(3);
     String value0 = delegateObject.permissions().get(0).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     String value1 = delegateObject.permissions().get(1).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     String value2 = delegateObject.permissions().get(2).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     assertThat(value0).isEqualTo("Payment");
     assertThat(value1).isEqualTo("TrustSet");
     assertThat(value2).isEqualTo("OfferCreate");
@@ -131,7 +131,7 @@ public class DelegateObjectTest extends AbstractJsonTest {
     DelegateObject delegateObject = createMinimalDelegateObject();
     assertThat(delegateObject.permissions()).hasSize(1);
     String permissionValue = delegateObject.permissions().get(0).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     assertThat(permissionValue).isEqualTo("Payment");
   }
 

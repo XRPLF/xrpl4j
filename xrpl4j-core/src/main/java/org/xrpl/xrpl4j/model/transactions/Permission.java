@@ -31,7 +31,8 @@ import java.util.function.Function;
 /**
  * A marker interface for permission values in the XRP Ledger. Permissions can be either
  * {@link TransactionTypePermission} (for standard transaction types) or {@link GranularPermissionValue}
- * (for granular permissions that control specific portions of transactions).
+ * (for granular permissions that control specific portions of transactions). Values that this version of xrpl4j does
+ * not recognize are represented as an {@link UnknownPermission}, which preserves the raw value.
  *
  * <p>This interface will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on mainnet.
  * Its API is subject to change.</p>
@@ -47,18 +48,24 @@ public interface Permission {
    *                                         {@link TransactionTypePermission}.
    * @param granularPermissionValueHandler   A {@link Consumer} that is called if this instance is of type
    *                                         {@link GranularPermissionValue}.
+   * @param unknownPermissionHandler         A {@link Consumer} that is called if this instance is of type
+   *                                         {@link UnknownPermission}.
    */
   default void handle(
     final Consumer<TransactionTypePermission> transactionTypePermissionHandler,
-    final Consumer<GranularPermissionValue> granularPermissionValueHandler
+    final Consumer<GranularPermissionValue> granularPermissionValueHandler,
+    final Consumer<UnknownPermission> unknownPermissionHandler
   ) {
     Objects.requireNonNull(transactionTypePermissionHandler);
     Objects.requireNonNull(granularPermissionValueHandler);
+    Objects.requireNonNull(unknownPermissionHandler);
 
     if (TransactionTypePermission.class.isAssignableFrom(this.getClass())) {
       transactionTypePermissionHandler.accept((TransactionTypePermission) this);
     } else if (GranularPermissionValue.class.isAssignableFrom(this.getClass())) {
       granularPermissionValueHandler.accept((GranularPermissionValue) this);
+    } else if (UnknownPermission.class.isAssignableFrom(this.getClass())) {
+      unknownPermissionHandler.accept((UnknownPermission) this);
     } else {
       throw new IllegalStateException(String.format("Unsupported Permission Type: %s", this.getClass()));
     }
@@ -71,21 +78,27 @@ public interface Permission {
    *                                        {@link TransactionTypePermission}.
    * @param granularPermissionValueMapper   A {@link Function} that is called if this instance is of type
    *                                        {@link GranularPermissionValue}.
+   * @param unknownPermissionMapper         A {@link Function} that is called if this instance is of type
+   *                                        {@link UnknownPermission}.
    * @param <R>                             The type of object to return after mapping.
    *
    * @return A {@link R} that is constructed by the appropriate mapper function.
    */
   default <R> R map(
     final Function<TransactionTypePermission, R> transactionTypePermissionMapper,
-    final Function<GranularPermissionValue, R> granularPermissionValueMapper
+    final Function<GranularPermissionValue, R> granularPermissionValueMapper,
+    final Function<UnknownPermission, R> unknownPermissionMapper
   ) {
     Objects.requireNonNull(transactionTypePermissionMapper);
     Objects.requireNonNull(granularPermissionValueMapper);
+    Objects.requireNonNull(unknownPermissionMapper);
 
     if (TransactionTypePermission.class.isAssignableFrom(this.getClass())) {
       return transactionTypePermissionMapper.apply((TransactionTypePermission) this);
     } else if (GranularPermissionValue.class.isAssignableFrom(this.getClass())) {
       return granularPermissionValueMapper.apply((GranularPermissionValue) this);
+    } else if (UnknownPermission.class.isAssignableFrom(this.getClass())) {
+      return unknownPermissionMapper.apply((UnknownPermission) this);
     } else {
       throw new IllegalStateException(String.format("Unsupported Permission Type: %s", this.getClass()));
     }

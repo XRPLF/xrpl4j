@@ -344,4 +344,14 @@ class DefinitionsServiceTest {
     assertThat(exception.getMessage()).isEqualTo("invalid json");
     assertThat(exception.getCause()).isNotNull();
   }
+
+  @Test
+  void isSpecializedField() {
+    assertThat(definitionsService.isSpecializedField("LedgerEntryType")).isTrue();
+    assertThat(definitionsService.isSpecializedField("TransactionResult")).isTrue();
+    assertThat(definitionsService.isSpecializedField("TransactionType")).isTrue();
+    assertThat(definitionsService.isSpecializedField("PermissionValue")).isTrue();
+    assertThat(definitionsService.isSpecializedField("Sequence")).isFalse();
+    assertThat(definitionsService.isSpecializedField(null)).isFalse();
+  }
 }

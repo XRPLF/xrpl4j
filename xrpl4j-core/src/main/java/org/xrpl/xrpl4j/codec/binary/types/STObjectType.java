@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.Lists;
+import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
@@ -43,6 +44,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -160,12 +162,44 @@ public class STObjectType extends SerializedType<STObjectType> {
    * @param fieldNode JSON value for the field.
    *
    * @return either the original fieldNode or a remapped node if it's one of these special cases.
+   *
+   * @throws IllegalArgumentException if {@code fieldName} is a specialized field and {@code fieldNode} is neither a
+   *                                  name present in the local codec definitions nor an integer code. Without this
+   *                                  check the value would reach {@link UInt32Type#fromJson(JsonNode)} (or the
+   *                                  {@code UInt16} equivalent) and fail with a bare {@link NumberFormatException}
+   *                                  that does not say which field was at fault.
    */
   private JsonNode mapSpecializedValues(String fieldName, JsonNode fieldNode) {
-    return definitionsService.mapFieldSpecialization(fieldName, fieldNode.asText())
-      .map(value -> new TextNode("" + value))
-      .map(JsonNode.class::cast)
-      .orElse(fieldNode);
+    final String text = fieldNode.asText();
+    final Optional<Integer> specialized = definitionsService.mapFieldSpecialization(fieldName, text);
+    if (specialized.isPresent()) {
+      return new TextNode("" + specialized.get());
+    }
+    if (definitionsService.isSpecializedField(fieldName) && !isUnsignedInteger(text)) {
+      throw new IllegalArgumentException(String.format(
+        "%s \"%s\" is not a %s name known to this version of xrpl4j's codec definitions, so it cannot be encoded. " +
+          "Upgrade xrpl4j to a version that knows this value.",
+        fieldName, text, fieldName
+      ));
+    }
+    return fieldNode;
+  }
+
+  /**
+   * Determine whether {@code value} parses as an unsigned integer using the same parser the {@code UIntType} codecs
+   * use, so that this check and the codec can never disagree.
+   *
+   * @param value A {@link String}.
+   *
+   * @return {@code true} if the codec would accept {@code value} as an integer code.
+   */
+  private static boolean isUnsignedInteger(final String value) {
+    try {
+      UnsignedLong.valueOf(value);
+      return true;
+    } catch (NumberFormatException e) {
+      return false;
+    }
   }
 
   /**

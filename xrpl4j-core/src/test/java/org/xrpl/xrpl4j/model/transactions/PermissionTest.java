@@ -37,17 +37,20 @@ public class PermissionTest {
     Permission permission = TransactionTypePermission.of(TransactionType.PAYMENT);
     AtomicBoolean transactionTypeHandlerCalled = new AtomicBoolean(false);
     AtomicBoolean granularHandlerCalled = new AtomicBoolean(false);
+    AtomicBoolean unknownHandlerCalled = new AtomicBoolean(false);
 
     permission.handle(
       txPermission -> {
         transactionTypeHandlerCalled.set(true);
         assertThat(txPermission.transactionType()).isEqualTo(TransactionType.PAYMENT);
       },
-      granularPermission -> granularHandlerCalled.set(true)
+      granularPermission -> granularHandlerCalled.set(true),
+      unknownPermission -> unknownHandlerCalled.set(true)
     );
 
     assertThat(transactionTypeHandlerCalled.get()).isTrue();
     assertThat(granularHandlerCalled.get()).isFalse();
+    assertThat(unknownHandlerCalled.get()).isFalse();
   }
 
   @Test
@@ -55,17 +58,41 @@ public class PermissionTest {
     Permission permission = GranularPermissionValue.of(GranularPermission.TRUSTLINE_AUTHORIZE);
     AtomicBoolean transactionTypeHandlerCalled = new AtomicBoolean(false);
     AtomicBoolean granularHandlerCalled = new AtomicBoolean(false);
+    AtomicBoolean unknownHandlerCalled = new AtomicBoolean(false);
 
     permission.handle(
       txPermission -> transactionTypeHandlerCalled.set(true),
       granularPermission -> {
         granularHandlerCalled.set(true);
         assertThat(granularPermission.granularPermission()).isEqualTo(GranularPermission.TRUSTLINE_AUTHORIZE);
-      }
+      },
+      unknownPermission -> unknownHandlerCalled.set(true)
     );
 
     assertThat(transactionTypeHandlerCalled.get()).isFalse();
     assertThat(granularHandlerCalled.get()).isTrue();
+    assertThat(unknownHandlerCalled.get()).isFalse();
+  }
+
+  @Test
+  void testHandleWithUnknownPermission() {
+    Permission permission = UnknownPermission.of("SomeFutureTransactionType");
+    AtomicBoolean transactionTypeHandlerCalled = new AtomicBoolean(false);
+    AtomicBoolean granularHandlerCalled = new AtomicBoolean(false);
+    AtomicBoolean unknownHandlerCalled = new AtomicBoolean(false);
+
+    permission.handle(
+      txPermission -> transactionTypeHandlerCalled.set(true),
+      granularPermission -> granularHandlerCalled.set(true),
+      unknownPermission -> {
+        unknownHandlerCalled.set(true);
+        assertThat(unknownPermission.value()).isEqualTo("SomeFutureTransactionType");
+      }
+    );
+
+    assertThat(transactionTypeHandlerCalled.get()).isFalse();
+    assertThat(granularHandlerCalled.get()).isFalse();
+    assertThat(unknownHandlerCalled.get()).isTrue();
   }
 
   @Test
@@ -73,7 +100,7 @@ public class PermissionTest {
     Permission permission = TransactionTypePermission.of(TransactionType.PAYMENT);
 
     assertThrows(NullPointerException.class, () ->
-      permission.handle(null, granularPermission -> { })
+      permission.handle(null, granularPermission -> { }, unknownPermission -> { })
     );
   }
 
@@ -82,7 +109,25 @@ public class PermissionTest {
     Permission permission = TransactionTypePermission.of(TransactionType.PAYMENT);
 
     assertThrows(NullPointerException.class, () ->
-      permission.handle(txPermission -> { }, null)
+      permission.handle(txPermission -> { }, null, unknownPermission -> { })
+    );
+  }
+
+  @Test
+  void testHandleWithNullUnknownHandlerThrowsException() {
+    Permission permission = TransactionTypePermission.of(TransactionType.PAYMENT);
+
+    assertThrows(NullPointerException.class, () ->
+      permission.handle(txPermission -> { }, granularPermission -> { }, null)
+    );
+  }
+
+  @Test
+  void testHandleWithUnsupportedPermissionType() {
+    Permission unsupported = new Permission() { };
+
+    assertThrows(IllegalStateException.class, () ->
+      unsupported.handle(txPermission -> { }, granularPermission -> { }, unknownPermission -> { })
     );
   }
 
@@ -92,7 +137,8 @@ public class PermissionTest {
 
     String result = permission.map(
       txPermission -> "TransactionType: " + txPermission.transactionType().value(),
-      granularPermission -> "GranularPermission: " + granularPermission.granularPermission().value()
+      granularPermission -> "GranularPermission: " + granularPermission.granularPermission().value(),
+      unknownPermission -> "UnknownPermission: " + unknownPermission.value()
     );
 
     assertThat(result).isEqualTo("TransactionType: Payment");
@@ -104,10 +150,24 @@ public class PermissionTest {
 
     String result = permission.map(
       txPermission -> "TransactionType: " + txPermission.transactionType().value(),
-      granularPermission -> "GranularPermission: " + granularPermission.granularPermission().value()
+      granularPermission -> "GranularPermission: " + granularPermission.granularPermission().value(),
+      unknownPermission -> "UnknownPermission: " + unknownPermission.value()
     );
 
     assertThat(result).isEqualTo("GranularPermission: PaymentMint");
+  }
+
+  @Test
+  void testMapWithUnknownPermission() {
+    Permission permission = UnknownPermission.of("SomeFutureTransactionType");
+
+    String result = permission.map(
+      txPermission -> "TransactionType: " + txPermission.transactionType().value(),
+      granularPermission -> "GranularPermission: " + granularPermission.granularPermission().value(),
+      unknownPermission -> "UnknownPermission: " + unknownPermission.value()
+    );
+
+    assertThat(result).isEqualTo("UnknownPermission: SomeFutureTransactionType");
   }
 
   @Test
@@ -115,7 +175,7 @@ public class PermissionTest {
     Permission permission = TransactionTypePermission.of(TransactionType.PAYMENT);
 
     assertThrows(NullPointerException.class, () ->
-      permission.map(null, granularPermission -> "test")
+      permission.map(null, granularPermission -> "test", unknownPermission -> "test")
     );
   }
 
@@ -124,7 +184,25 @@ public class PermissionTest {
     Permission permission = TransactionTypePermission.of(TransactionType.PAYMENT);
 
     assertThrows(NullPointerException.class, () ->
-      permission.map(txPermission -> "test", null)
+      permission.map(txPermission -> "test", null, unknownPermission -> "test")
+    );
+  }
+
+  @Test
+  void testMapWithNullUnknownMapperThrowsException() {
+    Permission permission = TransactionTypePermission.of(TransactionType.PAYMENT);
+
+    assertThrows(NullPointerException.class, () ->
+      permission.map(txPermission -> "test", granularPermission -> "test", null)
+    );
+  }
+
+  @Test
+  void testMapWithUnsupportedPermissionType() {
+    Permission unsupported = new Permission() { };
+
+    assertThrows(IllegalStateException.class, () ->
+      unsupported.map(txPermission -> "test", granularPermission -> "test", unknownPermission -> "test")
     );
   }
 
@@ -134,7 +212,8 @@ public class PermissionTest {
 
     String value = permission.map(
       txPermission -> txPermission.value(),
-      granularPermission -> granularPermission.value()
+      granularPermission -> granularPermission.value(),
+      unknownPermission -> unknownPermission.value()
     );
     assertThat(value).isEqualTo("EscrowCreate");
   }
@@ -145,8 +224,21 @@ public class PermissionTest {
 
     String value = permission.map(
       txPermission -> txPermission.value(),
-      granularPermission -> granularPermission.value()
+      granularPermission -> granularPermission.value(),
+      unknownPermission -> unknownPermission.value()
     );
     assertThat(value).isEqualTo("TrustlineFreeze");
+  }
+
+  @Test
+  void testValueMethodForUnknownPermission() {
+    Permission permission = UnknownPermission.of("SomeFutureTransactionType");
+
+    String value = permission.map(
+      txPermission -> txPermission.value(),
+      granularPermission -> granularPermission.value(),
+      unknownPermission -> unknownPermission.value()
+    );
+    assertThat(value).isEqualTo("SomeFutureTransactionType");
   }
 }

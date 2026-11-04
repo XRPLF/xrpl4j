@@ -21,10 +21,14 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,9 +66,9 @@ public class DelegateSetTest {
     assertThat(delegateSet.authorize()).isEqualTo(authorize);
     assertThat(delegateSet.permissions()).hasSize(2);
     String value0 = delegateSet.permissions().get(0).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     String value1 = delegateSet.permissions().get(1).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     assertThat(value0).isEqualTo("Payment");
     assertThat(value1).isEqualTo("TrustSet");
   }
@@ -211,6 +215,79 @@ public class DelegateSetTest {
   }
 
   @Test
+  public void testDelegateSetWithUnknownPermissionIsAccepted() {
+    // A DelegateSet read from the ledger may reference a transaction type that this version of xrpl4j does not model
+    // yet. Validation must not reject it; xrpld already validated it.
+    DelegateSet delegateSet = DelegateSet.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
+      .permissions(Arrays.asList(
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(TransactionType.PAYMENT))
+          .build(),
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(UnknownPermission.of("SomeFutureTransactionType")))
+          .build()
+      ))
+      .build();
+
+    assertThat(delegateSet.permissions()).hasSize(2);
+    assertThat(delegateSet.permissions().get(1).permission().permissionValue())
+      .isEqualTo(UnknownPermission.of("SomeFutureTransactionType"));
+  }
+
+  @Test
+  public void testDelegateSetValidationRejectsNumericUnknownPermission() {
+    // The binary codec would encode a numeric PermissionValue as a raw permission code, sidestepping the name-based
+    // duplicate and non-delegatable checks. xrpld always reports permissions by name, so reject numeric values.
+    // Includes Unicode digits (Arabic-Indic zero, fullwidth one): the codec parses these via Long#parseUnsignedLong,
+    // so they must be rejected as well.
+    for (String numeric : new String[] {"0", "1", "65537", "٠", "１"}) {
+      IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        DelegateSet.builder()
+          .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+          .fee(XrpCurrencyAmount.ofDrops(10))
+          .sequence(UnsignedInteger.valueOf(2))
+          .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
+          .permissions(Collections.singletonList(
+            AccountPermissionWrapper.builder()
+              .permission(AccountPermission.of(UnknownPermission.of(numeric)))
+              .build()
+          ))
+          .build()
+      );
+
+      assertThat(exception.getMessage()).contains("must be a permission name, not a numeric code");
+    }
+  }
+
+  @Test
+  public void testDelegateSetValidationDuplicateUnknownPermissions() {
+    List<AccountPermissionWrapper> permissions = Arrays.asList(
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(UnknownPermission.of("SomeFutureTransactionType")))
+        .build(),
+      AccountPermissionWrapper.builder()
+        .permission(AccountPermission.of(UnknownPermission.of("SomeFutureTransactionType")))
+        .build()
+    );
+
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+      DelegateSet.builder()
+        .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .sequence(UnsignedInteger.valueOf(2))
+        .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
+        .permissions(permissions)
+        .build()
+    );
+
+    assertThat(exception.getMessage()).contains("Permissions array cannot contain duplicate values");
+  }
+
+  @Test
   public void testDelegateSetWithMaxPermissions() {
     // Test with exactly 10 permissions (should succeed) using valid transaction types
     TransactionType[] validTypes = {
@@ -271,13 +348,13 @@ public class DelegateSetTest {
 
     assertThat(delegateSet.permissions()).hasSize(4);
     String value0 = delegateSet.permissions().get(0).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     String value1 = delegateSet.permissions().get(1).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     String value2 = delegateSet.permissions().get(2).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     String value3 = delegateSet.permissions().get(3).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     assertThat(value0).isEqualTo("Payment");
     assertThat(value1).isEqualTo("TrustSet");
     assertThat(value2).isEqualTo("OfferCreate");
@@ -309,11 +386,11 @@ public class DelegateSetTest {
 
     assertThat(delegateSet.permissions()).hasSize(3);
     String value0 = delegateSet.permissions().get(0).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     String value1 = delegateSet.permissions().get(1).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     String value2 = delegateSet.permissions().get(2).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     assertThat(value0).isEqualTo("Payment");
     assertThat(value1).isEqualTo("TrustSet");
     assertThat(value2).isEqualTo("OfferCreate");
@@ -344,11 +421,11 @@ public class DelegateSetTest {
 
     assertThat(delegateSet.permissions()).hasSize(3);
     String value0 = delegateSet.permissions().get(0).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     String value1 = delegateSet.permissions().get(1).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     String value2 = delegateSet.permissions().get(2).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     assertThat(value0).isEqualTo("TrustlineAuthorize");
     assertThat(value1).isEqualTo("TrustlineFreeze");
     assertThat(value2).isEqualTo("PaymentMint");
@@ -379,11 +456,11 @@ public class DelegateSetTest {
 
     assertThat(delegateSet.permissions()).hasSize(3);
     String value0 = delegateSet.permissions().get(0).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     String value1 = delegateSet.permissions().get(1).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     String value2 = delegateSet.permissions().get(2).permission().permissionValue()
-      .map(tx -> tx.value(), g -> g.value());
+      .map(tx -> tx.value(), g -> g.value(), u -> u.value());
     assertThat(value0).isEqualTo("Payment");
     assertThat(value1).isEqualTo("TrustlineAuthorize");
     assertThat(value2).isEqualTo("EscrowCreate");
@@ -422,7 +499,7 @@ public class DelegateSetTest {
 
       assertThat(delegateSet.permissions()).hasSize(1);
       String permissionValue = delegateSet.permissions().get(0).permission().permissionValue()
-        .map(tx -> tx.value(), g -> g.value());
+        .map(tx -> tx.value(), g -> g.value(), u -> u.value());
       assertThat(permissionValue).isEqualTo(txType.value());
     }
   }
@@ -486,9 +563,32 @@ public class DelegateSetTest {
 
       assertThat(delegateSet.permissions()).hasSize(1);
       String permissionValue = delegateSet.permissions().get(0).permission().permissionValue()
-        .map(tx -> tx.value(), g -> g.value());
+        .map(tx -> tx.value(), g -> g.value(), u -> u.value());
       assertThat(permissionValue).isEqualTo(granularPerm.value());
     }
   }
-}
 
+  @Test
+  public void testEncodingDelegateSetWithUnknownPermissionFailsWithClearError() throws JsonProcessingException {
+    // An UnknownPermission can be read from the ledger, but its name is by definition absent from the local codec
+    // definitions, so it cannot be binary-encoded (and therefore cannot be signed). The codec must say which value is
+    // at fault rather than surfacing a bare NumberFormatException from UInt32Type.
+    DelegateSet delegateSet = DelegateSet.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
+      .permissions(Collections.singletonList(
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(UnknownPermission.of("SomeFutureTransactionType")))
+          .build()
+      ))
+      .build();
+    String json = ObjectMapperFactory.create().writeValueAsString(delegateSet);
+
+    assertThatThrownBy(() -> XrplBinaryCodec.getInstance().encodeForSigning(json))
+      .isInstanceOf(IllegalArgumentException.class)
+      .isNotInstanceOf(NumberFormatException.class)
+      .hasMessageContaining("PermissionValue \"SomeFutureTransactionType\" is not a PermissionValue name known");
+  }
+}

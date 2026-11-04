@@ -26,6 +26,7 @@ import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableMetaNfTokenOfferObje
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaAccountRootObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaAmmObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaCheckObject;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaDelegateObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaDepositPreAuthObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
@@ -48,6 +49,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -687,6 +689,55 @@ class TransactionMetadataTest {
     AffectedNode deletedNode = transactionMetadata.affectedNodes().get(2);
     assertThat(deletedNode).isInstanceOf(DeletedNode.class);
     assertThat(deletedNode.ledgerEntryType()).isEqualTo(MetaLedgerEntryType.DELEGATE);
+  }
+
+  @Test
+  void deserializeMetadataWithDelegateObjectContainingUnknownPermissionValue() throws JsonProcessingException {
+    // Regression: a DelegateSet whose Delegate ledger object carries a PermissionValue that xrpl4j does not (yet)
+    // recognize must still deserialize, otherwise the entire transaction becomes unparseable.
+    String json = "{\n" +
+      "  \"AffectedNodes\": [\n" +
+      "    {\n" +
+      "      \"DeletedNode\": {\n" +
+      "        \"LedgerEntryType\": \"Delegate\",\n" +
+      "        \"LedgerIndex\": \"1E7E658C2D3DF91EFAE5A12573284AD6F526B8F64DD12F013C6F889EF45BEA97\",\n" +
+      "        \"FinalFields\": {\n" +
+      "          \"Account\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoXo\",\n" +
+      "          \"Authorize\": \"rJ73aumLPTQQmy5wnGhvrogqf5DDhjuzc9\",\n" +
+      "          \"Permissions\": [\n" +
+      "            {\"Permission\": {\"PermissionValue\": \"Payment\"}},\n" +
+      "            {\"Permission\": {\"PermissionValue\": \"TrustlineAuthorize\"}},\n" +
+      "            {\"Permission\": {\"PermissionValue\": \"SomeFutureTransactionType\"}}\n" +
+      "          ]\n" +
+      "        }\n" +
+      "      }\n" +
+      "    }\n" +
+      "  ],\n" +
+      "  \"TransactionIndex\": 1,\n" +
+      "  \"TransactionResult\": \"tesSUCCESS\"\n" +
+      "}";
+
+    TransactionMetadata transactionMetadata = objectMapper.readValue(json, TransactionMetadata.class);
+
+    AffectedNode deletedNode = transactionMetadata.affectedNodes().get(0);
+    assertThat(deletedNode).isInstanceOf(DeletedNode.class);
+    assertThat(deletedNode.ledgerEntryType()).isEqualTo(MetaLedgerEntryType.DELEGATE);
+
+    @SuppressWarnings("unchecked")
+    MetaDelegateObject delegateObject = ((DeletedNode<MetaDelegateObject>) deletedNode).finalFields();
+    List<Permission> permissions = delegateObject.permissions().get().stream()
+      .map(wrapper -> wrapper.permission().permissionValue())
+      .collect(Collectors.toList());
+    assertThat(permissions.size()).isEqualTo(3);
+    assertThat(permissions.get(0)).isEqualTo(TransactionTypePermission.of(TransactionType.PAYMENT));
+    assertThat(permissions.get(1)).isEqualTo(GranularPermissionValue.of(GranularPermission.TRUSTLINE_AUTHORIZE));
+    assertThat(permissions.get(2)).isEqualTo(UnknownPermission.of("SomeFutureTransactionType"));
+
+    // And the unknown value survives re-serialization unchanged.
+    JsonNode reserialized = objectMapper.readTree(objectMapper.writeValueAsString(transactionMetadata));
+    assertThat(
+      reserialized.at("/AffectedNodes/0/DeletedNode/FinalFields/Permissions/2/Permission/PermissionValue").asText()
+    ).isEqualTo("SomeFutureTransactionType");
   }
 
   @Test

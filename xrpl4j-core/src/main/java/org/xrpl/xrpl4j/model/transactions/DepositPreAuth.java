@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -90,6 +91,7 @@ public interface DepositPreAuth extends Transaction {
    * @return A list of type {@link CredentialWrapper} to preauthorize.
    */
   @JsonProperty("AuthorizeCredentials")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   List<CredentialWrapper> authorizeCredentials();
 
   /**
@@ -98,6 +100,7 @@ public interface DepositPreAuth extends Transaction {
    * @return A list of type {@link CredentialWrapper} to unauthorize.
    */
   @JsonProperty("UnauthorizeCredentials")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   List<CredentialWrapper> unauthorizeCredentials();
 
   /**

@@ -28,8 +28,11 @@ import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.math.ec.ECPoint;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteTestUtils;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 
@@ -138,4 +141,35 @@ class BcKeyUtilsTest {
     assertThat(publicKey.base16Value()).isEqualTo("ED" + ED_PUBLIC_KEY_HEX);
   }
 
+  /////////
+  // Shared-prefix aliasing regression (PublicKey.ED2559_PREFIX must never be stored inside a PublicKey's value)
+  /////////
+
+  @AfterEach
+  void restorePublicKeyPrefix() {
+    UnsignedByteTestUtils.reset(PublicKey.ED2559_PREFIX, 0xED);
+  }
+
+  @Test
+  void toPublicKeyEdDoesNotShareEd25519PrefixInstance() {
+    Ed25519PublicKeyParameters ed25519PublicKeyParameters = new Ed25519PublicKeyParameters(
+      BaseEncoding.base16().decode(ED_PUBLIC_KEY_HEX), 0
+    );
+    PublicKey publicKey = BcKeyUtils.toPublicKey(ed25519PublicKeyParameters);
+    assertThat(publicKey.value().get(0)).isNotSameAs(PublicKey.ED2559_PREFIX);
+    assertThat(publicKey.value().get(0)).isEqualTo(PublicKey.ED2559_PREFIX);
+  }
+
+  @Test
+  void destroyingToPublicKeyEdValueLeavesSharedPrefixIntact() {
+    Ed25519PublicKeyParameters ed25519PublicKeyParameters = new Ed25519PublicKeyParameters(
+      BaseEncoding.base16().decode(ED_PUBLIC_KEY_HEX), 0
+    );
+    UnsignedByteArray value = BcKeyUtils.toPublicKey(ed25519PublicKeyParameters).value();
+    value.destroy();
+
+    assertThat(PublicKey.ED2559_PREFIX.asInt()).isEqualTo(0xED);
+    assertThat(PublicKey.ED2559_PREFIX.isDestroyed()).isFalse();
+    assertThat(BcKeyUtils.toPublicKey(ed25519PublicKeyParameters).base16Value()).isEqualTo("ED" + ED_PUBLIC_KEY_HEX);
+  }
 }

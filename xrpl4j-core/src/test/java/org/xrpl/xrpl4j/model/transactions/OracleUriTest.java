@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,18 +20,30 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
  */
 public class OracleUriTest {
 
+  private static final OracleUri ORACLE_URI = OracleUri.of("ABCD");
+
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
+  void testNull() {
+    assertThrows(NullPointerException.class, () -> OracleUri.of(null));
+  }
+
+  @Test
+  void testEquality() {
+    assertThat(ORACLE_URI).isEqualTo(ORACLE_URI);
+    assertThat(ORACLE_URI).isNotEqualTo(new Object());
+    assertThat(ORACLE_URI.equals(null)).isFalse();
+  }
+
+  @Test
   void testToString() {
-    OracleUri count = OracleUri.of("ABCD");
-    assertThat(count.toString()).isEqualTo("ABCD");
+    assertThat(ORACLE_URI.toString()).isEqualTo("ABCD");
   }
 
   @Test
   void testJson() throws JsonProcessingException, JSONException {
-    OracleUri count = OracleUri.of("ABCD");
-    OracleUriWrapper wrapper = OracleUriWrapper.of(count);
+    OracleUriWrapper wrapper = OracleUriWrapper.of(ORACLE_URI);
 
     String json = "{\"value\": \"ABCD\"}";
     assertSerializesAndDeserializes(wrapper, json);

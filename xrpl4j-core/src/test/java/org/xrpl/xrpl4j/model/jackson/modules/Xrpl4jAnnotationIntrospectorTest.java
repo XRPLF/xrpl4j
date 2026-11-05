@@ -12,6 +12,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
+import com.fasterxml.jackson.databind.introspect.VirtualAnnotatedMember;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.DecimalNode;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -158,6 +162,37 @@ class Xrpl4jAnnotationIntrospectorTest {
     StringDecimal value = ImmutableStringDecimal.builder().plain(new BigDecimal("1E-7")).build();
 
     assertThat(objectMapper.writeValueAsString(value)).isEqualTo("{\"plain\":\"1E-7\"}");
+  }
+
+  /**
+   * A member with no declaring class (Jackson's {@link VirtualAnnotatedMember} allows one) is not an xrpl4j member,
+   * so no serializer is supplied for it even though its type is {@link BigDecimal}.
+   */
+  @Test
+  void memberWithoutDeclaringClassGetsNoSerializer() {
+    Xrpl4jAnnotationIntrospector introspector = new Xrpl4jAnnotationIntrospector();
+    VirtualAnnotatedMember member = new VirtualAnnotatedMember(
+      null, null, "plain", objectMapper.constructType(BigDecimal.class)
+    );
+
+    assertThat(introspector.findSerializer(member)).isNull();
+    assertThat(introspector.findContentSerializer(member)).isNull();
+  }
+
+  /**
+   * A plain {@link BigDecimal} property of an xrpl4j type has no content type, so the introspector supplies a value
+   * serializer for it but no content serializer.
+   */
+  @Test
+  void plainBigDecimalMemberHasNoContentSerializer() {
+    Xrpl4jAnnotationIntrospector introspector = new Xrpl4jAnnotationIntrospector();
+    AnnotatedClass annotatedClass = AnnotatedClassResolver.resolve(
+      objectMapper.getSerializationConfig(), objectMapper.constructType(DecimalWrapper.class), null
+    );
+    AnnotatedMethod plain = annotatedClass.findMethod("plain", new Class<?>[0]);
+
+    assertThat(introspector.findSerializer(plain)).isEqualTo(BigDecimalPlainSerializer.class);
+    assertThat(introspector.findContentSerializer(plain)).isNull();
   }
 
   /**

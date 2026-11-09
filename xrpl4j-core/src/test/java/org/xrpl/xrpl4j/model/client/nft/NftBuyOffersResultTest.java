@@ -46,14 +46,14 @@ public class NftBuyOffersResultTest extends AbstractJsonTest {
         BuyOffer.builder()
           .amount(XrpCurrencyAmount.ofDrops(1000))
           .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-          .flags(NfTokenOfferFlags.SELL_NFTOKEN)
+          .flags(NfTokenOfferFlags.of(0))
           .nftOfferIndex(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
           .build()
       )
       .build();
 
     String offer = "{\n" +
-      "    \"flags\": 1,\n" +
+      "    \"flags\": 0,\n" +
       "    \"amount\": \"1000\",\n" +
       "    \"owner\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
       "    \"nft_offer_index\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
@@ -97,14 +97,14 @@ public class NftBuyOffersResultTest extends AbstractJsonTest {
             .build()
           )
           .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-          .flags(NfTokenOfferFlags.SELL_NFTOKEN)
+          .flags(NfTokenOfferFlags.of(0))
           .nftOfferIndex(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
           .build()
       )
       .build();
 
     String offer = "{\n" +
-      "    \"flags\": 1,\n" +
+      "    \"flags\": 0,\n" +
       "    \"amount\": {\n" +
       "      \"issuer\": \"rsjYGpMWQeNBXbUTkVz4ZKzHefgZSr6rys\",\n" +
       "      \"currency\": \"USD\",\n" +

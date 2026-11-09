@@ -385,6 +385,23 @@ Batch.builder()
   ...
 ```
 
+### 8. `NfTokenOfferFlags.BUY_TOKEN` and `lsfBuyToken()` removed
+
+`NfTokenOfferFlags.BUY_TOKEN` and `lsfBuyToken()` have been removed, with no aliases left in their place. Bit
+`0x00000001` (`lsfSellNFToken` on the ledger) was previously — incorrectly — modeled as "buy"; it is now modeled
+correctly as `SELL_NFTOKEN` / `lsfSellNfToken()`, matching the actual ledger semantics (the bit means the offer is a
+**sell** offer, not a buy offer).
+
+**Migration:**
+
+```java
+// Before (v6.x.x): checked whether an offer was a buy offer
+boolean isBuyOffer = offer.flags().lsfBuyToken();
+
+// After (v7.0.0): the bit means "sell", so a buy-offer check is now the negation
+boolean isBuyOffer = !offer.flags().lsfSellNfToken();
+```
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.

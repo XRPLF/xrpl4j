@@ -40,12 +40,49 @@ import java.util.Optional;
  */
 public class BinaryParser {
 
-  // max length that can be represented in a single byte per XRPL serialization restrictions
-  public static final int MAX_SINGLE_BYTE_LENGTH = 192;
-  // max length that can be represented in 2 bytes per XRPL serialization restrictions
-  public static final int MAX_DOUBLE_BYTE_LENGTH = 12481;
-  // max value that can be used in the second byte of a length field
-  public static final int MAX_SECOND_BYTE_VALUE = 240;
+  // Variable-length (VL) prefix boundaries, per the XRPL binary format and xrpld's Serializer:
+  //        0 ...     192   1-byte prefix, first byte   0..192
+  //      193 ...  12,480   2-byte prefix, first byte 193..240
+  //   12,481 ... 918,744   3-byte prefix, first byte 241..254
+  // First byte 255 is reserved and starts no prefix.
+
+  /**
+   * The largest length that fits in a 1-byte VL prefix.
+   */
+  public static final int MAX_ONE_BYTE_LENGTH = 192;
+  /**
+   * The smallest length that needs a 2-byte VL prefix.
+   */
+  public static final int MIN_TWO_BYTE_LENGTH = 193;
+  /**
+   * The smallest first byte of a 2-byte VL prefix.
+   */
+  static final int MIN_TWO_BYTE_FIRST_BYTE = 193;
+  /**
+   * The largest length that fits in a 2-byte VL prefix.
+   */
+  public static final int MAX_TWO_BYTE_LENGTH = 12480;
+  /**
+   * The largest first byte of a 2-byte VL prefix.
+   */
+  public static final int MAX_TWO_BYTE_FIRST_BYTE = 240;
+  /**
+   * The smallest length that needs a 3-byte VL prefix.
+   */
+  public static final int MIN_THREE_BYTE_LENGTH = 12481;
+  /**
+   * The smallest first byte of a 3-byte VL prefix.
+   */
+  static final int MIN_THREE_BYTE_FIRST_BYTE = 241;
+  /**
+   * The largest first byte of a 3-byte VL prefix.
+   */
+  static final int MAX_THREE_BYTE_FIRST_BYTE = 254;
+  /**
+   * The largest length a VL prefix may carry. The encoder never writes more than this.
+   */
+  public static final int MAX_THREE_BYTE_LENGTH = 918744;
+
   // max value that can be represented using one 8-bit byte
   public static final int MAX_BYTE_VALUE = 256;
   // max value that can be represented in using two 8-bit bytes
@@ -118,15 +155,15 @@ public class BinaryParser {
    */
   public int readVariableLengthLength() {
     int firstByte = this.readUInt8().intValue();
-    if (firstByte <= MAX_SINGLE_BYTE_LENGTH) {
+    if (firstByte <= MAX_ONE_BYTE_LENGTH) {
       return firstByte;
-    } else if (firstByte <= MAX_SECOND_BYTE_VALUE) {
+    } else if (firstByte <= MAX_TWO_BYTE_FIRST_BYTE) {
       int b2 = this.readUInt8().intValue();
-      return MAX_SINGLE_BYTE_LENGTH + 1 + (firstByte - MAX_SINGLE_BYTE_LENGTH - 1) * MAX_BYTE_VALUE + b2;
-    } else if (firstByte <= 254) {
+      return MIN_TWO_BYTE_LENGTH + (firstByte - MIN_TWO_BYTE_FIRST_BYTE) * MAX_BYTE_VALUE + b2;
+    } else if (firstByte <= MAX_THREE_BYTE_FIRST_BYTE) {
       int b2 = this.readUInt8().intValue();
       int b3 = this.readUInt8().intValue();
-      return MAX_DOUBLE_BYTE_LENGTH + (firstByte - MAX_SECOND_BYTE_VALUE - 1) * MAX_DOUBLE_BYTE_VALUE +
+      return MIN_THREE_BYTE_LENGTH + (firstByte - MIN_THREE_BYTE_FIRST_BYTE) * MAX_DOUBLE_BYTE_VALUE +
         b2 * MAX_BYTE_VALUE +
         b3;
     }

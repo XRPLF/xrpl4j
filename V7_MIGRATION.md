@@ -385,6 +385,33 @@ Batch.builder()
   ...
 ```
 
+### 8. `BinaryParser` variable-length constants renamed
+
+`BinaryParser` declared three public constants for the variable-length (VL) prefix boundaries, and two of their names
+did not match their values. They have been removed. `BinaryParser`, `BinarySerializer` and the tests now share one set
+of accurately named constants.
+
+| Removed                  | Value | Use instead               |
+|--------------------------|-------|---------------------------|
+| `MAX_SINGLE_BYTE_LENGTH` | 192   | `MAX_ONE_BYTE_LENGTH`     |
+| `MAX_DOUBLE_BYTE_LENGTH` | 12481 | `MIN_THREE_BYTE_LENGTH`   |
+| `MAX_SECOND_BYTE_VALUE`  | 240   | `MAX_TWO_BYTE_FIRST_BYTE` |
+
+Despite its name, `MAX_DOUBLE_BYTE_LENGTH` was the smallest length that needs a 3-byte prefix. The largest length that
+fits in a 2-byte prefix is the new `MAX_TWO_BYTE_LENGTH` (12480).
+
+`MIN_TWO_BYTE_LENGTH` (193) and `MAX_THREE_BYTE_LENGTH` (918744) are also new.
+
+**Migration:**
+
+```java
+// Before (v6.x.x)
+int threshold = BinaryParser.MAX_DOUBLE_BYTE_LENGTH;
+
+// After (v7.0.0): same value, accurate name
+int threshold = BinaryParser.MIN_THREE_BYTE_LENGTH;
+```
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.

@@ -22,6 +22,13 @@ package org.xrpl.xrpl4j.codec.binary.serdes;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MAX_ONE_BYTE_LENGTH;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MAX_THREE_BYTE_LENGTH;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MAX_TWO_BYTE_FIRST_BYTE;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MAX_TWO_BYTE_LENGTH;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MIN_THREE_BYTE_LENGTH;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MIN_TWO_BYTE_FIRST_BYTE;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MIN_TWO_BYTE_LENGTH;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,12 +57,6 @@ import java.util.stream.IntStream;
  * @see <a href="https://xrpl.org/docs/references/protocol/binary-format#length-prefixing">Length Prefixing</a>
  */
 class BinaryParserTest {
-
-  private static final int MAX_ONE_BYTE_LENGTH = 192;
-  private static final int MIN_TWO_BYTE_LENGTH = 193;
-  private static final int MAX_TWO_BYTE_LENGTH = 12480;
-  private static final int MIN_THREE_BYTE_LENGTH = 12481;
-  private static final int MAX_THREE_BYTE_LENGTH = 918744;
 
   /**
    * Decodes hand-built VL headers taken straight from the spec formulas, independently of
@@ -102,10 +103,10 @@ class BinaryParserTest {
    */
   @Test
   void readVariableLengthLengthForEveryTwoByteHeader() {
-    for (int b1 = MIN_TWO_BYTE_LENGTH; b1 <= 240; b1++) {
+    for (int b1 = MIN_TWO_BYTE_FIRST_BYTE; b1 <= MAX_TWO_BYTE_FIRST_BYTE; b1++) {
       for (int b2 = 0; b2 <= 255; b2++) {
         String headerHex = String.format("%02X%02X", b1, b2);
-        int expectedLength = MIN_TWO_BYTE_LENGTH + (b1 - MIN_TWO_BYTE_LENGTH) * 256 + b2;
+        int expectedLength = MIN_TWO_BYTE_LENGTH + (b1 - MIN_TWO_BYTE_FIRST_BYTE) * 256 + b2;
         BinaryParser parser = new BinaryParser(headerHex);
         assertThat(parser.readVariableLengthLength()).as("header %s", headerHex).isEqualTo(expectedLength);
         assertThat(parser.hasMore()).as("header %s fully consumed", headerHex).isFalse();

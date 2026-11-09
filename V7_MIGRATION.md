@@ -412,6 +412,13 @@ int threshold = BinaryParser.MAX_DOUBLE_BYTE_LENGTH;
 int threshold = BinaryParser.MIN_THREE_BYTE_LENGTH;
 ```
 
+### 9. `BinaryParser` rejects VL lengths above 918,744
+
+A 3-byte VL prefix can state lengths up to 929,984, but the XRPL binary format caps VL fields at 918,744, and
+`BinarySerializer` already refused to encode anything longer. `BinaryParser.readVariableLengthLength()` now throws
+`IllegalArgumentException` for a 3-byte prefix above 918,744 instead of returning the length, so decoding a blob that
+contains one fails. xrpld has rejected these prefixes on decode since 3.4.0.
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.

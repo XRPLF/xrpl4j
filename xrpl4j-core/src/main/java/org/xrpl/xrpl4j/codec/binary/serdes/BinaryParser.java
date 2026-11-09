@@ -79,7 +79,8 @@ public class BinaryParser {
    */
   static final int MAX_THREE_BYTE_FIRST_BYTE = 254;
   /**
-   * The largest length a VL prefix may carry. The encoder never writes more than this.
+   * The largest length a VL prefix may carry. A 3-byte prefix can state lengths up to 929,984, but the encoder never
+   * writes more than this, and the decoder rejects anything above it.
    */
   public static final int MAX_THREE_BYTE_LENGTH = 918744;
 
@@ -152,6 +153,8 @@ public class BinaryParser {
    * Reads the length of the variable length encoded bytes.
    *
    * @return The length of the variable length encoded bytes.
+   *
+   * @throws IllegalArgumentException if a 3-byte prefix states a length above {@link #MAX_THREE_BYTE_LENGTH}.
    */
   public int readVariableLengthLength() {
     int firstByte = this.readUInt8().intValue();
@@ -163,9 +166,15 @@ public class BinaryParser {
     } else if (firstByte <= MAX_THREE_BYTE_FIRST_BYTE) {
       int b2 = this.readUInt8().intValue();
       int b3 = this.readUInt8().intValue();
-      return MIN_THREE_BYTE_LENGTH + (firstByte - MIN_THREE_BYTE_FIRST_BYTE) * MAX_DOUBLE_BYTE_VALUE +
+      int length = MIN_THREE_BYTE_LENGTH + (firstByte - MIN_THREE_BYTE_FIRST_BYTE) * MAX_DOUBLE_BYTE_VALUE +
         b2 * MAX_BYTE_VALUE +
         b3;
+      if (length > MAX_THREE_BYTE_LENGTH) {
+        throw new IllegalArgumentException(
+          "Variable length " + length + " exceeds the maximum of " + MAX_THREE_BYTE_LENGTH
+        );
+      }
+      return length;
     }
     throw new Error("Invalid variable length indicator");
   }

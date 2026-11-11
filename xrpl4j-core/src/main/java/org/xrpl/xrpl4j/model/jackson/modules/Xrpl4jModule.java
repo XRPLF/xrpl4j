@@ -31,8 +31,6 @@ import org.xrpl.xrpl4j.model.transactions.Permission;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
 
-import java.time.ZonedDateTime;
-
 /**
  * Jackson module for the xrpl4j-model project.
  */
@@ -74,8 +72,20 @@ public class Xrpl4jModule extends SimpleModule {
     addSerializer(Flags.class, new FlagsSerializer());
 
     addDeserializer(AffectedNode.class, new AffectedNodeDeserializer());
+    setSerializerModifier(new AffectedNodeSerializerModifier());
 
-    addSerializer(ZonedDateTime.class, new ZonedDateTimeSerializer());
-    addDeserializer(ZonedDateTime.class, new ZonedDateTimeDeserializer());
+    // Developer Note: ZonedDateTimeSerializer and ZonedDateTimeDeserializer are deliberately NOT registered here for
+    // ZonedDateTime.class. A type-level registration is mapper-wide, so it would change date handling for every
+    // ZonedDateTime handled by the ObjectMapperFactory mapper, including consumer-owned types that share an object
+    // graph with xrpl4j types. Instead, each xrpld date field opts in with
+    // @JsonSerialize(using = ZonedDateTimeSerializer.class) and @JsonDeserialize(using = ZonedDateTimeDeserializer
+    // .class). ZonedDateTimeFieldAnnotationTest enforces this.
+  }
+
+  @Override
+  public void setupModule(final SetupContext context) {
+    super.setupModule(context);
+    // Lowest priority, so explicit Jackson annotations on xrpl4j classes still win.
+    context.appendAnnotationIntrospector(new Xrpl4jAnnotationIntrospector());
   }
 }

@@ -264,7 +264,7 @@ jobs:
           # support nested virtualization), and Windows runners cannot run Linux containers, so
           # these platforms run the confidential MPT ITs against Devnet instead of a local rippled.
           # Temurin doesn't ship JDK 8 for macOS ARM64, so we use JDK 11 there.
-          - os: macos-14
+          - os: macos-15
             platform: darwin-aarch64
             java: '11'
             network: devnet

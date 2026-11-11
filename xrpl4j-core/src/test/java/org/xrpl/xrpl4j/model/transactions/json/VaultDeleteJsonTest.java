@@ -8,6 +8,7 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.VaultData;
 import org.xrpl.xrpl4j.model.transactions.VaultDelete;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -31,6 +32,32 @@ public class VaultDeleteJsonTest extends AbstractJsonTest {
     String json = "{" +
       "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
       "  \"VaultID\": \"0000000000000000000000000000000000000000000000000000000000000001\"," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"TransactionType\": \"VaultDelete\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(vaultDelete, json);
+  }
+
+  @Test
+  public void testVaultDeleteJsonWithMemoData() throws JsonProcessingException, JSONException {
+    VaultDelete vaultDelete = VaultDelete.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(1))
+      .vaultId(Hash256.of("0000000000000000000000000000000000000000000000000000000000000001"))
+      .memoData(VaultData.of("48656C6C6F"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    String json = "{" +
+      "  \"Account\": \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\"," +
+      "  \"VaultID\": \"0000000000000000000000000000000000000000000000000000000000000001\"," +
+      "  \"MemoData\": \"48656C6C6F\"," +
       "  \"Fee\": \"10\"," +
       "  \"Sequence\": 1," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +

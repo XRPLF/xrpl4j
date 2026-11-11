@@ -85,6 +85,28 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(wrapper.type()).isEqualTo(MetaLedgerEntryType.ACCOUNT_ROOT);
   }
 
+  @Test
+  void testSerializesAsBareString() throws JsonProcessingException {
+    assertThat(objectMapper.writeValueAsString(MetaLedgerEntryType.ACCOUNT_ROOT)).isEqualTo("\"AccountRoot\"");
+  }
+
+  @Test
+  void testSerializesAsBareStringWhenNested() throws JsonProcessingException {
+    MetaLedgerEntryTypeWrapper wrapper = ImmutableMetaLedgerEntryTypeWrapper.builder()
+      .type(MetaLedgerEntryType.ACCOUNT_ROOT)
+      .build();
+    assertThat(objectMapper.writeValueAsString(wrapper)).isEqualTo("{\"type\":\"AccountRoot\"}");
+  }
+
+  @Test
+  void testRoundTrip() throws JsonProcessingException {
+    MetaLedgerEntryTypeWrapper wrapper = ImmutableMetaLedgerEntryTypeWrapper.builder()
+      .type(MetaLedgerEntryType.DIRECTORY_NODE)
+      .build();
+    String json = objectMapper.writeValueAsString(wrapper);
+    assertThat(objectMapper.readValue(json, MetaLedgerEntryTypeWrapper.class)).isEqualTo(wrapper);
+  }
+
   @Value.Immutable
   @JsonSerialize(as = ImmutableMetaLedgerEntryTypeWrapper.class)
   @JsonDeserialize(as = ImmutableMetaLedgerEntryTypeWrapper.class)

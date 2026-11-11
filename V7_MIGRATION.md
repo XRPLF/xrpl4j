@@ -313,6 +313,118 @@ validatedLedger.age().ifPresent(ageValue -> {
 UnsignedInteger ageValue = validatedLedger.age().orElse(UnsignedInteger.ZERO);
 ```
 
+### 6. `ObjectMapperFactory` no longer overrides `ZonedDateTime` handling globally
+
+Through `6.1.0-rc.x` and `7.0.0-rc.x`, the mapper returned by `ObjectMapperFactory.create()` registered an
+xrpld-specific `ZonedDateTime` serializer and deserializer for the whole mapper, and it has always disabled
+`SerializationFeature.WRITE_DATES_AS_TIMESTAMPS`. Both settings applied to every `ZonedDateTime` the mapper touched,
+including types you own that share an object graph with xrpl4j types (for example, a DTO holding a
+`TransactionResult`).
+
+In v7.0.0 the xrpld-specific serializer and deserializer are bound only to the xrpld date fields that need them
+(`LedgerHeader.closeTimeHuman()`, `ServerInfo.time()`, and `AmmInfoAuctionSlot.expiration()`), and
+`WRITE_DATES_AS_TIMESTAMPS` is left at Jackson's default. xrpl4j's own JSON output is unchanged. For your own
+`java.time` fields handled by the factory mapper:
+
+- Serialization now follows Jackson's default, which writes `ZonedDateTime` and `Instant` as numeric timestamps
+  (e.g., `1704164645.000000000`) rather than ISO-8601 strings.
+- Deserialization of ISO-8601 strings (e.g., `"2024-01-02T03:04:05Z"`) works again; the xrpld format
+  (`"2024-Jan-02 03:04:05.000000000 UTC"`) is no longer accepted for unannotated fields.
+
+**Migration:**
+
+If you relied on ISO-8601 output for your own types, use a separate mapper for them, or annotate the field:
+
+```java
+@JsonFormat(shape = JsonFormat.Shape.STRING)
+ZonedDateTime createdAt();
+```
+
+If you need xrpld's human-readable format on a field you own, bind the xrpl4j serializers explicitly, exactly as the
+xrpl4j model does:
+
+```java
+@JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", locale = "en_US")
+@JsonSerialize(using = ZonedDateTimeSerializer.class)
+@JsonDeserialize(using = ZonedDateTimeDeserializer.class)
+ZonedDateTime closeTime();
+```
+
+### 7. `Batch.batchSigners()` validation now matches XLS-56 exactly
+
+Two construction-time rules in `Batch` changed to match XLS-56 §2.3 and xrpld:
+
+- **Extra BatchSigners are now rejected.** When `BatchSigners` is non-empty it must contain exactly the accounts in
+  `Batch.requiredSigners()`: each inner transaction's `Account` (or its `Delegate`), a `Sponsor` that carries a
+  `SponsorSignature`, and a `LoanSet` `Counterparty`, excluding the outer account. Previously an entry for any other
+  account was accepted at construction time and rejected by xrpld with `temBAD_SIGNER` at submission.
+- **The outer account may now appear as a nested multi-signer.** Previously `Batch` rejected any BatchSigner whose
+  nested `Signers` array contained the outer account. xrpld only forbids the outer account from being a BatchSigner
+  `Account`; a nested signer is simply a member of that account's SignerList. Validated ledger Batches with this shape
+  could not be deserialized before this change.
+
+**Migration:**
+
+```java
+// Before (v6.x.x): a co-signer added as its own BatchSigner entry — now throws IllegalArgumentException.
+Batch.builder()
+  .batchSigners(
+    BatchSignerWrapper.of(BatchSigner.builder().account(innerAccount).signers(innerSigners).build()),
+    BatchSignerWrapper.of(BatchSigner.builder().account(coSigner).signingPublicKey(k).transactionSignature(s).build())
+  )
+  ...
+
+// After (v7.0.0): a co-signer belongs inside the nested Signers of the account it signs for.
+Batch.builder()
+  .batchSigners(
+    BatchSignerWrapper.of(BatchSigner.builder()
+      .account(innerAccount)
+      .signers(SignerWrapper.of(coSignerSigner), SignerWrapper.of(otherSigner))
+      .build())
+  )
+  ...
+```
+
+### 8. `ObjectMapperFactory` no longer configures mapper-wide features
+
+Previously, the mapper returned by `ObjectMapperFactory.create()` set several features for every type it handled:
+
+| Setting | Previous value | Jackson default |
+|---|---|---|
+| `serializationInclusion` | `NON_EMPTY` | `ALWAYS` |
+| `DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES` | `false` | `true` |
+| `MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES` | enabled | disabled |
+| `JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN` | `true` | `false` |
+| `SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS` | `false` | `true` |
+
+In v7.0.0 the factory configures none of these. The behaviors xrpl4j's own types rely on are instead supplied by
+`Xrpl4jModule` through a package-scoped `AnnotationIntrospector` that applies only to classes under
+`org.xrpl.xrpl4j`: `NON_EMPTY` inclusion, ignoring unknown properties, case-insensitive property matching, and
+plain-notation rendering of `BigDecimal` values. xrpl4j's JSON output and parsing are therefore unchanged in both
+directions. (`WRITE_DURATIONS_AS_TIMESTAMPS` is dropped outright; xrpl4j has no `Duration` fields.)
+
+For your own types handled by the factory mapper, Jackson's defaults now apply:
+
+- `null` and empty properties are written rather than omitted.
+- Unknown properties in input cause an `UnrecognizedPropertyException` rather than being ignored.
+- Property names are matched case-sensitively.
+- `BigDecimal` may be written in exponent notation, and `Duration` is written as a numeric timestamp.
+
+**Migration:**
+
+If your own types relied on the previous behavior, either handle them with a separate mapper, or annotate them:
+
+```java
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+public class MyDto { ... }
+```
+
+If you build your own mapper and register `Xrpl4jModule` on it, note that the module now carries all of the above
+behaviors for xrpl4j types itself. You still need `Jdk8Module`, `GuavaModule`, `JavaTimeModule`, and
+`CryptoConditionsModule(Encoding.HEX)` registered for xrpl4j types to work, as `ObjectMapperFactory.create()` does.
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.

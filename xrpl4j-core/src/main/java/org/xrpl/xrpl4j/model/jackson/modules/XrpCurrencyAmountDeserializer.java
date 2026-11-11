@@ -40,14 +40,15 @@ public class XrpCurrencyAmountDeserializer extends StdDeserializer<XrpCurrencyAm
 
   /**
    * XRP drops amounts must be a plain, base-10 integer string (e.g. {@code "1000000"}), optionally prefixed with
-   * {@code -}, with no leading zeros (other than the literal {@code "0"}) and no negative zero ({@code "-0"}).
-   * Anything else (e.g. {@code "1e6"}, {@code "1.0"}, {@code "0x1"}, {@code "0001000000"}, {@code "-0"}, or a value
-   * with leading/trailing whitespace) is rejected here rather than silently coerced, because
-   * {@link JsonParser#getValueAsLong()} will otherwise parse non-standard formats into a different drops value than
-   * what a caller may have already validated against the raw input. This matches xrpld's own amount parser, which
-   * never emits leading zeros or {@code -0}.
+   * {@code -}, with no leading zeros (other than the literal {@code "0"} or {@code "-0"}). Anything else (e.g.
+   * {@code "1e6"}, {@code "1.0"}, {@code "0x1"}, {@code "0001000000"}, or a value with leading/trailing whitespace)
+   * is rejected here rather than silently coerced, because {@link JsonParser#getValueAsLong()} will otherwise parse
+   * non-standard formats into a different drops value than what a caller may have already validated against the raw
+   * input. This matches xrpld's own amount parser ({@code STNumber.cpp}'s {@code partsFromString}), which never
+   * emits leading zeros; {@code "-0"} is accepted, matching xrpld's own canonicalization, which normalizes it to
+   * plain zero rather than rejecting it.
    */
-  private static final Pattern DROPS_PATTERN = Pattern.compile("0|-?[1-9]\\d*");
+  private static final Pattern DROPS_PATTERN = Pattern.compile("-?(0|[1-9]\\d*)");
 
   /**
    * No-args constructor.
@@ -80,6 +81,8 @@ public class XrpCurrencyAmountDeserializer extends StdDeserializer<XrpCurrencyAm
 
     boolean isNegative = rawValue.charAt(0) == '-';
     String digits = isNegative ? rawValue.substring(1) : rawValue;
+    // "-0" parses like xrpld's own amount parser, which then canonicalizes it to plain zero rather than rejecting it.
+    isNegative = isNegative && !"0".equals(digits);
 
     // MAX_XRP_IN_DROPS has 18 digits; check length before constructing a BigInteger, which is quadratic in length.
     if (digits.length() > 18 ||

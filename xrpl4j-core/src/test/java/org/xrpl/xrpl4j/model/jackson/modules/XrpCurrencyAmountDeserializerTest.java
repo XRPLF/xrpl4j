@@ -61,10 +61,11 @@ class XrpCurrencyAmountDeserializerTest extends AbstractJsonTest {
   }
 
   @Test
-  void rejectsNegativeZero() {
-    assertThatThrownBy(() -> objectMapper.readValue("\"-0\"", XrpCurrencyAmount.class))
-      .isInstanceOf(MismatchedInputException.class)
-      .hasMessageContaining("XRP drops amount must be a plain integer string");
+  void normalizesNegativeZero() throws JsonProcessingException {
+    XrpCurrencyAmount amount = objectMapper.readValue("\"-0\"", XrpCurrencyAmount.class);
+    assertThat(amount).isEqualTo(XrpCurrencyAmount.ofDrops(0));
+    assertThat(amount.isNegative()).isFalse();
+    assertThat(objectMapper.writeValueAsString(amount)).isEqualTo("\"0\"");
   }
 
   @Test

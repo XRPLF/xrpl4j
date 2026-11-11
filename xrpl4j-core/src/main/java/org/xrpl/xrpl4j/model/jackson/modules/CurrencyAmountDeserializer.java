@@ -38,7 +38,7 @@ import java.io.IOException;
 public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> {
 
   /**
-   * rippled reports this literal string (rather than a drops value) as a transaction's {@code delivered_amount} when
+   * xrpld reports this literal string (rather than a drops value) as a transaction's {@code delivered_amount} when
    * the delivered amount cannot be determined (e.g. for partial payments processed before the relevant amendment).
    *
    * @see "https://xrpl.org/docs/references/protocol/transactions/metadata#delivered_amount"
@@ -79,7 +79,11 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
           .build();
       }
     } else if (UNAVAILABLE.equals(node.asText()) && "delivered_amount".equals(jsonParser.currentName())) {
+      // xrpld only emits "unavailable" for delivered_amount (pre-amendment partial payments); treat it as missing
+      // there, but let every other CurrencyAmount field reject it as malformed input like any other bad string.
       return null;
+    } else if (!node.isTextual()) {
+      throw XrpCurrencyAmountDeserializer.invalidFormat(jsonParser, null);
     } else {
       return XrpCurrencyAmountDeserializer.parse(jsonParser, node.asText());
     }

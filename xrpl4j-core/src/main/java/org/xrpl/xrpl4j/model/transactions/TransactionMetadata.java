@@ -72,6 +72,10 @@ public interface TransactionMetadata {
    * The Currency Amount actually received by the Destination account. Use this field to determine how much was
    * delivered, regardless of whether the transaction is a partial payment. Omitted for non-Payment transactions.
    *
+   * <p>Also empty when xrpld reports this field as the literal string {@code "unavailable"}, which it does only for
+   * partial payments processed before the relevant amendment, since the actual delivered amount cannot be
+   * determined in that case.
+   *
    * @return delivered amount for payments, otherwise empty for non-payments.
    */
   @JsonProperty("delivered_amount")

@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  */
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.google.common.primitives.UnsignedLong;
@@ -53,8 +54,15 @@ public class BaseFeeDropsDeserializer extends StdDeserializer<XrpCurrencyAmount>
     // Pre-XRPFees, SetFee transactions serialize `BaseFee` to a hex string. Post XRPFees SetFee transactions
     // have a `BaseFeeDrops` field which is a decimal string.
     if (jsonParser.currentName().equals("BaseFee")) {
-      return XrpCurrencyAmount.of(UnsignedLong.valueOf(jsonParser.getText(), 16));
+      try {
+        return XrpCurrencyAmount.of(UnsignedLong.valueOf(jsonParser.getText(), 16));
+      } catch (NumberFormatException | IllegalStateException e) {
+        throw XrpCurrencyAmountDeserializer.invalidFormat(jsonParser, jsonParser.getText());
+      }
     } else {
+      if (jsonParser.currentToken() != JsonToken.VALUE_STRING) {
+        throw XrpCurrencyAmountDeserializer.invalidFormat(jsonParser, null);
+      }
       return XrpCurrencyAmountDeserializer.parse(jsonParser, jsonParser.getValueAsString());
     }
   }

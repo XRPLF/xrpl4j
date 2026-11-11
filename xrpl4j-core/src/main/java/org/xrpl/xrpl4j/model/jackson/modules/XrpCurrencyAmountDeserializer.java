@@ -40,12 +40,14 @@ public class XrpCurrencyAmountDeserializer extends StdDeserializer<XrpCurrencyAm
 
   /**
    * XRP drops amounts must be a plain, base-10 integer string (e.g. {@code "1000000"}), optionally prefixed with
-   * {@code -}. Anything else (e.g. {@code "1e6"}, {@code "1.0"}, {@code "0x1"}, or a value with leading/trailing
-   * whitespace) is rejected here rather than silently coerced, because {@link JsonParser#getValueAsLong()} will
-   * otherwise parse non-standard formats into a different drops value than what a caller may have already validated
-   * against the raw input.
+   * {@code -}, with no leading zeros (other than the literal {@code "0"}) and no negative zero ({@code "-0"}).
+   * Anything else (e.g. {@code "1e6"}, {@code "1.0"}, {@code "0x1"}, {@code "0001000000"}, {@code "-0"}, or a value
+   * with leading/trailing whitespace) is rejected here rather than silently coerced, because
+   * {@link JsonParser#getValueAsLong()} will otherwise parse non-standard formats into a different drops value than
+   * what a caller may have already validated against the raw input. This matches xrpld's own amount parser, which
+   * never emits leading zeros or {@code -0}.
    */
-  private static final Pattern DROPS_PATTERN = Pattern.compile("-?\\d+");
+  private static final Pattern DROPS_PATTERN = Pattern.compile("0|-?[1-9]\\d*");
 
   /**
    * No-args constructor.
@@ -77,7 +79,7 @@ public class XrpCurrencyAmountDeserializer extends StdDeserializer<XrpCurrencyAm
     }
 
     boolean isNegative = rawValue.charAt(0) == '-';
-    String digits = (isNegative ? rawValue.substring(1) : rawValue).replaceFirst("^0+(?=\\d)", "");
+    String digits = isNegative ? rawValue.substring(1) : rawValue;
 
     // MAX_XRP_IN_DROPS has 18 digits; check length before constructing a BigInteger, which is quadratic in length.
     if (digits.length() > 18 ||
@@ -95,11 +97,14 @@ public class XrpCurrencyAmountDeserializer extends StdDeserializer<XrpCurrencyAm
     return XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(digits), isNegative);
   }
 
-  private static MismatchedInputException invalidFormat(final JsonParser jsonParser, final String rawValue) {
+  static MismatchedInputException invalidFormat(final JsonParser jsonParser, final String rawValue) {
     return MismatchedInputException.from(
       jsonParser,
       XrpCurrencyAmount.class,
-      String.format("XRP drops amount must be a plain integer string (e.g. \"1000000\"), but was \"%s\".", rawValue)
+      String.format(
+        "XRP drops amount must be a plain integer string (e.g. \"1000000\"), but was %s.",
+        rawValue != null ? "\"" + rawValue + "\"" : jsonParser.currentToken() + " token"
+      )
     );
   }
 }

@@ -54,6 +54,20 @@ class XrpCurrencyAmountDeserializerTest extends AbstractJsonTest {
   }
 
   @Test
+  void rejectsLeadingZeros() {
+    assertThatThrownBy(() -> objectMapper.readValue("\"0001000000\"", XrpCurrencyAmount.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("XRP drops amount must be a plain integer string");
+  }
+
+  @Test
+  void rejectsNegativeZero() {
+    assertThatThrownBy(() -> objectMapper.readValue("\"-0\"", XrpCurrencyAmount.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("XRP drops amount must be a plain integer string");
+  }
+
+  @Test
   void rejectsExponentialNotation() {
     assertThatThrownBy(() -> objectMapper.readValue("\"1e6\"", XrpCurrencyAmount.class))
       .isInstanceOf(MismatchedInputException.class)
@@ -151,6 +165,41 @@ class XrpCurrencyAmountDeserializerTest extends AbstractJsonTest {
       "  \"TransactionType\": \"Payment\"," +
       "  \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
       "  \"Amount\": \"1e6\"," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
+      "}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, Payment.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("XRP drops amount must be a plain integer string");
+  }
+
+  @Test
+  void rejectsUnquotedNumberAmountInPayment() {
+    String json = "{" +
+      "  \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"TransactionType\": \"Payment\"," +
+      "  \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
+      "  \"Amount\": 1000000," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
+      "}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, Payment.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("XRP drops amount must be a plain integer string");
+  }
+
+  @Test
+  void rejectsUnavailableSendMax() {
+    String json = "{" +
+      "  \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"TransactionType\": \"Payment\"," +
+      "  \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
+      "  \"Amount\": \"1000000\"," +
+      "  \"SendMax\": \"unavailable\"," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
 

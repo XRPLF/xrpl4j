@@ -178,6 +178,43 @@ public class SetFeeTest extends AbstractJsonTest {
   }
 
   @Test
+  public void rejectsUnquotedNumberBaseFeeDrops() {
+    String json = "{\n" +
+      "    \"Account\": \"rrrrrrrrrrrrrrrrrrrrrhoLvTp\",\n" +
+      "    \"BaseFeeDrops\": 10,\n" +
+      "    \"Fee\": \"0\",\n" +
+      "    \"LedgerSequence\": 66462465,\n" +
+      "    \"ReserveBaseDrops\": \"10000000\",\n" +
+      "    \"ReserveIncrementDrops\": \"2000000\",\n" +
+      "    \"Sequence\": 0,\n" +
+      "    \"SigningPubKey\": \"\",\n" +
+      "    \"TransactionType\": \"SetFee\"}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, Transaction.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("XRP drops amount must be a plain integer string");
+  }
+
+  @Test
+  public void rejectsNonStandardBaseFeeHex() {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"SetFee\"," +
+      "\"ReserveIncrement\":5000000," +
+      "\"ReserveBase\":20000000," +
+      "\"ReferenceFeeUnits\":10," +
+      "\"BaseFee\":\"zz\"}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, Transaction.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("XRP drops amount must be a plain integer string");
+  }
+
+  @Test
   public void testJsonWithUnknownFields() throws JsonProcessingException {
     SetFee expected = SetFee.builder()
       .account(Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp"))

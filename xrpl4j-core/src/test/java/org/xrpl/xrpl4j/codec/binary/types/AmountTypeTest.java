@@ -269,24 +269,55 @@ class AmountTypeTest extends BaseSerializerTypeTest {
   }
 
   @Test
-  void encodeMptAmountWithMoreThan63BitAmountThrows() {
+  void encodeDecodeMptAmountAboveSignedLongMax() {
+    // An MPT amount carries its sign and type in its own leading byte, so unlike native XRP and
+    // IOU amounts no bit inside the 64-bit value is reserved for sign. 2^63 is a valid MPT amount
+    // even though it is one past Long.MAX_VALUE.
     UnsignedLong maxLongPlusOne = UnsignedLong.valueOf(Long.MAX_VALUE).plus(UnsignedLong.ONE);
     String json = "{" +
       "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"," +
       "\"value\":\"" + maxLongPlusOne + "\"" +
       "}";
-    assertThatThrownBy(() -> codec.fromJson(json)).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Invalid MPT mptCurrencyAmount. Maximum MPT value is (2^63 - 1)");
+    AmountType fromJson = codec.fromJson(json);
+    assertThat(fromJson.toHex())
+      .isEqualTo("60800000000000000000002403C84A0A28E0190E208E982C352BBD5006600555CF");
+    assertThat(fromJson.toJson().toString()).isEqualTo(json);
   }
 
   @Test
-  void encodeMptAmountWithMoreThan63BitAmountThrowsNegative() {
+  void encodeDecodeMptAmountAboveSignedLongMaxNegative() {
     UnsignedLong maxLongPlusOne = UnsignedLong.valueOf(Long.MAX_VALUE).plus(UnsignedLong.ONE);
     String json = "{" +
       "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"," +
       "\"value\":\"-" + maxLongPlusOne + "\"" +
       "}";
-    assertThatThrownBy(() -> codec.fromJson(json)).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Invalid MPT mptCurrencyAmount. Maximum MPT value is (2^63 - 1)");
+    AmountType fromJson = codec.fromJson(json);
+    assertThat(fromJson.toHex())
+      .isEqualTo("20800000000000000000002403C84A0A28E0190E208E982C352BBD5006600555CF");
+    assertThat(fromJson.toJson().toString()).isEqualTo(json);
+  }
+
+  @Test
+  void encodeDecodeMptAmountAtTrueMax() {
+    // 2^64 - 1 is the real maximum MPT value (rippled documents it directly as maxMPTokenAmount).
+    String json = "{" +
+      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"," +
+      "\"value\":\"" + UnsignedLong.MAX_VALUE + "\"" +
+      "}";
+    AmountType fromJson = codec.fromJson(json);
+    assertThat(fromJson.toHex())
+      .isEqualTo("60FFFFFFFFFFFFFFFF00002403C84A0A28E0190E208E982C352BBD5006600555CF");
+    assertThat(fromJson.toJson().toString()).isEqualTo(json);
+  }
+
+  @Test
+  void encodeMptAmountAboveTrueMaxThrows() {
+    // One past the true maximum. There is no UnsignedLong representation of this value, so the
+    // test uses the raw string form the same way a value arriving from outside the JVM would.
+    String json = "{" +
+      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"," +
+      "\"value\":\"18446744073709551616\"" +
+      "}";
+    assertThatThrownBy(() -> codec.fromJson(json)).isInstanceOf(IllegalArgumentException.class);
   }
 }

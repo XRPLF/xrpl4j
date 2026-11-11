@@ -201,11 +201,11 @@ class AmountType extends SerializedType<AmountType> {
       return new AmountType(result);
     } else {
       // MPT Amount
+      // An MPT amount carries its sign and type in its own leading byte at serialization, so unlike
+      // native XRP and IOU amounts no bit inside the 64-bit value is reserved for sign. The valid
+      // range is the full unsigned 64-bit range, which unsignedLongValue() already enforces: it
+      // throws NumberFormatException (an IllegalArgumentException) for anything outside [0, 2^64 - 1].
       MptCurrencyAmount mptCurrencyAmount = objectMapper.treeToValue(value, MptCurrencyAmount.class);
-
-      if (FluentCompareTo.is(mptCurrencyAmount.unsignedLongValue()).greaterThan(UnsignedLong.valueOf(Long.MAX_VALUE))) {
-        throw new IllegalArgumentException("Invalid MPT mptCurrencyAmount. Maximum MPT value is (2^63 - 1)");
-      }
 
       UnsignedByteArray amountBytes = UnsignedByteArray.fromHex(
         ByteUtils.padded(

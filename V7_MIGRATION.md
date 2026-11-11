@@ -385,7 +385,47 @@ Batch.builder()
   ...
 ```
 
-### 8. `BinaryParser` variable-length constants renamed
+### 8. `ObjectMapperFactory` no longer configures mapper-wide features
+
+Previously, the mapper returned by `ObjectMapperFactory.create()` set several features for every type it handled:
+
+| Setting | Previous value | Jackson default |
+|---|---|---|
+| `serializationInclusion` | `NON_EMPTY` | `ALWAYS` |
+| `DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES` | `false` | `true` |
+| `MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES` | enabled | disabled |
+| `JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN` | `true` | `false` |
+| `SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS` | `false` | `true` |
+
+In v7.0.0 the factory configures none of these. The behaviors xrpl4j's own types rely on are instead supplied by
+`Xrpl4jModule` through a package-scoped `AnnotationIntrospector` that applies only to classes under
+`org.xrpl.xrpl4j`: `NON_EMPTY` inclusion, ignoring unknown properties, case-insensitive property matching, and
+plain-notation rendering of `BigDecimal` values. xrpl4j's JSON output and parsing are therefore unchanged in both
+directions. (`WRITE_DURATIONS_AS_TIMESTAMPS` is dropped outright; xrpl4j has no `Duration` fields.)
+
+For your own types handled by the factory mapper, Jackson's defaults now apply:
+
+- `null` and empty properties are written rather than omitted.
+- Unknown properties in input cause an `UnrecognizedPropertyException` rather than being ignored.
+- Property names are matched case-sensitively.
+- `BigDecimal` may be written in exponent notation, and `Duration` is written as a numeric timestamp.
+
+**Migration:**
+
+If your own types relied on the previous behavior, either handle them with a separate mapper, or annotate them:
+
+```java
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+public class MyDto { ... }
+```
+
+If you build your own mapper and register `Xrpl4jModule` on it, note that the module now carries all of the above
+behaviors for xrpl4j types itself. You still need `Jdk8Module`, `GuavaModule`, `JavaTimeModule`, and
+`CryptoConditionsModule(Encoding.HEX)` registered for xrpl4j types to work, as `ObjectMapperFactory.create()` does.
+
+### 9. `BinaryParser` variable-length constants renamed
 
 `BinaryParser` declared three public constants for the variable-length (VL) prefix boundaries, and two of their names
 did not match their values. They have been removed. `BinaryParser`, `BinarySerializer` and the tests now share one set
@@ -412,7 +452,7 @@ int threshold = BinaryParser.MAX_DOUBLE_BYTE_LENGTH;
 int threshold = BinaryParser.MIN_THREE_BYTE_LENGTH;
 ```
 
-### 9. `BinaryParser` rejects VL lengths above 918,744
+### 10. `BinaryParser` rejects VL lengths above 918,744
 
 A 3-byte VL prefix can state lengths up to 929,984, but the XRPL binary format caps VL fields at 918,744, and
 `BinarySerializer` already refused to encode anything longer. `BinaryParser.readVariableLengthLength()` now throws

@@ -96,13 +96,15 @@ Do NOT commit or create a PR. Instead, generate the following outputs for the hu
    - Give ticket-driven upgrades that no Dependabot PR proposed their own table naming the motivating ticket — they are additions, not supersessions.
    - Call out separately, in the overview, any upgrade taken only to unblock a ticket with no corresponding Dependabot PR: a reviewer will not be expecting it and must see it flagged rather than buried in a table.
 
-4. **Close list** — write a markdown file (`.claude/skills/batch-deps-upgrade/close-list.md`) recording every ticket and Dependabot PR the batch makes closable. This is the input to the closing run.
+4. **Close list** — write a markdown file (`.claude/skills/batch-deps-upgrade/close-list.md`) recording every ticket and Dependabot PR the batch makes closable. This is the input to the closing run. Start the file with the batch's branch name (e.g. `<!-- batch-branch: deps/batch-deps-upgrade-2026-Q4 -->`) so the closing run can confirm the file belongs to the PR it's about to act on, rather than to a stale batch left over in the working tree.
 
    1. **Close** — every Upgraded and No-op ticket and PR, in one shape for both so a single parser handles them:
 
       ```
       <ticket-key or #pr> | <groupId:artifactId> | installed <resolved> (<asked for>) | Comment: "<text>"
       ```
+
+      A grouped Dependabot PR bundling several packages gets one line per package, all sharing the same `#pr` — record every coordinate it upgraded, not just one; the closing run below closes that PR only once every line sharing its number verifies.
 
       The third field must carry the **resolved** version, not the proposed one — that is what step 1 of the closing run checks against `main`, and a proposed version cannot be verified.
 
@@ -131,14 +133,15 @@ ORDER BY rank
 
 If a ticket names a package but no fix version, check the GitHub Advisory Database for that package (ecosystem `maven`, package `groupId:artifactId`) and take the "patched versions" field from the matching advisory instead of dropping the ticket.
 
-Keep tickets naming a package and (directly or via its advisory) a fix version; drop the rest. If tickets came back but none of them could be parsed, that is a parsing failure — stop. If the query returned nothing, or nothing was in scope, there is simply no Semgrep work this quarter: record zero and carry on with the Dependabot batch. A ticket becomes a row whether or not a Dependabot PR proposes that package; a ticket is reason enough on its own. A ticket naming a package with no patched release at all (the advisory lists none) is left open for a human — note why in `close-list.md`'s "Left open" section rather than marking it Skipped alongside build failures.
+Keep tickets naming a package and (directly or via its advisory) a fix version. For any other ticket the query returns, record it — ticket key and why it was dropped — in `code-changes.md` rather than silently discarding it, then continue with the ones that did parse. If tickets came back but none of them could be parsed, that is a parsing failure — stop. If the query returned nothing, or nothing was in scope, there is simply no Semgrep work this quarter: record zero and carry on with the Dependabot batch. A ticket becomes a row whether or not a Dependabot PR proposes that package; a ticket is reason enough on its own. A ticket naming a package with no patched release at all (the advisory lists none) is left open for a human — note why in `close-list.md`'s "Left open" section rather than marking it Skipped alongside build failures.
 
 ### Picking the target and matching results (Step 2)
 
-Where a ticket and a PR both want the same dependency, the target is the **highest** version either wants. Three matching rules — get them wrong and you close tickets whose vulnerable version is still in use:
+Where a ticket and a PR both want the same dependency, the target is the **highest** version either wants, if that version is actually patched for the advisory in play. Four matching rules — get them wrong and you close tickets whose vulnerable version is still in use:
 
-- Compare versions numerically, dot-segment by dot-segment, never as strings — lexically `"1.9" > "1.10"`.
-- Check the version actually resolved for that coordinate (`mvn dependency:tree -Dincludes=<groupId>:<artifactId>` or `mvn help:evaluate -Dexpression=<property>`), not just what you set in `pom.xml` — a BOM or another `<dependencyManagement>` entry can still win. One `groupId:artifactId` can resolve differently across modules if a submodule overrides it; match the install the ticket means, and if a module still resolves below the fix version, that module's row is not satisfied even if the root pom's is.
+- Compare versions using Maven's version-ordering rules, not naive dot-segment numeric comparison or lexical string comparison — lexically `"1.9" > "1.10"`, and dot-segment comparison still gets qualifiers wrong (`2.16.0-rc1` sorts *before* `2.16.0`, and suffixes like `-jre` / `-android` are qualifiers, not separate releases).
+- A higher version is not automatically patched — check the chosen version against the advisory's affected/patched ranges, not just the highest fix version named across the ticket and PR. A patch can land on one release line while a later line stays affected (e.g. GHSA-7rjr-3q55-vv33: `2.12.2` patched, `2.13.0` still affected).
+- Check the version actually resolved for that coordinate, in every affected module (`mvn dependency:tree -Dincludes=<groupId>:<artifactId> -pl <module>`), not just what you set in `pom.xml` — and not a property's value alone (`mvn help:evaluate -Dexpression=<property>` shows the property, not what each module resolves). A BOM, another `<dependencyManagement>` entry, or a submodule override can still win. One `groupId:artifactId` can resolve differently across modules; match the install the ticket means, and if a module still resolves below the fix version, that module's row is not satisfied even if the root pom's property is.
 - Match per ticket, not per package. Tickets sharing one dependency can want different versions. Never conclude "we upgraded X, so close all the X tickets" without checking each ticket's own required version.
 
 Classify from the Step 2 diff and resolved versions, not from which PR did what: a BOM or parent bump can carry along a dependency it pins exactly, so a ticket can come out Upgraded with no PR naming its package.
@@ -153,10 +156,10 @@ Never remove a dependency to resolve a finding. A transitive dep leaves only whe
 
 > **Runs only when `ARGUMENTS` is `close`.** If you reached this section by reading past Step 4 during a default run, stop here — everything below comments on and closes real JIRA tickets and real public PRs.
 
-Runs none of Steps 1-4: no ticket discovery, no bumps, and none of Step 3's build/test chain. That exclusion does **not** cover the per-item check in step 1 below — that one always runs, and it is the safeguard against closing something whose fix was reverted. Read section 1 of `close-list.md`; if it is missing, fall back to the merged PR body's lists. Identify the batch PR from an argument or `gh pr list --repo XRPLF/xrpl4j --state merged --head <branch>`, and replace the `<PR>` token in every comment with its URL. **Check that no comment still contains `<PR>` before posting anything** — if one does, the substitution failed, so stop rather than post a placeholder onto dozens of tickets.
+Runs none of Steps 1-4: no ticket discovery, no bumps, and none of Step 3's build/test chain. That exclusion does **not** cover the per-item check in step 1 below — that one always runs, and it is the safeguard against closing something whose fix was reverted. Identify the batch PR first, from an argument or `gh pr list --repo XRPLF/xrpl4j --state merged --head <branch>`. Then read section 1 of `close-list.md`; use it only if its recorded `batch-branch` matches that PR's branch — otherwise (missing file, or a branch that doesn't match) fall back to the merged PR body's lists, since a stale `close-list.md` from an earlier batch must never be mistaken for the current one. Replace the `<PR>` token in every comment with the identified PR's URL. **Check that no comment still contains `<PR>` before posting anything** — if one does, the substitution failed, so stop rather than post a placeholder onto dozens of tickets.
 
-1. **Verify each item against the current `main`** and skip anything not genuinely satisfied — a reviewer may have had an upgrade reverted. This is what makes the run safe whether or not the batch has merged.
-2. **Close everything that verified.** Do not ask for approval; the engineer reviewed both lists on the PR, and step 1 is the real check.
+1. **Verify each item against the current `main`** and skip anything not genuinely satisfied — a reviewer may have had an upgrade reverted. This is what makes the run safe whether or not the batch has merged. For a Dependabot PR recorded on multiple lines (a grouped PR), verify every line before closing it — skip the PR, and report each unsatisfied line, if any one package did not land.
+2. **Close everything that verified.** Do not ask for approval; the engineer reviewed both lists on the PR, and step 1 is the real check. Close a grouped PR once — after all its lines verify, not once per line.
    - **JIRA tickets** — complete the `Done` transition first (query available transitions, take the one to `Done`), then post the comment. This avoids open-but-commented tickets if transition fails.
    - **Dependabot PRs** — `gh pr close <n> --repo XRPLF/xrpl4j --comment "<comment>"`.
 3. Report in this shape:

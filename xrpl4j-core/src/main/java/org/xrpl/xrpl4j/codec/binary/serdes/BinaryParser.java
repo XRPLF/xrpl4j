@@ -76,8 +76,11 @@ public class BinaryParser {
    * @return An {@link UnsignedByteArray}.
    */
   public UnsignedByteArray read(int bytesToRead) {
-    if (cursor >= hex.length()) {
-      throw new IndexOutOfBoundsException("cursor moved past end of buffer");
+    int remainingBytes = (hex.length() - cursor) / BYTE_HEX_LENGTH;
+    if (bytesToRead > remainingBytes) {
+      throw new IllegalArgumentException(
+        "tried to read " + bytesToRead + " byte(s) but only " + remainingBytes + " remain"
+      );
     }
     List<UnsignedByte> result = new ArrayList<>();
     for (int i = 0; i < bytesToRead; i++) {

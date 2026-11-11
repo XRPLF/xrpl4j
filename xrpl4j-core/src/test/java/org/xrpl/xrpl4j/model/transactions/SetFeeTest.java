@@ -215,6 +215,25 @@ public class SetFeeTest extends AbstractJsonTest {
   }
 
   @Test
+  public void rejectsUnquotedNumberBaseFee() {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"SetFee\"," +
+      "\"ReserveIncrement\":5000000," +
+      "\"ReserveBase\":20000000," +
+      "\"ReferenceFeeUnits\":10," +
+      "\"BaseFee\":10}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, Transaction.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("XRP drops amount must be a plain integer string");
+  }
+
+  @Test
   public void testJsonWithUnknownFields() throws JsonProcessingException {
     SetFee expected = SetFee.builder()
       .account(Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp"))

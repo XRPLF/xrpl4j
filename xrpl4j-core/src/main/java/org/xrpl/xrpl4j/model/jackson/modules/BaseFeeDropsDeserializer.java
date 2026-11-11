@@ -54,6 +54,9 @@ public class BaseFeeDropsDeserializer extends StdDeserializer<XrpCurrencyAmount>
     // Pre-XRPFees, SetFee transactions serialize `BaseFee` to a hex string. Post XRPFees SetFee transactions
     // have a `BaseFeeDrops` field which is a decimal string.
     if (jsonParser.currentName().equals("BaseFee")) {
+      if (jsonParser.currentToken() != JsonToken.VALUE_STRING) {
+        throw XrpCurrencyAmountDeserializer.invalidFormat(jsonParser, null);
+      }
       try {
         return XrpCurrencyAmount.of(UnsignedLong.valueOf(jsonParser.getText(), 16));
       } catch (NumberFormatException | IllegalStateException e) {

@@ -74,7 +74,10 @@ public interface TransactionMetadata {
    *
    * <p>Also empty when xrpld reports this field as the literal string {@code "unavailable"}, which it does only for
    * partial payments processed before the relevant amendment, since the actual delivered amount cannot be
-   * determined in that case.
+   * determined in that case. Prior to this behavior being scoped to {@code delivered_amount}, that literal string
+   * deserialized to {@link XrpCurrencyAmount#ofDrops(long)} with a value of {@code 0} instead of being empty, so an
+   * empty {@link Optional} here can now mean either an {@code "unavailable"} delivered amount or a non-Payment
+   * transaction, where previously only the latter applied.
    *
    * @return delivered amount for payments, otherwise empty for non-payments.
    */

@@ -55,6 +55,23 @@ public class AccountLinesResultJsonTests extends AbstractJsonTest {
           .noRipple(true)
           .qualityIn(UnsignedInteger.ZERO)
           .qualityOut(UnsignedInteger.ZERO)
+          .build(),
+        TrustLine.builder()
+          .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+          .balance("1")
+          .currency("USD")
+          .limit("100")
+          .limitPeer("50")
+          .noRipple(true)
+          .noRipplePeer(true)
+          .authorized(true)
+          .peerAuthorized(true)
+          .freeze(true)
+          .freezePeer(true)
+          .deepFreeze(true)
+          .deepFreezePeer(true)
+          .qualityIn(UnsignedInteger.valueOf(1000))
+          .qualityOut(UnsignedInteger.valueOf(2000))
           .build()
       )
       .build();
@@ -96,6 +113,23 @@ public class AccountLinesResultJsonTests extends AbstractJsonTest {
       "                \"deep_freeze_peer\": false,\n" +
       "                \"quality_in\": 0,\n" +
       "                \"quality_out\": 0\n" +
+      "            },\n" +
+      "            {\n" +
+      "                \"account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "                \"balance\": \"1\",\n" +
+      "                \"currency\": \"USD\",\n" +
+      "                \"limit\": \"100\",\n" +
+      "                \"limit_peer\": \"50\",\n" +
+      "                \"no_ripple\": true,\n" +
+      "                \"no_ripple_peer\": true,\n" +
+      "                \"authorized\": true,\n" +
+      "                \"peer_authorized\": true,\n" +
+      "                \"freeze\": true,\n" +
+      "                \"freeze_peer\": true,\n" +
+      "                \"deep_freeze\": true,\n" +
+      "                \"deep_freeze_peer\": true,\n" +
+      "                \"quality_in\": 1000,\n" +
+      "                \"quality_out\": 2000\n" +
       "            }\n" +
       "        ],\n" +
       "        \"status\": \"success\"\n" +

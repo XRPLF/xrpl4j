@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.model.client.nft;
  * =========================LICENSE_END==================================
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -46,14 +48,14 @@ public class NftBuyOffersResultTest extends AbstractJsonTest {
         BuyOffer.builder()
           .amount(XrpCurrencyAmount.ofDrops(1000))
           .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-          .flags(NfTokenOfferFlags.BUY_TOKEN)
+          .flags(NfTokenOfferFlags.of(0))
           .nftOfferIndex(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
           .build()
       )
       .build();
 
     String offer = "{\n" +
-      "    \"flags\": 1,\n" +
+      "    \"flags\": 0,\n" +
       "    \"amount\": \"1000\",\n" +
       "    \"owner\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
       "    \"nft_offer_index\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
@@ -97,19 +99,51 @@ public class NftBuyOffersResultTest extends AbstractJsonTest {
             .build()
           )
           .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-          .flags(NfTokenOfferFlags.BUY_TOKEN)
+          .flags(NfTokenOfferFlags.of(0))
           .nftOfferIndex(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
           .build()
       )
       .build();
 
     String offer = "{\n" +
-      "    \"flags\": 1,\n" +
+      "    \"flags\": 0,\n" +
       "    \"amount\": {\n" +
       "      \"issuer\": \"rsjYGpMWQeNBXbUTkVz4ZKzHefgZSr6rys\",\n" +
       "      \"currency\": \"USD\",\n" +
       "      \"value\": \"100\"\n" +
       "    },\n" +
+      "    \"owner\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+      "    \"nft_offer_index\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
+      "}";
+
+    String json = "{\n" +
+      "        \"nft_id\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\",\n" +
+      "        \"offers\": [" + offer + "]\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  public void testWithNonZeroFlags() throws JsonProcessingException, JSONException {
+    NftBuyOffersResult params = NftBuyOffersResult.builder()
+      .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .addOffers(
+        BuyOffer.builder()
+          .amount(XrpCurrencyAmount.ofDrops(1000))
+          .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .flags(NfTokenOfferFlags.AUTHORIZED)
+          .nftOfferIndex(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+          .build()
+      )
+      .build();
+
+    assertThat(params.offers().get(0).flags().lsfSellNfToken()).isFalse();
+    assertThat(params.offers().get(0).flags().lsfAuthorized()).isTrue();
+
+    String offer = "{\n" +
+      "    \"flags\": 2,\n" +
+      "    \"amount\": \"1000\",\n" +
       "    \"owner\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
       "    \"nft_offer_index\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
       "}";

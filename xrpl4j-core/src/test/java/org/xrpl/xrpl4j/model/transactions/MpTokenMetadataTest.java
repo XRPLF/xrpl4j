@@ -22,12 +22,23 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 /**
  * Unit tests for {@link MpTokenMetadata}.
  */
 public class MpTokenMetadataTest {
+
+  private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
   void testToString() {
@@ -40,5 +51,36 @@ public class MpTokenMetadataTest {
     metadata = MpTokenMetadata.of("48656C6C6F20576F726C64");
     assertThat(metadata.toString()).isEqualTo("48656C6C6F20576F726C64");
   }
-}
 
+  @Test
+  void testWithValidValue() {
+    MpTokenMetadata metadata = MpTokenMetadata.of("68747470733A2F2F6578616D706C652E636F6D");
+    assertThat(metadata.value()).isEqualTo("68747470733A2F2F6578616D706C652E636F6D");
+    assertThat(metadata.equals(null)).isFalse();
+  }
+
+  @Test
+  void testJsonSerialization() throws JsonProcessingException, JSONException {
+    MpTokenMetadata metadata = MpTokenMetadata.of("ABCDEF1234567890");
+    MpTokenMetadataWrapper wrapper = MpTokenMetadataWrapper.of(metadata);
+
+    String json = "{\"metadata\":\"ABCDEF1234567890\"}";
+    String serialized = objectMapper.writeValueAsString(wrapper);
+    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+
+    MpTokenMetadataWrapper deserialized = objectMapper.readValue(serialized, MpTokenMetadataWrapper.class);
+    assertThat(deserialized).isEqualTo(wrapper);
+  }
+
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableMpTokenMetadataWrapper.class)
+  @JsonDeserialize(as = ImmutableMpTokenMetadataWrapper.class)
+  public interface MpTokenMetadataWrapper {
+
+    static MpTokenMetadataWrapper of(MpTokenMetadata metadata) {
+      return ImmutableMpTokenMetadataWrapper.builder().metadata(metadata).build();
+    }
+
+    MpTokenMetadata metadata();
+  }
+}

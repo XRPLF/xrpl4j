@@ -38,8 +38,9 @@ import java.io.IOException;
 public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> {
 
   /**
-   * xrpld reports this literal string (rather than a drops value) as a transaction's {@code delivered_amount} when
-   * the delivered amount cannot be determined (e.g. for partial payments processed before the relevant amendment).
+   * xrpld reports this literal string (rather than an amount) as a transaction's {@code delivered_amount} when the
+   * delivered amount cannot be determined: the metadata has no {@code DeliveredAmount} and the ledger is too old
+   * (index below 4594095 and closed before February 2014) to assume the full {@code Amount} was delivered.
    *
    * @see "https://xrpl.org/docs/references/protocol/transactions/metadata#delivered_amount"
    */
@@ -79,13 +80,18 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
           .build();
       }
     } else if (UNAVAILABLE.equals(node.asText()) && "delivered_amount".equals(jsonParser.currentName())) {
-      // xrpld only emits "unavailable" for delivered_amount (pre-amendment partial payments); treat it as missing
-      // there, but let every other CurrencyAmount field reject it as malformed input like any other bad string.
+      // xrpld only emits "unavailable" for delivered_amount (old ledgers whose metadata has no DeliveredAmount);
+      // treat it as missing there, but let every other CurrencyAmount field reject it as malformed input like any
+      // other bad string.
       return null;
-    } else if (!node.isTextual()) {
-      throw XrpCurrencyAmountDeserializer.invalidFormat(jsonParser, null);
-    } else {
+    } else if (node.isTextual() || node.isIntegralNumber()) {
       return XrpCurrencyAmountDeserializer.parse(jsonParser, node.asText());
+    } else {
+      return deserializationContext.reportInputMismatch(
+        CurrencyAmount.class,
+        "XRP drops amount must be a plain integer string (e.g. \"1000000\"), but was a JSON %s value.",
+        node.getNodeType()
+      );
     }
   }
 }

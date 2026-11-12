@@ -55,17 +55,22 @@ public class BaseFeeDropsDeserializer extends StdDeserializer<XrpCurrencyAmount>
     // have a `BaseFeeDrops` field which is a decimal string.
     if (jsonParser.currentName().equals("BaseFee")) {
       if (jsonParser.currentToken() != JsonToken.VALUE_STRING) {
-        throw XrpCurrencyAmountDeserializer.invalidFormat(jsonParser, null);
+        return ctxt.reportInputMismatch(
+          XrpCurrencyAmount.class,
+          "SetFee BaseFee must be a hex string (e.g. \"000000000000000A\"), but was %s token.",
+          jsonParser.currentToken()
+        );
       }
       try {
         return XrpCurrencyAmount.of(UnsignedLong.valueOf(jsonParser.getText(), 16));
       } catch (NumberFormatException | IllegalStateException e) {
-        throw XrpCurrencyAmountDeserializer.invalidFormat(jsonParser, jsonParser.getText());
+        return ctxt.reportInputMismatch(
+          XrpCurrencyAmount.class,
+          "SetFee BaseFee must be a hex string (e.g. \"000000000000000A\"), but was \"%s\".",
+          jsonParser.getText()
+        );
       }
     } else {
-      if (jsonParser.currentToken() != JsonToken.VALUE_STRING) {
-        throw XrpCurrencyAmountDeserializer.invalidFormat(jsonParser, null);
-      }
       return XrpCurrencyAmountDeserializer.parse(jsonParser, jsonParser.getValueAsString());
     }
   }

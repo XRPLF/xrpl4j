@@ -178,10 +178,37 @@ public class SetFeeTest extends AbstractJsonTest {
   }
 
   @Test
-  public void rejectsUnquotedNumberBaseFeeDrops() {
+  public void acceptsUnquotedNumberBaseFeeDrops() throws JsonProcessingException {
+    SetFee expected = SetFee.builder()
+      .account(Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp"))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.valueOf(0))
+      .baseFeeDrops(XrpCurrencyAmount.ofDrops(10))
+      .reserveBaseDrops(XrpCurrencyAmount.ofDrops(10000000))
+      .reserveIncrementDrops(XrpCurrencyAmount.ofDrops(2000000))
+      .ledgerSequence(Optional.of(LedgerIndex.of(UnsignedInteger.valueOf(66462465))))
+      .build();
+
     String json = "{\n" +
       "    \"Account\": \"rrrrrrrrrrrrrrrrrrrrrhoLvTp\",\n" +
       "    \"BaseFeeDrops\": 10,\n" +
+      "    \"Fee\": \"0\",\n" +
+      "    \"LedgerSequence\": 66462465,\n" +
+      "    \"ReserveBaseDrops\": \"10000000\",\n" +
+      "    \"ReserveIncrementDrops\": \"2000000\",\n" +
+      "    \"Sequence\": 0,\n" +
+      "    \"SigningPubKey\": \"\",\n" +
+      "    \"TransactionType\": \"SetFee\"}";
+
+    Transaction actual = objectMapper.readValue(json, Transaction.class);
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void rejectsUnquotedFloatBaseFeeDrops() {
+    String json = "{\n" +
+      "    \"Account\": \"rrrrrrrrrrrrrrrrrrrrrhoLvTp\",\n" +
+      "    \"BaseFeeDrops\": 1.5,\n" +
       "    \"Fee\": \"0\",\n" +
       "    \"LedgerSequence\": 66462465,\n" +
       "    \"ReserveBaseDrops\": \"10000000\",\n" +
@@ -211,7 +238,7 @@ public class SetFeeTest extends AbstractJsonTest {
 
     assertThatThrownBy(() -> objectMapper.readValue(json, Transaction.class))
       .isInstanceOf(MismatchedInputException.class)
-      .hasMessageContaining("XRP drops amount must be a plain integer string");
+      .hasMessageContaining("SetFee BaseFee must be a hex string");
   }
 
   @Test
@@ -230,7 +257,7 @@ public class SetFeeTest extends AbstractJsonTest {
 
     assertThatThrownBy(() -> objectMapper.readValue(json, Transaction.class))
       .isInstanceOf(MismatchedInputException.class)
-      .hasMessageContaining("XRP drops amount must be a plain integer string");
+      .hasMessageContaining("SetFee BaseFee must be a hex string");
   }
 
   @Test

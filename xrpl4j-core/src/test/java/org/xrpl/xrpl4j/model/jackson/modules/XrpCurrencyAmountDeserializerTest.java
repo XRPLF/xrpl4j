@@ -175,7 +175,7 @@ class XrpCurrencyAmountDeserializerTest extends AbstractJsonTest {
   }
 
   @Test
-  void rejectsUnquotedNumberAmountInPayment() {
+  void acceptsUnquotedNumberAmountInPayment() throws JsonProcessingException {
     String json = "{" +
       "  \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
       "  \"Fee\": \"10\"," +
@@ -183,6 +183,38 @@ class XrpCurrencyAmountDeserializerTest extends AbstractJsonTest {
       "  \"TransactionType\": \"Payment\"," +
       "  \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
       "  \"Amount\": 1000000," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
+      "}";
+
+    Payment payment = objectMapper.readValue(json, Payment.class);
+    assertThat(payment.amount()).isEqualTo(XrpCurrencyAmount.ofDrops(1000000));
+  }
+
+  @Test
+  void acceptsUnquotedIntegerFee() throws JsonProcessingException {
+    String json = "{" +
+      "  \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
+      "  \"Fee\": 10," +
+      "  \"Sequence\": 1," +
+      "  \"TransactionType\": \"Payment\"," +
+      "  \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
+      "  \"Amount\": \"1000000\"," +
+      "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
+      "}";
+
+    Payment payment = objectMapper.readValue(json, Payment.class);
+    assertThat(payment.fee()).isEqualTo(XrpCurrencyAmount.ofDrops(10));
+  }
+
+  @Test
+  void rejectsUnquotedFloatAmountInPayment() {
+    String json = "{" +
+      "  \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
+      "  \"Fee\": \"10\"," +
+      "  \"Sequence\": 1," +
+      "  \"TransactionType\": \"Payment\"," +
+      "  \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
+      "  \"Amount\": 1.5," +
       "  \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
       "}";
 

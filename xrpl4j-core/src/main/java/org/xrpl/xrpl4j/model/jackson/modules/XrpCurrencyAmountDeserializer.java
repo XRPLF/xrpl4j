@@ -44,9 +44,17 @@ public class XrpCurrencyAmountDeserializer extends StdDeserializer<XrpCurrencyAm
    * {@code "1e6"}, {@code "1.0"}, {@code "0x1"}, {@code "0001000000"}, or a value with leading/trailing whitespace)
    * is rejected here rather than silently coerced, because {@link JsonParser#getValueAsLong()} will otherwise parse
    * non-standard formats into a different drops value than what a caller may have already validated against the raw
-   * input. This matches xrpld's own amount parser ({@code STNumber.cpp}'s {@code partsFromString}), which never
-   * emits leading zeros; {@code "-0"} is accepted, matching xrpld's own canonicalization, which normalizes it to
-   * plain zero rather than rejecting it.
+   * input.
+   *
+   * <p>This deserializer exists to read JSON produced by xrpld, and xrpld writes XRP amounts as a plain integer
+   * string such as {@code "1000000"}. xrpld is more forgiving about what it accepts as input (for example, it
+   * reads {@code "1e6"} as 1,000,000 drops), but this class does not need to be, so any other string is treated
+   * as an error. {@code "-0"} is the one exception: it is accepted and read as zero, as xrpld does.
+   *
+   * <p>A bare JSON integer (e.g. {@code "Amount": 10}) is accepted too, and is read the same way as the string
+   * {@code "10"}. Old (pre-XRPFees) {@code SetFee} transactions depend on that, because their
+   * {@code ReserveBase} and {@code ReserveIncrement} fields are JSON numbers rather than strings. A JSON number
+   * with a fraction or an exponent (e.g. {@code 1.0} or {@code 1e6}) is rejected, like its string equivalent.
    */
   private static final Pattern DROPS_PATTERN = Pattern.compile("-?(0|[1-9]\\d*)");
 

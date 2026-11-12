@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -158,6 +159,7 @@ public interface ConfidentialMptSend extends Transaction {
    * @return A {@link List} of type {@link Hash256}.
    */
   @JsonProperty("CredentialIDs")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   List<Hash256> credentialIds();
 
   /**

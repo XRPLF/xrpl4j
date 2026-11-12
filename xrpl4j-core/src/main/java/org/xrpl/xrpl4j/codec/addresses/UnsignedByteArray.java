@@ -40,9 +40,58 @@ public class UnsignedByteArray implements Destroyable {
   private final List<UnsignedByte> unsignedBytes;
   private boolean destroyed;
 
+  /**
+   * Required-args constructor.
+   *
+   * <p>Note: {@link UnsignedByte} is mutable (see {@link UnsignedByte#destroy()}), so this constructor defensively
+   * copies both the supplied {@link List} and every {@link UnsignedByte} in it. This guarantees that destroying this
+   * array can never mutate an {@link UnsignedByte} owned by the caller (e.g., a shared static constant).
+   *
+   * @param unsignedBytes A {@link List} of {@link UnsignedByte}s.
+   */
   public UnsignedByteArray(final List<UnsignedByte> unsignedBytes) {
     Objects.requireNonNull(unsignedBytes);
-    this.unsignedBytes = unsignedBytes;
+    this.unsignedBytes = copyOf(unsignedBytes);
+  }
+
+  /**
+   * Marker used to select the non-copying private constructor. Exists only to make call sites self-documenting about
+   * the fact that the constructor takes ownership of (and does not copy) the supplied {@link List}.
+   */
+  private enum Ownership {
+    /**
+     * The caller guarantees that the supplied {@link List} and every {@link UnsignedByte} in it were freshly allocated
+     * and are not shared with anyone else.
+     */
+    TAKE
+  }
+
+  /**
+   * Private constructor that takes ownership of {@code unsignedBytes} without copying. Only for use by
+   * factories in this class that have just allocated fresh {@link UnsignedByte} instances.
+   *
+   * @param unsignedBytes A freshly allocated {@link List} of freshly allocated {@link UnsignedByte}s.
+   * @param ownership     An {@link Ownership} marker that distinguishes this constructor from the public (copying) one
+   *                      and documents the caller's intent.
+   */
+  private UnsignedByteArray(final List<UnsignedByte> unsignedBytes, final Ownership ownership) {
+    Objects.requireNonNull(ownership);
+    this.unsignedBytes = Objects.requireNonNull(unsignedBytes);
+  }
+
+  /**
+   * Deep-copies a {@link List} of {@link UnsignedByte}s so the result shares no instances with the input.
+   *
+   * @param source The {@link List} to copy.
+   *
+   * @return A new {@link List} containing new {@link UnsignedByte} instances with equal values.
+   */
+  private static List<UnsignedByte> copyOf(final List<UnsignedByte> source) {
+    final List<UnsignedByte> copy = new ArrayList<>(source.size());
+    for (UnsignedByte unsignedByte : source) {
+      copy.add(UnsignedByte.of(unsignedByte));
+    }
+    return copy;
   }
 
   /**
@@ -59,11 +108,12 @@ public class UnsignedByteArray implements Destroyable {
     for (int i = 0; i < bytes.length; i++) {
       unsignedBytes.add(i, UnsignedByte.of(bytes[i]));
     }
-    return new UnsignedByteArray(unsignedBytes);
+    return new UnsignedByteArray(unsignedBytes, Ownership.TAKE); // <-- all instances freshly allocated above.
   }
 
   /**
-   * Creates an {@link UnsignedByteArray} from one or more {@link UnsignedByte} values.
+   * Creates an {@link UnsignedByteArray} from one or more {@link UnsignedByte} values. The supplied values are copied,
+   * so the returned array never aliases the caller's instances.
    *
    * @param first An {@link UnsignedByte} to include in the resulting {@link UnsignedByteArray}.
    * @param rest  Other {@link UnsignedByte}s to include in the resulting {@link UnsignedByteArray}.
@@ -71,10 +121,12 @@ public class UnsignedByteArray implements Destroyable {
    * @return An {@link UnsignedByteArray} with the given {@link UnsignedByte}s.
    */
   public static UnsignedByteArray of(UnsignedByte first, UnsignedByte... rest) {
-    List<UnsignedByte> unsignedBytes = new ArrayList<>();
-    unsignedBytes.add(first);
-    Collections.addAll(unsignedBytes, rest);
-    return new UnsignedByteArray(unsignedBytes);
+    List<UnsignedByte> unsignedBytes = new ArrayList<>(1 + rest.length);
+    unsignedBytes.add(UnsignedByte.of(first));
+    for (UnsignedByte unsignedByte : rest) {
+      unsignedBytes.add(UnsignedByte.of(unsignedByte));
+    }
+    return new UnsignedByteArray(unsignedBytes, Ownership.TAKE); // <-- all instances freshly copied above.
   }
 
   /**
@@ -83,7 +135,7 @@ public class UnsignedByteArray implements Destroyable {
    * @return An empty {@link UnsignedByteArray}.
    */
   public static UnsignedByteArray empty() {
-    return new UnsignedByteArray(new ArrayList<>());
+    return new UnsignedByteArray(new ArrayList<>(), Ownership.TAKE);
   }
 
   /**
@@ -94,7 +146,7 @@ public class UnsignedByteArray implements Destroyable {
    * @return An {@link UnsignedByteArray} of the requested size with all 0 {@link UnsignedByte}s
    */
   public static UnsignedByteArray ofSize(int size) {
-    return new UnsignedByteArray(fill(size));
+    return new UnsignedByteArray(fill(size), Ownership.TAKE); // <-- `fill` allocates fresh instances.
   }
 
   /**
@@ -107,7 +159,7 @@ public class UnsignedByteArray implements Destroyable {
   public static UnsignedByteArray fromHex(String hex) {
     Objects.requireNonNull(hex);
     List<UnsignedByte> unsignedBytes = ByteUtils.parse(hex.toUpperCase(Locale.ENGLISH));
-    return new UnsignedByteArray(unsignedBytes);
+    return new UnsignedByteArray(unsignedBytes, Ownership.TAKE); // <-- `parse` allocates fresh instances.
   }
 
   protected static List<UnsignedByte> fill(int amount) {
@@ -172,38 +224,40 @@ public class UnsignedByteArray implements Destroyable {
   }
 
   /**
-   * Appends an {@link UnsignedByte} to this {@link UnsignedByteArray}.
+   * Appends a copy of an {@link UnsignedByte} to this {@link UnsignedByteArray}. Note: this method mutates the instance
+   * and returns the same instance (mainly for call chaining convenience).
    *
-   * @param unsignedByte An {@link UnsignedByte} to append.
+   * @param unsignedByte An {@link UnsignedByte} to append (copied; the caller's instance is never aliased).
    *
    * @return This {@link UnsignedByteArray}, with the given {@link UnsignedByte} appended.
    */
   public UnsignedByteArray append(UnsignedByte unsignedByte) {
-    unsignedBytes.add(unsignedByte);
+    unsignedBytes.add(UnsignedByte.of(unsignedByte));
     return this;
   }
 
   /**
-   * Appends the given bytes to the end of this array. Note: this method mutates the instance and returns the same
-   * instance (mainly for call chaining convenience).
+   * Appends copies of the given bytes to the end of this array. Note: this method mutates the instance and returns the
+   * same instance (mainly for call chaining convenience). The elements of {@code array} are copied, so the two arrays
+   * never share {@link UnsignedByte} instances.
    *
    * @param array An {@link UnsignedByteArray} to append to this {@link UnsignedByteArray}.
    *
    * @return the same instance.
    */
   public UnsignedByteArray append(UnsignedByteArray array) {
-    unsignedBytes.addAll(array.getUnsignedBytes());
+    unsignedBytes.addAll(copyOf(array.getUnsignedBytes()));
     return this;
   }
 
   /**
-   * Sets the value at the given index to the given {@link UnsignedByte}.
+   * Sets the value at the given index to a copy of the given {@link UnsignedByte}.
    *
    * @param index The index to set.
-   * @param value The {@link UnsignedByte} to set at the given index.
+   * @param value The {@link UnsignedByte} to set at the given index (copied; the caller's instance is never aliased).
    */
   public void set(int index, UnsignedByte value) {
-    unsignedBytes.set(index, value);
+    unsignedBytes.set(index, UnsignedByte.of(value));
   }
 
   /**
@@ -212,10 +266,10 @@ public class UnsignedByteArray implements Destroyable {
    * @param startIndex start index (inclusive)
    * @param endIndex   end index (exclusive)
    *
-   * @return An {@link UnsignedByteArray} containing the sliced elements.
+   * @return A new, independent {@link UnsignedByteArray} containing copies of the sliced elements.
    */
   public UnsignedByteArray slice(int startIndex, int endIndex) {
-    return new UnsignedByteArray(unsignedBytes.subList(startIndex, endIndex));
+    return new UnsignedByteArray(unsignedBytes.subList(startIndex, endIndex)); // <-- public ctor copies.
   }
 
   /**
@@ -226,9 +280,9 @@ public class UnsignedByteArray implements Destroyable {
    */
   @Beta
   public UnsignedByteArray reverse() {
-    List<UnsignedByte> reversed = new ArrayList<>(unsignedBytes);
+    List<UnsignedByte> reversed = copyOf(unsignedBytes);
     Collections.reverse(reversed);
-    return new UnsignedByteArray(reversed);
+    return new UnsignedByteArray(reversed, Ownership.TAKE); // <-- `copyOf` allocates fresh instances.
   }
 
   @Override

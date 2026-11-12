@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -94,6 +95,15 @@ class BinaryParserTest {
     assertThatThrownBy(() -> new BinaryParser("FF0000").readVariableLengthLength())
       .isInstanceOf(Error.class)
       .hasMessageContaining("Invalid variable length indicator");
+  }
+
+  @Test
+  void readFailsFastOnTruncatedInputAndNamesTheShortfall() {
+    BinaryParser parser = new BinaryParser("C1FF" + Strings.repeat("00", 10));
+    assertThat(parser.readVariableLengthLength()).isEqualTo(448);
+    assertThatThrownBy(() -> parser.read(448))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("tried to read 448 byte(s) but only 10 remain");
   }
 
   /**

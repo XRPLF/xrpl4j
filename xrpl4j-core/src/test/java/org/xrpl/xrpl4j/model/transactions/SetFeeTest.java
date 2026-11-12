@@ -21,8 +21,10 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
@@ -155,6 +157,107 @@ public class SetFeeTest extends AbstractJsonTest {
     Transaction redeserialized = objectMapper.readValue(reserialized, Transaction.class);
 
     assertThat(redeserialized).isEqualTo(expected);
+  }
+
+  @Test
+  public void rejectsNonStandardBaseFeeDrops() {
+    String json = "{\n" +
+      "    \"Account\": \"rrrrrrrrrrrrrrrrrrrrrhoLvTp\",\n" +
+      "    \"BaseFeeDrops\": \"1e3\",\n" +
+      "    \"Fee\": \"0\",\n" +
+      "    \"LedgerSequence\": 66462465,\n" +
+      "    \"ReserveBaseDrops\": \"10000000\",\n" +
+      "    \"ReserveIncrementDrops\": \"2000000\",\n" +
+      "    \"Sequence\": 0,\n" +
+      "    \"SigningPubKey\": \"\",\n" +
+      "    \"TransactionType\": \"SetFee\"}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, Transaction.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("XRP drops amount must be a plain integer string");
+  }
+
+  @Test
+  public void acceptsUnquotedNumberBaseFeeDrops() throws JsonProcessingException {
+    SetFee expected = SetFee.builder()
+      .account(Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp"))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.valueOf(0))
+      .baseFeeDrops(XrpCurrencyAmount.ofDrops(10))
+      .reserveBaseDrops(XrpCurrencyAmount.ofDrops(10000000))
+      .reserveIncrementDrops(XrpCurrencyAmount.ofDrops(2000000))
+      .ledgerSequence(Optional.of(LedgerIndex.of(UnsignedInteger.valueOf(66462465))))
+      .build();
+
+    String json = "{\n" +
+      "    \"Account\": \"rrrrrrrrrrrrrrrrrrrrrhoLvTp\",\n" +
+      "    \"BaseFeeDrops\": 10,\n" +
+      "    \"Fee\": \"0\",\n" +
+      "    \"LedgerSequence\": 66462465,\n" +
+      "    \"ReserveBaseDrops\": \"10000000\",\n" +
+      "    \"ReserveIncrementDrops\": \"2000000\",\n" +
+      "    \"Sequence\": 0,\n" +
+      "    \"SigningPubKey\": \"\",\n" +
+      "    \"TransactionType\": \"SetFee\"}";
+
+    Transaction actual = objectMapper.readValue(json, Transaction.class);
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void rejectsUnquotedFloatBaseFeeDrops() {
+    String json = "{\n" +
+      "    \"Account\": \"rrrrrrrrrrrrrrrrrrrrrhoLvTp\",\n" +
+      "    \"BaseFeeDrops\": 1.5,\n" +
+      "    \"Fee\": \"0\",\n" +
+      "    \"LedgerSequence\": 66462465,\n" +
+      "    \"ReserveBaseDrops\": \"10000000\",\n" +
+      "    \"ReserveIncrementDrops\": \"2000000\",\n" +
+      "    \"Sequence\": 0,\n" +
+      "    \"SigningPubKey\": \"\",\n" +
+      "    \"TransactionType\": \"SetFee\"}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, Transaction.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("XRP drops amount must be a plain integer string");
+  }
+
+  @Test
+  public void rejectsNonStandardBaseFeeHex() {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"SetFee\"," +
+      "\"ReserveIncrement\":5000000," +
+      "\"ReserveBase\":20000000," +
+      "\"ReferenceFeeUnits\":10," +
+      "\"BaseFee\":\"zz\"}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, Transaction.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("SetFee BaseFee must be a hex string");
+  }
+
+  @Test
+  public void rejectsUnquotedNumberBaseFee() {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"SetFee\"," +
+      "\"ReserveIncrement\":5000000," +
+      "\"ReserveBase\":20000000," +
+      "\"ReferenceFeeUnits\":10," +
+      "\"BaseFee\":10}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, Transaction.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("SetFee BaseFee must be a hex string");
   }
 
   @Test

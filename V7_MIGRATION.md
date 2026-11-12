@@ -442,6 +442,10 @@ This matches #870 and #872.
 A side effect of folding the two checks into one: `read(0)` at the end of the buffer (or on an empty
 buffer) used to throw `IndexOutOfBoundsException` and now returns an empty `UnsignedByteArray`.
 
+A read that fails the check also leaves the cursor where it was. Previously, a read that overran the
+remaining input moved the cursor past every byte that was left before it threw, so after
+`new BinaryParser("00").read(2)` throws, `hasMore()` now returns `true` where it used to return `false`.
+
 **Migration:**
 
 ```java

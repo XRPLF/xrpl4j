@@ -103,7 +103,7 @@ public class EscrowIT extends AbstractIT {
       escrowCreate);
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(createResult.transactionResult().transaction().transactionType(), createResult.transactionResult().hash());
+    logSubmitResult(createResult);
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
@@ -132,7 +132,7 @@ public class EscrowIT extends AbstractIT {
       escrowFinish);
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
     assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(finishResult.transactionResult().transaction().transactionType(), finishResult.transactionResult().hash());
+    logSubmitResult(finishResult);
 
     //////////////////////
     // Wait for the EscrowFinish to get applied to a validated ledger
@@ -175,7 +175,7 @@ public class EscrowIT extends AbstractIT {
       escrowCreate);
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(createResult.transactionResult().transaction().transactionType(), createResult.transactionResult().hash());
+    logSubmitResult(createResult);
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
@@ -208,7 +208,7 @@ public class EscrowIT extends AbstractIT {
       escrowCancel);
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(signedEscrowCancel);
     assertThat(cancelResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(cancelResult.transactionResult().transaction().transactionType(), cancelResult.transactionResult().hash());
+    logSubmitResult(cancelResult);
 
     //////////////////////
     // Wait until the transaction enters a validated ledger
@@ -253,7 +253,7 @@ public class EscrowIT extends AbstractIT {
       escrowCreate);
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(createResult.transactionResult().transaction().transactionType(), createResult.transactionResult().hash());
+    logSubmitResult(createResult);
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
@@ -289,7 +289,7 @@ public class EscrowIT extends AbstractIT {
       escrowFinish);
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
     assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(finishResult.transactionResult().transaction().transactionType(), finishResult.transactionResult().hash());
+    logSubmitResult(finishResult);
 
     //////////////////////
     // Wait until the transaction enters a validated ledger
@@ -335,7 +335,7 @@ public class EscrowIT extends AbstractIT {
       escrowCreate);
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(createResult.transactionResult().transaction().transactionType(), createResult.transactionResult().hash());
+    logSubmitResult(createResult);
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
@@ -363,7 +363,7 @@ public class EscrowIT extends AbstractIT {
       escrowCancel);
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(signedEscrowCancel);
     assertThat(cancelResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(cancelResult.transactionResult().transaction().transactionType(), cancelResult.transactionResult().hash());
+    logSubmitResult(cancelResult);
 
     //////////////////////
     // Wait until the transaction enters a validated ledger
@@ -418,7 +418,7 @@ public class EscrowIT extends AbstractIT {
       escrowCreate);
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(createResult.transactionResult().transaction().transactionType(), createResult.transactionResult().hash());
+    logSubmitResult(createResult);
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
@@ -452,7 +452,7 @@ public class EscrowIT extends AbstractIT {
       escrowFinish);
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
     assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(finishResult.transactionResult().transaction().transactionType(), finishResult.transactionResult().hash());
+    logSubmitResult(finishResult);
 
     //////////////////////
     // Wait for the EscrowFinish to get applied to a validated ledger
@@ -508,7 +508,7 @@ public class EscrowIT extends AbstractIT {
       escrowCreate);
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(createResult.transactionResult().transaction().transactionType(), createResult.transactionResult().hash());
+    logSubmitResult(createResult);
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
@@ -658,7 +658,7 @@ public class EscrowIT extends AbstractIT {
       escrowCreate);
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(createResult.transactionResult().transaction().transactionType(), createResult.transactionResult().hash());
+    logSubmitResult(createResult);
 
     final TransactionResult<EscrowCreate> result = this.scanForResult(
       () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
@@ -704,7 +704,7 @@ public class EscrowIT extends AbstractIT {
     );
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
     assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(finishResult.transactionResult().transaction().transactionType(), finishResult.transactionResult().hash());
+    logSubmitResult(finishResult);
 
     this.scanForResult(() -> this.getValidatedTransaction(finishResult.transactionResult().hash(), EscrowFinish.class));
   }
@@ -773,7 +773,7 @@ public class EscrowIT extends AbstractIT {
       escrowCreate);
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(createResult.transactionResult().transaction().transactionType(), createResult.transactionResult().hash());
+    logSubmitResult(createResult);
 
     final TransactionResult<EscrowCreate> result = this.scanForResult(
       () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
@@ -848,7 +848,7 @@ public class EscrowIT extends AbstractIT {
       escrowFinish);
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
     assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(finishResult.transactionResult().transaction().transactionType(), finishResult.transactionResult().hash());
+    logSubmitResult(finishResult);
 
     this.scanForResult(() -> this.getValidatedTransaction(finishResult.transactionResult().hash(), EscrowFinish.class));
 
@@ -960,7 +960,7 @@ public class EscrowIT extends AbstractIT {
       escrowCreate);
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(createResult.transactionResult().transaction().transactionType(), createResult.transactionResult().hash());
+    logSubmitResult(createResult);
 
     TransactionResult<EscrowCreate> result = this.scanForResult(
       () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class));
@@ -986,7 +986,7 @@ public class EscrowIT extends AbstractIT {
       escrowFinish);
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
     assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
-    logInfo(finishResult.transactionResult().transaction().transactionType(), finishResult.transactionResult().hash());
+    logSubmitResult(finishResult);
 
     this.scanForResult(() -> this.getValidatedTransaction(finishResult.transactionResult().hash(), EscrowFinish.class));
   }

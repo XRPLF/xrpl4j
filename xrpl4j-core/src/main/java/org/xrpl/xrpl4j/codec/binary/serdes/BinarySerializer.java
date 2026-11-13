@@ -20,6 +20,14 @@ package org.xrpl.xrpl4j.codec.binary.serdes;
  * =========================LICENSE_END==================================
  */
 
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MAX_ONE_BYTE_LENGTH;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MAX_THREE_BYTE_LENGTH;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MAX_TWO_BYTE_LENGTH;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MIN_THREE_BYTE_FIRST_BYTE;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MIN_THREE_BYTE_LENGTH;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MIN_TWO_BYTE_FIRST_BYTE;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MIN_TWO_BYTE_LENGTH;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
@@ -60,16 +68,16 @@ public class BinarySerializer {
    * @param length the length of the bytes.
    */
   private UnsignedByteArray encodeVariableLength(int length) {
-    if (length <= 192) {
+    if (length <= MAX_ONE_BYTE_LENGTH) {
       return UnsignedByteArray.of(UnsignedByte.of(length));
-    } else if (length <= 12480) {
-      length -= 193;
-      int byte1 = 193 + (length >>> 8);
+    } else if (length <= MAX_TWO_BYTE_LENGTH) {
+      length -= MIN_TWO_BYTE_LENGTH;
+      int byte1 = MIN_TWO_BYTE_FIRST_BYTE + (length >>> 8);
       int byte2 = length & 0xff;
       return UnsignedByteArray.of(UnsignedByte.of(byte1), UnsignedByte.of(byte2));
-    } else if (length <= 918744) {
-      length -= 12481;
-      int byte1 = 241 + (length >>> 16);
+    } else if (length <= MAX_THREE_BYTE_LENGTH) {
+      length -= MIN_THREE_BYTE_LENGTH;
+      int byte1 = MIN_THREE_BYTE_FIRST_BYTE + (length >>> 16);
       int byte2 = (length >> 8) & 0xff;
       int byte3 = length & 0xff;
       return UnsignedByteArray.of(UnsignedByte.of(byte1), UnsignedByte.of(byte2), UnsignedByte.of(byte3));

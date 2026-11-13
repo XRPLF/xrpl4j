@@ -22,6 +22,15 @@ package org.xrpl.xrpl4j.codec.binary.serdes;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MAX_ONE_BYTE_LENGTH;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MAX_THREE_BYTE_FIRST_BYTE;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MAX_THREE_BYTE_LENGTH;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MAX_TWO_BYTE_FIRST_BYTE;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MAX_TWO_BYTE_LENGTH;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MIN_THREE_BYTE_FIRST_BYTE;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MIN_THREE_BYTE_LENGTH;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MIN_TWO_BYTE_FIRST_BYTE;
+import static org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser.MIN_TWO_BYTE_LENGTH;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,12 +59,6 @@ import java.util.stream.IntStream;
  * @see <a href="https://xrpl.org/docs/references/protocol/binary-format#length-prefixing">Length Prefixing</a>
  */
 class BinaryParserTest {
-
-  private static final int MAX_ONE_BYTE_LENGTH = 192;
-  private static final int MIN_TWO_BYTE_LENGTH = 193;
-  private static final int MAX_TWO_BYTE_LENGTH = 12480;
-  private static final int MIN_THREE_BYTE_LENGTH = 12481;
-  private static final int MAX_THREE_BYTE_LENGTH = 918744;
 
   /**
    * Decodes hand-built VL headers taken straight from the spec formulas, independently of
@@ -97,15 +100,60 @@ class BinaryParserTest {
   }
 
   /**
+   * A 3-byte header can state lengths up to 929,984, but xrpld caps VL lengths at 918,744 and the encoder never writes
+   * more, so the decoder must reject the rest.
+   */
+  @ParameterizedTest(name = "header {0} is rejected")
+  @ValueSource(strings = {"FED418", "FED500", "FEFFFF"})
+  void readVariableLengthLengthRejectsLengthsAboveMax(String headerHex) {
+    assertThatThrownBy(() -> new BinaryParser(headerHex).readVariableLengthLength())
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("exceeds the maximum of " + MAX_THREE_BYTE_LENGTH);
+  }
+
+  /**
+   * Decodes every possible three-byte VL header (first byte 241..254, then two bytes 0..255). Each one must either
+   * decode to the spec formula, or be rejected because it states a length above
+   * {@link BinaryParser#MAX_THREE_BYTE_LENGTH}.
+   */
+  @Test
+  void readVariableLengthLengthForEveryThreeByteHeader() {
+    int accepted = 0;
+    for (int b1 = MIN_THREE_BYTE_FIRST_BYTE; b1 <= MAX_THREE_BYTE_FIRST_BYTE; b1++) {
+      for (int b2 = 0; b2 <= 255; b2++) {
+        for (int b3 = 0; b3 <= 255; b3++) {
+          String headerHex = String.format("%02X%02X%02X", b1, b2, b3);
+          int expectedLength = MIN_THREE_BYTE_LENGTH + (b1 - MIN_THREE_BYTE_FIRST_BYTE) * 65536 + b2 * 256 + b3;
+          BinaryParser parser = new BinaryParser(headerHex);
+          if (expectedLength <= MAX_THREE_BYTE_LENGTH) {
+            int actualLength = parser.readVariableLengthLength();
+            // Only build AssertJ assertions on a mismatch; doing it for all ~900k headers makes the test slow.
+            if (actualLength != expectedLength || parser.hasMore()) {
+              assertThat(actualLength).as("header %s", headerHex).isEqualTo(expectedLength);
+              assertThat(parser.hasMore()).as("header %s fully consumed", headerHex).isFalse();
+            }
+            accepted++;
+          } else {
+            assertThatThrownBy(parser::readVariableLengthLength)
+              .as("header %s", headerHex)
+              .isInstanceOf(IllegalArgumentException.class);
+          }
+        }
+      }
+    }
+    assertThat(accepted).as("lengths 12,481..918,744 accepted").isEqualTo(906_264);
+  }
+
+  /**
    * Decodes every possible two-byte VL header (first byte 193..240, second byte 0..255) against the spec formula.
    * This is the range that was mis-decoded before the fix for issue #805.
    */
   @Test
   void readVariableLengthLengthForEveryTwoByteHeader() {
-    for (int b1 = MIN_TWO_BYTE_LENGTH; b1 <= 240; b1++) {
+    for (int b1 = MIN_TWO_BYTE_FIRST_BYTE; b1 <= MAX_TWO_BYTE_FIRST_BYTE; b1++) {
       for (int b2 = 0; b2 <= 255; b2++) {
         String headerHex = String.format("%02X%02X", b1, b2);
-        int expectedLength = MIN_TWO_BYTE_LENGTH + (b1 - MIN_TWO_BYTE_LENGTH) * 256 + b2;
+        int expectedLength = MIN_TWO_BYTE_LENGTH + (b1 - MIN_TWO_BYTE_FIRST_BYTE) * 256 + b2;
         BinaryParser parser = new BinaryParser(headerHex);
         assertThat(parser.readVariableLengthLength()).as("header %s", headerHex).isEqualTo(expectedLength);
         assertThat(parser.hasMore()).as("header %s fully consumed", headerHex).isFalse();

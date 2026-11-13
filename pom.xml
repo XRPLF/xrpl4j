@@ -304,6 +304,7 @@
     <module>xrpl4j-integration-tests</module>
     <module>xrpl4j-client</module>
     <module>xrpl4j-bom</module>
+    <module>xrpl4j-coverage</module>
   </modules>
 
   <build>

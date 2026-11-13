@@ -129,11 +129,7 @@ public enum TransactionType {
 
   /**
    * The {@link TransactionType} for the {@link NfTokenModify} transaction.
-   *
-   * <p>This constant will be marked {@link Beta} until the featureDynamicNFT amendment is enabled on mainnet. Its API
-   * is subject to change.</p>
    */
-  @Beta
   NFTOKEN_MODIFY("NFTokenModify"),
 
   /**

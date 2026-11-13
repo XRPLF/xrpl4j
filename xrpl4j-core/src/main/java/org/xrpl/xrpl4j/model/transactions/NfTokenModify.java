@@ -23,7 +23,6 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
@@ -34,15 +33,11 @@ import java.util.Optional;
  * order to update the supporting data for the NFT. The NFT must have been minted with the {@code tfMutable} flag
  * set.
  *
- * <p>This class will be marked {@link Beta} until the featureDynamicNFT amendment is enabled on mainnet.
- * Its API is subject to change.</p>
- *
  * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0046-dynamic-non-fungible-tokens"
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableNfTokenModify.class)
 @JsonDeserialize(as = ImmutableNfTokenModify.class)
-@Beta
 public interface NfTokenModify extends Transaction {
 
   /**
@@ -93,7 +88,7 @@ public interface NfTokenModify extends Transaction {
    * {@code tfFullyCanonicalSig} flag, which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
-   * proper signature computation in rippled.
+   * proper signature computation in xrpld.
    *
    * @return Always {@link TransactionFlags#EMPTY}.
    */

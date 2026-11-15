@@ -76,7 +76,7 @@ public class BinaryParser {
    * @return An {@link UnsignedByteArray}.
    */
   public UnsignedByteArray read(int bytesToRead) {
-    int remainingBytes = (hex.length() - cursor) / BYTE_HEX_LENGTH;
+    int remainingBytes = Math.max(0, (hex.length() - cursor) / BYTE_HEX_LENGTH);
     if (bytesToRead > remainingBytes) {
       throw new IllegalArgumentException(
         "tried to read " + bytesToRead + " byte(s) but only " + remainingBytes + " remain"

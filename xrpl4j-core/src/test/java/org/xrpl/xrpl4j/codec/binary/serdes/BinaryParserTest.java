@@ -106,6 +106,16 @@ class BinaryParserTest {
       .hasMessage("tried to read 448 byte(s) but only 10 remain");
   }
 
+  @Test
+  void failedReadLeavesCursorUnchanged() {
+    BinaryParser parser = new BinaryParser("00");
+    assertThatThrownBy(() -> parser.read(2))
+      .isInstanceOf(IllegalArgumentException.class);
+    assertThat(parser.hasMore()).isTrue();
+    assertThat(parser.read(1).hexValue()).isEqualTo("00");
+    assertThat(parser.hasMore()).isFalse();
+  }
+
   /**
    * Decodes every possible two-byte VL header (first byte 193..240, second byte 0..255) against the spec formula.
    * This is the range that was mis-decoded before the fix for issue #805.

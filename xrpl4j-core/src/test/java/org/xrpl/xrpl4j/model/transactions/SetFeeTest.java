@@ -242,6 +242,25 @@ public class SetFeeTest extends AbstractJsonTest {
   }
 
   @Test
+  public void rejectsBaseFeeHexAboveMaxDrops() {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"SetFee\"," +
+      "\"ReserveIncrement\":5000000," +
+      "\"ReserveBase\":20000000," +
+      "\"ReferenceFeeUnits\":10," +
+      "\"BaseFee\":\"FFFFFFFFFFFFFFFF\"}";
+
+    assertThatThrownBy(() -> objectMapper.readValue(json, Transaction.class))
+      .isInstanceOf(MismatchedInputException.class)
+      .hasMessageContaining("SetFee BaseFee must be a hex string");
+  }
+
+  @Test
   public void rejectsUnquotedNumberBaseFee() {
     String json = "{" +
       "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +

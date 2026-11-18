@@ -425,6 +425,41 @@ If you build your own mapper and register `Xrpl4jModule` on it, note that the mo
 behaviors for xrpl4j types itself. You still need `Jdk8Module`, `GuavaModule`, `JavaTimeModule`, and
 `CryptoConditionsModule(Encoding.HEX)` registered for xrpl4j types to work, as `ObjectMapperFactory.create()` does.
 
+### 9. `BinaryParser` and `BinarySerializer` throw `IllegalArgumentException` on reserved VL first byte and encode overflow
+
+`BinaryParser.readVariableLengthLength` previously threw `new Error("Invalid variable length indicator")` for a
+reserved first byte (`0xFF`). Because it was an `Error` rather than an exception, it escaped the `catch (Exception e)`
+blocks in `BinaryParser.readFieldValue` and `readType`, propagated uncaught through `XrplBinaryCodec.decode`, and
+callers that catch `RuntimeException` never saw it. `BinarySerializer.encodeVariableLength` had the same pattern
+(`new Error("Overflow error")`) for payloads longer than 918,744 bytes; that site is on the encode path and is not
+reached by `decode`, `readFieldValue`, or `readType`. Both sites now throw `IllegalArgumentException` with the same
+messages.
+
+A direct caller of either method sees the `IllegalArgumentException` on the stack. On the decode path, a reserved
+VL first byte through `BinaryParser.readFieldValue` surfaces the `IllegalArgumentException` wrapped once in a
+`RuntimeException` carrying the field name; through `XrplBinaryCodec.decode` (which uses `readType`) it is wrapped
+twice, once by `readFieldValue` with the field name and once by `readType` with the serialized-type name. Unwrap
+`getCause()` to inspect it. On the encode path, `XrplBinaryCodec.encode` surfaces the overflow
+`IllegalArgumentException` directly.
+
+**Migration (direct caller):**
+
+```java
+// Before (v6.x.x):
+try {
+  parser.readVariableLengthLength();
+} catch (Error e) {
+  // handle reserved VL first byte
+}
+
+// After (v7.0.0):
+try {
+  parser.readVariableLengthLength();
+} catch (IllegalArgumentException e) {
+  // handle reserved VL first byte
+}
+```
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.

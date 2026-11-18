@@ -92,7 +92,7 @@ class BinaryParserTest {
   @Test
   void readVariableLengthLengthRejectsReservedFirstByte() {
     assertThatThrownBy(() -> new BinaryParser("FF0000").readVariableLengthLength())
-      .isInstanceOf(Error.class)
+      .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("Invalid variable length indicator");
   }
 
@@ -136,6 +136,16 @@ class BinaryParserTest {
   })
   void roundTripBoundaryLengths(int length) {
     assertRoundTrip(length);
+  }
+
+  @Test
+  void encodeVariableLengthRejectsLengthsAboveMaxThreeByteLength() {
+    UnsignedByteArray sink = UnsignedByteArray.empty();
+    BinarySerializer serializer = new BinarySerializer(sink);
+    BlobType oversized = new BlobType(UnsignedByteArray.of(new byte[MAX_THREE_BYTE_LENGTH + 1]));
+    assertThatThrownBy(() -> serializer.writeLengthEncoded(oversized))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Overflow error");
   }
 
   /**

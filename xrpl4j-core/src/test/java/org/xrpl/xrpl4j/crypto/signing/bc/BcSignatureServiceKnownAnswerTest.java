@@ -21,26 +21,36 @@ package org.xrpl.xrpl4j.crypto.signing.bc;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PUBLIC_KEY;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 import static org.xrpl.xrpl4j.crypto.TestConstants.getEcPrivateKey;
 import static org.xrpl.xrpl4j.crypto.TestConstants.getEdPrivateKey;
 
 import com.google.common.io.BaseEncoding;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.HashingUtils;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
+
+import java.io.IOException;
+import java.math.BigInteger;
 
 /**
  * Known-answer and negative-rejection unit tests for the secp256k1 and Ed25519 sign and verify paths in
- * {@link BcSignatureService}. Each expected value here is produced by the library itself, so the signatures are
- * recorded fixtures for deterministic inputs.
+ * {@link BcSignatureService}. Both signing paths are deterministic, so the expected signatures are checked against
+ * independent implementations signing the same message with the same keys.
  */
 class BcSignatureServiceKnownAnswerTest {
 
@@ -52,6 +62,7 @@ class BcSignatureServiceKnownAnswerTest {
     BaseEncoding.base16().decode("00112233445566778899AABBCCDDEE00")
   );
 
+  // Both values match xrpl-py 5.2.0 keypairs.sign and ripple-keypairs 3.1.0 sign for the same key and message.
   private static final String ED_SIGNATURE_HEX =
     "08853EBC6EB6781A203F72163CC9D47F72C69D9C134BD7D26D4FAC05D6D5D27B" +
       "08586F125997CAC00D9AF8D2BD52C4BED19D46690BC53636B75FB27E697F8604";
@@ -133,12 +144,31 @@ class BcSignatureServiceKnownAnswerTest {
   }
 
   @Test
-  void secp256k1VerifyRejectsMalformedSignature() {
+  void secp256k1VerifyReturnsFalseForNonIntegerSequence() {
     Signature malformedSignature = Signature.builder()
       .value(UnsignedByteArray.of(BaseEncoding.base16().decode("30060101FF0101FF")))
       .build();
 
     assertThat(signatureService.ecDsaVerify(EC_PUBLIC_KEY, MESSAGE, malformedSignature)).isFalse();
+  }
+
+  @Test
+  void secp256k1VerifyRejectsHighSTwin() throws IOException {
+    Signature signature = signatureService.ecDsaSign(ecPrivateKey, MESSAGE);
+    EcDsaSignature lowS = EcDsaSignature.fromDer(signature.value().toByteArray());
+    BigInteger highS = BcKeyUtils.PARAMS.getN().subtract(lowS.s());
+
+    ECDSASigner rawVerifier = new ECDSASigner();
+    rawVerifier.init(false, BcKeyUtils.toEcPublicKeyParameters(EC_PUBLIC_KEY));
+    assertThat(rawVerifier.verifySignature(HashingUtils.sha512Half(MESSAGE).toByteArray(), lowS.r(), highS))
+      .isTrue();
+
+    byte[] twinDer = new DERSequence(new ASN1Encodable[] {new ASN1Integer(lowS.r()), new ASN1Integer(highS)})
+      .getEncoded();
+    Signature twin = Signature.builder().value(UnsignedByteArray.of(twinDer)).build();
+
+    assertThatThrownBy(() -> signatureService.ecDsaVerify(EC_PUBLIC_KEY, MESSAGE, twin))
+      .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

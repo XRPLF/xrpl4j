@@ -116,10 +116,7 @@ public class SignerListSetIT extends AbstractIT {
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
     assertThat(signerListSetResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/{}",
-      signerListSetResult.transactionResult().hash()
-    );
+    logSubmitResult(signerListSetResult);
 
     /////////////////////////////
     // Then wait until the transaction enters a validated ledger and the source account's signer list
@@ -175,10 +172,7 @@ public class SignerListSetIT extends AbstractIT {
 
     SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
     assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
-      paymentResult.transaction().hash()
-    );
+    logSubmitResult(paymentResult);
   }
 
   @Test
@@ -231,10 +225,7 @@ public class SignerListSetIT extends AbstractIT {
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
     assertThat(signerListSetResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/{}",
-      signerListSetResult.transactionResult().hash()
-    );
+    logSubmitResult(signerListSetResult);
 
     /////////////////////////////
     // Then wait until the transaction enters a validated ledger and the source account's signer list
@@ -270,10 +261,7 @@ public class SignerListSetIT extends AbstractIT {
     );
     SubmitResult<SignerListSet> signerListDeleteResult = xrplClient.submit(signedDeleteSignerList);
     assertThat(signerListDeleteResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/{}",
-      signerListDeleteResult.transactionResult().hash()
-    );
+    logSubmitResult(signerListDeleteResult);
 
     /////////////////////////////
     // Then wait until the transaction enters a validated ledger and the signer list has been deleted

@@ -84,7 +84,7 @@ public class SubmitPaymentIT extends AbstractIT {
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sourceKeyPair.privateKey(), payment);
     SubmitResult<Payment> result = xrplClient.submit(signedPayment);
     assertThat(result.engineResult()).isEqualTo(SUCCESS_STATUS);
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
+    logSubmitResult(result);
 
     TransactionResult<Payment> validatedPayment = this.scanForResult(
       () -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class)
@@ -99,7 +99,7 @@ public class SubmitPaymentIT extends AbstractIT {
   @Test
   public void sendPaymentFromSecp256k1KeyPair() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair senderKeyPair = this.createRandomAccountSecp256k1();
-    logger.info("Generated source testnet wallet with address " + senderKeyPair.publicKey().deriveAddress());
+    logger.info("Generated source wallet with address {}", senderKeyPair.publicKey().deriveAddress());
 
     KeyPair destinationKeyPair = createRandomAccountEd25519();
 
@@ -120,7 +120,7 @@ public class SubmitPaymentIT extends AbstractIT {
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(senderKeyPair.privateKey(), payment);
     SubmitResult<Payment> result = xrplClient.submit(signedPayment);
     assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
+    logSubmitResult(result);
 
     this.scanForResult(() -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class));
   }

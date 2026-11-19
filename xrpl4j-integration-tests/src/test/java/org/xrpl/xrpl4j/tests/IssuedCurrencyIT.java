@@ -45,7 +45,6 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
-import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
@@ -373,10 +372,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     );
     SubmitResult<Payment> paymentResult = xrplClient.submit(signedAliceToBobPayment);
     assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
-      paymentResult.transactionResult().hash()
-    );
+    logSubmitResult(paymentResult);
 
     ///////////////////////////
     // Validate that bob and alice's trust line balances have been updated appropriately
@@ -583,10 +579,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     );
     SubmitResult<Payment> paymentResult = xrplClient.submit(signedCharlieToDanielPayment);
     assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
-      paymentResult.transactionResult().hash()
-    );
+    logSubmitResult(paymentResult);
 
     ///////////////////////////
     // Validate that everyone's trust line balances have been updated appropriately

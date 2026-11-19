@@ -93,10 +93,7 @@ public class DepositPreAuthIT extends AbstractIT {
     SubmitResult<DepositPreAuth> result = xrplClient.submit(singedDepositPreAuth);
 
     assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "DepositPreauth transaction successful. https://testnet.xrpl.org/transactions/{}",
-      result.transactionResult().hash()
-    );
+    logSubmitResult(result);
 
     /////////////////////////
     // Validate that the DepositPreAuthObject was added to the receiver's account objects
@@ -144,10 +141,7 @@ public class DepositPreAuthIT extends AbstractIT {
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(singedPayment);
     assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "Payment transaction successful. https://testnet.xrpl.org/transactions/{}",
-      paymentResult.transactionResult().hash()
-    );
+    logSubmitResult(paymentResult);
 
     /////////////////////////
     // Validate that the Payment was included in a validated ledger

@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,9 +17,26 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
+/**
+ * Unit tests for {@link NetworkId}.
+ */
 public class NetworkIdTest {
 
+  private static final NetworkId NETWORK_ID_ONE = NetworkId.of(UnsignedInteger.ONE);
+
   ObjectMapper objectMapper = ObjectMapperFactory.create();
+
+  @Test
+  void testNull() {
+    assertThrows(NullPointerException.class, () -> NetworkId.of(null));
+  }
+
+  @Test
+  void testEquality() {
+    assertThat(NETWORK_ID_ONE).isEqualTo(NETWORK_ID_ONE);
+    assertThat(NETWORK_ID_ONE).isNotEqualTo(new Object());
+    assertThat(NETWORK_ID_ONE.equals(null)).isFalse();
+  }
 
   @Test
   void testBounds() {
@@ -33,6 +51,7 @@ public class NetworkIdTest {
   void testToString() {
     NetworkId networkId = NetworkId.of(UnsignedInteger.valueOf(1024));
     assertThat(networkId.toString()).isEqualTo("1024");
+    assertThat(networkId.equals(null)).isFalse();
   }
 
   @Test

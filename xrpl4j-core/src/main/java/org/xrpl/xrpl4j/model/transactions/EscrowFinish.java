@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -221,6 +222,7 @@ public interface EscrowFinish extends Transaction {
    * @return A list of type {@link Hash256}.
    */
   @JsonProperty("CredentialIDs")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   List<Hash256> credentialIds();
 
   /**

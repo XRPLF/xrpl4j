@@ -72,6 +72,12 @@ public interface TransactionMetadata {
    * The Currency Amount actually received by the Destination account. Use this field to determine how much was
    * delivered, regardless of whether the transaction is a partial payment. Omitted for non-Payment transactions.
    *
+   * <p>Also empty when xrpld reports this field as the literal string {@code "unavailable"}. xrpld does that for a
+   * successful Payment, CheckCash or AccountDelete whose metadata has no {@code DeliveredAmount}, when the ledger
+   * is too old for the transaction's {@code Amount} to be trusted as the delivered amount (ledger index below
+   * 4594095 and closed before February 2014). An empty {@link Optional} therefore means either that the delivered
+   * amount is unavailable or that xrpld did not report one for this transaction.
+   *
    * @return delivered amount for payments, otherwise empty for non-payments.
    */
   @JsonProperty("delivered_amount")

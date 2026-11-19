@@ -425,6 +425,36 @@ If you build your own mapper and register `Xrpl4jModule` on it, note that the mo
 behaviors for xrpl4j types itself. You still need `Jdk8Module`, `GuavaModule`, `JavaTimeModule`, and
 `CryptoConditionsModule(Encoding.HEX)` registered for xrpl4j types to work, as `ObjectMapperFactory.create()` does.
 
+### 9. XRP drops amounts now reject non-standard formats
+
+Deserializers for drops-denominated fields (`XrpCurrencyAmount`, scalar `CurrencyAmount` fields such as
+`Payment.amount()`/`sendMax()`, and `SetFee.baseFeeDrops()`/`baseFee()`) previously relied on Jackson's lenient
+numeric coercion (`getValueAsLong()`, `TextNode.asLong()`), which silently accepted non-standard strings and
+coerced them into a drops value that may not match what a caller had already validated against the raw input.
+Strings such as `"1e6"`, `"1.0"`, `"+5"`, and `"0001000000"`, and float JSON tokens such as `1000000.0`, now throw
+`MismatchedInputException` instead of being parsed.
+
+This also changes `TransactionMetadata.deliveredAmount()` for the `"unavailable"` sentinel that xrpld reports for
+pre-2014 payments whose delivered amount cannot be determined: it now deserializes to `Optional.empty()` instead
+of `Optional.of(XrpCurrencyAmount.ofDrops(0))`.
+
+**Migration:**
+
+```java
+// Before (v6.x.x): non-standard strings were silently coerced
+Payment payment = objectMapper.readValue(json, Payment.class); // "Amount": "1e6" -> 1,000,000 drops
+
+// After (v7.0.0): non-standard strings are rejected
+assertThatThrownBy(() -> objectMapper.readValue(json, Payment.class))
+  .isInstanceOf(MismatchedInputException.class);
+
+// Before (v6.x.x): "unavailable" delivered_amount read as zero drops
+XrpCurrencyAmount delivered = metadata.deliveredAmount().get(); // ofDrops(0)
+
+// After (v7.0.0): "unavailable" delivered_amount is empty
+assertThat(metadata.deliveredAmount()).isEmpty();
+```
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.

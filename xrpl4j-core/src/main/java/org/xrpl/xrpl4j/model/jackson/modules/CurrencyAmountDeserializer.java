@@ -29,7 +29,6 @@ import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
 
@@ -37,6 +36,15 @@ import java.io.IOException;
  * Custom Jackson deserializer for {@link CurrencyAmount}s.
  */
 public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> {
+
+  /**
+   * xrpld reports this literal string (rather than an amount) as a transaction's {@code delivered_amount} when the
+   * delivered amount cannot be determined: the metadata has no {@code DeliveredAmount} and the ledger is too old
+   * (index below 4594095 and closed before February 2014) to assume the full {@code Amount} was delivered.
+   *
+   * @see "https://xrpl.org/docs/references/protocol/transactions/metadata#delivered_amount"
+   */
+  private static final String UNAVAILABLE = "unavailable";
 
   /**
    * No-args constructor.
@@ -71,8 +79,19 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
           .currency(currency)
           .build();
       }
+    } else if (UNAVAILABLE.equals(node.asText()) && "delivered_amount".equals(jsonParser.currentName())) {
+      // xrpld only emits "unavailable" for delivered_amount (old ledgers whose metadata has no DeliveredAmount);
+      // treat it as missing there, but let every other CurrencyAmount field reject it as malformed input like any
+      // other bad string.
+      return null;
+    } else if (node.isTextual() || node.isIntegralNumber()) {
+      return XrpCurrencyAmountDeserializer.parse(jsonParser, node.asText());
     } else {
-      return XrpCurrencyAmount.ofDrops(node.asLong());
+      return deserializationContext.reportInputMismatch(
+        CurrencyAmount.class,
+        "XRP drops amount must be a plain integer string (e.g. \"1000000\"), but was a JSON %s value.",
+        node.getNodeType()
+      );
     }
   }
 }

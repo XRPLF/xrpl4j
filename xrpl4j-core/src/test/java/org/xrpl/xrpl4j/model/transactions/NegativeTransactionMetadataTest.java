@@ -50,6 +50,10 @@ class NegativeTransactionMetadataTest {
 
     TransactionMetadata metaData = objectMapper.readValue(jsonFile, TransactionMetadata.class);
 
+    // This fixture's delivered_amount is the literal string "unavailable" (a pre-amendment partial payment), so it
+    // should deserialize to empty rather than a drops value.
+    assertThat(metaData.deliveredAmount()).isEmpty();
+
     // Send this through the general test mechanism....
     this.handleTransactionMetadata(metaData);
 

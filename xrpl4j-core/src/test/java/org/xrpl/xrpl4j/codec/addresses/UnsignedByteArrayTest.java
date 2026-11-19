@@ -223,4 +223,93 @@ public class UnsignedByteArrayTest {
     assertThat(uba.hexValue()).isEqualTo("");
     assertThat(uba.hashCode()).isEqualTo(32);
   }
+  /////////
+  // Defensive copying: an UnsignedByteArray must never alias UnsignedByte instances it did not create, because
+  // UnsignedByte is mutable (destroy() zeroes it) and callers may pass shared/static constants.
+  /////////
+
+  @Test
+  void constructorCopiesListAndElements() {
+    UnsignedByte shared = UnsignedByte.of(0xED);
+    List<UnsignedByte> list = new ArrayList<>();
+    list.add(shared);
+    UnsignedByteArray array = new UnsignedByteArray(list);
+
+    assertThat(array.get(0)).isNotSameAs(shared);
+    array.destroy();
+    assertThat(shared.asInt()).isEqualTo(0xED);
+    assertThat(shared.isDestroyed()).isFalse();
+    assertThat(list).containsExactly(shared); // caller's list untouched
+  }
+
+  @Test
+  void ofUnsignedBytesCopiesElements() {
+    UnsignedByte first = UnsignedByte.of(0xED);
+    UnsignedByte second = UnsignedByte.of(0x01);
+    UnsignedByteArray array = UnsignedByteArray.of(first, second);
+
+    assertThat(array.get(0)).isNotSameAs(first);
+    assertThat(array.get(1)).isNotSameAs(second);
+    array.destroy();
+    assertThat(first.asInt()).isEqualTo(0xED);
+    assertThat(first.isDestroyed()).isFalse();
+    assertThat(second.asInt()).isEqualTo(0x01);
+    assertThat(second.isDestroyed()).isFalse();
+  }
+
+  @Test
+  void appendUnsignedByteCopiesElement() {
+    UnsignedByte shared = UnsignedByte.of(0xED);
+    UnsignedByteArray array = UnsignedByteArray.empty().append(shared);
+
+    assertThat(array.get(0)).isNotSameAs(shared);
+    array.destroy();
+    assertThat(shared.asInt()).isEqualTo(0xED);
+    assertThat(shared.isDestroyed()).isFalse();
+  }
+
+  @Test
+  void appendUnsignedByteArrayCopiesElements() {
+    UnsignedByteArray source = UnsignedByteArray.of(new byte[] {(byte) 0xED, 0x01});
+    UnsignedByteArray array = UnsignedByteArray.empty().append(source);
+
+    assertThat(array.get(0)).isNotSameAs(source.get(0));
+    array.destroy();
+    assertThat(source.hexValue()).isEqualTo("ED01");
+    assertThat(source.get(0).isDestroyed()).isFalse();
+    assertThat(source.isDestroyed()).isFalse();
+  }
+
+  @Test
+  void setCopiesElement() {
+    UnsignedByte shared = UnsignedByte.of(0xED);
+    UnsignedByteArray array = UnsignedByteArray.ofSize(1);
+    array.set(0, shared);
+
+    assertThat(array.get(0)).isNotSameAs(shared);
+    array.destroy();
+    assertThat(shared.asInt()).isEqualTo(0xED);
+    assertThat(shared.isDestroyed()).isFalse();
+  }
+
+  @Test
+  void sliceDoesNotAliasParent() {
+    UnsignedByteArray parent = UnsignedByteArray.of(new byte[] {0, 8, 9, 1});
+    UnsignedByteArray slice = parent.slice(1, 3);
+
+    slice.destroy();
+    assertThat(parent.hexValue()).isEqualTo("00080901");
+    assertThat(parent.length()).isEqualTo(4);
+    assertThat(parent.isDestroyed()).isFalse();
+  }
+
+  @Test
+  void reverseDoesNotAliasSource() {
+    UnsignedByteArray source = UnsignedByteArray.of(new byte[] {1, 2});
+    UnsignedByteArray reversed = source.reverse();
+
+    reversed.destroy();
+    assertThat(source.hexValue()).isEqualTo("0102");
+    assertThat(source.isDestroyed()).isFalse();
+  }
 }

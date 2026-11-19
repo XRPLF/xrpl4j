@@ -164,4 +164,19 @@ class IssueTypeTest {
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("mpt_issuance_id must be a 48-character hexadecimal string");
   }
+
+  /**
+   * Regression: MPT issues embed the static ACCOUNT_ONE bytes. Destroying one serialized value must not corrupt the
+   * shared constant and thereby every later MPT serialization.
+   */
+  @Test
+  void destroyingMptIssueValueDoesNotCorruptLaterSerializations() throws JsonProcessingException {
+    JsonNode mptIssue = objectMapper.createObjectNode()
+      .set("mpt_issuance_id", new TextNode("00000002AE123A8556F3CF91154711376AFB0F894F832B3D"));
+
+    String expectedHex = codec.fromJson(mptIssue).toHex();
+    codec.fromJson(mptIssue).value().destroy();
+
+    assertThat(codec.fromJson(mptIssue).toHex()).isEqualTo(expectedHex);
+  }
 }

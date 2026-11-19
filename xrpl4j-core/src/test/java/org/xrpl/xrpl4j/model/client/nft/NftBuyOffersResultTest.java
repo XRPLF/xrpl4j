@@ -126,20 +126,21 @@ public class NftBuyOffersResultTest extends AbstractJsonTest {
 
   @Test
   public void testWithNonZeroFlags() throws JsonProcessingException, JSONException {
+    // 0x00000002 is not a documented NFTokenOffer flag (only lsfSellNFToken is defined on-ledger);
+    // it is used here only to verify that an unrecognized bit round-trips correctly.
     NftBuyOffersResult params = NftBuyOffersResult.builder()
       .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
       .addOffers(
         BuyOffer.builder()
           .amount(XrpCurrencyAmount.ofDrops(1000))
           .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-          .flags(NfTokenOfferFlags.AUTHORIZED)
+          .flags(NfTokenOfferFlags.of(2))
           .nftOfferIndex(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
           .build()
       )
       .build();
 
     assertThat(params.offers().get(0).flags().lsfSellNfToken()).isFalse();
-    assertThat(params.offers().get(0).flags().lsfAuthorized()).isTrue();
 
     String offer = "{\n" +
       "    \"flags\": 2,\n" +

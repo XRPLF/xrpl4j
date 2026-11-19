@@ -40,6 +40,11 @@ Follow these steps to create a new major or minor release.
 7. Set the non-SNAPSHOT version to deploy and publish artifacts to
    [Maven Central](https://central.sonatype.com/). This will prompt you to sign the artifacts with your
    private key. **Do not commit this version change** — it exists only for the deploy.
+
+   > **Note:** `maven-gpg-plugin` was upgraded from 1.6 to 3.2.8. The 3.x line no longer accepts an
+   > interactive passphrase prompt the same way — it expects `gpg-agent` (with pinentry) to be primed,
+   > or a `MAVEN_GPG_PASSPHRASE` environment variable. If signing fails or doesn't prompt as expected,
+   > prime `gpg-agent` first with a test signature, or set `MAVEN_GPG_PASSPHRASE` before running this step.
    ```
    mvn versions:set -DnewVersion=[major].[minor].0
    mvn clean deploy -DskipTests -P release

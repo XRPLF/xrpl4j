@@ -40,26 +40,26 @@ public class NfTokenOfferFlagsTests extends AbstractFlagsTest {
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(
-    boolean lsfBuyToken,
+    boolean lsfSellNfToken,
     boolean lsfAuthorized
   ) {
-    long expectedFlags = (lsfBuyToken ? NfTokenOfferFlags.BUY_TOKEN.getValue() : 0L) |
+    long expectedFlags = (lsfSellNfToken ? NfTokenOfferFlags.SELL_NFTOKEN.getValue() : 0L) |
       (lsfAuthorized ? NfTokenOfferFlags.AUTHORIZED.getValue() : 0L);
 
     NfTokenOfferFlags flags = NfTokenOfferFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
-    assertThat(flags.lsfBuyToken()).isEqualTo(lsfBuyToken);
+    assertThat(flags.lsfSellNfToken()).isEqualTo(lsfSellNfToken);
     assertThat(flags.lsfAuthorized()).isEqualTo(lsfAuthorized);
   }
 
   @ParameterizedTest
   @MethodSource("data")
   void testJson(
-    boolean lsfBuyToken,
+    boolean lsfSellNfToken,
     boolean lsfAuthorized
   ) throws JSONException, JsonProcessingException {
-    long expectedFlags = (lsfBuyToken ? NfTokenOfferFlags.BUY_TOKEN.getValue() : 0L) |
+    long expectedFlags = (lsfSellNfToken ? NfTokenOfferFlags.SELL_NFTOKEN.getValue() : 0L) |
       (lsfAuthorized ? NfTokenOfferFlags.AUTHORIZED.getValue() : 0L);
 
     NfTokenOfferFlags flags = NfTokenOfferFlags.of(expectedFlags);

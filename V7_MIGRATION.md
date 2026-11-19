@@ -425,6 +425,48 @@ If you build your own mapper and register `Xrpl4jModule` on it, note that the mo
 behaviors for xrpl4j types itself. You still need `Jdk8Module`, `GuavaModule`, `JavaTimeModule`, and
 `CryptoConditionsModule(Encoding.HEX)` registered for xrpl4j types to work, as `ObjectMapperFactory.create()` does.
 
+### 9. `BinaryParser.read()` throws `IllegalArgumentException` on truncated input
+
+`BinaryParser.read(int bytesToRead)` previously threw `IndexOutOfBoundsException` from
+`cursor >= hex.length()` when the cursor had already run past the end of the buffer, and otherwise fell through
+into `peek()` and surfaced a `StringIndexOutOfBoundsException` from `String.substring()` when the requested
+length overran the remaining input. Both paths are now a single up-front check that throws
+`IllegalArgumentException` and names the shortfall:
+
+```
+tried to read <bytesToRead> byte(s) but only <remainingBytes> remain
+```
+
+This matches #870 and #872.
+
+A side effect of folding the two checks into one: `read(0)` at the end of the buffer (or on an empty
+buffer) used to throw `IndexOutOfBoundsException` and now returns an empty `UnsignedByteArray`.
+
+A read that fails the check also leaves the cursor where it was. Previously, a read that overran the
+remaining input moved the cursor past every byte that was left before it threw, so after
+`new BinaryParser("00").read(2)` throws, `hasMore()` now returns `true` where it used to return `false`.
+
+**Migration:**
+
+```java
+// Before (v6.x.x):
+try {
+  parser.read(n);
+} catch (IndexOutOfBoundsException e) {
+  // handle truncated input
+}
+
+// After (v7.0.0):
+try {
+  parser.read(n);
+} catch (IllegalArgumentException e) {
+  // handle truncated input
+}
+```
+
+Callers that caught the previously surfaced `StringIndexOutOfBoundsException` from mid-buffer truncation
+should also switch to `IllegalArgumentException`.
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.

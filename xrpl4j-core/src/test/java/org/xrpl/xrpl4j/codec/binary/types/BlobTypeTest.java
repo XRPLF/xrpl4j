@@ -21,7 +21,6 @@ package org.xrpl.xrpl4j.codec.binary.types;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.base.Strings;
 import org.junit.jupiter.api.Assertions;
@@ -53,13 +52,10 @@ class BlobTypeTest {
     assertThat(codec.fromHex(bytes(width), width).toHex()).isEqualTo(bytes(width));
   }
 
-  // TODO: Make empty buffers work
   @Test
   void decodeEmpty() {
-    assertThrows(IndexOutOfBoundsException.class, () -> {
-      int width = 0;
-      assertThat(codec.fromHex(bytes(width), width).toHex()).isEqualTo(bytes(width));
-    });
+    int width = 0;
+    assertThat(codec.fromHex(bytes(width), width).toHex()).isEqualTo(bytes(width));
   }
 
   @Test

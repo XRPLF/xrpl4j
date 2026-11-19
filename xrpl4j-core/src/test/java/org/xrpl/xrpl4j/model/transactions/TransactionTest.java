@@ -63,6 +63,7 @@ public class TransactionTest {
       .isEqualTo(TransactionType.NFTOKEN_CANCEL_OFFER);
     assertThat(Transaction.typeMap.get(ImmutableNfTokenCreateOffer.class))
       .isEqualTo(TransactionType.NFTOKEN_CREATE_OFFER);
+    assertThat(Transaction.typeMap.get(ImmutableNfTokenModify.class)).isEqualTo(TransactionType.NFTOKEN_MODIFY);
     assertThat(Transaction.typeMap.get(ImmutableOfferCancel.class)).isEqualTo(TransactionType.OFFER_CANCEL);
     assertThat(Transaction.typeMap.get(ImmutableOfferCreate.class)).isEqualTo(TransactionType.OFFER_CREATE);
     assertThat(Transaction.typeMap.get(ImmutablePayment.class)).isEqualTo(TransactionType.PAYMENT);

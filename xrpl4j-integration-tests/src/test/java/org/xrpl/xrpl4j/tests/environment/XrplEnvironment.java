@@ -94,6 +94,31 @@ public interface XrplEnvironment {
     }
   }
 
+  /**
+   * Gets the configured {@link TestnetEnvironment} for integration tests that read historical data from testnet
+   * regardless of which environment the rest of the suite runs against, such as
+   * {@link org.xrpl.xrpl4j.tests.LedgerResultIT}.
+   *
+   * <p>The default environment is a Reporting Mode only environment. Tests can be run against a Clio node
+   * by setting the {@code -DuseClioTestnet} system property.</p>
+   *
+   * @return A {@link TestnetEnvironment}.
+   */
+  static TestnetEnvironment getConfiguredTestnetEnvironment() {
+    boolean isClioEnabled = System.getProperty("useClioTestnet") != null;
+    if (isClioEnabled) {
+      logger.info(
+        "System property 'useClioTestnet' detected; Using Clio testnet node for integration tests that are run " +
+          "against testnet.");
+      return new ClioTestnetEnvironment();
+    } else {
+      logger.info(
+        "System property 'useClioTestnet' was not detected; Using Reporting Mode testnet node for integration tests " +
+          "that are run against testnet.");
+      return new ReportingTestnetEnvironment();
+    }
+  }
+
   XrplClient getXrplClient();
 
   void fundAccount(Address classicAddress);

@@ -78,6 +78,42 @@ public class DelegateSetJsonTest extends AbstractJsonTest {
   }
 
   @Test
+  public void testDelegateSetJsonWithNfTokenModifyPermission() throws JsonProcessingException, JSONException {
+    DelegateSet delegateSet = DelegateSet.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
+      .permissions(Arrays.asList(
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(TransactionType.NFTOKEN_MINT))
+          .build(),
+        AccountPermissionWrapper.builder()
+          .permission(AccountPermission.of(TransactionType.NFTOKEN_MODIFY))
+          .build()
+      ))
+      .sequence(UnsignedInteger.valueOf(2))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
+      )
+      .build();
+
+    String json = "{" +
+      "  \"Account\":\"rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8\"," +
+      "  \"Authorize\":\"rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de\"," +
+      "  \"Permissions\":[" +
+      "    {\"Permission\":{\"PermissionValue\":\"NFTokenMint\"}}," +
+      "    {\"Permission\":{\"PermissionValue\":\"NFTokenModify\"}}" +
+      "  ]," +
+      "  \"Fee\":\"10\"," +
+      "  \"Sequence\":2," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"TransactionType\":\"DelegateSet\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(delegateSet, json);
+  }
+
+  @Test
   public void testDelegateSetJsonWithFlags() throws JsonProcessingException, JSONException {
     DelegateSet delegateSet = DelegateSet.builder()
       .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))

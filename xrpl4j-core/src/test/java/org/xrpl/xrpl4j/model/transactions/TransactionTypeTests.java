@@ -97,6 +97,7 @@ public class TransactionTypeTests {
     assertThat(TransactionType.XCHAIN_CREATE_BRIDGE.value()).isEqualTo("XChainCreateBridge");
     assertThat(TransactionType.XCHAIN_CREATE_CLAIM_ID.value()).isEqualTo("XChainCreateClaimID");
     assertThat(TransactionType.XCHAIN_MODIFY_BRIDGE.value()).isEqualTo("XChainModifyBridge");
+    assertThat(TransactionType.NFTOKEN_MODIFY.value()).isEqualTo("NFTokenModify");
     assertThat(TransactionType.UNKNOWN.value()).isEqualTo("Unknown");
   }
 

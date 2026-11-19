@@ -113,6 +113,7 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
+import org.xrpl.xrpl4j.model.transactions.NfTokenModify;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.OracleDelete;
@@ -1088,6 +1089,14 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  public void addSignatureToTransactionNfTokenModify() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenModify nfTokenModify = NfTokenModify.builder().fee(XrpCurrencyAmount.ofDrops(1))
+      .account(sourcePublicKey.deriveAddress()).signingPublicKey(sourcePublicKey).nfTokenId(id).build();
+    addSignatureToTransactionHelper(nfTokenModify);
+  }
+
+  @Test
   public void addSignatureToTransactionNfTokenBurn() {
     NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
     NfTokenBurn nfTokenBurn = NfTokenBurn.builder().fee(XrpCurrencyAmount.ofDrops(1))
@@ -1736,6 +1745,14 @@ public class SignatureUtilsTest {
     NfTokenAcceptOffer nfTokenAcceptOffer = NfTokenAcceptOffer.builder().account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(1)).buyOffer(offer).build();
     addMultiSignatureToTransactionHelper(nfTokenAcceptOffer);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionNfTokenModify() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenModify nfTokenModify = NfTokenModify.builder().fee(XrpCurrencyAmount.ofDrops(1))
+      .account(sourcePublicKey.deriveAddress()).nfTokenId(id).build();
+    addMultiSignatureToTransactionHelper(nfTokenModify);
   }
 
   @Test

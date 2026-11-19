@@ -128,6 +128,11 @@ public enum TransactionType {
   NFTOKEN_CREATE_OFFER("NFTokenCreateOffer"),
 
   /**
+   * The {@link TransactionType} for the {@link NfTokenModify} transaction.
+   */
+  NFTOKEN_MODIFY("NFTokenModify"),
+
+  /**
    * The {@link TransactionType} for the {@link OfferCancel} transaction.
    */
   OFFER_CANCEL("OfferCancel"),

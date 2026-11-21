@@ -148,6 +148,18 @@ class BinaryParserTest {
       .hasMessageContaining("Overflow error");
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "73FF",     // SigningPubKey with a reserved VL first byte, top level
+    "F9EA7DFF"  // Memos > Memo > MemoData with a reserved VL first byte
+  })
+  void decodeSurfacesReservedFirstByteAsRuntimeException(String hex) {
+    assertThatThrownBy(() -> XrplBinaryCodec.getInstance().decode(hex))
+      .isInstanceOf(RuntimeException.class)
+      .hasRootCauseInstanceOf(IllegalArgumentException.class)
+      .hasRootCauseMessage("Invalid variable length indicator");
+  }
+
   /**
    * End-to-end: a transaction whose MemoData needs a two- or three-byte VL prefix must survive
    * {@link XrplBinaryCodec#encode(String)} followed by {@link XrplBinaryCodec#decode(String)}.

@@ -431,19 +431,14 @@ behaviors for xrpl4j types itself. You still need `Jdk8Module`, `GuavaModule`, `
 reserved first byte (`0xFF`). Because it was an `Error` rather than an exception, it escaped the `catch (Exception e)`
 blocks in `BinaryParser.readFieldValue` and `readType`, propagated uncaught through `XrplBinaryCodec.decode`, and
 callers that catch `RuntimeException` never saw it. `BinarySerializer.encodeVariableLength` had the same pattern
-(`new Error("Overflow error")`) for payloads longer than 918,744 bytes. The overflow is also reachable during
-`decode`: `STObjectType.fromParser` re-serializes each parsed field, so any 3-byte VL header declaring a length
-between 918,745 and 929,984 bytes parses, then throws while being re-encoded. Both sites now throw
+(`new Error("Overflow error")`) for payloads longer than 918,744 bytes. Both sites now throw
 `IllegalArgumentException` with the same messages.
 
-A direct caller of either method sees the `IllegalArgumentException` on the stack. Through the decode entry points,
-each enclosing `readFieldValue` and `readType` call wraps the `IllegalArgumentException` once more in a
-`RuntimeException` carrying the field or serialized-type name. At top level that is 2 wraps for the reserved-VL
-site (`readFieldValue` + `readType`) and 1 wrap for the overflow site (`readType` only, since overflow is thrown
-after `readFieldValue` returns); every enclosing STObject or STArray on the field's path adds one more wrap, so
-`Memos`>`Memo`>`MemoData` sees 4 wraps for the reserved byte and 3 for the overflow. Follow `getCause()` until the
-`IllegalArgumentException` to inspect it. On the encode path, `XrplBinaryCodec.encode` surfaces the overflow
-`IllegalArgumentException` directly.
+A direct caller of either method sees the `IllegalArgumentException` on the stack. Through `XrplBinaryCodec.decode`,
+each enclosing `readFieldValue` and `readType` call on the field's path wraps the `IllegalArgumentException` in a
+`RuntimeException` carrying the field or serialized-type name, so the cause chain carries one or more such wraps. Follow
+`getCause()` until the `IllegalArgumentException` to inspect it. On the encode path, `XrplBinaryCodec.encode`
+surfaces the overflow `IllegalArgumentException` directly.
 
 **Migration (direct caller):**
 

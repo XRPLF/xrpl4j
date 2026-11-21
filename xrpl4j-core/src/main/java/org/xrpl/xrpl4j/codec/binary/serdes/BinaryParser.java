@@ -130,7 +130,7 @@ public class BinaryParser {
         b2 * MAX_BYTE_VALUE +
         b3;
     }
-    throw new Error("Invalid variable length indicator");
+    throw new IllegalArgumentException("Invalid variable length indicator");
   }
 
   /**

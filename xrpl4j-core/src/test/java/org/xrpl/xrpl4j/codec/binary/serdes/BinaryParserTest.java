@@ -92,7 +92,7 @@ class BinaryParserTest {
   @Test
   void readVariableLengthLengthRejectsReservedFirstByte() {
     assertThatThrownBy(() -> new BinaryParser("FF0000").readVariableLengthLength())
-      .isInstanceOf(Error.class)
+      .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("Invalid variable length indicator");
   }
 
@@ -136,6 +136,28 @@ class BinaryParserTest {
   })
   void roundTripBoundaryLengths(int length) {
     assertRoundTrip(length);
+  }
+
+  @Test
+  void encodeVariableLengthRejectsLengthsAboveMaxThreeByteLength() {
+    UnsignedByteArray sink = UnsignedByteArray.empty();
+    BinarySerializer serializer = new BinarySerializer(sink);
+    BlobType oversized = new BlobType(UnsignedByteArray.of(new byte[MAX_THREE_BYTE_LENGTH + 1]));
+    assertThatThrownBy(() -> serializer.writeLengthEncoded(oversized))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Overflow error");
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "73FF",     // SigningPubKey with a reserved VL first byte, top level
+    "F9EA7DFF"  // Memos > Memo > MemoData with a reserved VL first byte
+  })
+  void decodeSurfacesReservedFirstByteAsRuntimeException(String hex) {
+    assertThatThrownBy(() -> XrplBinaryCodec.getInstance().decode(hex))
+      .isInstanceOf(RuntimeException.class)
+      .hasRootCauseInstanceOf(IllegalArgumentException.class)
+      .hasRootCauseMessage("Invalid variable length indicator");
   }
 
   /**

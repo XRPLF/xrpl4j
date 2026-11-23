@@ -73,9 +73,11 @@ class IouIssueTest {
   }
 
   @Test
-  void cannotBuildWithLowercaseXrpCurrency() {
-    assertThatThrownBy(() -> IouIssue.builder().currency("xrp").issuer(ISSUER).build())
-      .isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("IouIssue currency cannot be 'XRP'");
+  void canBuildWithLowercaseXrpCurrency() {
+    // Only the exact string "XRP" is the native asset; "xrp" is an ordinary issued currency in xrpld.
+    IouIssue issue = IouIssue.builder().currency("xrp").issuer(ISSUER).build();
+
+    assertThat(issue.currency()).isEqualTo("xrp");
+    assertThat(issue.issuer()).isEqualTo(ISSUER);
   }
 }

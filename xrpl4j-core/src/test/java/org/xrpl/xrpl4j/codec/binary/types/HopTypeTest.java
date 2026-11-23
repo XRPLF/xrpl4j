@@ -127,18 +127,16 @@ class HopTypeTest {
   }
 
   @Test
-  void testFromJsonPrefersCurrencyWhenBothCurrencyAndMptPresent() throws JsonProcessingException {
-    // fromJson is permissive like fromParser: when both fields are present, currency takes precedence.
+  void testFromJsonThrowsWhenBothCurrencyAndMptPresent() {
+    // fromJson feeds signing, so a hop carrying both fields is rejected rather than silently dropping
+    // one. xrpld returns "Invalid Asset." for the same input. fromParser stays permissive.
     ObjectNode json = objectMapper.createObjectNode();
     json.put("currency", "USD");
     json.put("mpt_issuance_id", "00000001B5F762798A53D543A014CAF8B297CFF8F2F937E8");
 
-    HopType hopType = new HopType().fromJson(json);
-
-    // Should encode as currency (TYPE_CURRENCY = 0x10), not MPT
-    int typeByte = hopType.value().get(0).asInt();
-    assertThat(typeByte & HopType.TYPE_CURRENCY).isEqualTo((int) HopType.TYPE_CURRENCY);
-    assertThat(typeByte & HopType.TYPE_MPT).isEqualTo(0);
+    assertThatThrownBy(() -> new HopType().fromJson(json))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("cannot have both currency and mpt_issuance_id");
   }
 
   @Test

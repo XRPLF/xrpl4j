@@ -61,11 +61,14 @@ public interface IouIssue extends Issue {
   Address issuer();
 
   /**
-   * Validate that the currency is not "XRP" (case-insensitive).
+   * Validate that the currency is not the native asset code "XRP".
+   *
+   * <p>Only the exact string "XRP" is the native asset. Case variants such as "xrp" are ordinary issued
+   * currencies on the XRPL, so they are permitted here.</p>
    */
   @Value.Check
   default void checkCurrencyNotXrp() {
-    if ("XRP".equalsIgnoreCase(currency())) {
+    if ("XRP".equals(currency())) {
       throw new IllegalStateException("IouIssue currency cannot be 'XRP'. Use XrpIssue instead.");
     }
   }

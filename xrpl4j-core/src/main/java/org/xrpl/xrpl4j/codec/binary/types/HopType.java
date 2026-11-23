@@ -87,10 +87,15 @@ public class HopType extends SerializedType<HopType> {
 
     Hop hop = objectMapper.treeToValue(node, Hop.class);
 
-    // When both currency and mpt_issuance_id are present, prefer currency to maintain
-    // backward compatibility with unexpected ledger data (mirrors fromParser behaviour).
+    // fromJson is the encode path that feeds signing, so a hop carrying both fields is rejected rather
+    // than silently dropping one. xrpld does the same when parsing a path set: STParsedJSON.cpp returns
+    // "Invalid Asset." Reading remains permissive -- see fromParser and toJson below.
+    if (hop.currency().isPresent() && hop.mptIssuanceId().isPresent()) {
+      throw new IllegalArgumentException("A path hop cannot have both currency and mpt_issuance_id.");
+    }
+
     boolean hasCurrency = hop.currency().isPresent();
-    boolean hasMpt = hop.mptIssuanceId().isPresent() && !hasCurrency;
+    boolean hasMpt = hop.mptIssuanceId().isPresent();
 
     hop.account().ifPresent(account -> {
       byteArray.append(new AccountIdType().fromJson(account).value());

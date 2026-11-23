@@ -29,6 +29,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,18 +74,36 @@ class IssueDeserializerTest {
   }
 
   @Test
-  void testDeserializeXrpCaseInsensitive() throws IOException {
+  void testDeserializeLowercaseXrpIsAnIou() throws IOException {
+    // xrpld treats only the exact string "XRP" as the native asset, so "xrp" with an issuer is an
+    // ordinary issued currency and must keep its issuer.
     ObjectNode node = JsonNodeFactory.instance.objectNode();
     node.put("currency", "xrp");
+    node.put("issuer", "rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
 
     JsonParser parser = objectMapper.treeAsTokens(node);
     parser.nextToken();
 
     Issue result = deserializer.deserialize(parser, mock(DeserializationContext.class));
 
-    assertThat(result).isInstanceOf(XrpIssue.class);
-    XrpIssue xrpIssue = (XrpIssue) result;
-    assertThat(xrpIssue.currency()).isEqualTo("XRP");
+    assertThat(result).isInstanceOf(IouIssue.class);
+    IouIssue iouIssue = (IouIssue) result;
+    assertThat(iouIssue.currency()).isEqualTo("xrp");
+    assertThat(iouIssue.issuer()).isEqualTo(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk"));
+  }
+
+  @Test
+  void testDeserializeLowercaseXrpWithoutIssuerThrows() {
+    ObjectNode node = JsonNodeFactory.instance.objectNode();
+    node.put("currency", "xrp");
+
+    assertThatThrownBy(() -> {
+      JsonParser parser = objectMapper.treeAsTokens(node);
+      parser.nextToken();
+      deserializer.deserialize(parser, mock(DeserializationContext.class));
+    })
+      .isInstanceOf(JsonProcessingException.class)
+      .hasMessageContaining("must have an 'issuer' field");
   }
 
   @Test
@@ -145,11 +164,11 @@ class IssueDeserializerTest {
     JsonParser parser = objectMapper.treeAsTokens(node);
     parser.nextToken();
 
-    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+    MismatchedInputException exception = assertThrows(MismatchedInputException.class,
       () -> deserializer.deserialize(parser, mock(DeserializationContext.class)));
 
     assertThat(exception.getMessage())
-      .isEqualTo("Invalid Issue JSON: IOU currency 'USD' must have an 'issuer' field");
+      .contains("Invalid Issue JSON: IOU currency 'USD' must have an 'issuer' field");
   }
 
   @Test
@@ -253,19 +272,19 @@ class IssueDeserializerTest {
   }
 
   @Test
-  void testDeserializeXrpMixedCase() throws IOException {
-    // Test case-insensitive XRP detection
+  void testDeserializeMixedCaseXrpIsAnIou() throws IOException {
+    // Only the exact string "XRP" is the native asset, so "xRp" is an ordinary issued currency.
     ObjectNode node = JsonNodeFactory.instance.objectNode();
     node.put("currency", "xRp");
+    node.put("issuer", "rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
 
     JsonParser parser = objectMapper.treeAsTokens(node);
     parser.nextToken();
 
     Issue result = deserializer.deserialize(parser, mock(DeserializationContext.class));
 
-    assertThat(result).isInstanceOf(XrpIssue.class);
-    XrpIssue xrpIssue = (XrpIssue) result;
-    assertThat(xrpIssue.currency()).isEqualTo("XRP");
+    assertThat(result).isInstanceOf(IouIssue.class);
+    assertThat(((IouIssue) result).currency()).isEqualTo("xRp");
   }
 
   @Test

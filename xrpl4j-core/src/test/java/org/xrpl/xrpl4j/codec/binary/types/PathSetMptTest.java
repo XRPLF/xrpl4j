@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.codec.binary.types;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -160,17 +161,16 @@ class PathSetMptTest {
   }
 
   @Test
-  void testCurrencyTakesPrecedenceOverMptWhenBothPresent() throws JsonProcessingException {
-    // When both currency and mpt_issuance_id appear in a hop, currency takes precedence (permissive behavior).
+  void testThrowsWhenBothCurrencyAndMptPresent() {
+    // Encoding feeds signing, so a hop carrying both fields is rejected rather than silently dropping
+    // one of them. xrpld's STParsedJSON.cpp returns "Invalid Asset." for the same input.
     ObjectNode hop = objectMapper.createObjectNode();
     hop.put("currency", "USD");
     hop.put("mpt_issuance_id", "00000001B5F762798A53D543A014CAF8B297CFF8F2F937E8");
 
-    HopType hopType = new HopType().fromJson(hop);
-    // TYPE_CURRENCY bit (0x10) must be set; TYPE_MPT bit (0x40) must not
-    int typeByte = hopType.value().get(0).asInt();
-    assertThat(typeByte & HopType.TYPE_CURRENCY).isEqualTo((int) HopType.TYPE_CURRENCY);
-    assertThat(typeByte & HopType.TYPE_MPT).isEqualTo(0);
+    assertThatThrownBy(() -> new HopType().fromJson(hop))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("cannot have both currency and mpt_issuance_id");
   }
 
   @Test

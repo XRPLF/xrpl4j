@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
@@ -59,8 +60,10 @@ public class IssueDeserializer extends StdDeserializer<Issue> {
     if (node.has("currency")) {
       String currency = node.get("currency").asText();
 
-      // Check if it's XRP (case-insensitive)
-      if ("XRP".equalsIgnoreCase(currency)) {
+      // Only the exact string "XRP" denotes the native asset. xrpld's toCurrency() compares against
+      // systemCurrencyCode(), so any other three-character code -- "xrp" included -- is an ordinary
+      // issued currency written into the ISO position of a 160-bit currency.
+      if ("XRP".equals(currency)) {
         return Issue.XRP;
       }
 
@@ -72,11 +75,15 @@ public class IssueDeserializer extends StdDeserializer<Issue> {
           .build();
       }
 
-      throw new IllegalArgumentException(
+      throw MismatchedInputException.from(
+        jsonParser, Issue.class,
         "Invalid Issue JSON: IOU currency '" + currency + "' must have an 'issuer' field"
       );
     }
 
-    throw new IOException("Cannot deserialize Issue: must contain 'currency' or 'mpt_issuance_id' field");
+    throw MismatchedInputException.from(
+      jsonParser, Issue.class,
+      "Cannot deserialize Issue: must contain 'currency' or 'mpt_issuance_id' field"
+    );
   }
 }

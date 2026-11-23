@@ -26,6 +26,8 @@ import com.google.common.primitives.UnsignedInteger;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
+import org.junit.jupiter.api.condition.DisabledOnJre;
+import org.junit.jupiter.api.condition.JRE;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
@@ -44,9 +46,13 @@ public class ServerInfoIT {
    * @throws InterruptedException        If {@link Thread} is interrupted.
    * @see "https://xrpl.org/docs/tutorials/public-servers/#mainnet"
    */
+  @DisabledOnJre(
+    value = {JRE.JAVA_16, JRE.JAVA_21},
+    disabledReason = "Public XRPL servers fail PKIX validation on these Temurin builds due to cacerts gaps"
+  )
   @DisabledIf(
     value = "shouldSkipPublicServerTests",
-    disabledReason = "Skipped when using local rippled develop container"
+    disabledReason = "Skipped when the IT suite is pointed at a specific network via a -Duse* system property"
   )
   @Test
   public void testServerInfoAcrossAllTypes() throws JsonRpcClientErrorException, InterruptedException {
@@ -111,12 +117,11 @@ public class ServerInfoIT {
   }
 
   static boolean shouldSkipPublicServerTests() {
-    // Skip when running in CI: this test hits public XRPL servers
-    // (s.altnet.rippletest.net, s1/s2.ripple.com, etc.) whose TLS
-    // certificate chain fails PKIX validation on some Temurin JDK
-    // builds (notably 16 and 21) due to cacerts trust-store gaps.
-    return System.getenv("CI") != null ||
-      System.getProperty("useDevelop") != null ||
+    // This test hits public XRPL servers (s.altnet.rippletest.net, s1/s2.ripple.com, etc.), so it is
+    // skipped whenever the IT suite has been pointed at one specific network. The PKIX trust-store
+    // problem on some Temurin builds is handled by @DisabledOnJre above, not here, so that the test
+    // still runs in the CI jobs that are unaffected by it.
+    return System.getProperty("useDevelop") != null ||
       System.getProperty("useTestnet") != null ||
       System.getProperty("useClioTestnet") != null ||
       System.getProperty("useDevnet") != null;

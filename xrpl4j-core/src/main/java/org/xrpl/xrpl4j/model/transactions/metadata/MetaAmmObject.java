@@ -113,4 +113,5 @@ public interface MetaAmmObject extends MetaLedgerObject {
       .map(MetaVoteEntryWrapper::voteEntry)
       .collect(Collectors.toList());
   }
+
 }

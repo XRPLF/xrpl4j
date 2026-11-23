@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 public class PaymentFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(4);
+    return getBooleanCombinations(5);
   }
 
   @ParameterizedTest
@@ -43,17 +43,21 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     boolean tfNoDirectRipple,
     boolean tfPartialPayment,
     boolean tfLimitQuality,
+    boolean tfSponsorCreatedAccount,
     boolean tfInnerBatchTxn
   ) {
     PaymentFlags flags = PaymentFlags.builder()
       .tfNoDirectRipple(tfNoDirectRipple)
       .tfPartialPayment(tfPartialPayment)
       .tfLimitQuality(tfLimitQuality)
+      .tfSponsorCreatedAccount(tfSponsorCreatedAccount)
       .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
     assertThat(flags.getValue())
-      .isEqualTo(getExpectedFlags(tfNoDirectRipple, tfPartialPayment, tfLimitQuality, tfInnerBatchTxn));
+      .isEqualTo(getExpectedFlags(
+        tfNoDirectRipple, tfPartialPayment, tfLimitQuality, tfSponsorCreatedAccount, tfInnerBatchTxn
+      ));
   }
 
   @ParameterizedTest
@@ -62,9 +66,12 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     boolean tfNoDirectRipple,
     boolean tfPartialPayment,
     boolean tfLimitQuality,
+    boolean tfSponsorCreatedAccount,
     boolean tfInnerBatchTxn
   ) {
-    long expectedFlags = getExpectedFlags(tfNoDirectRipple, tfPartialPayment, tfLimitQuality, tfInnerBatchTxn);
+    long expectedFlags = getExpectedFlags(
+      tfNoDirectRipple, tfPartialPayment, tfLimitQuality, tfSponsorCreatedAccount, tfInnerBatchTxn
+    );
     PaymentFlags flags = PaymentFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
@@ -72,6 +79,7 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfNoDirectRipple()).isEqualTo(tfNoDirectRipple);
     assertThat(flags.tfPartialPayment()).isEqualTo(tfPartialPayment);
     assertThat(flags.tfLimitQuality()).isEqualTo(tfLimitQuality);
+    assertThat(flags.tfSponsorCreatedAccount()).isEqualTo(tfSponsorCreatedAccount);
     assertThat(flags.tfInnerBatchTxn()).isEqualTo(tfInnerBatchTxn);
   }
 
@@ -83,6 +91,7 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfNoDirectRipple()).isFalse();
     assertThat(flags.tfPartialPayment()).isFalse();
     assertThat(flags.tfLimitQuality()).isFalse();
+    assertThat(flags.tfSponsorCreatedAccount()).isFalse();
     assertThat(flags.tfInnerBatchTxn()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
     assertThat(flags.getValue()).isEqualTo(0L);
@@ -94,12 +103,14 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     boolean tfNoDirectRipple,
     boolean tfPartialPayment,
     boolean tfLimitQuality,
+    boolean tfSponsorCreatedAccount,
     boolean tfInnerBatchTxn
   ) throws JSONException, JsonProcessingException {
     PaymentFlags flags = PaymentFlags.builder()
       .tfNoDirectRipple(tfNoDirectRipple)
       .tfPartialPayment(tfPartialPayment)
       .tfLimitQuality(tfLimitQuality)
+      .tfSponsorCreatedAccount(tfSponsorCreatedAccount)
       .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
@@ -130,20 +141,36 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfNoDirectRipple()).isFalse();
     assertThat(flags.tfPartialPayment()).isFalse();
     assertThat(flags.tfLimitQuality()).isFalse();
+    assertThat(flags.tfSponsorCreatedAccount()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
     assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
+  }
+
+  @Test
+  void testSponsorCreatedAccount() {
+    PaymentFlags flags = PaymentFlags.builder()
+      .tfSponsorCreatedAccount(true)
+      .build();
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfSponsorCreatedAccount()).isTrue();
+    assertThat(flags.tfNoDirectRipple()).isFalse();
+    assertThat(flags.tfPartialPayment()).isFalse();
+    assertThat(flags.tfLimitQuality()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
   }
 
   private long getExpectedFlags(
     boolean tfNoDirectRipple,
     boolean tfPartialPayment,
     boolean tfLimitQuality,
+    boolean tfSponsorCreatedAccount,
     boolean tfInnerBatchTxn
   ) {
     return (PaymentFlags.FULLY_CANONICAL_SIG.getValue()) |
       (tfNoDirectRipple ? PaymentFlags.NO_DIRECT_RIPPLE.getValue() : 0L) |
       (tfPartialPayment ? PaymentFlags.PARTIAL_PAYMENT.getValue() : 0L) |
       (tfLimitQuality ? PaymentFlags.LIMIT_QUALITY.getValue() : 0L) |
+      (tfSponsorCreatedAccount ? PaymentFlags.SPONSOR_CREATED_ACCOUNT.getValue() : 0L) |
       (tfInnerBatchTxn ? PaymentFlags.INNER_BATCH_TXN.getValue() : 0L);
   }
 }

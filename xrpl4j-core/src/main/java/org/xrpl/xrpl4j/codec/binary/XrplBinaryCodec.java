@@ -55,6 +55,14 @@ public class XrplBinaryCodec {
   public static final String PAYMENT_CHANNEL_CLAIM_SIGNATURE_PREFIX = "434C4D00";
   public static final String BATCH_SIGNATURE_PREFIX = "42434800"; // "BCH\0" per XLS-0056
 
+  // Role-specific signing prefixes introduced by the fixCleanup3_4_0 amendment. Each role signs under a distinct
+  // prefix so a signature made for one role cannot be replayed in another, and is only valid on a network where that
+  // amendment is enabled.
+  public static final String COUNTERPARTY_SIGNATURE_PREFIX = "43505400";       // "CPT\0" single-sign
+  public static final String COUNTERPARTY_MULTI_SIGNATURE_PREFIX = "43504D00"; // "CPM\0" multi-sign
+  public static final String SPONSOR_SIGNATURE_PREFIX = "53504E00";            // "SPN\0" single-sign
+  public static final String SPONSOR_MULTI_SIGNATURE_PREFIX = "53504D00";      // "SPM\0" multi-sign
+
   public static final String CHANNEL_FIELD_NAME = "Channel";
   public static final String AMOUNT_FIELD_NAME = "Amount";
 
@@ -111,8 +119,56 @@ public class XrplBinaryCodec {
    * @throws JsonProcessingException if JSON is not valid.
    */
   public String encodeForSigning(String json) throws JsonProcessingException {
+    return encodeForSigning(json, TRX_SIGNATURE_PREFIX);
+  }
+
+  /**
+   * Encodes JSON to canonical XRPL binary as a hex string, prepending the supplied single-signing {@code prefix}. Only
+   * the 4-byte prefix distinguishes the role-specific signing payloads; the encoded signing fields are otherwise
+   * identical.
+   *
+   * @param json   String containing JSON to be encoded.
+   * @param prefix The hex-encoded 4-byte signing prefix to prepend (e.g. {@link #TRX_SIGNATURE_PREFIX}).
+   *
+   * @return hex encoded representation
+   *
+   * @throws JsonProcessingException if JSON is not valid.
+   */
+  private String encodeForSigning(String json, String prefix) throws JsonProcessingException {
     JsonNode node = BINARY_CODEC_OBJECT_MAPPER.readTree(json);
-    return TRX_SIGNATURE_PREFIX + encode(removeNonSigningFields(node));
+    return prefix + encode(removeNonSigningFields(node));
+  }
+
+  /**
+   * Encodes JSON to canonical XRPL binary as a hex string for signing a {@code CounterpartySignature} (e.g. the
+   * lender's signature on a {@code LoanSet}). Identical to {@link #encodeForSigning(String)} except that the payload is
+   * bound to the counterparty role via the {@code CPT\0} prefix, so the resulting signature cannot be replayed as any
+   * other role. Requires the {@code fixCleanup3_4_0} amendment.
+   *
+   * @param json String containing JSON to be encoded.
+   *
+   * @return hex encoded representation
+   *
+   * @throws JsonProcessingException if JSON is not valid.
+   */
+  public String encodeForSigningCounterparty(String json) throws JsonProcessingException {
+    return encodeForSigning(json, COUNTERPARTY_SIGNATURE_PREFIX);
+  }
+
+  /**
+   * Encodes JSON to canonical XRPL binary as a hex string for signing a {@code SponsorSignature}. Identical to
+   * {@link #encodeForSigning(String)} except that the payload is bound to the sponsor role via the {@code SPN\0}
+   * prefix, so the resulting signature cannot be replayed as any other role. Requires the {@code fixCleanup3_4_0}
+   * amendment.
+   *
+   * @param json String containing JSON to be encoded.
+   *
+   * @return hex encoded representation
+   *
+   * @throws JsonProcessingException if JSON is not valid.
+   */
+  public String encodeForSigningSponsor(String json) throws JsonProcessingException {
+    return encodeForSigning(json, SPONSOR_SIGNATURE_PREFIX);
   }
 
   /**
@@ -144,29 +200,23 @@ public class XrplBinaryCodec {
    * JSON and then checks for JsonNode values, this implementation instead accepts a well-typed Java object and operates
    * on that, for safety and correctness.
    *
-   * @param batch A {@link Batch} containing JSON to be encoded.
+   * <p>Per XLS-0056 V1_1, the payload is: {@code HashPrefix::Batch} + outer {@code Account} + sequence + {@code Flags}
+   * + count + inner tx IDs, followed by the {@code batchSignerAddress} as the per-signer suffix.</p>
    *
-   * @return hex encoded representations
+   * @param batch              A {@link Batch} to be encoded.
+   * @param batchSignerAddress The {@link Address} of the BatchSigner entry (appended as a per-signer suffix).
    *
-   * @throws JsonProcessingException if JSON is not valid.
+   * @return An {@link UnsignedByteArray} with the signable bytes.
    */
-  public UnsignedByteArray encodeForBatchInnerSigning(Batch batch) throws JsonProcessingException {
+  public UnsignedByteArray encodeForBatchInnerSigning(Batch batch, Address batchSignerAddress) {
     Objects.requireNonNull(batch);
+    Objects.requireNonNull(batchSignerAddress);
     try {
-      // Start with batch prefix (0x42434800 = "BCH\0")
-      UnsignedByteArray signableBytes = UnsignedByteArray.fromHex(XrplBinaryCodec.BATCH_SIGNATURE_PREFIX);
+      UnsignedByteArray signableBytes = buildBatchSigningPayload(batch);
 
-      // Add flags (4 bytes, big-endian)
-      HashingUtils.addUInt32(signableBytes, (int) batch.flags().getValue());
-
-      // Add count of inner transactions (4 bytes, big-endian)
-      HashingUtils.addUInt32(signableBytes, batch.rawTransactions().size());
-
-      // Add each inner transaction ID (32 bytes each)
-      for (RawTransactionWrapper wrapper : batch.rawTransactions()) {
-        final UnsignedByteArray transactionId = computeInnerBatchTransactionId(wrapper);
-        signableBytes.append(transactionId);
-      }
+      // Append BatchSigner's own account ID as per-signer suffix (V1_1 single-sign suffix)
+      String signerAccountIdHex = new AccountIdType().fromJson(new TextNode(batchSignerAddress.value())).toHex();
+      signableBytes.append(UnsignedByteArray.fromHex(signerAccountIdHex));
 
       return signableBytes;
     } catch (JsonProcessingException e) {
@@ -180,43 +230,79 @@ public class XrplBinaryCodec {
 
   /**
    * Encode a {@link Batch} for multi-signing by a specific signer. This is used when a multi-sig account acts as a
-   * BatchSigner with nested Signers. Per rippled's checkBatchMultiSign, this uses batch serialization (serializeBatch)
-   * followed by appending the signer's account ID (finishMultiSigningData).
+   * BatchSigner with nested Signers. Per XLS-0056 V1_1 / rippled's {@code checkBatchMultiSign}, the payload is the base
+   * batch serialization followed by {@code batchSignerAddress} then {@code nestedSignerAddress} (i.e.
+   * {@code finishMultiSigningData(batchSignerAddress, nestedSignerAddress)}).
    *
-   * @param batch         The {@link Batch} to encode.
-   * @param signerAddress The address of the signer (will be appended as account ID suffix).
+   * @param batch               The {@link Batch} to encode.
+   * @param batchSignerAddress  The {@link Address} of the BatchSigner entry (outer multi-sig account).
+   * @param nestedSignerAddress The {@link Address} of the individual signer within the BatchSigner's Signers list.
    *
-   * @return An {@link UnsignedByteArray} containing the batch serialization with account ID suffix.
-   *
-   * @throws JsonProcessingException if there is an error processing the JSON.
+   * @return An {@link UnsignedByteArray} containing the batch serialization with both account ID suffixes.
    */
-  public UnsignedByteArray encodeForBatchInnerMultiSigning(Batch batch, Address signerAddress)
-    throws JsonProcessingException {
+  public UnsignedByteArray encodeForBatchInnerMultiSigning(
+    final Batch batch, final Address batchSignerAddress, final Address nestedSignerAddress
+  ) {
     Objects.requireNonNull(batch);
-    Objects.requireNonNull(signerAddress);
+    Objects.requireNonNull(batchSignerAddress);
+    Objects.requireNonNull(nestedSignerAddress);
+    try {
+      UnsignedByteArray result = buildBatchSigningPayload(batch);
 
-    // Start with batch serialization (HashPrefix::batch + flags + count + tx IDs)
-    UnsignedByteArray batchBytes = encodeForBatchInnerSigning(batch);
+      // Append batchSignerAddress + nestedSignerAddress (finishMultiSigningData per V1_1)
+      String batchSignerIdHex = new AccountIdType().fromJson(new TextNode(batchSignerAddress.value())).toHex();
+      result.append(UnsignedByteArray.fromHex(batchSignerIdHex));
 
-    // Create a copy to avoid mutating the original (since UnsignedByteArray.append() mutates)
-    UnsignedByteArray result = UnsignedByteArray.of(batchBytes.toByteArray());
+      String nestedSignerIdHex = new AccountIdType().fromJson(new TextNode(nestedSignerAddress.value())).toHex();
+      result.append(UnsignedByteArray.fromHex(nestedSignerIdHex));
 
-    // Append the signer's account ID (like finishMultiSigningData does in rippled)
-    String accountIdHex = new AccountIdType().fromJson(new TextNode(signerAddress.value())).toHex();
-    result.append(UnsignedByteArray.fromHex(accountIdHex));
-
-    return result;
+      return result;
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
   }
 
   /**
-   * Encodes JSON to canonical XRPL binary as a hex string for multi-signing purposes, preserving the existing
-   * {@code SigningPubKey} field. Unlike {@link #encodeForMultiSigning(String, String)}, this method does <b>not</b>
-   * clear the {@code SigningPubKey} field. This is necessary when a co-signer multi-signs a transaction where the
-   * first-party signer's {@code SigningPubKey} must remain intact in the signed data (e.g., counterparty multi-signing
-   * in dual-signed transactions such as {@code LoanSet}).
+   * Builds the base batch signing payload (items 1–6 from XLS-0056 V1_1 §2.1.3.2), shared by both single-sign and
+   * multi-sign paths: {@code HashPrefix::Batch} + outer {@code Account} + sequence + {@code Flags} + count + inner tx
+   * IDs.
+   */
+  private UnsignedByteArray buildBatchSigningPayload(Batch batch) throws JsonProcessingException {
+    // Start with batch prefix (0x42434800 = "BCH\0")
+    UnsignedByteArray signableBytes = UnsignedByteArray.fromHex(XrplBinaryCodec.BATCH_SIGNATURE_PREFIX);
+
+    // Add outer account ID (20 bytes)
+    String accountIdHex = new AccountIdType().fromJson(new TextNode(batch.account().value())).toHex();
+    signableBytes.append(UnsignedByteArray.fromHex(accountIdHex));
+
+    // Add sequence value (4 bytes): TicketSequence if Sequence==0, else Sequence
+    final int sequenceValue = batch.sequence().longValue() == 0L ?
+      batch.ticketSequence().map(ts -> ts.intValue()).orElse(0) :
+      batch.sequence().intValue();
+    HashingUtils.addUInt32(signableBytes, sequenceValue);
+
+    // Add flags (4 bytes, big-endian)
+    HashingUtils.addUInt32(signableBytes, (int) batch.flags().getValue());
+
+    // Add count of inner transactions (4 bytes, big-endian)
+    HashingUtils.addUInt32(signableBytes, batch.rawTransactions().size());
+
+    // Add each inner transaction ID (32 bytes each)
+    for (RawTransactionWrapper wrapper : batch.rawTransactions()) {
+      final UnsignedByteArray transactionId = computeInnerBatchTransactionId(wrapper);
+      signableBytes.append(transactionId);
+    }
+
+    return signableBytes;
+  }
+
+  /**
+   * Encodes JSON to canonical XRPL binary as a hex string for a counterparty multi-signature (e.g. a multi-signing
+   * lender on a {@code LoanSet}). The payload is bound to the counterparty role via the {@code CPM\0} prefix, so the
+   * resulting signature cannot be replayed as any other role. Requires the {@code fixCleanup3_4_0} amendment.
    *
-   * <p>The resulting bytes use the same multi-signing prefix ({@code SMT\0}) and account ID suffix as
-   * {@link #encodeForMultiSigning(String, String)}.</p>
+   * <p>Like sponsor multi-signing (and unlike {@link #encodeForMultiSigning(String, String)}), this preserves the
+   * first-party signer's {@code SigningPubKey} in the signed data rather than clearing it.</p>
    *
    * @param json         A {@link String} containing JSON to be encoded.
    * @param xrpAccountId A {@link String} containing the XRPL AccountId of the signer.
@@ -225,8 +311,47 @@ public class XrplBinaryCodec {
    *
    * @throws JsonProcessingException if JSON is not valid.
    */
-  public String encodeForMultiSigningWithSigningPubKey(
-    String json, String xrpAccountId
+  public String encodeForMultiSigningCounterparty(String json, String xrpAccountId) throws JsonProcessingException {
+    return encodeForMultiSigningWithSigningPubKey(json, xrpAccountId, COUNTERPARTY_MULTI_SIGNATURE_PREFIX);
+  }
+
+  /**
+   * Encodes JSON to canonical XRPL binary as a hex string for a sponsor multi-signature. The payload is bound to the
+   * sponsor role via the {@code SPM\0} prefix, so the resulting signature cannot be replayed as any other role.
+   * Requires the {@code fixCleanup3_4_0} amendment.
+   *
+   * <p>Like counterparty multi-signing (and unlike {@link #encodeForMultiSigning(String, String)}), this preserves the
+   * first-party signer's {@code SigningPubKey} in the signed data rather than clearing it.</p>
+   *
+   * @param json         A {@link String} containing JSON to be encoded.
+   * @param xrpAccountId A {@link String} containing the XRPL AccountId of the signer.
+   *
+   * @return hex encoded representation
+   *
+   * @throws JsonProcessingException if JSON is not valid.
+   */
+  public String encodeForMultiSigningSponsor(String json, String xrpAccountId) throws JsonProcessingException {
+    return encodeForMultiSigningWithSigningPubKey(json, xrpAccountId, SPONSOR_MULTI_SIGNATURE_PREFIX);
+  }
+
+  /**
+   * Encodes JSON to canonical XRPL binary as a hex string for multi-signing purposes, preserving the existing
+   * {@code SigningPubKey} field and prepending the supplied multi-signing {@code prefix}. Unlike
+   * {@link #encodeForMultiSigning(String, String)}, this does <b>not</b> clear the {@code SigningPubKey} field, which
+   * is necessary when a co-signer (counterparty or sponsor) multi-signs a transaction where the first-party signer's
+   * {@code SigningPubKey} must remain intact in the signed data. Only the 4-byte prefix distinguishes the
+   * role-specific payloads; the encoded signing fields and account ID suffix are otherwise identical.
+   *
+   * @param json         A {@link String} containing JSON to be encoded.
+   * @param xrpAccountId A {@link String} containing the XRPL AccountId of the signer.
+   * @param prefix       The hex-encoded 4-byte multi-signing prefix to prepend.
+   *
+   * @return hex encoded representation
+   *
+   * @throws JsonProcessingException if JSON is not valid.
+   */
+  private String encodeForMultiSigningWithSigningPubKey(
+    String json, String xrpAccountId, String prefix
   ) throws JsonProcessingException {
     JsonNode node = BINARY_CODEC_OBJECT_MAPPER.readTree(json);
     if (!node.isObject()) {
@@ -234,7 +359,7 @@ public class XrplBinaryCodec {
     }
     // NOTE: Unlike encodeForMultiSigning, we do NOT clear SigningPubKey here.
     String suffix = new AccountIdType().fromJson(new TextNode(xrpAccountId)).toHex();
-    return TRX_MULTI_SIGNATURE_PREFIX + encode(removeNonSigningFields(node)) + suffix;
+    return prefix + encode(removeNonSigningFields(node)) + suffix;
   }
 
   /**
@@ -276,9 +401,9 @@ public class XrplBinaryCodec {
    */
   public String decode(String encodedTransaction) {
     final String nonSignPrefixHex;
-    if (encodedTransaction.startsWith(TRX_SIGNATURE_PREFIX)) {
+    if (isSingleSignPrefix(encodedTransaction)) {
       nonSignPrefixHex = encodedTransaction.substring(TRX_SIGNATURE_PREFIX.length());
-    } else if (encodedTransaction.startsWith(TRX_MULTI_SIGNATURE_PREFIX)) {
+    } else if (isMultiSignPrefix(encodedTransaction)) {
       // The suffix is always a Hash160, which is 160 bits/20 bytes, which is 40 HEX chars.
       final int suffixLength = 40;
       nonSignPrefixHex = encodedTransaction.substring(
@@ -290,6 +415,21 @@ public class XrplBinaryCodec {
     return new BinaryParser(nonSignPrefixHex).readType(STObjectType.class)
       .toJson()
       .toString();
+  }
+
+  // Every signing prefix is a 4-byte (8 hex char) value with no suffix on single-sign payloads, so they can be
+  // stripped uniformly. The counterparty/sponsor role prefixes are handled alongside the plain transaction prefix.
+  private boolean isSingleSignPrefix(String encodedTransaction) {
+    return encodedTransaction.startsWith(TRX_SIGNATURE_PREFIX) ||
+      encodedTransaction.startsWith(COUNTERPARTY_SIGNATURE_PREFIX) ||
+      encodedTransaction.startsWith(SPONSOR_SIGNATURE_PREFIX);
+  }
+
+  // Multi-sign payloads carry a trailing 20-byte signer account ID suffix regardless of role prefix.
+  private boolean isMultiSignPrefix(String encodedTransaction) {
+    return encodedTransaction.startsWith(TRX_MULTI_SIGNATURE_PREFIX) ||
+      encodedTransaction.startsWith(COUNTERPARTY_MULTI_SIGNATURE_PREFIX) ||
+      encodedTransaction.startsWith(SPONSOR_MULTI_SIGNATURE_PREFIX);
   }
 
   /**

@@ -31,6 +31,11 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
    * Constant {@link MpTokenIssuanceCreateFlags} for the {@code tfMPTCanClawback} flag.
    */
   protected static final MpTokenIssuanceCreateFlags CAN_CLAWBACK = new MpTokenIssuanceCreateFlags(0x00000040);
+  /**
+   * Constant {@link MpTokenIssuanceCreateFlags} for the {@code tfMPTCanHoldConfidentialBalance} flag.
+   */
+  protected static final MpTokenIssuanceCreateFlags CAN_HOLD_CONFIDENTIAL_BALANCE
+    = new MpTokenIssuanceCreateFlags(0x00000080);
 
   /**
    * Constant {@link MpTokenIssuanceCreateFlags} for the {@code tfInnerBatchTxn} flag.
@@ -62,6 +67,7 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
     boolean tfMPTCanTrade,
     boolean tfMPTCanTransfer,
     boolean tfMPTCanClawback,
+    boolean tfMPTCanHoldConfidentialBalance,
     boolean tfInnerBatchTxn
   ) {
     return new MpTokenIssuanceCreateFlags(
@@ -73,6 +79,7 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
         tfMPTCanTransfer ? CAN_TRANSFER : UNSET,
         tfMPTCanTrade ? CAN_TRADE : UNSET,
         tfMPTCanClawback ? CAN_CLAWBACK : UNSET,
+        tfMPTCanHoldConfidentialBalance ? CAN_HOLD_CONFIDENTIAL_BALANCE : UNSET,
         tfInnerBatchTxn ? INNER_BATCH_TXN : UNSET
       ).getValue()
     );
@@ -147,6 +154,15 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
   }
 
   /**
+   * If set, indicates that confidential transfers are enabled for this token issuance.
+   *
+   * @return {@code true} if {@code tfMPTCanHoldConfidentialBalance} is set, otherwise {@code false}.
+   */
+  public boolean tfMptCanHoldConfidentialBalance() {
+    return this.isSet(CAN_HOLD_CONFIDENTIAL_BALANCE);
+  }
+
+  /**
    * Whether the {@code tfInnerBatchTxn} flag is set.
    *
    * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
@@ -166,6 +182,7 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
     private boolean tfMptCanTrade = false;
     private boolean tfMptCanTransfer = false;
     private boolean tfMptCanClawback = false;
+    private boolean tfMptCanHoldConfidentialBalance = false;
     private boolean tfInnerBatchTxn = false;
 
     /**
@@ -241,6 +258,18 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfMptCanHoldConfidentialBalance} to the given value.
+     *
+     * @param tfMptCanHoldConfidentialBalance A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfMptCanHoldConfidentialBalance(boolean tfMptCanHoldConfidentialBalance) {
+      this.tfMptCanHoldConfidentialBalance = tfMptCanHoldConfidentialBalance;
+      return this;
+    }
+
+    /**
      * Set {@code tfInnerBatchTxn} to the given value.
      *
      * @param tfInnerBatchTxn A boolean value.
@@ -266,6 +295,7 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
         tfMptCanTrade,
         tfMptCanTransfer,
         tfMptCanClawback,
+        tfMptCanHoldConfidentialBalance,
         tfInnerBatchTxn
       );
     }

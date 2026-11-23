@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.ledger;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,6 +29,8 @@ import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.jackson.modules.ZonedDateTimeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ZonedDateTimeSerializer;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -55,9 +57,8 @@ public interface LedgerHeader {
   }
 
   /**
-   * The ledger index of the ledger. In other objects, this would be a
-   * {@link LedgerIndex}, however the ledger
-   * method returns the ledger_index as a {@link String} representing an unsigned 32 bit integer.
+   * The ledger index of the ledger. In other objects, this would be a {@link LedgerIndex}, however the ledger method
+   * returns the ledger_index as a {@link String} representing an unsigned 32 bit integer.
    *
    * @return A {@link String} containing the ledger index.
    */
@@ -97,11 +98,13 @@ public interface LedgerHeader {
    */
   @JsonProperty("close_time_human")
   @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", locale = "en_US")
+  @JsonSerialize(contentUsing = ZonedDateTimeSerializer.class)
+  @JsonDeserialize(contentUsing = ZonedDateTimeDeserializer.class)
   Optional<ZonedDateTime> closeTimeHuman();
 
   /**
-   * If true, this ledger version is no longer accepting new transactions. (However, unless this ledger
-   * version is validated, it might be replaced by a different ledger version with a different set of transactions.)
+   * If true, this ledger version is no longer accepting new transactions. (However, unless this ledger version is
+   * validated, it might be replaced by a different ledger version with a different set of transactions.)
    *
    * @return {@code true} if this ledger version is no longer accepting new transactions, otherwise {@code false}.
    */
@@ -111,8 +114,8 @@ public interface LedgerHeader {
   }
 
   /**
-   * The {@link #ledgerHash()} value of the previous ledger version that is the direct predecessor of this one.
-   * If there are different versions of the previous ledger index, this indicates from which one the ledger was derived.
+   * The {@link #ledgerHash()} value of the previous ledger version that is the direct predecessor of this one. If there
+   * are different versions of the previous ledger index, this indicates from which one the ledger was derived.
    *
    * @return A {@link Hash256} containing the hash of this ledger's parent ledger.
    */
@@ -128,9 +131,9 @@ public interface LedgerHeader {
   Optional<UnsignedLong> parentCloseTime();
 
   /**
-   * The total number of drops of XRP owned by accounts in the ledger. This omits XRP that has been
-   * destroyed by transaction fees. The actual amount of XRP in circulation is lower because some
-   * accounts are "black holes" whose keys are not known by anyone.
+   * The total number of drops of XRP owned by accounts in the ledger. This omits XRP that has been destroyed by
+   * transaction fees. The actual amount of XRP in circulation is lower because some accounts are "black holes" whose
+   * keys are not known by anyone.
    *
    * @return An {@link Optional} of type {@link XrpCurrencyAmount} representing the total number of coins.
    */

@@ -1,0 +1,93 @@
+{
+  "Account": "rs1SPZRosRg39CXePxBQSr1ecbbXRqJwTx",
+  "BatchSigners": [
+    {
+      "BatchSigner": {
+        "Account": "rhUapv4VdqMNoeDS6JWz4juzYjrFwH3zHp",
+        "Signers": [
+          {
+            "Signer": {
+              "Account": "rs1SPZRosRg39CXePxBQSr1ecbbXRqJwTx",
+              "SigningPubKey": "ED44A5C097F412DEEB588DDD2C641272D06EBABE35CDDF7F952B1C3FDCF5211868",
+              "TxnSignature": "FB2EF5D9BF2E8716CECA6975A7856AF5CE284337AC300C33AAEED316456196BEB0EEECA5743876115ADE4DD373F29F511B39F02C8B6AB7A7C75A16AC46CE0C08"
+            }
+          },
+          {
+            "Signer": {
+              "Account": "rKBk6eUQ6d2uDe1FWZzgQQaprv3ddBRK79",
+              "SigningPubKey": "EDC4EDE4CAA08A9CCC11A45C84061F90B1DC743B22D7547616FF03485F89D1FDC8",
+              "TxnSignature": "DC616B1E667DBE2CC03793927BC50CBFBDE1541EB50863BB1C99DE00CB251F38D6BE5D3A2110F8EDB233C31774E4364A4E8DB7FCB9F7D0804598FCC9C6177F0A"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "Fee": "60",
+  "Flags": 65536,
+  "LastLedgerSequence": 21670098,
+  "RawTransactions": [
+    {
+      "RawTransaction": {
+        "Account": "rhUapv4VdqMNoeDS6JWz4juzYjrFwH3zHp",
+        "Amount": "1",
+        "Destination": "rs1SPZRosRg39CXePxBQSr1ecbbXRqJwTx",
+        "Fee": "0",
+        "Flags": 1073741824,
+        "Sequence": 21670040,
+        "SigningPubKey": "",
+        "TransactionType": "Payment"
+      }
+    },
+    {
+      "RawTransaction": {
+        "Account": "rhUapv4VdqMNoeDS6JWz4juzYjrFwH3zHp",
+        "Amount": {
+          "mpt_issuance_id": "014AA894577E1FF5876242D1944B52397C298ECFE5335A1D",
+          "value": "9"
+        },
+        "Destination": "rs1SPZRosRg39CXePxBQSr1ecbbXRqJwTx",
+        "Fee": "0",
+        "Flags": 1073741824,
+        "Sequence": 21670041,
+        "SigningPubKey": "",
+        "TransactionType": "Payment"
+      }
+    }
+  ],
+  "Sequence": 21670038,
+  "SigningPubKey": "ED44A5C097F412DEEB588DDD2C641272D06EBABE35CDDF7F952B1C3FDCF5211868",
+  "TransactionType": "Batch",
+  "TxnSignature": "E00DD2B18E8063A48CF15EC4C15A552A16D14355F63A354B206DEDE3B23EA97705B52EEA3207FC9780A506113563A83E86FEA1A713E88BFE813868E8ED9C4A0A",
+  "ctid": "C14AA8C000060001",
+  "date": 845771201,
+  "hash": "798B9F5CDBC477D59600A78E4CC9241AA1915D1CC827BD3DADD52AB7D82FCD0E",
+  "inLedger": 21670080,
+  "ledger_index": 21670080,
+  "meta": {
+    "AffectedNodes": [
+      {
+        "ModifiedNode": {
+          "FinalFields": {
+            "Account": "rs1SPZRosRg39CXePxBQSr1ecbbXRqJwTx",
+            "Balance": "99999803",
+            "Flags": 0,
+            "OwnerCount": 2,
+            "Sequence": 21670039
+          },
+          "LedgerEntryType": "AccountRoot",
+          "LedgerIndex": "F158922CBD4B6213B43363E7FF1D4ECB48F0ABB654795C3963264C19AC2CA0E6",
+          "PreviousFields": {
+            "Balance": "99999863",
+            "Sequence": 21670038
+          },
+          "PreviousTxnID": "BBA1B8291FDD65E5654C1FD8EE15D39E2F2196413A310D75896775F55BE7FB41",
+          "PreviousTxnLgrSeq": 21670074
+        }
+      }
+    ],
+    "TransactionIndex": 6,
+    "TransactionResult": "tesSUCCESS"
+  },
+  "validated": true
+}

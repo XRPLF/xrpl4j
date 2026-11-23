@@ -40,6 +40,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.MP_TOKEN.value()).isEqualTo("MPToken");
     assertThat(MetaLedgerEntryType.MP_TOKEN_ISSUANCE.value()).isEqualTo("MPTokenIssuance");
     assertThat(MetaLedgerEntryType.PERMISSIONED_DOMAIN.value()).isEqualTo("PermissionedDomain");
+    assertThat(MetaLedgerEntryType.DELEGATE.value()).isEqualTo("Delegate");
   }
 
   @Test
@@ -74,6 +75,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.MP_TOKEN_ISSUANCE.ledgerObjectType()).isEqualTo(MetaMpTokenIssuanceObject.class);
     assertThat(MetaLedgerEntryType.PERMISSIONED_DOMAIN.ledgerObjectType()).isEqualTo(
       MetaPermissionedDomainObject.class);
+    assertThat(MetaLedgerEntryType.DELEGATE.ledgerObjectType()).isEqualTo(MetaDelegateObject.class);
   }
 
   @Test
@@ -81,6 +83,28 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     String json = "{\"type\":\"AccountRoot\"}";
     MetaLedgerEntryTypeWrapper wrapper = objectMapper.readValue(json, MetaLedgerEntryTypeWrapper.class);
     assertThat(wrapper.type()).isEqualTo(MetaLedgerEntryType.ACCOUNT_ROOT);
+  }
+
+  @Test
+  void testSerializesAsBareString() throws JsonProcessingException {
+    assertThat(objectMapper.writeValueAsString(MetaLedgerEntryType.ACCOUNT_ROOT)).isEqualTo("\"AccountRoot\"");
+  }
+
+  @Test
+  void testSerializesAsBareStringWhenNested() throws JsonProcessingException {
+    MetaLedgerEntryTypeWrapper wrapper = ImmutableMetaLedgerEntryTypeWrapper.builder()
+      .type(MetaLedgerEntryType.ACCOUNT_ROOT)
+      .build();
+    assertThat(objectMapper.writeValueAsString(wrapper)).isEqualTo("{\"type\":\"AccountRoot\"}");
+  }
+
+  @Test
+  void testRoundTrip() throws JsonProcessingException {
+    MetaLedgerEntryTypeWrapper wrapper = ImmutableMetaLedgerEntryTypeWrapper.builder()
+      .type(MetaLedgerEntryType.DIRECTORY_NODE)
+      .build();
+    String json = objectMapper.writeValueAsString(wrapper);
+    assertThat(objectMapper.readValue(json, MetaLedgerEntryTypeWrapper.class)).isEqualTo(wrapper);
   }
 
   @Value.Immutable

@@ -47,6 +47,7 @@ import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.LoanSet;
 import org.xrpl.xrpl4j.model.transactions.Signer;
@@ -145,17 +146,22 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   }
 
   @Override
-  public Signature signInner(final PrivateKeyReference privateKeyable, final Batch batchTransaction) {
+  public Signature signInner(
+    final PrivateKeyReference privateKeyable, final Batch batchTransaction, final Address batchSignerAddress
+  ) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(batchTransaction);
-    return getTransactionSigner(privateKeyable).signInner(batchTransaction);
+    Objects.requireNonNull(batchSignerAddress);
+    return getTransactionSigner(privateKeyable).signInner(batchTransaction, batchSignerAddress);
   }
 
   @Override
-  public Signature multiSignInner(final PrivateKeyReference privateKeyable, final Batch batchTransaction) {
+  public Signature multiSignInner(final PrivateKeyReference privateKeyable, final Batch batchTransaction,
+    final Address batchSignerAddress) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(batchTransaction);
-    return getTransactionSigner(privateKeyable).multiSignInner(batchTransaction);
+    Objects.requireNonNull(batchSignerAddress);
+    return getTransactionSigner(privateKeyable).multiSignInner(batchTransaction, batchSignerAddress);
   }
 
   @Override
@@ -170,6 +176,24 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
     Objects.requireNonNull(privateKeyReference);
     Objects.requireNonNull(transaction);
     return getTransactionSigner(privateKeyReference).counterpartyMultiSign(transaction);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorSign(
+    final PrivateKeyReference privateKeyReference, final T transaction
+  ) {
+    Objects.requireNonNull(privateKeyReference);
+    Objects.requireNonNull(transaction);
+    return getTransactionSigner(privateKeyReference).sponsorSign(transaction);
+  }
+
+  @Override
+  public <T extends Transaction> Signature sponsorMultiSign(
+    final PrivateKeyReference privateKeyReference, final T transaction
+  ) {
+    Objects.requireNonNull(privateKeyReference);
+    Objects.requireNonNull(transaction);
+    return getTransactionSigner(privateKeyReference).sponsorMultiSign(transaction);
   }
 
   @Override
@@ -253,16 +277,24 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   final Seed generateEd25519XrplSeed(final String accountIdentifier) {
     Objects.requireNonNull(accountIdentifier);
 
-    final ServerSecret serverSecretBytes = serverSecretSupplier.get();
+    // Note: `serverSecretSupplier` is caller-owned and may return the same underlying ServerSecret instance (or the
+    // same backing byte[]) on every invocation. This method therefore never calls `destroy()` on the object that
+    // `serverSecretSupplier` returns -- doing so would permanently zero out a shared secret the very first time it's
+    // used. Instead, this method extracts a private, local copy of the secret bytes (via `ServerSecret#value()`,
+    // which itself returns a defensive copy) and zeroes only that local copy once it's no longer needed.
+    final ServerSecret serverSecret = serverSecretSupplier.get();
+    final byte[] serverSecretBytes = serverSecret.value();
     byte[] passphraseBytes = EMPTY_BYTE_ARRAY; // <-- to avoid an NPE in the "finally" block.
     try {
       passphraseBytes = Hashing.hmacSha512(
-          serverSecretBytes.value()) // <-- This is equivalent to the `passphraseBytes` in the xrpl.org docs.
-        .hashBytes(accountIdentifier.getBytes()).asBytes();
+          serverSecretBytes // <-- This is equivalent to the `passphraseBytes` in the xrpl.org docs.
+        )
+        .hashBytes(accountIdentifier.getBytes())
+        .asBytes();
       return Seed.ed25519SeedFromPassphrase(Passphrase.of(passphraseBytes));
     } finally {
-      // Zero-out all bytes in the both arrays so secret material exists in-memory for as little time as possible.
-      serverSecretBytes.destroy();
+      // Zero-out all bytes in both local arrays so secret material exists in-memory for as little time as possible.
+      Arrays.fill(serverSecretBytes, (byte) 0);
       Arrays.fill(passphraseBytes, (byte) 0);
     }
   }
@@ -282,16 +314,24 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   final Seed generateSecp256k1Seed(final String accountIdentifier) {
     Objects.requireNonNull(accountIdentifier);
 
-    final ServerSecret serverSecretBytes = serverSecretSupplier.get();
+    // Note: `serverSecretSupplier` is caller-owned and may return the same underlying ServerSecret instance (or the
+    // same backing byte[]) on every invocation. This method therefore never calls `destroy()` on the object that
+    // `serverSecretSupplier` returns -- doing so would permanently zero out a shared secret the very first time it's
+    // used. Instead, this method extracts a private, local copy of the secret bytes (via `ServerSecret#value()`,
+    // which itself returns a defensive copy) and zeroes only that local copy once it's no longer needed.
+    final ServerSecret serverSecret = serverSecretSupplier.get();
+    final byte[] serverSecretBytes = serverSecret.value();
     byte[] passphraseBytes = EMPTY_BYTE_ARRAY; // <-- to avoid an NPE in the "finally" block.
     try {
       passphraseBytes = Hashing.hmacSha512(
-          serverSecretBytes.value()) // <-- This is equivalent to the `passphraseBytes` in the xrpl.org docs.
-        .hashBytes(accountIdentifier.getBytes()).asBytes();
+          serverSecretBytes // <-- This is equivalent to the `passphraseBytes` in the xrpl.org docs.
+        )
+        .hashBytes(accountIdentifier.getBytes())
+        .asBytes();
       return Seed.secp256k1SeedFromPassphrase(Passphrase.of(passphraseBytes));
     } finally {
-      // Zero-out all bytes in the both arrays so secret material exists in-memory for as little time as possible.
-      serverSecretBytes.destroy();
+      // Zero-out all bytes in both local arrays so secret material exists in-memory for as little time as possible.
+      Arrays.fill(serverSecretBytes, (byte) 0);
       Arrays.fill(passphraseBytes, (byte) 0);
     }
   }
@@ -350,12 +390,12 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
       return bcSignatureService.multiSignToSigner(this.privateKey, transaction);
     }
 
-    public final Signature signInner(final Batch transaction) {
-      return bcSignatureService.signInner(this.privateKey, transaction);
+    public final Signature signInner(final Batch transaction, final Address batchSignerAddress) {
+      return bcSignatureService.signInner(this.privateKey, transaction, batchSignerAddress);
     }
 
-    public final Signature multiSignInner(final Batch transaction) {
-      return bcSignatureService.multiSignInner(this.privateKey, transaction);
+    public final Signature multiSignInner(final Batch transaction, final Address batchSignerAddress) {
+      return bcSignatureService.multiSignInner(this.privateKey, transaction, batchSignerAddress);
     }
 
     public final Signature counterpartySign(final LoanSet transaction) {
@@ -364,6 +404,14 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
 
     public final Signature counterpartyMultiSign(final LoanSet transaction) {
       return bcSignatureService.counterpartyMultiSign(this.privateKey, transaction);
+    }
+
+    public <T extends Transaction> Signature sponsorSign(final T transaction) {
+      return bcSignatureService.sponsorSign(this.privateKey, transaction);
+    }
+
+    public <T extends Transaction> Signature sponsorMultiSign(final T transaction) {
+      return bcSignatureService.sponsorMultiSign(this.privateKey, transaction);
     }
 
     public PublicKey getPublicKey() {

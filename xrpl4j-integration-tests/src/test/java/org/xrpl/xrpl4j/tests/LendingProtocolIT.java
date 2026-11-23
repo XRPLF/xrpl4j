@@ -1,10 +1,13 @@
 package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.given;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
+import org.awaitility.Durations;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -16,6 +19,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.AccountObjectType;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.fees.FeeParams;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
@@ -28,6 +32,7 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.LoanManageFlags;
 import org.xrpl.xrpl4j.model.flags.LoanPayFlags;
+import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -42,6 +47,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Amount;
 import org.xrpl.xrpl4j.model.transactions.CounterpartySignature;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.ImmutableLoanSet;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.LoanBrokerCoverClawback;
 import org.xrpl.xrpl4j.model.transactions.LoanBrokerCoverDeposit;
@@ -59,9 +65,12 @@ import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.VaultCreate;
 import org.xrpl.xrpl4j.model.transactions.VaultDeposit;
+import org.xrpl.xrpl4j.model.transactions.VaultKind;
 import org.xrpl.xrpl4j.model.transactions.WithdrawalPolicy;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -103,16 +112,20 @@ public class LendingProtocolIT extends AbstractIT {
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
-    final LoanSet unsignedLoanSet = LoanSet.builder()
+    final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
+
+    final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSet).build()).recommendedFee()
+    );
 
     // Broker (first-party) single-signs the unsigned transaction
     final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
@@ -191,16 +204,20 @@ public class LendingProtocolIT extends AbstractIT {
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
-    final LoanSet unsignedLoanSet = LoanSet.builder()
+    final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeLoanSetNetworkFees(feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
+
+    final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSet).build()).recommendedFee()
+    );
 
     // Broker (first-party) single-signs the unsigned transaction
     final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
@@ -257,18 +274,22 @@ public class LendingProtocolIT extends AbstractIT {
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
-    final LoanSet unsignedLoanSet = LoanSet.builder()
+    final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeLoanSetNetworkFees(
-        feeResult, UnsignedInteger.ZERO, UnsignedInteger.valueOf(2)
-      ).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
+
+    final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSet)
+        .counterpartySignatureCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // Broker (first-party) single-signs the unsigned transaction
     final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
@@ -327,17 +348,21 @@ public class LendingProtocolIT extends AbstractIT {
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
-    final LoanSet unsignedLoanSet = LoanSet.builder()
+    final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeLoanSetNetworkFees(
-        feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.ZERO
-      ).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .build();
+
+    final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSet)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // Broker (first-party) multi-signs the unsigned transaction
     final Set<Signer> brokerSigners = Lists.newArrayList(
@@ -395,17 +420,22 @@ public class LendingProtocolIT extends AbstractIT {
     final AccountInfoResult brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
-    final LoanSet unsignedLoanSet = LoanSet.builder()
+    final LoanSet unpricedLoanSet = LoanSet.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeLoanSetNetworkFees(
-        feeResult, UnsignedInteger.valueOf(2), UnsignedInteger.valueOf(2)
-      ).recommendedFee())
       .sequence(brokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("1000000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .build();
+
+    final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSet)
+        .signersCount(UnsignedInteger.valueOf(2))
+        .counterpartySignatureCount(UnsignedInteger.valueOf(2))
+        .build()).recommendedFee()
+    );
 
     // Broker (first-party) multi-signs the unsigned transaction
     final Set<Signer> brokerSigners = Lists.newArrayList(
@@ -520,6 +550,15 @@ public class LendingProtocolIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
     );
 
+    // LoanBrokerSet requires a closed-ended Vault once LendingProtocolV1_1 is enabled, so this Vault must define a
+    // SubscriptionDate/RedemptionDate pair, and this method must wait for the ledger to pass SubscriptionDate before
+    // attaching a LoanBroker to it, below. See setupLoanBrokerAndXrpVault() for why SubscriptionDate and
+    // RedemptionDate are padded well past their minimums.
+    final UnsignedLong subscriptionDate = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(60)));
+    final UnsignedLong redemptionDate = subscriptionDate.plus(
+      VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.plus(UnsignedLong.valueOf(3600))
+    );
+
     VaultCreate vaultCreate = VaultCreate.builder()
       .account(loanBrokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
@@ -527,6 +566,9 @@ public class LendingProtocolIT extends AbstractIT {
       .asset(usdIssue)
       .assetsMaximum(Amount.of("500000"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(subscriptionDate)
+      .redemptionDate(redemptionDate)
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
 
@@ -549,6 +591,10 @@ public class LendingProtocolIT extends AbstractIT {
         LedgerSpecifier.VALIDATED
       )
     );
+    assertThat(vaultLedgerEntry.node().vaultKind()).isEqualTo(VaultKind.CLOSED_ENDED);
+    assertThat(vaultLedgerEntry.node().subscriptionDate()).hasValue(subscriptionDate);
+    assertThat(vaultLedgerEntry.node().redemptionDate()).hasValue(redemptionDate);
+    assertThat(vaultLedgerEntry.node().leVersion()).isEqualTo(UnsignedInteger.ONE);
     Hash256 vaultId = vaultLedgerEntry.node().index();
     logger.info("Vault created: {}", vaultId);
 
@@ -574,6 +620,9 @@ public class LendingProtocolIT extends AbstractIT {
     this.scanForResult(
       () -> this.getValidatedTransaction(signedDeposit.hash(), VaultDeposit.class)
     );
+
+    // LoanBrokerSet requires the Vault to be past its SubscriptionDate once it is closed-ended.
+    awaitSubscriptionDatePassed(subscriptionDate);
 
     // ========== LOAN BROKER SET ==========
     loanBrokerAccountInfo = this.scanForResult(
@@ -698,20 +747,21 @@ public class LendingProtocolIT extends AbstractIT {
     );
 
     // Build the LoanSet transaction with broker's signing key
-    XrpCurrencyAmount loanSetFee = FeeUtils.computeLoanSetNetworkFees(
-      feeResult, UnsignedInteger.ZERO, UnsignedInteger.ZERO
-    ).recommendedFee();
-    LoanSet loanSetBase = LoanSet.builder()
+    LoanSet unpricedLoanSetBase = LoanSet.builder()
       .account(loanBrokerKeyPair.publicKey().deriveAddress())
-      .fee(loanSetFee)
       .sequence(loanBrokerAccountInfo.accountData().sequence())
       .loanBrokerId(loanBrokerId)
       .principalRequested(Amount.of("50000"))
       .counterparty(borrowerKeyPair.publicKey().deriveAddress())
       .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
       .data(LoanData.of("AABBCC"))
       .signingPublicKey(loanBrokerKeyPair.publicKey())
       .build();
+
+    LoanSet loanSetBase = ImmutableLoanSet.copyOf(unpricedLoanSetBase).withFee(
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSetBase).build()).recommendedFee()
+    );
 
     // Borrower counterparty-signs the transaction
     Signature borrowerCounterpartySig = signatureService.counterpartySign(
@@ -726,7 +776,9 @@ public class LendingProtocolIT extends AbstractIT {
       .counterpartySignature(counterpartySig)
       .build();
 
-    // Broker signs the final transaction (same signable bytes since CounterpartySignature is excluded)
+    // Broker signs the final transaction. CounterpartySignature is excluded from the signing fields, so attaching
+    // it above does not change what the broker signs. The two signatures still cover different bytes, though: the
+    // broker signs under the STX prefix and the counterparty under the role-bound CPT prefix (fixCleanup3_4_0).
     SingleSignedTransaction<LoanSet> signedLoanSet = signatureService.sign(
       loanBrokerKeyPair.privateKey(), loanSetFinal
     );
@@ -792,65 +844,6 @@ public class LendingProtocolIT extends AbstractIT {
     );
     LoanObject paidLoan = loanEntry.node();
     assertThat(paidLoan.paymentRemaining()).isEqualTo(UnsignedInteger.valueOf(2));
-
-    // ========== LOAN MANAGE - Impair ==========
-    loanBrokerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
-    );
-
-    LoanManage loanManageImpair = LoanManage.builder()
-      .account(loanBrokerKeyPair.publicKey().deriveAddress())
-      .fee(fee)
-      .sequence(loanBrokerAccountInfo.accountData().sequence())
-      .loanId(loanId)
-      .flags(LoanManageFlags.of(LoanManageFlags.LOAN_IMPAIR.getValue()))
-      .signingPublicKey(loanBrokerKeyPair.publicKey())
-      .build();
-
-    SingleSignedTransaction<LoanManage> signedImpair = signatureService.sign(
-      loanBrokerKeyPair.privateKey(), loanManageImpair
-    );
-    SubmitResult<LoanManage> impairResult =
-      xrplClient.submit(signedImpair);
-    assertThat(impairResult.engineResult()).isEqualTo(SUCCESS_STATUS);
-    this.scanForResult(
-      () -> this.getValidatedTransaction(signedImpair.hash(), LoanManage.class)
-    );
-
-    // Verify loan is impaired
-    loanEntry = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
-    );
-    assertThat(loanEntry.node().flags().lsfLoanImpaired()).isTrue();
-
-    // ========== LOAN MANAGE - Unimpair ==========
-    loanBrokerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(loanBrokerKeyPair.publicKey().deriveAddress())
-    );
-
-    LoanManage loanManageUnimpair = LoanManage.builder()
-      .account(loanBrokerKeyPair.publicKey().deriveAddress())
-      .fee(fee)
-      .sequence(loanBrokerAccountInfo.accountData().sequence())
-      .loanId(loanId)
-      .flags(LoanManageFlags.of(LoanManageFlags.LOAN_UNIMPAIR.getValue()))
-      .signingPublicKey(loanBrokerKeyPair.publicKey())
-      .build();
-
-    SingleSignedTransaction<LoanManage> signedUnimpair = signatureService.sign(
-      loanBrokerKeyPair.privateKey(), loanManageUnimpair
-    );
-    SubmitResult<LoanManage> unimpairResult = xrplClient.submit(signedUnimpair);
-    assertThat(unimpairResult.engineResult()).isEqualTo(SUCCESS_STATUS);
-    this.scanForResult(
-      () -> this.getValidatedTransaction(signedUnimpair.hash(), LoanManage.class)
-    );
-
-    // Verify loan is no longer impaired
-    loanEntry = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
-    );
-    assertThat(loanEntry.node().flags().lsfLoanImpaired()).isFalse();
 
     // ========== LOAN PAY - Full payment ==========
     borrowerAccountInfo = this.scanForResult(
@@ -1016,6 +1009,167 @@ public class LendingProtocolIT extends AbstractIT {
   /**
    * Helper method to verify that the LoanBroker from ledger_entry matches account_objects.
    */
+  // //////////////////////
+  // LoanManage impair/unimpair (kept separate from the lifecycle test because it requires an overdue loan)
+  // //////////////////////
+
+  @Test
+  void loanManageImpairAndUnimpair() throws JsonRpcClientErrorException, JsonProcessingException {
+    final KeyPair brokerKeyPair = createRandomAccountEd25519();
+    final KeyPair borrowerKeyPair = createRandomAccountEd25519();
+
+    final FeeResult feeResult = xrplClient.fee();
+    final XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(feeResult).recommendedFee();
+
+    final Hash256 loanBrokerId = setupLoanBrokerAndXrpVault(brokerKeyPair, fee);
+    final UnsignedInteger loanSequence = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(loanBrokerId, LoanBrokerObject.class, LedgerSpecifier.VALIDATED)
+    ).node().loanSequence();
+
+    // PaymentInterval is pinned to rippled's 60-second minimum so the loan falls overdue almost immediately. That is
+    // safe here only because this test makes no payments after impairing — see awaitLoanPaymentLate().
+    final AccountInfoResult brokerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
+    );
+    final LoanSet unpricedLoanSet = LoanSet.builder()
+      .account(brokerKeyPair.publicKey().deriveAddress())
+      .sequence(brokerAccountInfo.accountData().sequence())
+      .loanBrokerId(loanBrokerId)
+      .principalRequested(Amount.of("1000000"))
+      .counterparty(borrowerKeyPair.publicKey().deriveAddress())
+      .paymentTotal(UnsignedInteger.valueOf(3))
+      .paymentInterval(UnsignedInteger.valueOf(60))
+      .signingPublicKey(brokerKeyPair.publicKey())
+      .build();
+
+    final LoanSet unsignedLoanSet = ImmutableLoanSet.copyOf(unpricedLoanSet).withFee(
+      FeeUtils.computeFee(FeeParams.forLoanSet(feeResult, unpricedLoanSet).build()).recommendedFee()
+    );
+
+    final SingleSignedTransaction<LoanSet> brokerSigned = signatureService.sign(
+      brokerKeyPair.privateKey(), unsignedLoanSet
+    );
+    final Signature counterpartySig = signatureService.counterpartySign(
+      borrowerKeyPair.privateKey(), unsignedLoanSet
+    );
+    final CounterpartySignature counterpartySignature = CounterpartySignature.of(
+      borrowerKeyPair.publicKey(), counterpartySig
+    );
+    final LoanSet unsignedWithCounterparty = LoanSet.builder().from(unsignedLoanSet)
+      .counterpartySignature(counterpartySignature)
+      .build();
+    submitSingleSignedLoanSet(
+      SingleSignedTransaction.<LoanSet>builder()
+        .unsignedTransaction(unsignedWithCounterparty)
+        .signature(brokerSigned.signature())
+        .signedTransaction(
+          LoanSet.builder().from(unsignedWithCounterparty)
+            .transactionSignature(brokerSigned.signature())
+            .build()
+        )
+        .build()
+    );
+
+    final Hash256 loanId = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.loan(
+        LoanLedgerEntryParams.builder().loanBrokerId(loanBrokerId).loanSeq(loanSequence).build(),
+        LedgerSpecifier.VALIDATED
+      )
+    ).node().index();
+
+    // ========== LOAN MANAGE - Impair ==========
+    // Under fixCleanup3_4_0 a loan can only be impaired once its payment is actually late; impairing a current loan
+    // returns tecTOO_SOON (see rippled's LoanManage::impairLoan).
+    awaitLoanPaymentLate(loanId);
+
+    final LoanManage impair = LoanManage.builder()
+      .account(brokerKeyPair.publicKey().deriveAddress())
+      .fee(fee)
+      .sequence(this.scanForResult(
+        () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
+      ).accountData().sequence())
+      .loanId(loanId)
+      .flags(LoanManageFlags.of(LoanManageFlags.LOAN_IMPAIR.getValue()))
+      .signingPublicKey(brokerKeyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<LoanManage> signedImpair = signatureService.sign(
+      brokerKeyPair.privateKey(), impair
+    );
+    assertThat(xrplClient.submit(signedImpair).engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedImpair.hash(), LoanManage.class));
+
+    assertThat(
+      xrplClient.ledgerEntry(
+        LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
+      ).node().flags().lsfLoanImpaired()
+    ).isTrue();
+
+    // ========== LOAN MANAGE - Unimpair ==========
+    final LoanManage unimpair = LoanManage.builder()
+      .account(brokerKeyPair.publicKey().deriveAddress())
+      .fee(fee)
+      .sequence(this.scanForResult(
+        () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
+      ).accountData().sequence())
+      .loanId(loanId)
+      .flags(LoanManageFlags.of(LoanManageFlags.LOAN_UNIMPAIR.getValue()))
+      .signingPublicKey(brokerKeyPair.publicKey())
+      .build();
+
+    final SingleSignedTransaction<LoanManage> signedUnimpair = signatureService.sign(
+      brokerKeyPair.privateKey(), unimpair
+    );
+    assertThat(xrplClient.submit(signedUnimpair).engineResult()).isEqualTo(SUCCESS_STATUS);
+    this.scanForResult(() -> this.getValidatedTransaction(signedUnimpair.hash(), LoanManage.class));
+
+    assertThat(
+      xrplClient.ledgerEntry(
+        LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
+      ).node().flags().lsfLoanImpaired()
+    ).isFalse();
+  }
+
+  /**
+   * Waits until the given loan's next payment is overdue, i.e. until the validated ledger's close time has advanced
+   * strictly past the loan's {@code NextPaymentDueDate}.
+   *
+   * <p>Under the {@code fixCleanup3_4_0} amendment, rippled only permits impairing a loan whose payment is actually
+   * late (see rippled's {@code LoanManage::impairLoan}, which otherwise returns {@code tecTOO_SOON}). A standalone,
+   * local rippled's close time can advance much faster than wall-clock time, so pinning the loan to the 60-second
+   * minimum {@code PaymentInterval} keeps this wait well under a second there. Against a real network (e.g. Devnet),
+   * though, ledger close time tracks wall-clock time roughly 1:1, so this genuinely takes close to a full
+   * {@code PaymentInterval} of real time to resolve; the timeout below is sized for that case.</p>
+   *
+   * <p>Note that rippled evaluates lateness against the <em>applying</em> ledger's {@code parentCloseTime}, whereas
+   * this polls the <em>validated</em> ledger's {@code closeTime}. Waiting on the latter is sufficient because close
+   * times are monotonic: for any ledger {@code M} later than the validated ledger {@code N} observed here,
+   * {@code parentCloseTime(M) == closeTime(M-1) >= closeTime(N)}. So once {@code closeTime(N)} has passed the due
+   * date, every subsequent ledger that could apply the impair has too, and no overshoot margin is required.</p>
+   *
+   * @param loanId The {@link Hash256} identifying the loan to wait on.
+   *
+   * @throws JsonRpcClientErrorException If the loan cannot be read from the ledger.
+   */
+  private void awaitLoanPaymentLate(final Hash256 loanId) throws JsonRpcClientErrorException {
+    final UnsignedLong nextPaymentDueDate = UnsignedLong.valueOf(
+      xrplClient.ledgerEntry(
+        LedgerEntryRequestParams.index(loanId, LoanObject.class, LedgerSpecifier.VALIDATED)
+      ).node().nextPaymentDueDate()
+        .orElseThrow(() -> new IllegalStateException("Loan must have a NextPaymentDueDate in order to become late."))
+        .longValue()
+    );
+
+    given()
+      .pollInterval(Durations.ONE_HUNDRED_MILLISECONDS)
+      .atMost(Duration.of(3, ChronoUnit.MINUTES))
+      .await()
+      .until(() -> getValidatedLedger().ledger().closeTime()
+        .orElseThrow(() -> new IllegalStateException("Validated ledger must have a closeTime."))
+        .compareTo(nextPaymentDueDate) > 0
+      );
+  }
+
   private void assertLoanBrokerEntryEqualsObjectFromAccountObjects(
     Address owner,
     UnsignedInteger ownerSequence
@@ -1167,6 +1321,27 @@ public class LendingProtocolIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
     );
 
+    // LoanBrokerSet requires a closed-ended Vault once LendingProtocolV1_1 is enabled, so this Vault must
+    // define a SubscriptionDate/RedemptionDate pair and this method must wait for the ledger to pass
+    // SubscriptionDate before attaching a LoanBroker to it, below.
+    //
+    // SubscriptionDate must also leave enough real time for the VaultDeposit below to land before it -- deposits
+    // into a closed-ended Vault are only accepted before SubscriptionDate. A 5-second buffer is enough on a local
+    // rippled node with near-instant round trips, but against a real network (e.g. Devnet, ~4-5s ledger closes plus
+    // RPC latency for every call between VaultCreate and VaultDeposit) that window routinely closes before the
+    // deposit is submitted, and rippled rejects it with tecEXPIRED.
+    //
+    // RedemptionDate must also clear the Loan's own finalPayment date (StartDate + PaymentTotal * PaymentInterval,
+    // plus rippled's kLoanRedemptionBuffer), or the LoanSet submitted after this setup returns tecNO_PERMISSION.
+    // StartDate is whenever LoanSet actually validates, which is after this method already waited past
+    // SubscriptionDate and closed ledgers for LoanBrokerSet and LoanBrokerCoverDeposit, so a window sized to just
+    // the loan term leaves no slack for that setup latency. Pad it generously; VaultCreate allows up to
+    // MAX_INVESTMENT_PERIOD_SECONDS (~30 years), so there is ample room.
+    final UnsignedLong subscriptionDate = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(60)));
+    final UnsignedLong redemptionDate = subscriptionDate.plus(
+      VaultCreate.MIN_INVESTMENT_PERIOD_SECONDS.plus(UnsignedLong.valueOf(3600))
+    );
+
     final VaultCreate vaultCreate = VaultCreate.builder()
       .account(brokerKeyPair.publicKey().deriveAddress())
       .fee(fee)
@@ -1174,6 +1349,9 @@ public class LendingProtocolIT extends AbstractIT {
       .asset(Issue.XRP)
       .assetsMaximum(Amount.of("10000000000"))
       .withdrawalPolicy(WithdrawalPolicy.FIRST_COME_FIRST_SERVE)
+      .vaultKind(VaultKind.CLOSED_ENDED)
+      .subscriptionDate(subscriptionDate)
+      .redemptionDate(redemptionDate)
       .signingPublicKey(brokerKeyPair.publicKey())
       .build();
 
@@ -1193,7 +1371,12 @@ public class LendingProtocolIT extends AbstractIT {
         LedgerSpecifier.VALIDATED
       )
     );
-    final Hash256 vaultId = vaultEntry.node().index();
+    final VaultObject vault = vaultEntry.node();
+    assertThat(vault.vaultKind()).isEqualTo(VaultKind.CLOSED_ENDED);
+    assertThat(vault.subscriptionDate()).hasValue(subscriptionDate);
+    assertThat(vault.redemptionDate()).hasValue(redemptionDate);
+    assertThat(vault.leVersion()).isEqualTo(UnsignedInteger.ONE);
+    final Hash256 vaultId = vault.index();
 
     final AccountInfoResult depositorAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(depositorKeyPair.publicKey().deriveAddress())
@@ -1214,6 +1397,9 @@ public class LendingProtocolIT extends AbstractIT {
     final SubmitResult<VaultDeposit> depositResult = xrplClient.submit(signedDeposit);
     assertThat(depositResult.engineResult()).isEqualTo(SUCCESS_STATUS);
     this.scanForResult(() -> this.getValidatedTransaction(signedDeposit.hash(), VaultDeposit.class));
+
+    // LoanBrokerSet requires the Vault to be past its SubscriptionDate once it is closed-ended.
+    awaitSubscriptionDatePassed(subscriptionDate);
 
     brokerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(brokerKeyPair.publicKey().deriveAddress())
@@ -1267,6 +1453,24 @@ public class LendingProtocolIT extends AbstractIT {
     this.scanForResult(() -> this.getValidatedTransaction(signedCoverDeposit.hash(), LoanBrokerCoverDeposit.class));
 
     return loanBrokerId;
+  }
+
+  /**
+   * Waits for the ledger's close time to pass {@code subscriptionDate}. {@link AbstractIT#scanForResult} caps its
+   * wait at {@link AbstractIT#AT_MOST_INTERVAL} (30 seconds), which is too short once SubscriptionDate is padded out
+   * far enough to survive real network latency (see setupLoanBrokerAndXrpVault()), so this polls with its own,
+   * longer timeout instead.
+   */
+  private void awaitSubscriptionDatePassed(UnsignedLong subscriptionDate) {
+    given()
+      .pollInterval(POLL_INTERVAL)
+      .atMost(Duration.ofSeconds(120))
+      .await()
+      .until(
+        this::getValidatedLedger,
+        ledgerResult -> FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
+          .greaterThan(subscriptionDate)
+      );
   }
 
   /**

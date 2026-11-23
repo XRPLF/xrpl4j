@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -38,6 +39,9 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import feign.Client;
+import feign.Request;
+import feign.Response;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,6 +70,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountSponsoringRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountSponsoringResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
@@ -127,9 +133,14 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -619,6 +630,12 @@ public class XrplClientTest {
   }
 
   @Test
+  void jsonRpcClientConstructorIsPublic() throws NoSuchMethodException {
+    Constructor<XrplClient> constructor = XrplClient.class.getDeclaredConstructor(JsonRpcClient.class);
+    assertThat(Modifier.isPublic(constructor.getModifiers())).isTrue();
+  }
+
+  @Test
   public void submitSingleSignedTransaction() {
     BcSignatureService bcSignatureService = new BcSignatureService();
     jsonRpcClientMock = new JsonRpcClient() {
@@ -1036,6 +1053,20 @@ public class XrplClientTest {
   }
 
   @Test
+  public void accountSponsoring() throws JsonRpcClientErrorException {
+    AccountSponsoringRequestParams accountSponsoringRequestParams = AccountSponsoringRequestParams.builder()
+      .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
+      .build();
+    xrplClient.accountSponsoring(accountSponsoringRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountSponsoringResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_SPONSORING);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountSponsoringRequestParams);
+  }
+
+  @Test
   public void channelVerify() throws JsonRpcClientErrorException {
     ChannelVerifyRequestParams channelVerifyRequestParams = ChannelVerifyRequestParams.builder()
       .amount(XrpCurrencyAmount.ofDrops(1))
@@ -1049,6 +1080,34 @@ public class XrplClientTest {
     verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(ChannelVerifyResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.CHANNEL_VERIFY);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(channelVerifyRequestParams);
+  }
+
+  @Test
+  public void constructorWithCustomFeignClientRoutesRequestsThroughIt()
+    throws JsonRpcClientErrorException, IOException {
+    Client feignClient = mock(Client.class);
+    when(feignClient.execute(any(Request.class), any(Request.Options.class)))
+      .thenAnswer(invocation -> Response.builder()
+        .request(invocation.getArgument(0))
+        .status(200)
+        .headers(Collections.emptyMap())
+        .body("{\"result\":{\"status\":\"success\",\"signature_verified\":true}}", StandardCharsets.UTF_8)
+        .build());
+
+    Request.Options options = new Request.Options();
+    XrplClient client = new XrplClient(HttpUrl.get("http://localhost:1/"), feignClient, options);
+    ChannelVerifyResult result = client.channelVerify(ChannelVerifyRequestParams.builder()
+      .amount(XrpCurrencyAmount.ofDrops(1))
+      .channelId(Hash256.of(Strings.repeat("0", 64)))
+      .publicKey("publicKey")
+      .signature("signature")
+      .build());
+
+    assertThat(result.signatureVerified()).isTrue();
+
+    ArgumentCaptor<Request.Options> optionsCaptor = ArgumentCaptor.forClass(Request.Options.class);
+    verify(feignClient).execute(any(Request.class), optionsCaptor.capture());
+    assertThat(optionsCaptor.getValue()).isSameAs(options);
   }
 
   @Test

@@ -14,6 +14,7 @@ import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.BridgeObject;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.CredentialObject;
+import org.xrpl.xrpl4j.model.ledger.DelegateObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.DidObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
@@ -28,6 +29,7 @@ import org.xrpl.xrpl4j.model.ledger.OracleObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
+import org.xrpl.xrpl4j.model.ledger.SponsorshipObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.ledger.VaultObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -400,7 +402,7 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @param issuanceId      The {@link MpTokenIssuanceId} of the token.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
    *
-   * @return A {@link LedgerEntryRequestParams} for {@link OracleObject}.
+   * @return A {@link LedgerEntryRequestParams} for {@link MpTokenIssuanceObject}.
    */
   static LedgerEntryRequestParams<MpTokenIssuanceObject> mpTokenIssuance(
     MpTokenIssuanceId issuanceId,
@@ -444,6 +446,25 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   ) {
     return ImmutableLedgerEntryRequestParams.<PermissionedDomainObject>builder()
       .permissionedDomain(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link DelegateObject} ledger entry.
+   *
+   * @param params          The {@link DelegateLedgerEntryParams} that uniquely identify the
+   *                        {@link DelegateObject} on ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link DelegateObject}.
+   */
+  static LedgerEntryRequestParams<DelegateObject> delegate(
+    DelegateLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<DelegateObject>builder()
+      .delegate(params)
       .ledgerSpecifier(ledgerSpecifier)
       .build();
   }
@@ -505,6 +526,25 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   ) {
     return ImmutableLedgerEntryRequestParams.<LoanObject>builder()
       .loan(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link SponsorshipObject} ledger entry.
+   *
+   * @param params          The {@link SponsorshipLedgerEntryParams} that uniquely identify the
+   *                        {@link SponsorshipObject} on ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link SponsorshipObject}.
+   */
+  static LedgerEntryRequestParams<SponsorshipObject> sponsorship(
+    SponsorshipLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<SponsorshipObject>builder()
+      .sponsorship(params)
       .ledgerSpecifier(ledgerSpecifier)
       .build();
   }
@@ -675,6 +715,13 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<PermissionedDomainLedgerEntryParams> permissionedDomain();
 
   /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.DelegateObject} by {@link DelegateLedgerEntryParams}.
+   *
+   * @return An optionally-present {@link DelegateLedgerEntryParams}.
+   */
+  Optional<DelegateLedgerEntryParams> delegate();
+
+  /**
    * Look up a {@link org.xrpl.xrpl4j.model.ledger.VaultObject} by {@link VaultLedgerEntryParams}.
    *
    * @return An {@link Optional} {@link VaultLedgerEntryParams}.
@@ -695,6 +742,13 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @return An {@link Optional} {@link LoanLedgerEntryParams}.
    */
   Optional<LoanLedgerEntryParams> loan();
+
+  /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.SponsorshipObject} by {@link SponsorshipLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link SponsorshipLedgerEntryParams}.
+   */
+  Optional<SponsorshipLedgerEntryParams> sponsorship();
 
   /**
    * The {@link Class} of {@link T}. This field is helpful when telling Jackson how to deserialize rippled's response to
@@ -773,6 +827,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
       return (Class<T>) PermissionedDomainObject.class;
     }
 
+    if (delegate().isPresent()) {
+      return (Class<T>) DelegateObject.class;
+    }
+
     if (vault().isPresent()) {
       return (Class<T>) VaultObject.class;
     }
@@ -783,6 +841,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (loan().isPresent()) {
       return (Class<T>) LoanObject.class;
+    }
+
+    if (sponsorship().isPresent()) {
+      return (Class<T>) SponsorshipObject.class;
     }
 
     return (Class<T>) LedgerObject.class;

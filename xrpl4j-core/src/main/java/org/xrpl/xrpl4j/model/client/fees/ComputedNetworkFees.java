@@ -26,6 +26,7 @@ import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 /**
  * An object that holds fee options that were calculated based upon current ledger stats.
@@ -71,6 +72,21 @@ public interface ComputedNetworkFees {
    */
   // TODO: Introduce Percentage.
   BigDecimal queuePercentage();
+
+  /**
+   * An itemized account of how these fee levels were computed, present when this instance was produced by
+   * {@link FeeUtils#computeFee(FeeParams)} and empty when it was produced by the per-base-fee
+   * {@link FeeUtils#computeNetworkFees(FeeResult)}.
+   *
+   * <p>Inspect (or log) {@link FeeBreakdown#summary()} while developing: any {@code [assumed]} line names a
+   * {@link FeeParams} input that was defaulted and may need to be supplied for the fee to be exact.
+   *
+   * <p>This attribute is auxiliary: it does not participate in {@code equals}, {@code hashCode} or {@code toString}.
+   *
+   * @return An optionally-present {@link FeeBreakdown}.
+   */
+  @Value.Auxiliary
+  Optional<FeeBreakdown> feeBreakdown();
 
   /**
    * Helper method to return the recommened fee to use.

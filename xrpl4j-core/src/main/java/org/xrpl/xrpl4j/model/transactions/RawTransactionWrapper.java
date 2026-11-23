@@ -64,6 +64,7 @@ public interface RawTransactionWrapper {
   /**
    * The inner transaction. This transaction must:
    * <ul>
+   *   <li>Not be a pseudo-transaction (see {@link Transaction#PSEUDO_TRANSACTION_TYPES})</li>
    *   <li>Have the {@code tfInnerBatchTxn} flag set</li>
    *   <li>Have a fee of 0</li>
    *   <li>Have an empty {@code SigningPubKey}</li>
@@ -78,13 +79,20 @@ public interface RawTransactionWrapper {
   /**
    * Validates the state of the {@code RawTransactionWrapper}.
    *
-   * <p>Ensures that the transaction wrapped by this instance satisfies the requirement of being an inner transaction
-   * by verifying that the {@code tfInnerBatchTxn} flag is set on the transaction.
+   * <p>Ensures that the transaction wrapped by this instance satisfies the requirements of being an inner transaction:
+   * it must not be a pseudo-transaction (which the ledger emits itself and never accepts from a user, regardless of
+   * the flags it carries), and it must have the {@code tfInnerBatchTxn} flag set.
    *
-   * @throws IllegalArgumentException if the {@code tfInnerBatchTxn} flag is not set on the wrapped transaction.
+   * @throws IllegalArgumentException if the wrapped transaction is a pseudo-transaction, or if the
+   *   {@code tfInnerBatchTxn} flag is not set on it.
    */
   @Check
   default void check() {
+    Preconditions.checkArgument(
+      !Transaction.PSEUDO_TRANSACTION_TYPES.contains(rawTransaction().transactionType()),
+      "Inner transaction must not be a pseudo-transaction, but was %s.",
+      rawTransaction().transactionType()
+    );
     Preconditions.checkArgument(
       rawTransaction().transactionFlags().tfInnerBatchTxn(),
       "Inner transaction must have the `tfInnerBatchTxn` flag set."

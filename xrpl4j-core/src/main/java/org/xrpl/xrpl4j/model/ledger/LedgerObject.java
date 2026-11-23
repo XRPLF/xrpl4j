@@ -42,6 +42,7 @@ import com.google.common.annotations.Beta;
   //    @JsonSubTypes.Type(value = ImmutableAmendmentsObject.class, name = "Amendments"),
   @JsonSubTypes.Type(value = ImmutableCheckObject.class, name = "Check"),
   @JsonSubTypes.Type(value = ImmutableCredentialObject.class, name = "Credential"),
+  @JsonSubTypes.Type(value = ImmutableDelegateObject.class, name = "Delegate"),
   @JsonSubTypes.Type(value = ImmutableDepositPreAuthObject.class, name = "DepositPreauth"),
   //    @JsonSubTypes.Type(value = ImmutableDirectoryNodeObject.class, name = "DirectoryNode"),
   @JsonSubTypes.Type(value = ImmutableEscrowObject.class, name = "Escrow"),
@@ -69,6 +70,7 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableVaultObject.class, name = "Vault"),
   @JsonSubTypes.Type(value = ImmutableLoanBrokerObject.class, name = "LoanBroker"),
   @JsonSubTypes.Type(value = ImmutableLoanObject.class, name = "Loan"),
+  @JsonSubTypes.Type(value = ImmutableSponsorshipObject.class, name = "Sponsorship"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -168,6 +170,15 @@ public interface LedgerObject {
     NFTOKEN_PAGE("NFTokenPage"),
 
     /**
+     * The {@link LedgerEntryType} for {@code Delegate} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featurePermissionDelegation amendment is enabled on
+     * mainnet. Its API is subject to change.</p>
+     */
+    @Beta
+    DELEGATE("Delegate"),
+
+    /**
      * The {@link LedgerEntryType} for {@code AmmObject} ledger objects.
      *
      * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject
@@ -252,7 +263,16 @@ public interface LedgerObject {
      * Its API is subject to change.</p>
      */
     @Beta
-    LOAN("Loan");
+    LOAN("Loan"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Sponsorship} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featureSponsorship amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    SPONSORSHIP("Sponsorship");
 
     private final String value;
 

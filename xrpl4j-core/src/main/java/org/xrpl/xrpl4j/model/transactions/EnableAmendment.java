@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.flags.EnableAmendmentFlags;
 
 import java.util.Optional;
 
@@ -64,4 +65,31 @@ public interface EnableAmendment extends Transaction {
    */
   @JsonProperty("LedgerSequence")
   Optional<LedgerIndex> ledgerSequence();
+
+  /**
+   * The {@link EnableAmendmentFlags} for this {@link EnableAmendment}, which identify <em>which</em> status transition
+   * this pseudo-transaction records. xrpld emits an {@link EnableAmendment} at each of three transitions and
+   * distinguishes them solely by {@code Flags}:
+   * <ul>
+   *   <li>{@link EnableAmendmentFlags#tfGotMajority()}: the amendment gained support from more than 80% of trusted
+   *       validators, starting the two-week activation countdown;</li>
+   *   <li>{@link EnableAmendmentFlags#tfLostMajority()}: support fell below 80%, cancelling the countdown;</li>
+   *   <li>neither flag set (i.e. {@code Flags} is {@code 0} or absent): the countdown completed and the amendment is
+   *       now enabled on the ledger. Use {@link EnableAmendmentFlags#isEnabled()} for this case rather than testing
+   *       for empty flags.</li>
+   * </ul>
+   * Defaults to {@link EnableAmendmentFlags#empty()}; a value present in a deserialized transaction is preserved.
+   *
+   * <p>Every {@link Transaction} subtype declares {@code flags()} so that {@link Transaction#transactionFlags()} can
+   * resolve it reflectively.</p>
+   *
+   * @return The {@link EnableAmendmentFlags} for this transaction.
+   *
+   * @see "https://xrpl.org/enableamendment.html#enableamendment-flags"
+   */
+  @JsonProperty("Flags")
+  @Value.Default
+  default EnableAmendmentFlags flags() {
+    return EnableAmendmentFlags.empty();
+  }
 }

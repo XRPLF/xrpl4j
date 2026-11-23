@@ -38,6 +38,10 @@ public class MpTokenIssuanceFlags extends Flags {
    * Constant {@link MpTokenIssuanceFlags} for the {@code lsfMPTCanClawback} account flag.
    */
   public static final MpTokenIssuanceFlags CAN_CLAWBACK = new MpTokenIssuanceFlags(0x00000040);
+  /**
+   * Constant {@link MpTokenIssuanceFlags} for the {@code lsfMPTCanHoldConfidentialBalance} account flag.
+   */
+  public static final MpTokenIssuanceFlags CAN_HOLD_CONFIDENTIAL_BALANCE = new MpTokenIssuanceFlags(0x00000080);
 
   /**
    * Required-args Constructor.
@@ -125,5 +129,13 @@ public class MpTokenIssuanceFlags extends Flags {
     return this.isSet(MpTokenIssuanceFlags.CAN_CLAWBACK);
   }
 
+  /**
+   * If set, indicates that confidential transfers are enabled for this token issuance.
+   *
+   * @return {@code true} if {@code lsfMPTCanHoldConfidentialBalance} is set, otherwise {@code false}.
+   */
+  public boolean lsfMptCanHoldConfidentialBalance() {
+    return this.isSet(MpTokenIssuanceFlags.CAN_HOLD_CONFIDENTIAL_BALANCE);
+  }
 
 }

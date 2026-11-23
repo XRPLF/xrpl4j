@@ -26,13 +26,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.flags.BatchFlags;
+import org.xrpl.xrpl4j.model.flags.LoanSetFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.SponsorFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -224,6 +228,26 @@ public class BatchTest {
         }
 
         @Override
+        public Optional<Address> sponsor() {
+          return Optional.empty();
+        }
+
+        @Override
+        public Optional<SponsorFlags> sponsorFlags() {
+          return Optional.empty();
+        }
+
+        @Override
+        public Optional<SponsorSignature> sponsorSignature() {
+          return Optional.empty();
+        }
+
+        @Override
+        public Optional<Address> delegate() {
+          return Optional.empty();
+        }
+
+        @Override
         public Map<String, Object> unknownFields() {
           return batch.unknownFields();
         }
@@ -281,8 +305,8 @@ public class BatchTest {
         )))
       .build()
     ).isInstanceOf(IllegalArgumentException.class).hasMessageContaining(
-      "The Account submitting a Batch transaction must not sign any inner transactions. " +
-        "Found BatchSigner matching outer account:");
+      "The outer Account must not appear as a BatchSigner Account; it authorises its own inner transactions " +
+        "with the Batch signature itself. Found BatchSigner for the outer Account:");
   }
 
   @Test
@@ -296,8 +320,10 @@ public class BatchTest {
       RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.valueOf(2)))
     );
 
-    // The test checks that the outer signer cannot be in BatchSigners (even via multi-sig)
-    assertThatThrownBy(() -> Batch.builder()
+    // The outer account may appear in another BatchSigner's nested Signers: it is a member of innerAccount's
+    // SignerList there, not a signer of an inner transaction. xrpld accepts this shape (only the BatchSigner's own
+    // Account is barred from being the outer account), so xrpl4j must too.
+    Batch batch = Batch.builder()
       .account(outerAccount) // <-- The crux of the test
       .fee(XrpCurrencyAmount.ofDrops(100))
       .sequence(UnsignedInteger.ONE)
@@ -316,9 +342,12 @@ public class BatchTest {
               )
             )).build()
         )))
-      .build()
-    ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("The Account submitting a Batch transaction must not sign any inner transactions.");
+      .build();
+
+    assertThat(batch.batchSigners()).hasSize(1);
+    assertThat(batch.batchSigners().get(0).batchSigner().account()).isEqualTo(innerAccount);
+    assertThat(batch.batchSigners().get(0).batchSigner().signers().get(0).signer().account())
+      .isEqualTo(outerAccount);
   }
 
   @Test
@@ -386,7 +415,9 @@ public class BatchTest {
         )))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("BatchSigners must contain signatures from all accounts with inner transactions")
+      .hasMessageContaining(
+        "BatchSigners must contain signatures from all accounts required to sign an inner transaction"
+      )
       .hasMessageContaining(innerAccount2.value());
   }
 
@@ -420,6 +451,132 @@ public class BatchTest {
         BatchSignerWrapper.of(BatchSigner.builder()
           .account(innerAccount2)
           .signingPublicKey(pubKey2)
+          .transactionSignature(Signature.fromBase16("44556677"))
+          .build()
+        )))
+      .build();
+
+    assertThat(batch.batchSigners()).hasSize(2);
+  }
+
+  @Test
+  void testBatchSignerRequiredIsDelegateNotAccount() {
+    // When an inner transaction has a Delegate, the delegate signs on the account holder's behalf, so the
+    // delegate (not the account) is the required BatchSigner.
+    Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address delegateAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    PublicKey delegateKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(createInnerPayment(innerAccount, delegateAccount, UnsignedInteger.ONE)),
+      RawTransactionWrapper.of(createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2)))
+    );
+
+    // Should succeed because BatchSigners contains a signature from the delegate.
+    Batch batch = Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(delegateAccount)
+          .signingPublicKey(delegateKey)
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build()
+        )))
+      .build();
+
+    assertThat(batch.batchSigners()).hasSize(1);
+  }
+
+  @Test
+  void testBatchSignerFromAccountIsNotSufficientWhenDelegateIsSet() {
+    // A signature from the account holder itself does not satisfy the requirement when a Delegate is set;
+    // the delegate is the only account authorized to sign in that case.
+    Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address delegateAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    PublicKey innerKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(createInnerPayment(innerAccount, delegateAccount, UnsignedInteger.ONE)),
+      RawTransactionWrapper.of(createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2)))
+    );
+
+    // Should fail because BatchSigners contains a signature from the account holder, not the delegate.
+    assertThatThrownBy(() -> Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(innerAccount)
+          .signingPublicKey(innerKey)
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build()
+        )))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining(
+        "BatchSigners must contain signatures from all accounts required to sign an inner transaction"
+      )
+      .hasMessageContaining(delegateAccount.value());
+  }
+
+  @Test
+  void testBatchSignerRequiredForLoanSetCounterparty() {
+    // A LoanSet inner's Counterparty must also sign the Batch (in addition to the LoanSet Account).
+    Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address counterpartyAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    PublicKey innerKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
+    PublicKey counterpartyKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(createInnerLoanSet(innerAccount, counterpartyAccount, UnsignedInteger.ONE)),
+      RawTransactionWrapper.of(createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2)))
+    );
+
+    // Should fail because BatchSigners is missing a signature from the Counterparty.
+    assertThatThrownBy(() -> Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(innerAccount)
+          .signingPublicKey(innerKey)
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build()
+        )))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining(
+        "BatchSigners must contain signatures from all accounts required to sign an inner transaction"
+      )
+      .hasMessageContaining(counterpartyAccount.value());
+
+    // Should succeed once BatchSigners includes both the Account and the Counterparty.
+    Batch batch = Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(innerAccount)
+          .signingPublicKey(innerKey)
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build()
+        ),
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(counterpartyAccount)
+          .signingPublicKey(counterpartyKey)
           .transactionSignature(Signature.fromBase16("44556677"))
           .build()
         )))
@@ -647,20 +804,197 @@ public class BatchTest {
 
   @Test
   void testBatchWithTooManyBatchSigners() {
-    // Create 2 inner transactions but 3 BatchSigners
-    // Note: Having more BatchSigners than RawTransactions means at least one BatchSigner
-    // has no inner transaction, so validateBatchSignersHaveInnerTransactions catches this
-    // before validateBatchSignersSize. Both validations are logically equivalent in practice.
+    // V1_1: hard cap of 24 BatchSigners regardless of inner transaction count. Build 25 co-signer entries
+    // (all inner txs are from ACCOUNT, so no BatchSigners are strictly required) and verify the cap fires.
+    List<BatchSignerWrapper> tooManySigners = new ArrayList<>();
+    for (int i = 0; i < 25; i++) {
+      Address addr = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+      PublicKey key = Seed.ed25519Seed().deriveKeyPair().publicKey();
+      tooManySigners.add(BatchSignerWrapper.of(BatchSigner.builder()
+        .account(addr)
+        .signingPublicKey(key)
+        .transactionSignature(Signature.fromBase16("00112233"))
+        .build()));
+    }
+
+    assertThatThrownBy(() -> Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(createInnerTransactionsFromOuterSigner(2))
+      .batchSigners(tooManySigners)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("BatchSigners must not exceed 24 entries");
+  }
+
+  @Test
+  void testBatchSignersAreAutoSorted() {
+    // V1_1: BatchSigners must be in strictly ascending order by Account. xrpl4j auto-sorts them
+    // on construction so callers don't need to pre-sort.
     Address innerAccount1 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
     Address innerAccount2 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
-    Address innerAccount3 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
     PublicKey pubKey1 = Seed.ed25519Seed().deriveKeyPair().publicKey();
     PublicKey pubKey2 = Seed.ed25519Seed().deriveKeyPair().publicKey();
-    PublicKey pubKey3 = Seed.ed25519Seed().deriveKeyPair().publicKey();
+
+    // Determine ascending order by AccountID bytes (same BigInteger comparison used in Batch.checkBatchSigners).
+    BigInteger id1 = new BigInteger(AddressCodec.getInstance().decodeAccountId(innerAccount1).hexValue(), 16);
+    BigInteger id2 = new BigInteger(AddressCodec.getInstance().decodeAccountId(innerAccount2).hexValue(), 16);
+    Address first = id1.compareTo(id2) < 0 ? innerAccount1 : innerAccount2;
+    Address second = first == innerAccount1 ? innerAccount2 : innerAccount1;
+    PublicKey firstKey = first == innerAccount1 ? pubKey1 : pubKey2;
+    PublicKey secondKey = first == innerAccount1 ? pubKey2 : pubKey1;
 
     List<RawTransactionWrapper> transactions = Lists.newArrayList(
       RawTransactionWrapper.of(createInnerPayment(innerAccount1, UnsignedInteger.ONE)),
       RawTransactionWrapper.of(createInnerPayment(innerAccount2, UnsignedInteger.valueOf(2)))
+    );
+
+    // Intentionally provide signers in reverse (descending) order.
+    Batch batch = Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(second)
+          .signingPublicKey(secondKey)
+          .transactionSignature(Signature.fromBase16("44556677"))
+          .build()),
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(first)
+          .signingPublicKey(firstKey)
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build())
+      ))
+      .build();
+
+    assertThat(batch.batchSigners()).hasSize(2);
+    assertThat(batch.batchSigners().get(0).batchSigner().account()).isEqualTo(first);
+    assertThat(batch.batchSigners().get(1).batchSigner().account()).isEqualTo(second);
+  }
+
+  @Test
+  void testBatchSignersSortOrderMatchesIndependentlyComputedOrder() {
+    // Regression guard against a subtly-wrong comparator (e.g. a reversed or non-transitive sort) in
+    // Batch#checkBatchSigners. The expected order below reuses the same AccountID decoding as production but
+    // compares the resulting hex strings directly (String#compareTo) rather than parsing them into a BigInteger,
+    // so this test does not just re-assert whatever the production comparator happens to compute. Note this does
+    // not independently verify that xrpl4j's canonical AccountID matches what rippled expects to sort by -- that
+    // is a concern for a batch-acceptance integration test, not this unit test.
+    List<Address> accounts = Lists.newArrayList(
+      Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress(),
+      Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress(),
+      Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress()
+    );
+
+    List<Address> expectedOrder = accounts.stream()
+      .sorted((addressA, addressB) -> {
+        String hexA = AddressCodec.getInstance().decodeAccountId(addressA).hexValue();
+        String hexB = AddressCodec.getInstance().decodeAccountId(addressB).hexValue();
+        // AccountID hex strings are a fixed 40 uppercase hex characters, so plain lexicographic String comparison
+        // is equivalent to a numeric comparison, without going through BigInteger parsing at all.
+        return hexA.compareTo(hexB);
+      })
+      .collect(Collectors.toList());
+
+    List<RawTransactionWrapper> transactions = accounts.stream()
+      .map(account -> RawTransactionWrapper.of(createInnerPayment(account, UnsignedInteger.ONE)))
+      .collect(Collectors.toList());
+
+    // Intentionally provide signers in an order unrelated to the expected sort order.
+    List<BatchSignerWrapper> unsortedSigners = accounts.stream()
+      .map(account -> BatchSignerWrapper.of(BatchSigner.builder()
+        .account(account)
+        .signingPublicKey(Seed.ed25519Seed().deriveKeyPair().publicKey())
+        .transactionSignature(Signature.fromBase16("00112233"))
+        .build()))
+      .collect(Collectors.toList());
+
+    Batch batch = Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .batchSigners(unsortedSigners)
+      .build();
+
+    List<Address> actualOrder = batch.batchSigners().stream()
+      .map(wrapper -> wrapper.batchSigner().account())
+      .collect(Collectors.toList());
+
+    assertThat(actualOrder).isEqualTo(expectedOrder);
+    assertThat(batch.sortedBatchSigners()).isTrue();
+  }
+
+  @Test
+  void testSortedBatchSignersFlagIsTrustedNotVerified() {
+    // sortedBatchSigners is an internal, @JsonIgnore-marked bookkeeping flag used solely to prevent infinite
+    // recursion in checkBatchSigners's normalizing @Value.Check. Because the check only sorts when the flag is
+    // false, a caller that sets the flag to true directly via the builder can bypass sorting entirely. This
+    // documents that "sortedBatchSigners() == true" is only guaranteed to mean "actually sorted" when Batch is
+    // constructed the normal way (without ever calling builder().sortedBatchSigners(true) directly); it is not an
+    // invariant enforced by validation.
+    Address innerAccount1 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address innerAccount2 = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+
+    BigInteger id1 = new BigInteger(AddressCodec.getInstance().decodeAccountId(innerAccount1).hexValue(), 16);
+    BigInteger id2 = new BigInteger(AddressCodec.getInstance().decodeAccountId(innerAccount2).hexValue(), 16);
+    Address first = id1.compareTo(id2) < 0 ? innerAccount1 : innerAccount2;
+    Address second = first == innerAccount1 ? innerAccount2 : innerAccount1;
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(createInnerPayment(innerAccount1, UnsignedInteger.ONE)),
+      RawTransactionWrapper.of(createInnerPayment(innerAccount2, UnsignedInteger.valueOf(2)))
+    );
+
+    // Provide signers in reverse (descending, i.e. deliberately unsorted) order, but claim they are already sorted.
+    List<BatchSignerWrapper> unsortedSigners = Lists.newArrayList(
+      BatchSignerWrapper.of(BatchSigner.builder()
+        .account(second)
+        .signingPublicKey(Seed.ed25519Seed().deriveKeyPair().publicKey())
+        .transactionSignature(Signature.fromBase16("44556677"))
+        .build()),
+      BatchSignerWrapper.of(BatchSigner.builder()
+        .account(first)
+        .signingPublicKey(Seed.ed25519Seed().deriveKeyPair().publicKey())
+        .transactionSignature(Signature.fromBase16("00112233"))
+        .build())
+    );
+
+    Batch batch = Batch.builder()
+      .account(ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(transactions)
+      .batchSigners(unsortedSigners)
+      .sortedBatchSigners(true)
+      .build();
+
+    // The flag is honored as-is and no sorting is performed, even though the data is not actually sorted.
+    assertThat(batch.sortedBatchSigners()).isTrue();
+    assertThat(batch.batchSigners().get(0).batchSigner().account()).isEqualTo(second);
+    assertThat(batch.batchSigners().get(1).batchSigner().account()).isEqualTo(first);
+  }
+
+  @Test
+  void testBatchSignersMustNotIncludeAccountThatIsNotARequiredSigner() {
+    // XLS-56 §2.3 (BatchSigners item 5): BatchSigners must match the required-signer set exactly, so an entry for an
+    // account that is not a required signer of any inner transaction is rejected (xrpld: temBAD_SIGNER). A co-signer
+    // of a multi-signing account belongs in that account's nested Signers array, not as its own BatchSigner.
+    Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address coSignerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    PublicKey innerKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
+    PublicKey coSignerKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
+
+    List<RawTransactionWrapper> transactions = Lists.newArrayList(
+      RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.ONE)),
+      RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.valueOf(2)))
     );
 
     assertThatThrownBy(() -> Batch.builder()
@@ -671,26 +1005,19 @@ public class BatchTest {
       .rawTransactions(transactions)
       .batchSigners(Lists.newArrayList(
         BatchSignerWrapper.of(BatchSigner.builder()
-          .account(innerAccount1)
-          .signingPublicKey(pubKey1)
+          .account(innerAccount)
+          .signingPublicKey(innerKey)
           .transactionSignature(Signature.fromBase16("00112233"))
-          .build()
-        ),
+          .build()),
         BatchSignerWrapper.of(BatchSigner.builder()
-          .account(innerAccount2)
-          .signingPublicKey(pubKey2)
+          .account(coSignerAccount) // <-- Not a required signer of any inner transaction
+          .signingPublicKey(coSignerKey)
           .transactionSignature(Signature.fromBase16("44556677"))
-          .build()
-        ),
-        BatchSignerWrapper.of(BatchSigner.builder()
-          .account(innerAccount3)
-          .signingPublicKey(pubKey3)
-          .transactionSignature(Signature.fromBase16("8899AABB"))
-          .build()
-        )))
+          .build())
+      ))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("BatchSigners must only contain signatures from accounts that have inner transactions");
+      .hasMessageContaining("Found BatchSigner for account that is not a required signer: " + coSignerAccount);
   }
 
   @Test
@@ -792,12 +1119,13 @@ public class BatchTest {
   }
 
   @Test
-  void testBatchWithOuterSignerAsMultiSigSignerInBatchSigner() {
-    // Create accounts
+  void testBatchWithOuterSignerAsOneOfSeveralMultiSigSignersInBatchSigner() {
+    // Create accounts: the inner account's SignerList is {outerAccount, otherSigner}, mirroring the Testnet fixtures.
     Address outerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
     Address innerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+    Address otherSignerAccount = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
     PublicKey outerPubKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
-    PublicKey innerPubKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
+    PublicKey otherSignerPubKey = Seed.ed25519Seed().deriveKeyPair().publicKey();
 
     // Create inner transactions from innerAccount
     List<RawTransactionWrapper> innerTransactions = Lists.newArrayList(
@@ -805,8 +1133,10 @@ public class BatchTest {
       RawTransactionWrapper.of(createInnerPayment(innerAccount, UnsignedInteger.valueOf(2)))
     );
 
-    // The test checks that the outer signer cannot be in BatchSigners (even via multi-sig)
-    assertThatThrownBy(() -> Batch.builder()
+    // The outer account may appear in another BatchSigner's nested Signers: it is a member of innerAccount's
+    // SignerList there, not a signer of an inner transaction. xrpld accepts this shape (only the BatchSigner's own
+    // Account is barred from being the outer account), so xrpl4j must too.
+    Batch batch = Batch.builder()
       .account(outerAccount) // <-- The crux of the test
       .fee(XrpCurrencyAmount.ofDrops(100))
       .sequence(UnsignedInteger.ONE)
@@ -822,17 +1152,142 @@ public class BatchTest {
                 .signingPublicKey(outerPubKey)
                 .transactionSignature(Signature.fromBase16("00112233"))
                 .build()
+              ),
+              SignerWrapper.of(Signer.builder()
+                .account(otherSignerAccount)
+                .signingPublicKey(otherSignerPubKey)
+                .transactionSignature(Signature.fromBase16("44556677"))
+                .build()
               )
             )).build()
         )))
-      .build()
-    ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("The Account submitting a Batch transaction must not sign any inner transactions.");
+      .build();
+
+    assertThat(batch.batchSigners()).hasSize(1);
+    assertThat(batch.batchSigners().get(0).batchSigner().account()).isEqualTo(innerAccount);
+    assertThat(batch.batchSigners().get(0).batchSigner().signers())
+      .extracting(wrapper -> wrapper.signer().account())
+      .containsExactlyInAnyOrder(outerAccount, otherSignerAccount);
+  }
+
+  // ///////////////
+  // requiredSigners()
+  // ///////////////
+
+  @Test
+  void requiredSignersEmptyWhenAllInnersBelongToOuterAccount() {
+    Batch batch = batchWithInners(ACCOUNT,
+      createInnerPayment(ACCOUNT, UnsignedInteger.ONE),
+      createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2)));
+
+    assertThat(batch.requiredSigners()).isEmpty();
+  }
+
+  @Test
+  void requiredSignersAreTheDistinctNonOuterInnerAccounts() {
+    Address bob = randomAddress();
+    Address carol = randomAddress();
+    Batch batch = batchWithInners(ACCOUNT,
+      createInnerPayment(bob, UnsignedInteger.ONE),
+      createInnerPayment(carol, UnsignedInteger.valueOf(2)));
+
+    assertThat(batch.requiredSigners()).containsExactlyInAnyOrder(bob, carol);
+  }
+
+  @Test
+  void requiredSignersUsesDelegateRatherThanAccount() {
+    Address bob = randomAddress();
+    Address delegate = randomAddress();
+    Batch batch = batchWithInners(ACCOUNT,
+      createInnerPayment(bob, delegate, UnsignedInteger.ONE),
+      createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2)));
+
+    // A delegated inner is authorised by its delegate, so bob (the account) is not required, delegate is.
+    assertThat(batch.requiredSigners()).containsExactly(delegate);
+  }
+
+  @Test
+  void requiredSignersIncludesSponsorOnlyWhenSponsorSignatureIsPresent() {
+    Address bob = randomAddress();
+    Address sponsor = randomAddress();
+
+    Payment outerInner = createInnerPayment(ACCOUNT, UnsignedInteger.valueOf(2));
+
+    Batch withSponsorSignature = batchWithInners(ACCOUNT,
+      sponsoredInner(bob, sponsor, UnsignedInteger.ONE, true), outerInner);
+    assertThat(withSponsorSignature.requiredSigners()).containsExactlyInAnyOrder(bob, sponsor);
+
+    Batch withoutSponsorSignature = batchWithInners(ACCOUNT,
+      sponsoredInner(bob, sponsor, UnsignedInteger.ONE, false), outerInner);
+    assertThat(withoutSponsorSignature.requiredSigners()).containsExactly(bob);
+  }
+
+  @Test
+  void requiredSignersDeduplicatesAcrossInnersAndRoles() {
+    Address bob = randomAddress();
+    Batch batch = batchWithInners(ACCOUNT,
+      createInnerPayment(bob, UnsignedInteger.ONE),                  // bob as account
+      sponsoredInner(randomAddress(), bob, UnsignedInteger.valueOf(2), true)); // bob again as sponsor
+
+    // bob is required via two different inners/roles, but appears once.
+    assertThat(batch.requiredSigners()).hasSize(2).contains(bob);
+  }
+
+  @Test
+  void requiredSignersExcludesOuterAccountInEveryRole() {
+    Address other = randomAddress();
+    Batch batch = batchWithInners(ACCOUNT,
+      createInnerPayment(ACCOUNT, UnsignedInteger.ONE),                   // outer as account
+      createInnerPayment(other, ACCOUNT, UnsignedInteger.valueOf(2)),     // outer as delegate
+      sponsoredInner(other, ACCOUNT, UnsignedInteger.valueOf(3), true));  // outer as sponsor
+
+    // The outer account authorises its own inners with its Batch signature, so it is never a required signer.
+    assertThat(batch.requiredSigners()).containsExactly(other);
+  }
+
+  @Test
+  void requiredSignersIsUnmodifiable() {
+    Batch batch = batchWithInners(ACCOUNT,
+      createInnerPayment(randomAddress(), UnsignedInteger.ONE),
+      createInnerPayment(randomAddress(), UnsignedInteger.valueOf(2)));
+
+    assertThatThrownBy(() -> batch.requiredSigners().clear())
+      .isInstanceOf(UnsupportedOperationException.class);
   }
 
   // ///////////////
   // Private Helpers
   // ///////////////
+
+  private static Address randomAddress() {
+    return Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+  }
+
+  private Batch batchWithInners(Address outerAccount, Payment... inners) {
+    final List<RawTransactionWrapper> wrappers = Lists.newArrayList();
+    for (Payment inner : inners) {
+      wrappers.add(RawTransactionWrapper.of(inner));
+    }
+    return Batch.builder()
+      .account(outerAccount)
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(wrappers)
+      .build();
+  }
+
+  private Payment sponsoredInner(
+    Address account, Address sponsor, UnsignedInteger sequence, boolean withSponsorSignature
+  ) {
+    ImmutablePayment.Builder builder = Payment.builder()
+      .from(createInnerPayment(account, sequence))
+      .sponsor(sponsor)
+      .sponsorFlags(SponsorFlags.SPONSOR_RESERVE);
+    if (withSponsorSignature) {
+      builder.sponsorSignature(SponsorSignature.builder().build());
+    }
+    return builder.build();
+  }
 
   private Batch createValidBatch(BatchFlags batchFlags) {
     return Batch.builder()
@@ -863,6 +1318,30 @@ public class BatchTest {
       .sequence(sequence)
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .flags(PaymentFlags.INNER_BATCH_TXN)
+      .build();
+  }
+
+  private Payment createInnerPayment(Address account, Address delegate, UnsignedInteger sequence) {
+    return Payment.builder()
+      .account(account)
+      .delegate(delegate)
+      .destination(DESTINATION)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(sequence)
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .flags(PaymentFlags.INNER_BATCH_TXN)
+      .build();
+  }
+
+  private LoanSet createInnerLoanSet(Address account, Address counterparty, UnsignedInteger sequence) {
+    return LoanSet.builder()
+      .account(account)
+      .counterparty(counterparty)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(sequence)
+      .flags(LoanSetFlags.of(TransactionFlags.INNER_BATCH_TXN.getValue()))
+      .loanBrokerId(Hash256.of("C031EFE677CDEF1C5F43475B374A16F990EE184F76015CB7548D34B500F72BFB"))
+      .principalRequested(Amount.of("1000000"))
       .build();
   }
 

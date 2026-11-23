@@ -60,6 +60,13 @@ public interface PublicKey {
   UnsignedByte ED2559_PREFIX = UnsignedByte.of(0xED);
 
   /**
+   * The length, in bytes, of a populated XRPL public key: 33 bytes — a compressed secp256k1 key, or an ed25519 key
+   * with its one-byte {@code 0xED} prefix. The {@link #MULTI_SIGN_PUBLIC_KEY} sentinel is empty and does not have this
+   * length.
+   */
+  int LENGTH = 33;
+
+  /**
    * Multi-signed transactions must contain an empty String in the SigningPublicKey field. This constant is an
    * {@link PublicKey} that can be used as the {@link Transaction#signingPublicKey()} value for multi-signed
    * transactions.

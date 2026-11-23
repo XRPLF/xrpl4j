@@ -38,7 +38,9 @@ public class BinaryCodecObjectMapperFactory {
     .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
     .configure(JsonWriteFeature.WRITE_NUMBERS_AS_STRINGS, false)
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
-    .serializationInclusion(JsonInclude.Include.NON_EMPTY)
+    // Equivalent to the deprecated serializationInclusion(NON_EMPTY), which applied NON_EMPTY to both values and
+    // content (e.g., map values).
+    .defaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, JsonInclude.Include.NON_EMPTY))
     .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
     .build();
 

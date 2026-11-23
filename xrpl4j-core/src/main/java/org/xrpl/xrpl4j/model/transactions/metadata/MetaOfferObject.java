@@ -77,7 +77,6 @@ public interface MetaOfferObject extends MetaLedgerObject {
   @JsonProperty("TakerPays")
   Optional<CurrencyAmount> takerPays();
 
-
   /**
    * The remaining amount and type of currency being provided by the offer creator.
    *
@@ -85,7 +84,6 @@ public interface MetaOfferObject extends MetaLedgerObject {
    */
   @JsonProperty("TakerGets")
   Optional<CurrencyAmount> takerGets();
-
 
   /**
    * The ID of the Offer Directory that links to this offer.

@@ -16,6 +16,15 @@ Version 7.0.0 introduces several breaking changes:
    `SignatureUtils.addMultiSignaturesToTransaction()` have been removed. Transaction signing now uses Immutables-generated
    `withTransactionSignature()` and `withSigners()` methods on `Transaction`, and validation has moved to `@Check`
    methods on `SingleSignedTransaction` and `MultiSignedTransaction`.
+4. **Transaction Fee Model Refactor** — `Transaction.fee()` is no longer a required field; it now defaults to zero
+   drops. A new fee-computation API (`FeeParams`, `FeeTerm`, `FeeBreakdown`, and an expanded `FeeUtils`) replaces the
+   old per-transaction-type `computeFee()` helpers for computing an accurate fee. To guard against the new default, all
+   `TransactionSigner` methods that sign an outer transaction (`sign()`, `multiSign()`, `sponsorSign()`,
+   `counterpartySign()`) now reject a transaction whose `fee()` is still zero.
+5. **`MetaMpTokenIssuanceObject.mpTokenMetadata()` type change** — now returns `Optional<MpTokenMetadata>` instead of
+   `Optional<String>`.
+6. **`ValidatedLedger.age()` type change** — now returns `Optional<UnsignedInteger>` instead of `UnsignedInteger`,
+   since rippled omits this field when it cannot compute a valid age.
 
 ## Breaking Changes
 
@@ -206,7 +215,83 @@ for every transaction subclass:
 - `Transaction withSigners(Iterable<? extends SignerWrapper> signers)` — returns a copy of the transaction with the
   specified signers applied.
 
-### 4. `MetaMpTokenIssuanceObject.mpTokenMetadata()` type change
+### 4. Transaction Fee Model
+
+`Transaction.fee()` and the fee-computation helpers have been reworked to support the new fee rules introduced by
+Batch, LoanSet/LoanPay, sponsored transactions, and confidential MPT transactions, none of which the old
+per-transaction-type `computeFee()` methods could price correctly.
+
+#### `Transaction.fee()` is no longer a required field
+
+Previously, building any `Transaction` without calling `.fee(...)` threw an `IllegalStateException` at `build()` time.
+`fee()` is now annotated `@Value.Default` and defaults to `XrpCurrencyAmount.ofDrops(0)`, consistent with how
+`sequence()` already defaulted to zero. This lets you build a transaction first and compute its fee afterward with the
+new `FeeUtils` API, but it also means a transaction that never had its fee set will silently build with `Fee: 0`
+instead of failing fast.
+
+**Migration:**
+
+If you had code relying on the old fail-fast behavior (for example, a test asserting that a missing `fee()` throws),
+switch it to assert on a field that is still required, or explicitly assert `transaction.fee()` equals zero:
+
+```java
+// Before (v6.x.x): omitting fee() threw IllegalStateException
+assertThrows(IllegalStateException.class, () -> Payment.builder()
+    .account(account)
+    .destination(destination)
+    .amount(amount)
+    .build());
+
+// After (v7.0.0): omitting fee() no longer throws; it defaults instead
+Payment payment = Payment.builder()
+    .account(account)
+    .destination(destination)
+    .amount(amount)
+    .build();
+assertThat(payment.fee()).isEqualTo(XrpCurrencyAmount.ofDrops(0));
+```
+
+As a safety net for this relaxed validation, every `TransactionSigner` method that signs an outer transaction (e.g., on
+`BcSignatureService`) now throws `IllegalArgumentException` if `transaction.fee()` is still zero when signing. This
+covers `sign()`, `multiSign()`, `sponsorSign()`, `sponsorMultiSign()`, `counterpartySign()`, and
+`counterpartyMultiSign()`. Compute a real fee (see below) before signing. Only `signInner()` and
+`multiSignInner()` are exempt, because a Batch inner transaction is required to carry a `Fee` of exactly zero.
+
+#### New fee-computation API: `FeeParams`, `FeeTerm`, `FeeBreakdown`
+
+`FeeUtils` gains `computeFee(FeeParams)`, which takes the transaction itself (via `FeeParams`) and prices it exactly,
+including Batch (per-inner and per-signer costs), LoanSet/LoanPay, sponsored transactions, and confidential MPT
+transactions. `computeNetworkFees(FeeResult)` and `computeMultisigNetworkFees(FeeResult, SignerListObject)` are now
+`@Deprecated` in favor of it: they return only a flat, per-base-fee estimate, so they silently under-charge any
+transaction that costs more than one base fee. A few transaction types also had their own narrow `computeFee()` static
+method (e.g. `EscrowFinish.computeFee(XrpCurrencyAmount, Fulfillment)`); those are now deprecated in favor of
+`FeeUtils.computeFee(FeeParams)` as well.
+
+**Migration:**
+
+```java
+// Before (v6.x.x): a flat, per-base-fee estimate that ignores the transaction; multi-signing required a separate
+// call plus a SignerListObject fetched from the ledger just to get a signer count
+ComputedNetworkFees fees = signerList.isPresent()
+    ? FeeUtils.computeMultisigNetworkFees(feeResult, signerList.get())
+    : FeeUtils.computeNetworkFees(feeResult);
+XrpCurrencyAmount fee = fees.feeLow();
+
+// After (v7.0.0): one call, accurate for this specific transaction; pass signersCount directly instead of
+// fetching a SignerListObject
+FeeParams feeParams = FeeParams.of(feeResult, payment)
+    .signersCount(UnsignedInteger.valueOf(2)) // omit for a single-signed transaction
+    .build();
+ComputedNetworkFees fees = FeeUtils.computeFee(feeParams);
+XrpCurrencyAmount fee = fees.feeLow();
+```
+
+`ComputedNetworkFees` also gains an auxiliary `feeBreakdown()` field: an optionally-present `FeeBreakdown` populated by
+`computeFee(FeeParams)` (empty when the fees came from the per-base-fee `computeNetworkFees(FeeResult)` instead).
+Inspect `feeBreakdown().get().summary()` while developing to see which parts of a computed fee were assumed defaults
+versus derived facts.
+
+### 5. `MetaMpTokenIssuanceObject.mpTokenMetadata()` type change
 
 The return type of `MetaMpTokenIssuanceObject.mpTokenMetadata()` changed from `Optional<String>` to
 `Optional<MpTokenMetadata>`. This aligns the meta object with `MpTokenIssuanceObject`.
@@ -223,13 +308,158 @@ Optional<MpTokenMetadata> metadata = metaMpTokenIssuanceObject.mpTokenMetadata()
 Optional<String> hexString = metadata.map(MpTokenMetadata::value);
 ```
 
+### 6. `ValidatedLedger.age()` type change
+
+The return type of `ServerInfo.ValidatedLedger#age()` changed from `UnsignedInteger` to `Optional<UnsignedInteger>`.
+rippled omits the `age` field from `closed_ledger` and `validated_ledger` in `server_info` responses when it cannot
+compute a valid age — for example while the server is syncing, disconnected, or reconnecting. Previously, xrpl4j
+modeled `age` as required, so `XrplClient.serverInformation()` would throw a `JsonRpcClientErrorException` in exactly
+those situations, making it unusable as a health check during incomplete synchronization.
+
+**Migration:**
+
+```java
+// Before (v6.x.x)
+UnsignedInteger age = validatedLedger.age();
+
+// After (v7.0.0)
+Optional<UnsignedInteger> age = validatedLedger.age();
+
+// Idiomatic ways to use the optional value:
+// Option 1: Check if present and use it
+if (validatedLedger.age().isPresent()) {
+    UnsignedInteger ageValue = validatedLedger.age().get();
+    // Use ageValue here
+}
+
+// Option 2: Use ifPresent for a functional style
+validatedLedger.age().ifPresent(ageValue -> {
+    // Use ageValue here
+});
+
+// Option 3: Provide a default value
+UnsignedInteger ageValue = validatedLedger.age().orElse(UnsignedInteger.ZERO);
+```
+
+### 7. `ObjectMapperFactory` no longer overrides `ZonedDateTime` handling globally
+
+Through `6.1.0-rc.x` and `7.0.0-rc.x`, the mapper returned by `ObjectMapperFactory.create()` registered an
+xrpld-specific `ZonedDateTime` serializer and deserializer for the whole mapper, and it has always disabled
+`SerializationFeature.WRITE_DATES_AS_TIMESTAMPS`. Both settings applied to every `ZonedDateTime` the mapper touched,
+including types you own that share an object graph with xrpl4j types (for example, a DTO holding a
+`TransactionResult`).
+
+In v7.0.0 the xrpld-specific serializer and deserializer are bound only to the xrpld date fields that need them
+(`LedgerHeader.closeTimeHuman()`, `ServerInfo.time()`, and `AmmInfoAuctionSlot.expiration()`), and
+`WRITE_DATES_AS_TIMESTAMPS` is left at Jackson's default. xrpl4j's own JSON output is unchanged. For your own
+`java.time` fields handled by the factory mapper:
+
+- Serialization now follows Jackson's default, which writes `ZonedDateTime` and `Instant` as numeric timestamps
+  (e.g., `1704164645.000000000`) rather than ISO-8601 strings.
+- Deserialization of ISO-8601 strings (e.g., `"2024-01-02T03:04:05Z"`) works again; the xrpld format
+  (`"2024-Jan-02 03:04:05.000000000 UTC"`) is no longer accepted for unannotated fields.
+
+**Migration:**
+
+If you relied on ISO-8601 output for your own types, use a separate mapper for them, or annotate the field:
+
+```java
+@JsonFormat(shape = JsonFormat.Shape.STRING)
+ZonedDateTime createdAt();
+```
+
+If you need xrpld's human-readable format on a field you own, bind the xrpl4j serializers explicitly, exactly as the
+xrpl4j model does:
+
+```java
+@JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", locale = "en_US")
+@JsonSerialize(using = ZonedDateTimeSerializer.class)
+@JsonDeserialize(using = ZonedDateTimeDeserializer.class)
+ZonedDateTime closeTime();
+```
+
+### 8. `Batch.batchSigners()` validation now matches XLS-56 exactly
+
+Two construction-time rules in `Batch` changed to match XLS-56 §2.3 and xrpld:
+
+- **Extra BatchSigners are now rejected.** When `BatchSigners` is non-empty it must contain exactly the accounts in
+  `Batch.requiredSigners()`: each inner transaction's `Account` (or its `Delegate`), a `Sponsor` that carries a
+  `SponsorSignature`, and a `LoanSet` `Counterparty`, excluding the outer account. Previously an entry for any other
+  account was accepted at construction time and rejected by xrpld with `temBAD_SIGNER` at submission.
+- **The outer account may now appear as a nested multi-signer.** Previously `Batch` rejected any BatchSigner whose
+  nested `Signers` array contained the outer account. xrpld only forbids the outer account from being a BatchSigner
+  `Account`; a nested signer is simply a member of that account's SignerList. Validated ledger Batches with this shape
+  could not be deserialized before this change.
+
+**Migration:**
+
+```java
+// Before (v6.x.x): a co-signer added as its own BatchSigner entry — now throws IllegalArgumentException.
+Batch.builder()
+  .batchSigners(
+    BatchSignerWrapper.of(BatchSigner.builder().account(innerAccount).signers(innerSigners).build()),
+    BatchSignerWrapper.of(BatchSigner.builder().account(coSigner).signingPublicKey(k).transactionSignature(s).build())
+  )
+  ...
+
+// After (v7.0.0): a co-signer belongs inside the nested Signers of the account it signs for.
+Batch.builder()
+  .batchSigners(
+    BatchSignerWrapper.of(BatchSigner.builder()
+      .account(innerAccount)
+      .signers(SignerWrapper.of(coSignerSigner), SignerWrapper.of(otherSigner))
+      .build())
+  )
+  ...
+```
+
+### 9. `ObjectMapperFactory` no longer configures mapper-wide features
+
+Previously, the mapper returned by `ObjectMapperFactory.create()` set several features for every type it handled:
+
+| Setting | Previous value | Jackson default |
+|---|---|---|
+| `serializationInclusion` | `NON_EMPTY` | `ALWAYS` |
+| `DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES` | `false` | `true` |
+| `MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES` | enabled | disabled |
+| `JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN` | `true` | `false` |
+| `SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS` | `false` | `true` |
+
+In v7.0.0 the factory configures none of these. The behaviors xrpl4j's own types rely on are instead supplied by
+`Xrpl4jModule` through a package-scoped `AnnotationIntrospector` that applies only to classes under
+`org.xrpl.xrpl4j`: `NON_EMPTY` inclusion, ignoring unknown properties, case-insensitive property matching, and
+plain-notation rendering of `BigDecimal` values. xrpl4j's JSON output and parsing are therefore unchanged in both
+directions. (`WRITE_DURATIONS_AS_TIMESTAMPS` is dropped outright; xrpl4j has no `Duration` fields.)
+
+For your own types handled by the factory mapper, Jackson's defaults now apply:
+
+- `null` and empty properties are written rather than omitted.
+- Unknown properties in input cause an `UnrecognizedPropertyException` rather than being ignored.
+- Property names are matched case-sensitively.
+- `BigDecimal` may be written in exponent notation, and `Duration` is written as a numeric timestamp.
+
+**Migration:**
+
+If your own types relied on the previous behavior, either handle them with a separate mapper, or annotate them:
+
+```java
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+public class MyDto { ... }
+```
+
+If you build your own mapper and register `Xrpl4jModule` on it, note that the module now carries all of the above
+behaviors for xrpl4j types itself. You still need `Jdk8Module`, `GuavaModule`, `JavaTimeModule`, and
+`CryptoConditionsModule(Encoding.HEX)` registered for xrpl4j types to work, as `ObjectMapperFactory.create()` does.
+
 ## Backward Compatibility
 
 - JSON serialization and deserialization remain compatible with the same JSON structure.
 - The `Issue.XRP` constant is still available and works the same way.
-- The `TransactionSigner.sign()` and `TransactionSigner.multiSign()` APIs are unchanged — only the internal
-  implementation has changed. If you use these high-level APIs (e.g., via `BcSignatureService`), no migration is needed
-  for signing.
+- All `TransactionSigner` method signatures are unchanged. The outer-transaction signing methods (`sign()`,
+  `multiSign()`, `sponsorSign()`, `sponsorMultiSign()`, `counterpartySign()`, and `counterpartyMultiSign()`) now
+  reject a transaction with a zero `fee()`; see [Transaction Fee Model](#3-transaction-fee-model) above.
 
 ## Additional Resources
 

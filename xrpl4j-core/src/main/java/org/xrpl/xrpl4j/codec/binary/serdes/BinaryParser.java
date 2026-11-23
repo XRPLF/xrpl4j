@@ -122,7 +122,7 @@ public class BinaryParser {
       return firstByte;
     } else if (firstByte <= MAX_SECOND_BYTE_VALUE) {
       int b2 = this.readUInt8().intValue();
-      return MAX_SECOND_BYTE_VALUE - 1 + (firstByte - MAX_SECOND_BYTE_VALUE - 1) * MAX_BYTE_VALUE + b2;
+      return MAX_SINGLE_BYTE_LENGTH + 1 + (firstByte - MAX_SINGLE_BYTE_LENGTH - 1) * MAX_BYTE_VALUE + b2;
     } else if (firstByte <= 254) {
       int b2 = this.readUInt8().intValue();
       int b3 = this.readUInt8().intValue();

@@ -22,16 +22,24 @@ package org.xrpl.xrpl4j.crypto.keys;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
+import org.xrpl.xrpl4j.crypto.HashingUtils;
 import org.xrpl.xrpl4j.crypto.keys.Seed.DefaultSeed;
 
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.List;
 import javax.security.auth.DestroyFailedException;
 
 /**
@@ -42,6 +50,7 @@ public class SeedTest {
 
   private final Seed edSeed = Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"));
   private final Seed ecSeed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("hello"));
+  private final Seed elGamalSeed = Seed.elGamalSecp256k1SeedFromPassphrase(Passphrase.of("hello"));
 
   @Test
   void constructorWithNullSeed() {
@@ -89,6 +98,14 @@ public class SeedTest {
   }
 
   @Test
+  void testRandomElGamalSecp256k1SeedGeneration() {
+    Seed originalSeed = Seed.elGamalSecp256k1Seed();
+    Seed copiedSeed = new DefaultSeed((DefaultSeed) originalSeed);
+    assertThat(originalSeed.equals(copiedSeed)).isTrue();
+    assertThat(originalSeed.decodedSeed().bytes().hexValue()).isEqualTo(copiedSeed.decodedSeed().bytes().hexValue());
+  }
+
+  @Test
   void testSecp256k1SeedFromNullEntropy() {
     assertThrows(NullPointerException.class, () -> {
       Seed.secp256k1SeedFromEntropy(null);
@@ -96,9 +113,25 @@ public class SeedTest {
   }
 
   @Test
+  void testSecp256k1SeedFrom32BytesEntropy() {
+    Entropy entropy = Entropy.newInstance(32);
+    assertThrows(IllegalArgumentException.class, () -> {
+      Seed.secp256k1SeedFromEntropy(entropy);
+    });
+  }
+
+  @Test
   void testEd25519SeedFromEntropyNullEntropy() {
     assertThrows(NullPointerException.class, () -> {
       Seed.ed25519SeedFromEntropy(null);
+    });
+  }
+
+  @Test
+  void testEd25519SeedFrom32BytesEntropy() {
+    Entropy entropy = Entropy.newInstance(32);
+    assertThrows(IllegalArgumentException.class, () -> {
+      Seed.ed25519SeedFromEntropy(entropy);
     });
   }
 
@@ -136,6 +169,15 @@ public class SeedTest {
     assertThat(ecSeed.isDestroyed()).isFalse();
     ecSeed.destroy();
     assertThat(ecSeed.isDestroyed()).isTrue();
+  }
+
+  @Test
+  public void testElGamalSecp256k1SeedFromPassphrase() throws DestroyFailedException {
+    //noinspection OptionalGetWithoutIsPresent
+    assertThat(elGamalSeed.decodedSeed().type().get()).isEqualTo(KeyType.SECP256K1);
+    assertThat(elGamalSeed.isDestroyed()).isFalse();
+    elGamalSeed.destroy();
+    assertThat(elGamalSeed.isDestroyed()).isTrue();
   }
 
   @Test
@@ -277,6 +319,21 @@ public class SeedTest {
     assertThat(edSeed.toString()).isEqualTo("Seed{value=[redacted], destroyed=false}");
   }
 
+  @Test
+  void testElGamalSecp256k1SeedFromNullEntropy() {
+    assertThrows(NullPointerException.class, () -> {
+      Seed.elGamalSecp256k1SeedFromEntropy(null);
+    });
+  }
+
+  @Test
+  void testElGamalSecp256k1SeedFrom16BytesEntropy() {
+    Entropy entropy = Entropy.of(new byte[16]);
+    assertThrows(IllegalArgumentException.class, () -> {
+      Seed.elGamalSecp256k1SeedFromEntropy(entropy);
+    });
+  }
+
   ///////////////////
   // Tests for Ed25519KeyService
   ///////////////////
@@ -338,6 +395,24 @@ public class SeedTest {
   }
 
   @Test
+  public void deriveElGamalSecp256k1KeyPair() {
+    Entropy entropy = Entropy.of(
+      BaseEncoding.base16().decode("4D4BD86DD8503732AB0B96C2D8DF13AC9D390D4337A83144427AC7A12145DBF4")
+    );
+    Seed seed = Seed.elGamalSecp256k1SeedFromEntropy(entropy);
+    KeyPair keyPair = Seed.DefaultSeed.Secp256k1KeyPairService.deriveKeyPair(seed);
+    KeyPair expectedKeyPair = KeyPair.builder()
+      .privateKey(PrivateKey.fromPrefixedBytes(UnsignedByteArray.of(
+        BaseEncoding.base16().decode("003DEC9EA8274A9B17696B56AF549F1B760C6621CE6F8C50C6E3978A057E3C65C0"
+        ))))
+      .publicKey(
+        PublicKey.fromBase16EncodedPublicKey("02FE37E210C01F3A43C7E28919ECC84612780921E35A3E795D6ED2752F5DF46F99")
+      )
+      .build();
+    assertThat(keyPair).isEqualTo(expectedKeyPair);
+  }
+
+  @Test
   public void generateSeedFromEd25519Seed() {
     Entropy entropy = Entropy.of(BaseEncoding.base16().decode("0102030405060708090A0B0C0D0E0F10"));
     Seed seed = Seed.ed25519SeedFromEntropy(entropy);
@@ -363,5 +438,51 @@ public class SeedTest {
     assertThat(seed.deriveKeyPair().publicKey().deriveAddress().value()).isEqualTo(
       "rByLcEZ7iwTBAK8FfjtpFuT7fCzt4kF4r2"
     );
+  }
+
+  @Test
+  void deriveScalarDoesNotAccumulateBytesAcrossIterations() {
+    // Force deriveScalar's loop to iterate twice by making the first sha512Half call return a value
+    // >= N (an invalid scalar). The second call's argument reveals whether seedCopy was re-created
+    // inside the loop (correct: seed + [i=1] = 20 bytes) or accumulated outside it
+    // (broken: seed + [i=0] + [i=1] = 24 bytes).
+    //
+    // Rarely loops (secp256k1 order ≈ 2^256, so iteration is needed with negligible probability),
+    // but seedCopy must be recreated each iteration to avoid accumulating bytes across retries.
+
+    // All-0xFF as a BigInteger is >> N, so the loop rejects it and advances to i=1.
+    byte[] aboveN = new byte[32];
+    Arrays.fill(aboveN, (byte) 0xFF);
+    UnsignedByteArray invalidScalar = UnsignedByteArray.of(aboveN);
+
+    // BigInteger(1) is a valid scalar (> 0 and < N).
+    byte[] belowN = new byte[32];
+    belowN[31] = 1;
+    UnsignedByteArray validScalar = UnsignedByteArray.of(belowN);
+
+    ArgumentCaptor<UnsignedByteArray> captor = ArgumentCaptor.forClass(UnsignedByteArray.class);
+
+    Entropy entropy = Entropy.of(BaseEncoding.base16().decode("CC4E55BC556DD561CBE990E3D4EF7069"));
+    Seed ecSeed = Seed.secp256k1SeedFromEntropy(entropy);
+
+    try (MockedStatic<HashingUtils> mocked = mockStatic(HashingUtils.class)) {
+      mocked.when(() -> HashingUtils.addUInt32(any(), any())).thenCallRealMethod();
+      // Call 1: deriveScalar(seed), i=0 → rejected (>= N), forces loop to i=1
+      // Call 2: deriveScalar(seed), i=1 → accepted
+      // Call 3: deriveScalar(publicGen, accountIndex=0), i=0 → accepted
+      mocked.when(() -> HashingUtils.sha512Half(any(UnsignedByteArray.class)))
+        .thenReturn(invalidScalar)
+        .thenReturn(validScalar)
+        .thenReturn(validScalar);
+
+      ecSeed.deriveKeyPair();
+
+      mocked.verify(() -> HashingUtils.sha512Half(captor.capture()), times(3));
+    }
+
+    List<UnsignedByteArray> args = captor.getAllValues();
+    // The seed entropy is 16 bytes. With correct code, the second sha512Half call receives
+    // seed + [0,0,0,1] = 20 bytes. With broken code it would receive seed + [0,0,0,0] + [0,0,0,1] = 24 bytes.
+    assertThat(args.get(1).length()).isEqualTo(16 + 4);
   }
 }

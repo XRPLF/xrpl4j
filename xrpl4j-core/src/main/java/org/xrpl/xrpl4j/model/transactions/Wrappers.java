@@ -31,6 +31,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
@@ -211,6 +212,12 @@ public class Wrappers {
      */
     public static XrpCurrencyAmount ofDrops(final long drops) {
       if (drops < 0) {
+        if (drops == Long.MIN_VALUE) {
+          throw new IllegalArgumentException(
+            "drops value of Long.MIN_VALUE is not supported because Math.abs(Long.MIN_VALUE) overflows to " +
+              "Long.MIN_VALUE"
+          );
+        }
         // Normalize the drops value to be a positive number; indicate negativity via property.
         return ofDrops(UnsignedLong.valueOf(Math.abs(drops)), true);
       } else {
@@ -381,7 +388,7 @@ public class Wrappers {
 
       return XrpCurrencyAmount.ofDrops(
         this.value().times(other.value()),
-        this.isNegative() || other.isNegative()
+        this.isNegative() ^ other.isNegative()
       );
     }
 
@@ -393,15 +400,15 @@ public class Wrappers {
     @Override
     public boolean equals(Object obj) {
       if (obj instanceof XrpCurrencyAmount) {
-        UnsignedLong otherValue = ((XrpCurrencyAmount) obj).value(); // <-- Can't be null due to Immutables
-        return this.value().equals(otherValue);
+        XrpCurrencyAmount other = (XrpCurrencyAmount) obj; // <-- Can't be null due to Immutables
+        return this.value().equals(other.value()) && this.isNegative() == other.isNegative();
       }
       return false;
     }
 
     @Override
     public int hashCode() {
-      return this.value().hashCode();
+      return Objects.hash(this.value(), this.isNegative());
     }
 
     /**
@@ -853,6 +860,11 @@ public class Wrappers {
   @Beta
   abstract static class _MpTokenNumericAmount extends Wrapper<UnsignedLong> implements Serializable {
 
+    /**
+     * The maximum allowable value for an MPT amount.
+     */
+    static final UnsignedLong MAX_AMOUNT = UnsignedLong.valueOf(0x7FFF_FFFF_FFFF_FFFFL);
+
     public static MpTokenNumericAmount of(long amount) {
       return MpTokenNumericAmount.of(UnsignedLong.valueOf(amount));
     }
@@ -871,12 +883,42 @@ public class Wrappers {
   @Beta
   abstract static class _MpTokenIssuanceId extends Wrapper<String> implements Serializable {
 
+    /** An MPTokenIssuanceID is a 4-byte sequence (8 hex chars) followed by the 20-byte issuer AccountID. */
+    private static final int SEQUENCE_HEX_LENGTH = 8;
+
+    /** A well-formed MPTokenIssuanceID is 24 bytes: a 4-byte sequence plus the 20-byte issuer AccountID. */
+    private static final int ISSUANCE_ID_HEX_LENGTH = 48;
+
     // TODO: Do clients ever need to construct an issuance id given a sequence and issuer AccountID?
     // See https://github.com/XRPLF/xrpl4j/issues/657
 
     @Value.Check
     void check() {
       Preconditions.checkArgument(!this.value().isEmpty(), "MpTokenIssuanceId must not be empty.");
+    }
+
+    /**
+     * Whether {@code account} is the issuer encoded in this issuance ID.
+     *
+     * <p>An MPTokenIssuanceID is a 4-byte sequence followed by the 20-byte issuer AccountID, so the issuer is its
+     * last 40 hex characters — the same derivation {@code rippled} uses ({@code MPTIssue::getIssuer}). The comparison
+     * is on decoded AccountIDs. Returns {@code false} (rather than throwing) for a malformed issuance ID that is not
+     * 48 hex characters long, leaving that to other validation.</p>
+     *
+     * @param account The {@link Address} to test against this issuance ID's issuer.
+     *
+     * @return {@code true} if {@code account} decodes to the issuer AccountID in this issuance ID.
+     */
+    public boolean isIssuer(final Address account) {
+      Objects.requireNonNull(account);
+      final String id = this.value();
+      if (id.length() != ISSUANCE_ID_HEX_LENGTH) {
+        return false;
+      }
+      final String issuerAccountIdHex = id.substring(SEQUENCE_HEX_LENGTH).toUpperCase(Locale.ENGLISH);
+      final String accountIdHex =
+        AddressCodec.getInstance().decodeAccountId(account).hexValue().toUpperCase(Locale.ENGLISH);
+      return accountIdHex.equals(issuerAccountIdHex);
     }
 
     @Override
@@ -1201,4 +1243,5 @@ public class Wrappers {
     }
 
   }
+
 }

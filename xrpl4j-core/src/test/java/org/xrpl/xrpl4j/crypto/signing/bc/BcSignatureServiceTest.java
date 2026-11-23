@@ -203,12 +203,13 @@ class BcSignatureServiceTest {
   @Test
   void multiSignEd25519() {
     when(signedTransactionMock.signature()).thenReturn(ed25519SignatureMock);
+    final Payment payment = paymentWithFee();
 
-    final Signature signature = signatureService.multiSign(ed25519KeyPair.privateKey(), transactionMock);
+    final Signature signature = signatureService.multiSign(ed25519KeyPair.privateKey(), payment);
     assertThat(signature.base16Value()).isEqualTo("0000000000000000000000000000000000000000000000000000000000000000");
 
-    verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, ed25519SignerAddress);
-    verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
+    verify(signatureUtilsMock).toMultiSignableBytes(payment, ed25519SignerAddress);
+    verify(signatureUtilsMock, times(0)).toSignableBytes(payment);
 
     ed25519SignatureMock = Signature.builder().value(UnsignedByteArray.of(new byte[32])).build();
     verifyNoMoreInteractions(signatureUtilsMock);
@@ -217,13 +218,27 @@ class BcSignatureServiceTest {
   @Test
   void multiSignSecp256k1() {
     when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
+    final Payment payment = paymentWithFee();
 
-    final Signature signature = signatureService.multiSign(secp256k1KeyPair.privateKey(), transactionMock);
+    final Signature signature = signatureService.multiSign(secp256k1KeyPair.privateKey(), payment);
     assertThat(signature.base16Value()).isEqualTo("300602010A02010A");
 
-    verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, secp256k1SignerAddress);
-    verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
+    verify(signatureUtilsMock).toMultiSignableBytes(payment, secp256k1SignerAddress);
+    verify(signatureUtilsMock, times(0)).toSignableBytes(payment);
     verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  /**
+   * A minimal {@link Payment} carrying a nonzero fee, so it passes the signer's zero-fee guard.
+   */
+  private static Payment paymentWithFee() {
+    return Payment.builder()
+      .destination(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(ED_PUBLIC_KEY)
+      .build();
   }
 
   // /////////////////

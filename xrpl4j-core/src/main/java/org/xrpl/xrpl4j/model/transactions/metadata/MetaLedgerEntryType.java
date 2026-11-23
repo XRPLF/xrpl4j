@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions.metadata;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
@@ -53,6 +54,9 @@ public interface MetaLedgerEntryType {
   MetaLedgerEntryType MP_TOKEN = MetaLedgerEntryType.of("MPToken");
 
   @Beta
+  MetaLedgerEntryType DELEGATE = MetaLedgerEntryType.of("Delegate");
+
+  @Beta
   MetaLedgerEntryType VAULT = MetaLedgerEntryType.of("Vault");
 
   @Beta
@@ -60,6 +64,9 @@ public interface MetaLedgerEntryType {
 
   @Beta
   MetaLedgerEntryType LOAN = MetaLedgerEntryType.of("Loan");
+
+  @Beta
+  MetaLedgerEntryType SPONSORSHIP = MetaLedgerEntryType.of("Sponsorship");
 
 
   /**
@@ -126,17 +133,28 @@ public interface MetaLedgerEntryType {
         return MetaMpTokenObject.class;
       case "PermissionedDomain":
         return MetaPermissionedDomainObject.class;
+      case "Delegate":
+        return MetaDelegateObject.class;
       case "Vault":
         return MetaVaultObject.class;
       case "LoanBroker":
         return MetaLoanBrokerObject.class;
       case "Loan":
         return MetaLoanObject.class;
+      case "Sponsorship":
+        return MetaSponsorshipObject.class;
       default:
         return MetaUnknownObject.class;
     }
   }
 
+  /**
+   * The {@link String} value of this ledger entry type, as it appears in xrpld JSON (e.g., {@code "AccountRoot"}).
+   * Annotated with {@link JsonValue} so that this type serializes as a bare JSON string rather than as an object.
+   *
+   * @return The {@link String} value.
+   */
+  @JsonValue
   String value();
 
 }

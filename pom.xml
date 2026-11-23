@@ -52,6 +52,11 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>xrpl4j-mpt-crypto</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
         <version>${jackson.version}</version>
@@ -134,6 +139,12 @@
         <scope>test</scope>
       </dependency>
       <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-inline</artifactId>
+        <version>3.7.7</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>org.immutables</groupId>
         <artifactId>value-annotations</artifactId>
         <version>${immutables.version}</version>
@@ -150,9 +161,15 @@
         <version>${guava.version}</version>
       </dependency>
       <dependency>
+        <!-- Provides javax.annotation.Nullable. Guava 33+ no longer brings this in transitively. -->
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>3.0.2</version>
+      </dependency>
+      <dependency>
         <groupId>com.jayway.jsonpath</groupId>
         <artifactId>json-path-assert</artifactId>
-        <version>2.8.0</version>
+        <version>2.10.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -170,7 +187,12 @@
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcprov-jdk18on</artifactId>
-        <version>1.84</version>
+        <version>1.86</version>
+      </dependency>
+      <dependency>
+        <groupId>net.java.dev.jna</groupId>
+        <artifactId>jna</artifactId>
+        <version>5.18.1</version>
       </dependency>
       <dependency>
         <groupId>org.awaitility</groupId>
@@ -209,7 +231,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
+            <version>3.2.8</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -269,18 +291,20 @@
 
     <cryptoconditions.version>1.0.5</cryptoconditions.version>
     <jackson.version>2.21.0</jackson.version>
-    <feign.version>13.8</feign.version>
+    <feign.version>13.12</feign.version>
     <slf4j.version>2.0.7</slf4j.version>
     <junit-jupiter.version>5.10.1</junit-jupiter.version>
-    <guava.version>32.1.1-jre</guava.version>
+    <guava.version>33.7.1-jre</guava.version>
     <immutables.version>2.12.1</immutables.version>
   </properties>
 
   <modules>
     <module>xrpl4j-core</module>
+    <module>xrpl4j-mpt-crypto</module>
     <module>xrpl4j-integration-tests</module>
     <module>xrpl4j-client</module>
     <module>xrpl4j-bom</module>
+    <module>xrpl4j-coverage</module>
   </modules>
 
   <build>
@@ -314,9 +338,13 @@
                   <ignoredDependency>com.google.code.findbugs:annotations</ignoredDependency>
                   <ignoredDependency>com.google.errorprone:error_prone_annotations</ignoredDependency>
                   <ignoredDependency>ch.qos.logback:logback-classic</ignoredDependency>
+                  <!-- Loaded via reflection-->
+                  <ignoredDependency>org.xrpl:xrpl4j-mpt-crypto</ignoredDependency>
                   <!-- As part of SkyStreamer, but only for test scope-->
                   <ignoredDependency>com.vaadin.external.google:android-json</ignoredDependency>
                   <ignoredDependency>org.junit.jupiter:junit-jupiter-engine</ignoredDependency>
+                  <!-- mockito-inline works as a Java agent; no classes are directly imported -->
+                  <ignoredDependency>org.mockito:mockito-inline</ignoredDependency>
                 </ignoredDependencies>
               </configuration>
             </execution>
@@ -330,6 +358,8 @@
           <configuration>
             <source>${maven.compiler.source}</source>
             <target>${maven.compiler.target}</target>
+            <!-- Prevents annotation processor ordering issues with Immutables -->
+            <useIncrementalCompilation>false</useIncrementalCompilation>
 
             <annotationProcessorPaths>
               <path>
@@ -492,7 +522,7 @@
         <plugin>
           <groupId>org.sonatype.central</groupId>
           <artifactId>central-publishing-maven-plugin</artifactId>
-          <version>0.5.0</version>
+          <version>0.11.0</version>
           <extensions>true</extensions>
           <configuration>
             <publishingServerId>central</publishingServerId>

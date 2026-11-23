@@ -10,7 +10,9 @@ Version 7.0.0 introduces several breaking changes:
 1. **Issue Model Refactor** — `Issue` has been refactored from a concrete immutable into a polymorphic interface with
    three subtypes (`XrpIssue`, `IouIssue`, `MptIssue`) to support the
    [Single Asset Vault](https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0065-single-asset-vault) amendment.
-2. **Transaction Signing API Refactor** — `SignatureUtils.addSignatureToTransaction()` and
+2. **`PathCurrency` MPToken support** — `PathCurrency.currency()` is now `Optional<String>` and a new
+   `mptIssuanceId()` accessor was added, so a path currency can identify an MPToken.
+3. **Transaction Signing API Refactor** — `SignatureUtils.addSignatureToTransaction()` and
    `SignatureUtils.addMultiSignaturesToTransaction()` have been removed. Transaction signing now uses Immutables-generated
    `withTransactionSignature()` and `withSigners()` methods on `Transaction`, and validation has moved to `@Check`
    methods on `SingleSignedTransaction` and `MultiSignedTransaction`.
@@ -37,7 +39,7 @@ three subtypes.
 Issue xrp = Issue.builder().currency("XRP").build();
 
 // After (v7.0.0): XRP Issue
-Issue xrp = Issue.XRP; // or XrpIssue.XRP
+Issue xrp = Issue.XRP; // or XrpIssue.of()
 
 // Before (v6.x.x): IOU Issue
 Issue usd = Issue.builder()
@@ -126,7 +128,33 @@ subtype based on the JSON structure:
 - `{"currency": "USD", "issuer": "rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"}` → `IouIssue`
 - `{"mpt_issuance_id": "00000001A407AF5856CFF3379945D823561023E8E5CED9C9"}` → `MptIssue`
 
-### 2. Transaction Signing API
+### 2. `PathCurrency.currency()` type change
+
+`PathCurrency` now also models MPTokens, so `currency()` changed from `String` to `Optional<String>` and a new
+`mptIssuanceId()` accessor was added. A `PathCurrency` carries exactly one of `currency()` or `mptIssuanceId()`.
+
+The `of(String)` and `of(String, Address)` factories are unchanged, including the "any issuer" form used by
+`source_currencies`, where a bare currency code means "this currency, from any issuer".
+
+**Migration:**
+
+```java
+// Before (v6.x.x)
+String currency = pathCurrency.currency();
+
+// After (v7.0.0)
+String currency = pathCurrency.currency().orElse(null);
+// ...or handle the MPToken case explicitly:
+pathCurrency.currency().ifPresent(c -> { /* currency code */ });
+pathCurrency.mptIssuanceId().ifPresent(id -> { /* MPToken issuance id */ });
+```
+
+```java
+// New in v7.0.0: a PathCurrency for an MPToken
+PathCurrency mpt = PathCurrency.of(MptIssue.of(MpTokenIssuanceId.of("0000...")));
+```
+
+### 3. Transaction Signing API
 
 The transaction signing internals have been refactored to eliminate per-transaction-type switch statements in
 `SignatureUtils`. This change leverages Immutables-generated builder methods on the `Transaction` interface.
@@ -178,7 +206,7 @@ for every transaction subclass:
 - `Transaction withSigners(Iterable<? extends SignerWrapper> signers)` — returns a copy of the transaction with the
   specified signers applied.
 
-### 3. `MetaMpTokenIssuanceObject.mpTokenMetadata()` type change
+### 4. `MetaMpTokenIssuanceObject.mpTokenMetadata()` type change
 
 The return type of `MetaMpTokenIssuanceObject.mpTokenMetadata()` changed from `Optional<String>` to
 `Optional<MpTokenMetadata>`. This aligns the meta object with `MpTokenIssuanceObject`.

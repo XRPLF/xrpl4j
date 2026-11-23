@@ -1178,7 +1178,7 @@ public class OfferIT extends AbstractIT {
   /**
    * Creates an MPT issuance and IOU trust line, then creates an {@link OfferCreate} with
    * MPT as {@code TakerGets} and IOU as {@code TakerPays}. Verifies the offer via {@code book_offers} RPC
-   * using {@link MptIssue} and {@link CurrencyIssue}.
+   * using {@link MptIssue} and {@link IouIssue}.
    *
    * <p><strong>Note:</strong> This test requires rippled built from the MPT DEX feature branch with XLS-82d support.
    * MPT support in the DEX is available in the feature branch and will be merged to develop soon.</p>
@@ -1352,7 +1352,7 @@ public class OfferIT extends AbstractIT {
       mptIssuerKeyPair.publicKey().deriveAddress()
     );
 
-    // Verify book_offers with MptIssue as takerGets and CurrencyIssue as takerPays
+    // Verify book_offers with MptIssue as takerGets and IouIssue as takerPays
     BookOffersResult bookOffersResult = xrplClient.bookOffers(
       BookOffersRequestParams.builder()
         .taker(mptIssuerKeyPair.publicKey().deriveAddress())

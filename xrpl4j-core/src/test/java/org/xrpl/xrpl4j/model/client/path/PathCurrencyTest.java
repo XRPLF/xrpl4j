@@ -30,7 +30,6 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
-import org.xrpl.xrpl4j.model.ledger.XrpIssue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
@@ -39,62 +38,101 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
  */
 public class PathCurrencyTest extends AbstractJsonTest {
 
+  private static final Address ISSUER = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
+  private static final String MPT_ID = "00000002430427B80BD2D09D36B70B969E12801065F22308";
+
   @Test
   public void ofCurrencyOnly() {
     PathCurrency pathCurrency = PathCurrency.of("XRP");
 
-    assertThat(pathCurrency.issue()).isInstanceOf(XrpIssue.class);
-    XrpIssue xrpIssue = (XrpIssue) pathCurrency.issue();
-    assertThat(xrpIssue.currency()).isEqualTo("XRP");
+    assertThat(pathCurrency.currency()).hasValue("XRP");
+    assertThat(pathCurrency.issuer()).isEmpty();
+    assertThat(pathCurrency.mptIssuanceId()).isEmpty();
   }
 
   @Test
-  public void ofCurrencyOnlyNonXrpThrows() {
-    assertThatThrownBy(() -> PathCurrency.of("USD"))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("only supports 'XRP'");
+  public void ofCurrencyOnlyNonXrp() {
+    // A bare currency code means "this currency, from any issuer" in source_currencies.
+    PathCurrency pathCurrency = PathCurrency.of("USD");
+
+    assertThat(pathCurrency.currency()).hasValue("USD");
+    assertThat(pathCurrency.issuer()).isEmpty();
+    assertThat(pathCurrency.mptIssuanceId()).isEmpty();
   }
 
   @Test
-  public void ofIssueNullThrows() {
+  public void ofNullThrows() {
     assertThatThrownBy(() -> PathCurrency.of((Issue) null))
+      .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> PathCurrency.of((String) null))
+      .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> PathCurrency.of("USD", null))
       .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   public void ofCurrencyAndIssuer() {
-    Address issuer = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
-    PathCurrency pathCurrency = PathCurrency.of("USD", issuer);
+    PathCurrency pathCurrency = PathCurrency.of("USD", ISSUER);
 
-    assertThat(pathCurrency.issue()).isInstanceOf(IouIssue.class);
-    IouIssue iouIssue = (IouIssue) pathCurrency.issue();
-    assertThat(iouIssue.currency()).isEqualTo("USD");
-    assertThat(iouIssue.issuer()).isEqualTo(issuer);
+    assertThat(pathCurrency.currency()).hasValue("USD");
+    assertThat(pathCurrency.issuer()).hasValue(ISSUER);
+    assertThat(pathCurrency.mptIssuanceId()).isEmpty();
+  }
+
+  @Test
+  public void ofXrpIssue() {
+    PathCurrency pathCurrency = PathCurrency.of(Issue.XRP);
+
+    assertThat(pathCurrency.currency()).hasValue("XRP");
+    assertThat(pathCurrency.issuer()).isEmpty();
   }
 
   @Test
   public void ofIouIssue() {
-    Address issuer = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
-    IouIssue iouIssue = IouIssue.builder()
-      .currency("EUR")
-      .issuer(issuer)
-      .build();
+    IouIssue iouIssue = IouIssue.builder().currency("EUR").issuer(ISSUER).build();
 
     PathCurrency pathCurrency = PathCurrency.of(iouIssue);
 
-    assertThat(pathCurrency.issue()).isEqualTo(iouIssue);
-    assertThat(pathCurrency.issue()).isInstanceOf(IouIssue.class);
+    assertThat(pathCurrency.currency()).hasValue("EUR");
+    assertThat(pathCurrency.issuer()).hasValue(ISSUER);
   }
 
   @Test
   public void ofMptIssue() {
-    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
-    MptIssue mptIssue = MptIssue.of(mptId);
-    
-    PathCurrency pathCurrency = PathCurrency.of(mptIssue);
-    
-    assertThat(pathCurrency.issue()).isEqualTo(mptIssue);
-    assertThat(pathCurrency.issue()).isInstanceOf(MptIssue.class);
+    MpTokenIssuanceId mptId = MpTokenIssuanceId.of(MPT_ID);
+
+    PathCurrency pathCurrency = PathCurrency.of(MptIssue.of(mptId));
+
+    assertThat(pathCurrency.mptIssuanceId()).hasValue(mptId);
+    assertThat(pathCurrency.currency()).isEmpty();
+    assertThat(pathCurrency.issuer()).isEmpty();
+  }
+
+  @Test
+  public void cannotBuildWithNeitherCurrencyNorMptIssuanceId() {
+    assertThatThrownBy(() -> PathCurrency.builder().build())
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("exactly one of currency or mptIssuanceId");
+  }
+
+  @Test
+  public void cannotBuildWithBothCurrencyAndMptIssuanceId() {
+    assertThatThrownBy(() -> PathCurrency.builder()
+      .currency("USD")
+      .mptIssuanceId(MpTokenIssuanceId.of(MPT_ID))
+      .build())
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("exactly one of currency or mptIssuanceId");
+  }
+
+  @Test
+  public void cannotBuildMptWithIssuer() {
+    assertThatThrownBy(() -> PathCurrency.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of(MPT_ID))
+      .issuer(ISSUER)
+      .build())
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("cannot have an issuer");
   }
 
   @Test
@@ -107,9 +145,17 @@ public class PathCurrencyTest extends AbstractJsonTest {
   }
 
   @Test
+  public void serializeCurrencyWithoutIssuer() throws JsonProcessingException, JSONException {
+    PathCurrency pathCurrency = PathCurrency.of("USD");
+
+    String json = "{\"currency\":\"USD\"}";
+
+    assertCanSerializeAndDeserialize(pathCurrency, json, PathCurrency.class);
+  }
+
+  @Test
   public void serializeCurrencyWithIssuer() throws JsonProcessingException, JSONException {
-    Address issuer = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
-    PathCurrency pathCurrency = PathCurrency.of("USD", issuer);
+    PathCurrency pathCurrency = PathCurrency.of("USD", ISSUER);
 
     String json = "{\"currency\":\"USD\",\"issuer\":\"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk\"}";
 
@@ -118,19 +164,17 @@ public class PathCurrencyTest extends AbstractJsonTest {
 
   @Test
   public void serializeMptIssue() throws JsonProcessingException, JSONException {
-    MpTokenIssuanceId mptId = MpTokenIssuanceId.of("00000002430427B80BD2D09D36B70B969E12801065F22308");
-    PathCurrency pathCurrency = PathCurrency.of(MptIssue.of(mptId));
+    PathCurrency pathCurrency = PathCurrency.of(MptIssue.of(MpTokenIssuanceId.of(MPT_ID)));
 
-    String json = "{\"mpt_issuance_id\":\"00000002430427B80BD2D09D36B70B969E12801065F22308\"}";
+    String json = "{\"mpt_issuance_id\":\"" + MPT_ID + "\"}";
 
     assertCanSerializeAndDeserialize(pathCurrency, json, PathCurrency.class);
   }
 
   @Test
   public void serializeHexCurrencyCode() throws JsonProcessingException, JSONException {
-    Address issuer = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
     String hexCurrency = "015841551A748AD2C1F76FF6ECB0CCCD00000000";
-    PathCurrency pathCurrency = PathCurrency.of(hexCurrency, issuer);
+    PathCurrency pathCurrency = PathCurrency.of(hexCurrency, ISSUER);
 
     String json = "{\"currency\":\"015841551A748AD2C1F76FF6ECB0CCCD00000000\"," +
                   "\"issuer\":\"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk\"}";
@@ -140,17 +184,12 @@ public class PathCurrencyTest extends AbstractJsonTest {
 
   @Test
   public void builder() {
-    Address issuer = Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXoKk");
-    IouIssue iouIssue = IouIssue.builder()
-      .currency("GBP")
-      .issuer(issuer)
-      .build();
-
     PathCurrency pathCurrency = PathCurrency.builder()
-      .issue(iouIssue)
+      .currency("GBP")
+      .issuer(ISSUER)
       .build();
 
-    assertThat(pathCurrency.issue()).isEqualTo(iouIssue);
+    assertThat(pathCurrency.currency()).hasValue("GBP");
+    assertThat(pathCurrency.issuer()).hasValue(ISSUER);
   }
 }
-

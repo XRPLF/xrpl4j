@@ -395,8 +395,9 @@ public class MpTokenIT extends AbstractIT {
       .hasMessageContaining("entryNotFound");
   }
 
-  // No static gate: this test uses no permissioned domain. It skips itself at runtime via
-  // Assumptions.assumeTrue below when the DynamicMPT amendment is not enabled on the node.
+  // No static gate: this test uses no permissioned domain. It skips itself at runtime via the
+  // Assumptions.assumeTrue checks below, on both the create and the metadata update, when the
+  // DynamicMPT amendment is not enabled on the node.
   @Test
   void createDynamicIssuanceThenMutateMetadata()
     throws JsonRpcClientErrorException, JsonProcessingException {
@@ -479,6 +480,12 @@ public class MpTokenIT extends AbstractIT {
       issuerKeyPair.privateKey(), metadataUpdate
     );
     SubmitResult<MpTokenIssuanceSet> metadataUpdateResult = xrplClient.submit(signedMetadataUpdate);
+    // The create above sets no ImmutableFlags, so it succeeds even when DynamicMPT is disabled and
+    // the assume on its result passes. MPTokenIssuanceSet with MPTokenMetadata is what gets rejected.
+    Assumptions.assumeTrue(
+      !"temDISABLED".equals(metadataUpdateResult.engineResult()),
+      "Skipping: DynamicMPT amendment not enabled on this node"
+    );
     assertThat(metadataUpdateResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
     this.scanForResult(

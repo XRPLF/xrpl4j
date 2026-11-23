@@ -68,6 +68,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.stream.Collectors;
 
+@DisabledIf(value = "shouldNotRun", disabledReason = "AmmIT only runs on local rippled node or devnet.")
 public class AmmIT extends AbstractIT {
 
   String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
@@ -2280,6 +2281,11 @@ public class AmmIT extends AbstractIT {
       () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
       info -> info.accountData().flags().lsfDefaultRipple()
     );
+  }
+
+  static boolean shouldNotRun() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null;
   }
 
   static boolean shouldNotRunMptAmm() {

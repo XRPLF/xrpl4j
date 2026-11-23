@@ -32,12 +32,6 @@ public class NfTokenOfferFlags extends Flags {
    */
   public static final NfTokenOfferFlags SELL_NFTOKEN = new NfTokenOfferFlags(0x00000001);
 
-  /**
-   * Constant {@link NfTokenOfferFlags} for the {@code lsfAuthorized} flag.
-   */
-  public static final NfTokenOfferFlags AUTHORIZED = new NfTokenOfferFlags(0x00000002);
-
-
   private NfTokenOfferFlags(long value) {
     super(value);
   }
@@ -60,14 +54,5 @@ public class NfTokenOfferFlags extends Flags {
    */
   public boolean lsfSellNfToken() {
     return this.isSet(SELL_NFTOKEN);
-  }
-
-  /**
-   * Indicates the offer has been approved by the issuer.
-   *
-   * @return {@code true} if {@code lsfAuthorized} is set, otherwise {@code false}.
-   */
-  public boolean lsfAuthorized() {
-    return this.isSet(AUTHORIZED);
   }
 }

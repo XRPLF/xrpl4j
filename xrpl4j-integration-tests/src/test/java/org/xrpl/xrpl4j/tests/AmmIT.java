@@ -1700,6 +1700,16 @@ public class AmmIT extends AbstractIT {
       holderKeyPair.publicKey().deriveAddress()
     );
 
+    // Capture the validated pool amount before the clawback. Comparing against a hardcoded 15000
+    // would also pass if the earlier deposit had silently failed, leaving 10000 in the pool.
+    AmmInfoResult ammBeforeClawback = xrplClient.ammInfo(
+      AmmInfoRequestParams.from(MptIssue.of(mptIssuanceId), Issue.XRP)
+    );
+    assertThat(ammBeforeClawback.amm().amount()).isInstanceOf(MptCurrencyAmount.class);
+    final BigDecimal mptBeforeClawback = new BigDecimal(
+      ((MptCurrencyAmount) ammBeforeClawback.amm().amount()).value()
+    );
+
     // Issuer claws back MPT from AMM
     AccountInfoResult issuerInfoBeforeClawback = scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
@@ -1740,8 +1750,8 @@ public class AmmIT extends AbstractIT {
 
     assertThat(ammAfterClawback.amm().amount()).isInstanceOf(MptCurrencyAmount.class);
     MptCurrencyAmount ammMptAmount = (MptCurrencyAmount) ammAfterClawback.amm().amount();
-    // The AMM should have less MPT after clawback
-    assertThat(new BigDecimal(ammMptAmount.value())).isLessThan(new BigDecimal("15000"));
+    // The AMM should have strictly less MPT than it held before the clawback
+    assertThat(new BigDecimal(ammMptAmount.value())).isLessThan(mptBeforeClawback);
 
     logger.info("Successfully clawed back MPT from MPT/XRP AMM");
   }

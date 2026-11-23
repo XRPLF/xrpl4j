@@ -45,6 +45,7 @@ import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
+import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
@@ -53,6 +54,7 @@ import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.math.BigDecimal;
 import java.util.function.Predicate;
 
 /**
@@ -324,7 +326,7 @@ public class CheckIT extends AbstractIT {
    * using {@link CheckCash} with an MPT {@code Amount}. Verifies the check is on ledger and that MPT balances
    * change correctly after cashing.
    *
-   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
+   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/231">XLS-82d: MPT DEX Integration</a>
    */
   @DisabledIf(value = "shouldNotRunMptChecks",
     disabledReason = "MPT Checks require MPTokensV2 which is only available on the develop rippled image.")
@@ -403,6 +405,11 @@ public class CheckIT extends AbstractIT {
     SubmitResult<MpTokenAuthorize> authorizeResult = xrplClient.submit(signedAuthorize);
     assertThat(authorizeResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
+    // The mint below depends on this authorization having been applied.
+    this.scanForResult(
+      () -> this.getValidatedTransaction(authorizeResult.transactionResult().hash(), MpTokenAuthorize.class)
+    );
+
     //////////////////////
     // Issuer mints MPT to holder via Payment
     feeResult = xrplClient.fee();
@@ -427,6 +434,12 @@ public class CheckIT extends AbstractIT {
     SingleSignedTransaction<Payment> signedMint = signatureService.sign(issuerKeyPair.privateKey(), mint);
     SubmitResult<Payment> mintResult = xrplClient.submit(signedMint);
     assertThat(mintResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    // Without this wait the issuer account read below can still return the pre-mint sequence, which
+    // the CheckCreate would then reuse.
+    this.scanForResult(
+      () -> this.getValidatedTransaction(mintResult.transactionResult().hash(), Payment.class)
+    );
 
     //////////////////////
     // Issuer creates a Check with MPT SendMax to send MPT to holder
@@ -495,6 +508,18 @@ public class CheckIT extends AbstractIT {
     assertThat(cashResponse.engineResult()).isEqualTo(SUCCESS_STATUS);
     logger.info("CheckCash with MPT transaction successful: {}", cashResponse.transactionResult().hash());
 
+    // Cashing with an exact Amount must deliver exactly that amount of the same issuance. Without
+    // this, the test passes even if the Check is removed but the wrong amount is credited.
+    CurrencyAmount deliveredAmount = this.scanForResult(
+        () -> this.getValidatedTransaction(cashResponse.transactionResult().hash(), CheckCash.class)
+      ).metadata().orElseThrow(RuntimeException::new)
+      .deliveredAmount().orElseThrow(() -> new RuntimeException("CheckCash metadata had no delivered amount"));
+
+    assertThat(deliveredAmount).isInstanceOf(MptCurrencyAmount.class);
+    MptCurrencyAmount deliveredMpt = (MptCurrencyAmount) deliveredAmount;
+    assertThat(deliveredMpt.mptIssuanceId()).isEqualTo(mptIssuanceId);
+    assertThat(new BigDecimal(deliveredMpt.value())).isEqualByComparingTo(new BigDecimal("50000"));
+
     //////////////////////
     // Validate that the Check object was deleted
     this.scanForResult(
@@ -511,7 +536,7 @@ public class CheckIT extends AbstractIT {
    * using {@link CheckCash} with an MPT {@code DeliverMin}. Verifies the check is on ledger and that the check
    * can be cashed for at least the minimum amount.
    *
-   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
+   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/231">XLS-82d: MPT DEX Integration</a>
    */
   @DisabledIf(value = "shouldNotRunMptChecks",
     disabledReason = "MPT Checks require MPTokensV2 which is only available on the develop rippled image.")
@@ -590,6 +615,11 @@ public class CheckIT extends AbstractIT {
     SubmitResult<MpTokenAuthorize> authorizeResult = xrplClient.submit(signedAuthorize);
     assertThat(authorizeResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
+    // The mint below depends on this authorization having been applied.
+    this.scanForResult(
+      () -> this.getValidatedTransaction(authorizeResult.transactionResult().hash(), MpTokenAuthorize.class)
+    );
+
     //////////////////////
     // Issuer mints MPT to holder via Payment
     feeResult = xrplClient.fee();
@@ -614,6 +644,12 @@ public class CheckIT extends AbstractIT {
     SingleSignedTransaction<Payment> signedMint = signatureService.sign(issuerKeyPair.privateKey(), mint);
     SubmitResult<Payment> mintResult = xrplClient.submit(signedMint);
     assertThat(mintResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    // Without this wait the issuer account read below can still return the pre-mint sequence, which
+    // the CheckCreate would then reuse.
+    this.scanForResult(
+      () -> this.getValidatedTransaction(mintResult.transactionResult().hash(), Payment.class)
+    );
 
     //////////////////////
     // Issuer creates a Check with MPT SendMax to send MPT to holder
@@ -686,6 +722,18 @@ public class CheckIT extends AbstractIT {
     SubmitResult<CheckCash> cashResponse = xrplClient.submit(signedCheckCash);
     assertThat(cashResponse.engineResult()).isEqualTo(SUCCESS_STATUS);
     logger.info("CheckCash with MPT DeliverMin transaction successful: {}", cashResponse.transactionResult().hash());
+
+    // Cashing with DeliverMin must deliver at least the minimum, of the same issuance.
+    CurrencyAmount deliveredAmount = this.scanForResult(
+        () -> this.getValidatedTransaction(cashResponse.transactionResult().hash(), CheckCash.class)
+      ).metadata().orElseThrow(RuntimeException::new)
+      .deliveredAmount().orElseThrow(() -> new RuntimeException("CheckCash metadata had no delivered amount"));
+
+    assertThat(deliveredAmount).isInstanceOf(MptCurrencyAmount.class);
+    MptCurrencyAmount deliveredMpt = (MptCurrencyAmount) deliveredAmount;
+    assertThat(deliveredMpt.mptIssuanceId()).isEqualTo(mptIssuanceId);
+    assertThat(new BigDecimal(deliveredMpt.value()))
+      .isGreaterThanOrEqualTo(new BigDecimal(deliverMin.value()));
 
     //////////////////////
     // Validate that the Check object was deleted

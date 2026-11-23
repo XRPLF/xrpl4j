@@ -866,7 +866,7 @@ public class OfferIT extends AbstractIT {
    * <p><strong>Note:</strong> This test requires rippled built from the MPT DEX feature branch with XLS-82d support.
    * MPT support in the DEX is available in the feature branch and will be merged to develop soon.</p>
    *
-   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
+   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/231">XLS-82d: MPT DEX Integration</a>
    */
   @DisabledIf(value = "shouldNotRunMptDex",
     disabledReason = "MPT DEX requires MPTokensV2 which is only available on the develop rippled image.")
@@ -956,6 +956,8 @@ public class OfferIT extends AbstractIT {
     OfferObject offerObject = scanForOffer(issuerKeyPair, offerSequence);
     assertThat(offerObject.takerGets()).isInstanceOf(MptCurrencyAmount.class);
     assertThat(((MptCurrencyAmount) offerObject.takerGets()).mptIssuanceId()).isEqualTo(mptIssuanceId);
+    assertThat(new BigDecimal(((MptCurrencyAmount) offerObject.takerGets()).value()))
+      .isEqualByComparingTo(new BigDecimal(takerGetsMpt.value()));
     assertThat(offerObject.takerPays()).isEqualTo(takerPaysXrp);
 
     // Verify ledger entry via OfferLedgerEntryParams
@@ -977,6 +979,8 @@ public class OfferIT extends AbstractIT {
     assertThat(bookOffersResult.offers().get(0).takerGets()).isInstanceOf(MptCurrencyAmount.class);
     assertThat(((MptCurrencyAmount) bookOffersResult.offers().get(0).takerGets()).mptIssuanceId())
       .isEqualTo(mptIssuanceId);
+    assertThat(new BigDecimal(((MptCurrencyAmount) bookOffersResult.offers().get(0).takerGets()).value()))
+      .isEqualByComparingTo(new BigDecimal(takerGetsMpt.value()));
     assertThat(bookOffersResult.offers().get(0).takerPays()).isEqualTo(takerPaysXrp);
   }
 
@@ -988,7 +992,7 @@ public class OfferIT extends AbstractIT {
    * <p><strong>Note:</strong> This test requires rippled built from the MPT DEX feature branch with XLS-82d support.
    * MPT support in the DEX is available in the feature branch and will be merged to develop soon.</p>
    *
-   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
+   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/231">XLS-82d: MPT DEX Integration</a>
    */
   @DisabledIf(value = "shouldNotRunMptDex",
     disabledReason = "MPT DEX requires MPTokensV2 which is only available on the develop rippled image.")
@@ -1183,7 +1187,7 @@ public class OfferIT extends AbstractIT {
    * <p><strong>Note:</strong> This test requires rippled built from the MPT DEX feature branch with XLS-82d support.
    * MPT support in the DEX is available in the feature branch and will be merged to develop soon.</p>
    *
-   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/177">XLS-82d: MPT DEX Integration</a>
+   * @see <a href="https://github.com/XRPLF/XRPL-Standards/discussions/231">XLS-82d: MPT DEX Integration</a>
    */
   @DisabledIf(value = "shouldNotRunMptDex",
     disabledReason = "MPT DEX requires MPTokensV2 which is only available on the develop rippled image.")
@@ -1371,6 +1375,8 @@ public class OfferIT extends AbstractIT {
     assertThat(bookOffersResult.offers().get(0).takerGets()).isInstanceOf(MptCurrencyAmount.class);
     assertThat(((MptCurrencyAmount) bookOffersResult.offers().get(0).takerGets()).mptIssuanceId())
       .isEqualTo(mptIssuanceId);
+    assertThat(new BigDecimal(((MptCurrencyAmount) bookOffersResult.offers().get(0).takerGets()).value()))
+      .isEqualByComparingTo(new BigDecimal(takerGetsMpt.value()));
     assertThat(bookOffersResult.offers().get(0).takerPays()).isEqualTo(takerPaysIou);
 
     logger.info("Successfully verified book_offers with MPT/IOU pair");

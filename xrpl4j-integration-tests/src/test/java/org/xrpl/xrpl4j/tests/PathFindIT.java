@@ -75,10 +75,6 @@ public class PathFindIT extends AbstractIT {
     AccountInfoResult issuerAccountInfo = scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
-    AccountInfoResult holderAccountInfo = scanForResult(
-      () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
-    );
-
     // Create MPT issuance with tfMptCanTrade and tfMptCanTransfer to allow trading and transfers
     MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())
@@ -115,13 +111,21 @@ public class PathFindIT extends AbstractIT {
       .mpTokenIssuanceId()
       .orElseThrow(() -> new RuntimeException("issuance create metadata did not contain issuance ID"));
 
-    // Authorize holder to hold this MPT
+    // Authorize holder to hold this MPT. Re-read the holder account here: the earlier read happened
+    // before the issuance was created and awaited, so its ledger index is stale by this point and a
+    // deadline derived from it can already have passed.
+    AccountInfoResult holderAccountInfoBeforeAuthorize = scanForResult(
+      () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
+    );
+
     MpTokenAuthorize authorize = MpTokenAuthorize.builder()
       .account(holderKeyPair.publicKey().deriveAddress())
-      .sequence(holderAccountInfo.accountData().sequence())
+      .sequence(holderAccountInfoBeforeAuthorize.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .signingPublicKey(holderKeyPair.publicKey())
-      .lastLedgerSequence(holderAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .lastLedgerSequence(
+        holderAccountInfoBeforeAuthorize.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
       .mpTokenIssuanceId(mptIssuanceId)
       .build();
 

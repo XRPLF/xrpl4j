@@ -395,8 +395,8 @@ public class MpTokenIT extends AbstractIT {
       .hasMessageContaining("entryNotFound");
   }
 
-  @DisabledIf(value = "shouldNotRunPermissionedDomain",
-    disabledReason = "PermissionedDomain requires a feature only available on the develop rippled image.")
+  // No static gate: this test uses no permissioned domain. It skips itself at runtime via
+  // Assumptions.assumeTrue below when the DynamicMPT amendment is not enabled on the node.
   @Test
   void createDynamicIssuanceThenMutateMetadata()
     throws JsonRpcClientErrorException, JsonProcessingException {
@@ -1526,11 +1526,5 @@ public class MpTokenIT extends AbstractIT {
       "Skipping: fixCleanup3_2_0 not enabled on this node"
     );
     assertThat(submitResult.engineResult()).isEqualTo("temBAD_AMOUNT");
-  }
-
-  static boolean shouldNotRunPermissionedDomain() {
-    return System.getProperty("useTestnet") != null ||
-      System.getProperty("useClioTestnet") != null ||
-      System.getProperty("useDevnet") != null;
   }
 }

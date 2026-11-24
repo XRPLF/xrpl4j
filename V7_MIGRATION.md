@@ -449,7 +449,7 @@ assertThatThrownBy(() -> objectMapper.readValue(json, Payment.class))
   .isInstanceOf(MismatchedInputException.class);
 
 // Before (v6.x.x): "unavailable" delivered_amount read as zero drops
-XrpCurrencyAmount delivered = metadata.deliveredAmount().get(); // ofDrops(0)
+CurrencyAmount delivered = metadata.deliveredAmount().get(); // XrpCurrencyAmount.ofDrops(0)
 
 // After (v7.0.0): "unavailable" delivered_amount is empty
 assertThat(metadata.deliveredAmount()).isEmpty();

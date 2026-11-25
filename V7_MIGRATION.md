@@ -404,7 +404,7 @@ boolean isBuyOffer = !offer.flags().lsfSellNfToken();
 
 `NfTokenOfferFlags.AUTHORIZED` (`0x00000002`) and `lsfAuthorized()` have also been removed. `rippled` defines exactly
 one flag on the `NFTokenOffer` ledger entry — `lsfSellNFToken` — in
-[`include/xrpl/protocol/LedgerFormats.h`](https://github.com/XRPLF/rippled/blob/develop/include/xrpl/protocol/LedgerFormats.h#L206-L207).
+[`include/xrpl/protocol/LedgerFormats.h`](https://github.com/XRPLF/rippled/blob/2039a45119eb0a31e4f14380a4d2886b74da4650/include/xrpl/protocol/LedgerFormats.h#L206-L207).
 There is no `lsfAuthorized` flag on that object, so `lsfAuthorized()` returned `false` for every offer the ledger
 actually produces.
 

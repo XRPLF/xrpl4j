@@ -385,7 +385,39 @@ Batch.builder()
   ...
 ```
 
-### 8. `ObjectMapperFactory` no longer configures mapper-wide features
+### 8. `NfTokenOfferFlags`: `BUY_TOKEN`/`lsfBuyToken()` and `AUTHORIZED`/`lsfAuthorized()` removed
+
+`NfTokenOfferFlags.BUY_TOKEN` and `lsfBuyToken()` have been removed, with no aliases left in their place. Bit
+`0x00000001` (`lsfSellNFToken` on the ledger) was previously — incorrectly — modeled as "buy"; it is now modeled
+correctly as `SELL_NFTOKEN` / `lsfSellNfToken()`, matching the actual ledger semantics (the bit means the offer is a
+**sell** offer, not a buy offer).
+
+**Migration:**
+
+```java
+// Before (v6.x.x): checked whether an offer was a buy offer
+boolean isBuyOffer = offer.flags().lsfBuyToken();
+
+// After (v7.0.0): the bit means "sell", so a buy-offer check is now the negation
+boolean isBuyOffer = !offer.flags().lsfSellNfToken();
+```
+
+`NfTokenOfferFlags.AUTHORIZED` (`0x00000002`) and `lsfAuthorized()` have also been removed. `rippled` defines exactly
+one flag on the `NFTokenOffer` ledger entry — `lsfSellNFToken` — in
+[`include/xrpl/protocol/LedgerFormats.h`](https://github.com/XRPLF/rippled/blob/2039a45119eb0a31e4f14380a4d2886b74da4650/include/xrpl/protocol/LedgerFormats.h#L206-L207).
+There is no `lsfAuthorized` flag on that object, so `lsfAuthorized()` returned `false` for every offer the ledger
+actually produces.
+
+**Migration:**
+
+```java
+// Before (v6.x.x): always false for real ledger data
+boolean approvedByIssuer = offer.flags().lsfAuthorized();
+
+// After (v7.0.0): no equivalent — the NFTokenOffer ledger entry carries no such flag.
+```
+
+### 9. `ObjectMapperFactory` no longer configures mapper-wide features
 
 Previously, the mapper returned by `ObjectMapperFactory.create()` set several features for every type it handled:
 

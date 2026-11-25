@@ -25,7 +25,7 @@ class MetaNfTokenOfferObjectTest extends AbstractJsonTest {
       .nfTokenId(NfTokenId.of("00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD"))
       .ownerNode("2")
       .offerNode("0")
-      .flags(NfTokenOfferFlags.BUY_TOKEN)
+      .flags(NfTokenOfferFlags.SELL_NFTOKEN)
       .build();
 
     String json = "{\n" +
@@ -58,7 +58,7 @@ class MetaNfTokenOfferObjectTest extends AbstractJsonTest {
       .nfTokenId(NfTokenId.of("00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD"))
       .ownerNode("2")
       .offerNode("0")
-      .flags(NfTokenOfferFlags.BUY_TOKEN)
+      .flags(NfTokenOfferFlags.SELL_NFTOKEN)
       .build();
 
     String json = "{\n" +

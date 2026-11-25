@@ -602,7 +602,7 @@ class TransactionMetadataTest {
               .value("0.4")
               .build()
           )
-          .flags(NfTokenOfferFlags.BUY_TOKEN)
+          .flags(NfTokenOfferFlags.SELL_NFTOKEN)
           .nfTokenId(NfTokenId.of("00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD"))
           .owner(Address.of("rB3JmRd5m292YjCsCr65tc8dwZz2WN7HQu"))
           .ownerNode("2")

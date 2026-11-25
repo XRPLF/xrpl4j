@@ -142,8 +142,9 @@ subtype based on the JSON structure:
 `PathCurrency` now also models MPTokens, so `currency()` changed from `String` to `Optional<String>` and a new
 `mptIssuanceId()` accessor was added. A `PathCurrency` carries exactly one of `currency()` or `mptIssuanceId()`.
 
-The `of(String)` and `of(String, Address)` factories are unchanged, including the "any issuer" form used by
-`source_currencies`, where a bare currency code means "this currency, from any issuer".
+The `of(String)` factory is unchanged, including the "any issuer" form used by `source_currencies`, where a bare
+currency code means "this currency, from any issuer". A new `of(String, Address)` factory was added for a currency
+from one specific issuer, alongside `of(Issue)`.
 
 **Migration:**
 

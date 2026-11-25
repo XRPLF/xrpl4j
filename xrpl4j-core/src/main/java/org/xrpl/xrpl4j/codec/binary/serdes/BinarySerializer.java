@@ -74,7 +74,7 @@ public class BinarySerializer {
       int byte3 = length & 0xff;
       return UnsignedByteArray.of(UnsignedByte.of(byte1), UnsignedByte.of(byte2), UnsignedByte.of(byte3));
     }
-    throw new Error("Overflow error");
+    throw new IllegalArgumentException("Overflow error");
   }
 
   /**

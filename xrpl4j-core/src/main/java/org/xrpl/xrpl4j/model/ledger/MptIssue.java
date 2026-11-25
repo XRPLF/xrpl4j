@@ -49,6 +49,16 @@ public interface MptIssue extends Issue {
   }
 
   /**
+   * Construct a {@code MptIssue} from an {@link MpTokenIssuanceId}.
+   *
+   * @param mptIssuanceId The MPToken issuance ID.
+   * @return An {@link MptIssue}.
+   */
+  static MptIssue of(MpTokenIssuanceId mptIssuanceId) {
+    return builder().mptIssuanceId(mptIssuanceId).build();
+  }
+
+  /**
    * The MPT issuance ID of this asset.
    *
    * @return A {@link MpTokenIssuanceId}.

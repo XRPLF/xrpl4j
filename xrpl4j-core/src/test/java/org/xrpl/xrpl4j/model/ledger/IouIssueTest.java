@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.ledger;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -62,5 +63,21 @@ class IouIssueTest {
 
     IouIssue deserialized = objectMapper.readValue(serialized, IouIssue.class);
     assertThat(deserialized).isEqualTo(issue);
+  }
+
+  @Test
+  void cannotBuildWithXrpCurrency() {
+    assertThatThrownBy(() -> IouIssue.builder().currency("XRP").issuer(ISSUER).build())
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("IouIssue currency cannot be 'XRP'");
+  }
+
+  @Test
+  void canBuildWithLowercaseXrpCurrency() {
+    // Only the exact string "XRP" is the native asset; "xrp" is an ordinary issued currency in xrpld.
+    IouIssue issue = IouIssue.builder().currency("xrp").issuer(ISSUER).build();
+
+    assertThat(issue.currency()).isEqualTo("xrp");
+    assertThat(issue.issuer()).isEqualTo(ISSUER);
   }
 }

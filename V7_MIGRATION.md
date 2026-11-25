@@ -10,18 +10,20 @@ Version 7.0.0 introduces several breaking changes:
 1. **Issue Model Refactor** — `Issue` has been refactored from a concrete immutable into a polymorphic interface with
    three subtypes (`XrpIssue`, `IouIssue`, `MptIssue`) to support the
    [Single Asset Vault](https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0065-single-asset-vault) amendment.
-2. **Transaction Signing API Refactor** — `SignatureUtils.addSignatureToTransaction()` and
+2. **`PathCurrency` MPToken support** — `PathCurrency.currency()` is now `Optional<String>` and a new
+   `mptIssuanceId()` accessor was added, so a path currency can identify an MPToken.
+3. **Transaction Signing API Refactor** — `SignatureUtils.addSignatureToTransaction()` and
    `SignatureUtils.addMultiSignaturesToTransaction()` have been removed. Transaction signing now uses Immutables-generated
    `withTransactionSignature()` and `withSigners()` methods on `Transaction`, and validation has moved to `@Check`
    methods on `SingleSignedTransaction` and `MultiSignedTransaction`.
-3. **Transaction Fee Model Refactor** — `Transaction.fee()` is no longer a required field; it now defaults to zero
+4. **Transaction Fee Model Refactor** — `Transaction.fee()` is no longer a required field; it now defaults to zero
    drops. A new fee-computation API (`FeeParams`, `FeeTerm`, `FeeBreakdown`, and an expanded `FeeUtils`) replaces the
    old per-transaction-type `computeFee()` helpers for computing an accurate fee. To guard against the new default, all
    `TransactionSigner` methods that sign an outer transaction (`sign()`, `multiSign()`, `sponsorSign()`,
    `counterpartySign()`) now reject a transaction whose `fee()` is still zero.
-4. **`MetaMpTokenIssuanceObject.mpTokenMetadata()` type change** — now returns `Optional<MpTokenMetadata>` instead of
+5. **`MetaMpTokenIssuanceObject.mpTokenMetadata()` type change** — now returns `Optional<MpTokenMetadata>` instead of
    `Optional<String>`.
-5. **`ValidatedLedger.age()` type change** — now returns `Optional<UnsignedInteger>` instead of `UnsignedInteger`,
+6. **`ValidatedLedger.age()` type change** — now returns `Optional<UnsignedInteger>` instead of `UnsignedInteger`,
    since rippled omits this field when it cannot compute a valid age.
 
 ## Breaking Changes
@@ -46,7 +48,7 @@ three subtypes.
 Issue xrp = Issue.builder().currency("XRP").build();
 
 // After (v7.0.0): XRP Issue
-Issue xrp = Issue.XRP; // or XrpIssue.XRP
+Issue xrp = Issue.XRP; // or XrpIssue.of()
 
 // Before (v6.x.x): IOU Issue
 Issue usd = Issue.builder()
@@ -135,7 +137,34 @@ subtype based on the JSON structure:
 - `{"currency": "USD", "issuer": "rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"}` → `IouIssue`
 - `{"mpt_issuance_id": "00000001A407AF5856CFF3379945D823561023E8E5CED9C9"}` → `MptIssue`
 
-### 2. Transaction Signing API
+### 2. `PathCurrency.currency()` type change
+
+`PathCurrency` now also models MPTokens, so `currency()` changed from `String` to `Optional<String>` and a new
+`mptIssuanceId()` accessor was added. A `PathCurrency` carries exactly one of `currency()` or `mptIssuanceId()`.
+
+The `of(String)` factory is unchanged, including the "any issuer" form used by `source_currencies`, where a bare
+currency code means "this currency, from any issuer". A new `of(String, Address)` factory was added for a currency
+from one specific issuer, alongside `of(Issue)`.
+
+**Migration:**
+
+```java
+// Before (v6.x.x)
+String currency = pathCurrency.currency();
+
+// After (v7.0.0)
+String currency = pathCurrency.currency().orElse(null);
+// ...or handle the MPToken case explicitly:
+pathCurrency.currency().ifPresent(c -> { /* currency code */ });
+pathCurrency.mptIssuanceId().ifPresent(id -> { /* MPToken issuance id */ });
+```
+
+```java
+// New in v7.0.0: a PathCurrency for an MPToken
+PathCurrency mpt = PathCurrency.of(MptIssue.of(MpTokenIssuanceId.of("0000...")));
+```
+
+### 3. Transaction Signing API
 
 The transaction signing internals have been refactored to eliminate per-transaction-type switch statements in
 `SignatureUtils`. This change leverages Immutables-generated builder methods on the `Transaction` interface.
@@ -187,7 +216,7 @@ for every transaction subclass:
 - `Transaction withSigners(Iterable<? extends SignerWrapper> signers)` — returns a copy of the transaction with the
   specified signers applied.
 
-### 3. Transaction Fee Model
+### 4. Transaction Fee Model
 
 `Transaction.fee()` and the fee-computation helpers have been reworked to support the new fee rules introduced by
 Batch, LoanSet/LoanPay, sponsored transactions, and confidential MPT transactions, none of which the old
@@ -263,7 +292,7 @@ XrpCurrencyAmount fee = fees.feeLow();
 Inspect `feeBreakdown().get().summary()` while developing to see which parts of a computed fee were assumed defaults
 versus derived facts.
 
-### 4. `MetaMpTokenIssuanceObject.mpTokenMetadata()` type change
+### 5. `MetaMpTokenIssuanceObject.mpTokenMetadata()` type change
 
 The return type of `MetaMpTokenIssuanceObject.mpTokenMetadata()` changed from `Optional<String>` to
 `Optional<MpTokenMetadata>`. This aligns the meta object with `MpTokenIssuanceObject`.
@@ -280,7 +309,7 @@ Optional<MpTokenMetadata> metadata = metaMpTokenIssuanceObject.mpTokenMetadata()
 Optional<String> hexString = metadata.map(MpTokenMetadata::value);
 ```
 
-### 5. `ValidatedLedger.age()` type change
+### 6. `ValidatedLedger.age()` type change
 
 The return type of `ServerInfo.ValidatedLedger#age()` changed from `UnsignedInteger` to `Optional<UnsignedInteger>`.
 rippled omits the `age` field from `closed_ledger` and `validated_ledger` in `server_info` responses when it cannot
@@ -313,7 +342,7 @@ validatedLedger.age().ifPresent(ageValue -> {
 UnsignedInteger ageValue = validatedLedger.age().orElse(UnsignedInteger.ZERO);
 ```
 
-### 6. `ObjectMapperFactory` no longer overrides `ZonedDateTime` handling globally
+### 7. `ObjectMapperFactory` no longer overrides `ZonedDateTime` handling globally
 
 Through `6.1.0-rc.x` and `7.0.0-rc.x`, the mapper returned by `ObjectMapperFactory.create()` registered an
 xrpld-specific `ZonedDateTime` serializer and deserializer for the whole mapper, and it has always disabled
@@ -350,7 +379,7 @@ xrpl4j model does:
 ZonedDateTime closeTime();
 ```
 
-### 7. `Batch.batchSigners()` validation now matches XLS-56 exactly
+### 8. `Batch.batchSigners()` validation now matches XLS-56 exactly
 
 Two construction-time rules in `Batch` changed to match XLS-56 §2.3 and xrpld:
 
@@ -385,7 +414,7 @@ Batch.builder()
   ...
 ```
 
-### 8. `ObjectMapperFactory` no longer configures mapper-wide features
+### 9. `ObjectMapperFactory` no longer configures mapper-wide features
 
 Previously, the mapper returned by `ObjectMapperFactory.create()` set several features for every type it handled:
 

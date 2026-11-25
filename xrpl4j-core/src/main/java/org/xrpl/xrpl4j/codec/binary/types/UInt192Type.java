@@ -32,6 +32,7 @@ public class UInt192Type extends UIntType<UInt192Type> {
 
   @Override
   public JsonNode toJson() {
+    // UInt192 is too large to fit in UnsignedLong, so return hex string instead of decimal
     return new TextNode(toHex());
   }
 }

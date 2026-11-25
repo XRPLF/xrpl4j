@@ -39,6 +39,7 @@ public class HopType extends SerializedType<HopType> {
   public static final byte TYPE_ACCOUNT = 0x01;
   public static final byte TYPE_CURRENCY = 0x10;
   public static final byte TYPE_ISSUER = 0x20;
+  public static final byte TYPE_MPT = 0x40;
 
   private static final ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
@@ -55,12 +56,18 @@ public class HopType extends SerializedType<HopType> {
     int type = parser.readUInt8().intValue();
     UnsignedByteArray byteArray = UnsignedByteArray.of(UnsignedByte.of(type));
 
+    // Note: We don't validate mutual exclusivity here to be permissive when reading ledger data.
+    // If both TYPE_CURRENCY and TYPE_MPT flags are set (which violates the spec), we prefer
+    // TYPE_CURRENCY to maintain backward compatibility and avoid breaking on unexpected data.
+
     if ((type & TYPE_ACCOUNT) > 0) {
       byteArray.append(parser.read(AccountIdType.WIDTH));
     }
 
     if ((type & TYPE_CURRENCY) > 0) {
       byteArray.append(parser.read(CurrencyType.WIDTH));
+    } else if ((type & TYPE_MPT) > 0) {
+      byteArray.append(parser.read(UInt192Type.WIDTH_BYTES));
     }
 
     if ((type & TYPE_ISSUER) > 0) {
@@ -80,15 +87,28 @@ public class HopType extends SerializedType<HopType> {
 
     Hop hop = objectMapper.treeToValue(node, Hop.class);
 
+    // fromJson is the encode path that feeds signing, so a hop carrying both fields is rejected rather
+    // than silently dropping one. xrpld does the same when parsing a path set: STParsedJSON.cpp returns
+    // "Invalid Asset." Reading remains permissive -- see fromParser and toJson below.
+    if (hop.currency().isPresent() && hop.mptIssuanceId().isPresent()) {
+      throw new IllegalArgumentException("A path hop cannot have both currency and mpt_issuance_id.");
+    }
+
+    boolean hasCurrency = hop.currency().isPresent();
+    boolean hasMpt = hop.mptIssuanceId().isPresent();
+
     hop.account().ifPresent(account -> {
       byteArray.append(new AccountIdType().fromJson(account).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_ACCOUNT)));
     });
 
-    hop.currency().ifPresent(currency -> {
-      byteArray.append(new CurrencyType().fromJson(currency).value());
+    if (hasCurrency) {
+      byteArray.append(new CurrencyType().fromJson(hop.currency().get()).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_CURRENCY)));
-    });
+    } else if (hasMpt) {
+      byteArray.append(new UInt192Type().fromJson(hop.mptIssuanceId().get()).value());
+      byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_MPT)));
+    }
 
     hop.issuer().ifPresent(issuer -> {
       byteArray.append(new AccountIdType().fromJson(issuer).value());
@@ -111,6 +131,8 @@ public class HopType extends SerializedType<HopType> {
 
     if ((type & TYPE_CURRENCY) > 0) {
       builder.currency(new CurrencyType().fromParser(parser).toJson());
+    } else if ((type & TYPE_MPT) > 0) {
+      builder.mptIssuanceId(new UInt192Type().fromParser(parser).toJson());
     }
 
     if ((type & TYPE_ISSUER) > 0) {

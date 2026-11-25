@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.xrpl.xrpl4j.model.ledger.IouIssue;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.MptIssue;
@@ -50,23 +51,39 @@ public class IssueDeserializer extends StdDeserializer<Issue> {
   public Issue deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
     JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
+    // Check if it's an MPT issue (has mpt_issuance_id field)
     if (node.has("mpt_issuance_id")) {
-      String mptIssuanceId = node.get("mpt_issuance_id").asText();
-      return MptIssue.builder()
-        .mptIssuanceId(MpTokenIssuanceId.of(mptIssuanceId))
-        .build();
-    } else if (node.has("currency")) {
-      String currency = node.get("currency").asText();
-      if ("XRP".equals(currency)) {
-        return XrpIssue.XRP;
-      }
-      String issuer = node.get("issuer").asText();
-      return IouIssue.builder()
-        .currency(currency)
-        .issuer(Address.of(issuer))
-        .build();
+      return MptIssue.of(MpTokenIssuanceId.of(node.get("mpt_issuance_id").asText()));
     }
 
-    throw new IOException("Cannot deserialize Issue: must contain 'currency' or 'mpt_issuance_id' field");
+    // Otherwise, it's a currency-based issue (has currency field)
+    if (node.has("currency")) {
+      String currency = node.get("currency").asText();
+
+      // Only the exact string "XRP" denotes the native asset. xrpld's toCurrency() compares against
+      // systemCurrencyCode(), so any other three-character code -- "xrp" included -- is an ordinary
+      // issued currency written into the ISO position of a 160-bit currency.
+      if ("XRP".equals(currency)) {
+        return Issue.XRP;
+      }
+
+      // Otherwise, it's an IOU (must have issuer)
+      if (node.has("issuer")) {
+        return IouIssue.builder()
+          .currency(currency)
+          .issuer(Address.of(node.get("issuer").asText()))
+          .build();
+      }
+
+      throw MismatchedInputException.from(
+        jsonParser, Issue.class,
+        "Invalid Issue JSON: IOU currency '" + currency + "' must have an 'issuer' field"
+      );
+    }
+
+    throw MismatchedInputException.from(
+      jsonParser, Issue.class,
+      "Cannot deserialize Issue: must contain 'currency' or 'mpt_issuance_id' field"
+    );
   }
 }

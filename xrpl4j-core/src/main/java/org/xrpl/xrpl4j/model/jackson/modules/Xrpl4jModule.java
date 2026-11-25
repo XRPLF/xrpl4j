@@ -26,6 +26,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
 import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Permission;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -56,6 +57,7 @@ public class Xrpl4jModule extends SimpleModule {
 
     addDeserializer(CurrencyAmount.class, new CurrencyAmountDeserializer());
 
+    addDeserializer(Issue.class, new IssueDeserializer());
     addSerializer(Permission.class, new PermissionSerializer());
     addDeserializer(Permission.class, new PermissionDeserializer());
 

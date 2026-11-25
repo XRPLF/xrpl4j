@@ -229,6 +229,21 @@ jobs:
       - name: Build
         run: mvn clean install -Dmaven.javadoc.skip=true -Pandroid
 
+  build_develop_its:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v6
+      # Set up Java 8
+      - name: Set up JDK 8
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+          cache: 'maven'
+      - name: Build
+        run: mvn clean install -Dmaven.javadoc.skip=true -DuseDevelop
+
   # Verifies the mpt-crypto native libraries (loaded via JNA) on each platform we ship binaries for.
   build_confidential_native_its:
     name: confidential_native_${{ matrix.platform }}_${{ matrix.network }}
